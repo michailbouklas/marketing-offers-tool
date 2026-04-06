@@ -1,0 +1,1 @@
+[GET] http://localhost:5173/offers => [500] Internal Server Error

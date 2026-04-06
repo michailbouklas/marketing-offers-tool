@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "frontend-design-pro": {
+      "source": "binjuhor/shadcn-lar",
+      "sourceType": "github",
+      "computedHash": "ac0ee19a6c01837e02fe4d79464acc59dd0fe203f9b27608d87617f865c1d814"
+    }
+  }
+}

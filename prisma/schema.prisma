@@ -1,0 +1,289 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model api_WOLT_header {
+  id               Int              @id @default(autoincrement())
+  documentid       String           @unique
+  documentdate     DateTime?
+  invoicenumber    String?
+  timeframe        String?
+  remarks          String?
+  bpcode           String?
+  bpname           String?
+  partnername      String?
+  distributionrule String?
+  project          String?
+  erpdatabase      String?
+  createdat        DateTime         @default(now())
+  erpsent          String?          @default("N")
+  erpcreatedat     DateTime?
+  totalpayout      Decimal?         @db.Decimal(19, 6)
+  api_WOLT_lines   api_WOLT_lines[]
+}
+
+model api_WOLT_lines {
+  documentid      String
+  linenumber      Int
+  transtype       String?
+  linedetails     String?
+  amount          Decimal?        @db.Decimal(19, 6)
+  vatamount       Decimal?        @db.Decimal(19, 6)
+  totalamount     Decimal?        @db.Decimal(19, 6)
+  accountcode     String?
+  vatcode         String?
+  api_WOLT_header api_WOLT_header @relation(fields: [documentid], references: [documentid], onDelete: Cascade)
+
+  @@id([documentid, linenumber])
+}
+
+model error_log {
+  id        Int      @id @default(autoincrement())
+  timestamp DateTime @default(now())
+  level     String
+  message   String
+  details   Json?
+  source    String?
+}
+
+model brand {
+  id                Int                 @id @default(autoincrement())
+  name              String              @db.Text
+  alias             String              @default("") @db.Text
+  logo              String              @default("") @db.Text
+  slug              String              @default("") @db.Text
+  created_at        DateTime            @default(now()) @db.Timestamp(3)
+  updated_at        DateTime            @db.Timestamp(3)
+  description       String?             @default("") @db.Text
+  active            Boolean             @default(true)
+  aggregator_offers aggregator_offers[]
+  user_assignments  user_brand[]
+}
+
+model user_brand {
+  userId    String
+  brandId   Int
+  createdAt DateTime @default(now())
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brand     brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@id([userId, brandId])
+  @@index([brandId])
+}
+
+model regex_patterns_by_category {
+  id       Int     @id @default(autoincrement())
+  regex    String
+  example  String?
+  category String
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model store_names {
+  id              Int     @default(autoincrement())
+  file_name       String? @db.VarChar
+  pdf_name        String? @db.VarChar
+  aggregator_name String? @db.VarChar
+
+  @@ignore
+}
+
+model wolt_regex_patters {
+  id       Int     @id @default(autoincrement())
+  regex    String
+  example  String?
+  category String
+}
+
+// Better Auth tables
+model user {
+  id                String             @id
+  name              String
+  email             String             @unique
+  emailVerified     Boolean
+  image             String?
+  role              String?            @default("user")
+  banned            Boolean?           @default(false)
+  banReason         String?
+  banExpires        DateTime?
+  createdAt         DateTime
+  updatedAt         DateTime
+  sessions          session[]
+  accounts          account[]
+  brand_assignments user_brand[]
+  dim_offers_audits dim_offers_audit[] @relation("DimOffersAuditActor")
+}
+
+model session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  impersonatedBy String?
+  userId    String
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  user      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+}
+
+model verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+}
+
+model categories {
+  id            Int             @id @default(autoincrement())
+  name          String          @unique
+  subcategories subcategories[]
+}
+
+model channels {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
+
+model dq_missing_offers_pricing {
+  dq_id           Int                  @id @default(autoincrement())
+  trde_item       String               @db.VarChar
+  item_name       String               @db.VarChar
+  brand           String               @db.VarChar
+  item_category   String               @db.VarChar
+  missing_fields  String               @db.VarChar
+  detected_at     DateTime             @default(now())
+  status          DqGapStatus          @default(open)
+  resolved_at     DateTime?
+  audit_records   dim_offers_audit[]
+  staging_records dim_offers_staging[]
+
+  @@index([status])
+  @@index([trde_item])
+}
+
+model dim_offers_staging {
+  id            Int                       @id @default(autoincrement())
+  dq_id         Int
+  item_code     String                    @db.VarChar
+  channel       String                    @db.VarChar
+  category      String                    @db.VarChar
+  subcategory   String                    @db.VarChar
+  ideal_price   Decimal                   @db.Decimal(10, 2)
+  selling_price Decimal                   @db.Decimal(10, 2)
+  fc_perc       Decimal                   @db.Decimal(5, 4)
+  mktg_spend    Decimal?                  @db.Decimal(10, 2)
+  notes         String?                   @db.VarChar(500)
+  submitted_by  String                    @db.VarChar
+  submitted_at  DateTime                  @default(now())
+  approved_by   String?                   @db.VarChar
+  approved_at   DateTime?
+  status        DimOffersStagingStatus    @default(pending)
+  audit_records dim_offers_audit[]
+  gap_record    dq_missing_offers_pricing @relation(fields: [dq_id], references: [dq_id], onDelete: Restrict)
+
+  @@index([dq_id])
+  @@index([item_code])
+  @@index([status])
+}
+
+model dim_offers_audit {
+  id             Int                  @id @default(autoincrement())
+  item_code      String               @db.VarChar
+  action         DimOffersAuditAction
+  source         DimOffersAuditSource @default(gap_approval)
+  changed_by     String               @db.VarChar
+  changed_at     DateTime             @default(now())
+  staging_id     Int?
+  dq_id          Int?
+  before_values  Json?
+  after_values   Json
+  changed_fields String[]
+  actor          user?                @relation("DimOffersAuditActor", fields: [changed_by], references: [id], onDelete: Restrict)
+  staging_record dim_offers_staging?  @relation(fields: [staging_id], references: [id], onDelete: SetNull)
+  gap_record     dq_missing_offers_pricing? @relation(fields: [dq_id], references: [dq_id], onDelete: SetNull)
+
+  @@index([item_code])
+  @@index([changed_by])
+  @@index([changed_at])
+  @@index([staging_id])
+  @@index([dq_id])
+}
+
+model subcategories {
+  id          Int        @id @default(autoincrement())
+  category_id Int
+  name        String
+  category    categories @relation(fields: [category_id], references: [id])
+
+  @@unique([category_id, name])
+}
+
+enum Aggregator {
+  foody
+  bolt
+  wolt
+  efood
+}
+
+enum DqGapStatus {
+  open
+  submitted
+  resolved
+}
+
+enum DimOffersStagingStatus {
+  pending
+  approved
+  rejected
+}
+
+enum DimOffersAuditAction {
+  insert
+  update
+}
+
+enum DimOffersAuditSource {
+  gap_approval
+}
+
+model aggregator_offers {
+  id         Int        @id @default(autoincrement())
+  name       String
+  offer_id   String
+  aggregator Aggregator
+  brand_id   Int
+  brand      brand      @relation(fields: [brand_id], references: [id])
+  details    String     @db.Text
+  starts_at  DateTime
+  ends_at    DateTime
+  active     Boolean    @default(true)
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  @@index([brand_id])
+}

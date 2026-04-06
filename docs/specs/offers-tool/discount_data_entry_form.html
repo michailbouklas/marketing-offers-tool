@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pricing data entry — Discount quality system</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap");
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #f7f6f3;
+        --surface: #ffffff;
+        --surface2: #f2f0ec;
+        --border: #e2dfd8;
+        --border2: #c8c4bb;
+        --text: #1a1916;
+        --muted: #7a776e;
+        --hint: #b0ada5;
+        --accent: #1a4fbe;
+        --accent-bg: #ebf0fd;
+        --accent-bd: #a8bfef;
+        --danger: #c0341d;
+        --danger-bg: #fdf0ed;
+        --danger-bd: #f2b8ac;
+        --success: #1a6641;
+        --success-bg: #ebf5ef;
+        --warn: #7a4e00;
+        --warn-bg: #fef6e4;
+        --warn-bd: #f0d48a;
+        --radius: 6px;
+        --radius-lg: 10px;
+        --mono: "IBM Plex Mono", monospace;
+        --sans: "DM Sans", sans-serif;
+      }
+
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 2rem 1rem 4rem;
+      }
+
+      .shell {
+        width: 100%;
+        max-width: 760px;
+      }
+
+      /* ── Top breadcrumb ── */
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 1.5rem;
+        font-family: var(--mono);
+      }
+      .breadcrumb span {
+        color: var(--hint);
+      }
+
+      /* ── Page header ── */
+      .page-header {
+        margin-bottom: 1.5rem;
+      }
+      .page-header h1 {
+        font-size: 20px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        margin-bottom: 4px;
+      }
+      .page-header p {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      /* ── Alert banner ── */
+      .alert {
+        border-left: 3px solid var(--danger);
+        background: var(--danger-bg);
+        border-radius: 0 var(--radius) var(--radius) 0;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: var(--danger);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .alert-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--danger);
+        flex-shrink: 0;
+        margin-top: 4px;
+      }
+
+      /* ── Card ── */
+      .card {
+        background: var(--surface);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: 1rem;
+      }
+      .card-header {
+        padding: 14px 20px;
+        border-bottom: 0.5px solid var(--border);
+        background: var(--surface2);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .card-title {
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--muted);
+        font-family: var(--mono);
+      }
+      .card-body {
+        padding: 20px;
+      }
+
+      /* ── Context chips ── */
+      .context-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .ctx-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 12px;
+      }
+      .ctx-label {
+        color: var(--muted);
+      }
+      .ctx-value {
+        font-weight: 500;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+      .ctx-chip.item-code .ctx-value {
+        color: var(--accent);
+      }
+
+      /* ── Section divider ── */
+      .section-divider {
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--hint);
+        font-family: var(--mono);
+        padding-bottom: 8px;
+        border-bottom: 0.5px solid var(--border);
+        margin-bottom: 16px;
+        margin-top: 8px;
+      }
+
+      /* ── Form grid ── */
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+      .form-grid.two-col {
+        grid-template-columns: 1fr 1fr;
+      }
+      .form-grid.four-col {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+      }
+
+      /* ── Field ── */
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .field label {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-family: var(--mono);
+      }
+      .field label .req {
+        display: inline-block;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--danger);
+        flex-shrink: 0;
+      }
+      .field label .missing-badge {
+        font-size: 10px;
+        font-weight: 500;
+        background: var(--danger-bg);
+        color: var(--danger);
+        border: 0.5px solid var(--danger-bd);
+        border-radius: 3px;
+        padding: 1px 5px;
+        text-transform: none;
+        letter-spacing: 0;
+        font-family: var(--sans);
+      }
+      .field label .opt-badge {
+        font-size: 10px;
+        color: var(--hint);
+        font-weight: 400;
+        text-transform: none;
+        letter-spacing: 0;
+        font-family: var(--sans);
+      }
+
+      /* inputs */
+      .field input,
+      .field select,
+      .field textarea {
+        height: 36px;
+        padding: 0 10px;
+        font-size: 13px;
+        font-family: var(--sans);
+        color: var(--text);
+        background: var(--surface);
+        border: 0.5px solid var(--border2);
+        border-radius: var(--radius);
+        outline: none;
+        transition: border-color 0.15s;
+        width: 100%;
+        appearance: none;
+        -webkit-appearance: none;
+      }
+      .field input:focus,
+      .field select:focus,
+      .field textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(26, 79, 190, 0.08);
+      }
+      .field input.error,
+      .field select.error {
+        border-color: var(--danger);
+        background: var(--danger-bg);
+      }
+      .field input.error:focus,
+      .field select.error:focus {
+        box-shadow: 0 0 0 3px rgba(192, 52, 29, 0.08);
+      }
+      .field input[disabled],
+      .field select[disabled] {
+        background: var(--surface2);
+        color: var(--muted);
+        cursor: not-allowed;
+        border-color: var(--border);
+      }
+      .field textarea {
+        height: 72px;
+        resize: vertical;
+        padding: 8px 10px;
+      }
+
+      /* prefix/suffix wrapper */
+      .input-wrap {
+        position: relative;
+      }
+      .input-wrap .prefix,
+      .input-wrap .suffix {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: var(--hint);
+        pointer-events: none;
+        font-family: var(--mono);
+      }
+      .input-wrap .prefix {
+        left: 10px;
+      }
+      .input-wrap .suffix {
+        right: 10px;
+      }
+      .input-wrap input.with-prefix {
+        padding-left: 22px;
+      }
+      .input-wrap input.with-suffix {
+        padding-right: 28px;
+      }
+
+      /* select arrow */
+      .select-wrap {
+        position: relative;
+      }
+      .select-wrap::after {
+        content: "";
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 5px solid var(--muted);
+        pointer-events: none;
+      }
+      .select-wrap select {
+        padding-right: 28px;
+      }
+      .select-wrap select[disabled] + * {
+        display: none;
+      }
+
+      .field .hint {
+        font-size: 11px;
+        color: var(--hint);
+        line-height: 1.4;
+      }
+      .field .error-msg {
+        font-size: 11px;
+        color: var(--danger);
+        display: none;
+      }
+      .field .error-msg.visible {
+        display: block;
+      }
+
+      /* char counter */
+      .char-row {
+        display: flex;
+        justify-content: flex-end;
+        font-size: 11px;
+        color: var(--hint);
+        font-family: var(--mono);
+        margin-top: -8px;
+      }
+
+      /* ── Computed field ── */
+      .computed-field {
+        background: var(--surface2);
+        border: 0.5px dashed var(--border2);
+        border-radius: var(--radius);
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+      }
+      .computed-field .c-label {
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .computed-field .c-value {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text);
+        font-family: var(--mono);
+      }
+      .computed-field .c-note {
+        font-size: 10px;
+        color: var(--hint);
+        margin-top: 2px;
+      }
+
+      /* ── Cascade indicator ── */
+      .cascade-note {
+        font-size: 11px;
+        color: var(--accent);
+        background: var(--accent-bg);
+        border: 0.5px solid var(--accent-bd);
+        border-radius: var(--radius);
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+      .cascade-arrow {
+        width: 14px;
+        height: 14px;
+        border-right: 1.5px solid var(--accent);
+        border-bottom: 1.5px solid var(--accent);
+        border-radius: 0 0 3px 0;
+        flex-shrink: 0;
+      }
+
+      /* ── Form actions ── */
+      .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-top: 0.5px solid var(--border);
+        background: var(--surface2);
+      }
+      .actions-left {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .actions-right {
+        display: flex;
+        gap: 8px;
+      }
+
+      button {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: var(--radius);
+        cursor: pointer;
+        border: 0.5px solid var(--border2);
+        background: var(--surface);
+        color: var(--text);
+        transition:
+          background 0.12s,
+          border-color 0.12s;
+      }
+      button:hover {
+        background: var(--surface2);
+      }
+      button.primary {
+        background: var(--text);
+        color: var(--surface);
+        border-color: var(--text);
+      }
+      button.primary:hover {
+        background: #333;
+      }
+      button.danger-outline {
+        color: var(--danger);
+        border-color: var(--danger-bd);
+        background: transparent;
+      }
+      button.danger-outline:hover {
+        background: var(--danger-bg);
+      }
+
+      /* ── Annotation layer (for mockup callouts) ── */
+      .annotation {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 11px;
+        color: var(--warn);
+        background: var(--warn-bg);
+        border: 0.5px solid var(--warn-bd);
+        border-radius: var(--radius);
+        padding: 7px 10px;
+        margin-top: 6px;
+        font-family: var(--mono);
+      }
+      .ann-icon {
+        flex-shrink: 0;
+        font-size: 12px;
+      }
+
+      /* ── Tooltip chip ── */
+      .tooltip-chip {
+        font-size: 10px;
+        padding: 2px 7px;
+        background: var(--surface2);
+        border: 0.5px solid var(--border);
+        border-radius: 3px;
+        color: var(--muted);
+        font-family: var(--mono);
+        white-space: nowrap;
+      }
+
+      /* ── Disabled section overlay note ── */
+      .disabled-note {
+        font-size: 11px;
+        color: var(--hint);
+        font-style: italic;
+        padding-left: 4px;
+      }
+
+      @media (max-width: 580px) {
+        .form-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .form-grid.four-col {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        Gap list <span>/</span> Open gaps <span>/</span> Fill missing pricing
+      </div>
+
+      <!-- Page header -->
+      <div class="page-header">
+        <h1>Fill missing pricing data</h1>
+        <p>
+          Submit values for approval — approved values are written to
+          <code
+            style="
+              font-size: 11px;
+              background: var(--surface2);
+              padding: 1px 5px;
+              border-radius: 3px;
+              border: 0.5px solid var(--border);
+            "
+            >dim_offers</code
+          >
+        </p>
+      </div>
+
+      <!-- Missing-data alert -->
+      <div class="alert">
+        <div class="alert-dot"></div>
+        <div>
+          <strong>2 fields are missing</strong> for this item — ideal_price and
+          fc_perc. These are highlighted below. Discount calculation is blocked
+          until resolved.
+        </div>
+      </div>
+
+      <!-- ══ SECTION 1: Item context (read-only) ══ -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Item context</span>
+          <span class="tooltip-chip">read-only</span>
+        </div>
+        <div class="card-body">
+          <div class="context-row">
+            <div class="ctx-chip item-code">
+              <span class="ctx-label">Item code</span>
+              <span class="ctx-value">ITM-4821</span>
+            </div>
+            <div class="ctx-chip">
+              <span class="ctx-label">Brand</span>
+              <span class="ctx-value">KFC</span>
+            </div>
+            <div class="ctx-chip">
+              <span class="ctx-label">Transaction category</span>
+              <span class="ctx-value">Offers KFC</span>
+            </div>
+            <div class="ctx-chip">
+              <span class="ctx-label">Detected</span>
+              <span class="ctx-value">2026-03-25</span>
+            </div>
+          </div>
+
+          <div class="form-grid two-col">
+            <div class="field">
+              <label>Item name</label>
+              <input type="text" value="Zinger Box Meal" disabled />
+            </div>
+            <div class="field">
+              <label>Item code</label>
+              <input type="text" value="ITM-4821" disabled />
+            </div>
+          </div>
+
+          <div class="annotation">
+            <span class="ann-icon">i</span>
+            These fields are pre-populated from the gap record and cannot be
+            edited. They provide context for pricing decisions.
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SECTION 2: Channel & category ══ -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Channel &amp; category</span>
+        </div>
+        <div class="card-body">
+          <div class="section-divider">Channel</div>
+          <div
+            class="form-grid"
+            style="grid-template-columns: 1fr; margin-bottom: 20px"
+          >
+            <div class="field">
+              <label>Channel <span class="req"></span></label>
+              <div class="select-wrap">
+                <select>
+                  <option value="" disabled selected>Select a channel…</option>
+                  <option>Aggregators Only</option>
+                  <option>Wolt Only</option>
+                  <option>Bolt Only</option>
+                  <option>Foody Only</option>
+                  <option>Take Away Only</option>
+                  <option>Dine In Only</option>
+                  <option>Online Only</option>
+                  <option>Omnichannel</option>
+                  <option selected>All Channels</option>
+                  <option>Dine In + Take Away Only</option>
+                  <option>Drive-thru Only</option>
+                  <option>Delivery+Take Away Only</option>
+                </select>
+              </div>
+              <span class="hint"
+                >From the Channel named range — 12 options</span
+              >
+            </div>
+          </div>
+
+          <div class="section-divider">
+            Category &amp; subcategory — cascading
+          </div>
+
+          <div class="form-grid two-col" style="margin-bottom: 6px">
+            <div class="field">
+              <label>Category <span class="req"></span></label>
+              <div class="select-wrap">
+                <select
+                  id="category-select"
+                  onchange="handleCategoryChange(this.value)"
+                >
+                  <option value="" disabled selected>Select a category…</option>
+                  <option>DiscPercentage</option>
+                  <option>DiscValue</option>
+                  <option>BundleDisc</option>
+                  <option>CouponBased</option>
+                  <option value="ONEPLUSX" selected>ONEPLUSX</option>
+                </select>
+              </div>
+              <span class="hint">5 options — controls subcategory list</span>
+            </div>
+            <div class="field">
+              <label>Subcategory <span class="req"></span></label>
+              <div class="select-wrap">
+                <select id="subcategory-select">
+                  <option value="" disabled>Select category first…</option>
+                  <option>Free</option>
+                  <option>x Amount</option>
+                  <option value="% Disc" selected>% Disc</option>
+                  <option>Always On</option>
+                </select>
+              </div>
+              <span class="hint"
+                >Resets when category changes (INDIRECT pattern)</span
+              >
+            </div>
+          </div>
+
+          <div class="cascade-note">
+            <div class="cascade-arrow"></div>
+            Subcategory options are filtered by the selected category. This
+            mirrors the <code style="font-size: 10px">INDIRECT(D2)</code> Excel
+            validation — changing category resets and reloads subcategory
+            options.
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SECTION 3: Pricing ══ -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Pricing fields</span>
+          <span style="font-size: 11px; color: var(--muted)"
+            >Fields with red dot are missing — required before discount can be
+            calculated</span
+          >
+        </div>
+        <div class="card-body">
+          <div class="section-divider">Core pricing</div>
+
+          <div class="form-grid" style="margin-bottom: 16px">
+            <div class="field">
+              <label>
+                Ideal price <span class="req"></span>
+                <span class="missing-badge">missing</span>
+              </label>
+              <div class="input-wrap">
+                <span class="prefix">€</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  placeholder="0.00"
+                  class="with-prefix error"
+                  id="ideal-price"
+                  oninput="updateDiscount()"
+                />
+              </div>
+              <span class="hint">Full / reference price. Must be &gt; 0.</span>
+              <span class="error-msg visible" id="ideal-err"
+                >Ideal price must be greater than 0</span
+              >
+            </div>
+
+            <div class="field">
+              <label>Selling price <span class="req"></span></label>
+              <div class="input-wrap">
+                <span class="prefix">€</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value="5.99"
+                  class="with-prefix"
+                  id="selling-price"
+                  oninput="updateDiscount()"
+                />
+              </div>
+              <span class="hint"
+                >Price charged to customer. Must be ≤ ideal price.</span
+              >
+              <span class="error-msg" id="selling-err"
+                >Selling price cannot exceed ideal price</span
+              >
+            </div>
+
+            <div class="field">
+              <label>
+                FC % <span class="req"></span>
+                <span class="missing-badge">missing</span>
+              </label>
+              <div class="input-wrap">
+                <span class="suffix">%</span>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="100"
+                  placeholder="0.0"
+                  class="with-suffix error"
+                  id="fc-perc"
+                />
+              </div>
+              <span class="hint"
+                >Food cost %. Stored as fraction (÷100) in DB.</span
+              >
+              <span class="error-msg" id="fc-err"
+                >Must be between 0 and 100</span
+              >
+            </div>
+          </div>
+
+          <!-- Computed discount -->
+          <div class="section-divider">Calculated output</div>
+
+          <div class="computed-field" style="margin-bottom: 16px">
+            <div>
+              <div class="c-label">discount_amount</div>
+              <div class="c-note">
+                ideal_price − selling_price · not a form input · calculated on
+                approval
+              </div>
+            </div>
+            <div>
+              <div class="c-value" id="discount-display">—</div>
+            </div>
+          </div>
+
+          <div class="annotation">
+            <span class="ann-icon">i</span>
+            discount_amount is never entered by the user. It is computed
+            server-side on approval and written directly to dim_offers.
+          </div>
+
+          <!-- Optional fields -->
+          <div class="section-divider" style="margin-top: 20px">Optional</div>
+
+          <div class="form-grid two-col">
+            <div class="field">
+              <label
+                >Marketing spend <span class="opt-badge">optional</span></label
+              >
+              <div class="input-wrap">
+                <span class="prefix">€</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  class="with-prefix"
+                />
+              </div>
+              <span class="hint">Can be 0 or left blank</span>
+            </div>
+
+            <div class="field">
+              <label
+                >Notes
+                <span class="opt-badge">optional · max 500 chars</span></label
+              >
+              <textarea
+                id="notes-field"
+                placeholder="e.g. sourced from pricing sheet v3, approved by category manager…"
+                oninput="updateCharCount()"
+              ></textarea>
+              <div class="char-row"><span id="char-count">0</span>/500</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form actions -->
+        <div class="form-actions">
+          <span class="actions-left"
+            >Submitting sends values to dim_offers_staging for approval</span
+          >
+          <div class="actions-right">
+            <button type="button" class="danger-outline">Discard</button>
+            <button type="button">Save draft</button>
+            <button type="button" class="primary" onclick="handleSubmit()">
+              Submit for approval
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submission state (shown after submit) -->
+      <div id="submitted-state" style="display: none">
+        <div class="card">
+          <div class="card-body" style="text-align: center; padding: 2rem">
+            <div
+              style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: var(--success-bg);
+                border: 0.5px solid #9dd5b4;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 12px;
+                font-size: 18px;
+                color: var(--success);
+              "
+            >
+              ✓
+            </div>
+            <p style="font-size: 15px; font-weight: 500; margin-bottom: 4px">
+              Submitted for approval
+            </p>
+            <p style="font-size: 13px; color: var(--muted)">
+              ITM-4821 · Zinger Box Meal — pending review
+            </p>
+            <p style="font-size: 12px; color: var(--hint); margin-top: 12px">
+              The item has been removed from your open-gaps list and is now
+              awaiting approver action.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const SUBCATEGORY_MAP = {
+        DiscPercentage: ["Always On", "LTO"],
+        DiscValue: ["Always On", "LTO"],
+        BundleDisc: ["Always On", "LTO"],
+        CouponBased: ["Customer Coupons", "Loyalty", "Always On", "LTO"],
+        ONEPLUSX: ["Free", "x Amount", "% Disc", "Always On"],
+      };
+
+      function handleCategoryChange(val) {
+        const sub = document.getElementById("subcategory-select");
+        sub.innerHTML =
+          '<option value="" disabled selected>Select subcategory…</option>';
+        if (val && SUBCATEGORY_MAP[val]) {
+          SUBCATEGORY_MAP[val].forEach((opt) => {
+            const o = document.createElement("option");
+            o.value = opt;
+            o.textContent = opt;
+            sub.appendChild(o);
+          });
+          sub.disabled = false;
+        } else {
+          sub.disabled = true;
+        }
+      }
+
+      function updateDiscount() {
+        const ideal = parseFloat(document.getElementById("ideal-price").value);
+        const selling = parseFloat(
+          document.getElementById("selling-price").value,
+        );
+        const el = document.getElementById("discount-display");
+        const errI = document.getElementById("ideal-err");
+        const errS = document.getElementById("selling-err");
+        const iInput = document.getElementById("ideal-price");
+        const sInput = document.getElementById("selling-price");
+
+        errI.classList.remove("visible");
+        errS.classList.remove("visible");
+        iInput.classList.remove("error");
+        sInput.classList.remove("error");
+
+        if (!isNaN(ideal) && ideal <= 0) {
+          iInput.classList.add("error");
+          errI.classList.add("visible");
+          el.textContent = "—";
+          return;
+        }
+        if (!isNaN(ideal) && !isNaN(selling) && selling > ideal) {
+          sInput.classList.add("error");
+          errS.classList.add("visible");
+          el.textContent = "—";
+          return;
+        }
+        if (!isNaN(ideal) && !isNaN(selling)) {
+          const disc = (ideal - selling).toFixed(2);
+          el.textContent = "€" + disc;
+        } else {
+          el.textContent = "—";
+        }
+      }
+
+      function updateCharCount() {
+        const notes = document.getElementById("notes-field").value;
+        const counter = document.getElementById("char-count");
+        counter.textContent = notes.length;
+        counter.style.color =
+          notes.length > 480 ? "var(--danger)" : "var(--hint)";
+      }
+
+      function handleSubmit() {
+        const ideal = parseFloat(document.getElementById("ideal-price").value);
+        const fc = parseFloat(document.getElementById("fc-perc").value);
+        let valid = true;
+
+        if (!ideal || ideal <= 0) {
+          document.getElementById("ideal-price").classList.add("error");
+          document.getElementById("ideal-err").classList.add("visible");
+          valid = false;
+        }
+        if (!fc && fc !== 0) {
+          document.getElementById("fc-perc").classList.add("error");
+          document.getElementById("fc-err").classList.add("visible");
+          valid = false;
+        }
+        if (!valid) return;
+
+        document.querySelector(".card:last-of-type").style.display = "none";
+        document.getElementById("submitted-state").style.display = "block";
+      }
+    </script>
+  </body>
+</html>
