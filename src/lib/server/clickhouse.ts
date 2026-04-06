@@ -2,6 +2,7 @@ import { env } from "$env/dynamic/private";
 import { createClient, type ClickHouseClient } from "@clickhouse/client";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { createLazyProxy } from "./lazy-proxy";
 
 const globalForClickHouse = globalThis as typeof globalThis & {
   clickhouse?: ClickHouseClient;
@@ -118,17 +119,26 @@ function createClickHouseSingleton() {
   });
 }
 
-const clickHouseConfigKey = getClickHouseConfigKey(getClickHouseConfig());
+function getClickHouseClient() {
+  const clickHouseConfig = getClickHouseConfig();
+  const clickHouseConfigKey = getClickHouseConfigKey(clickHouseConfig);
 
-export const clickhouse =
-  globalForClickHouse.clickhouse &&
-  globalForClickHouse.clickhouseConfigKey === clickHouseConfigKey
-    ? globalForClickHouse.clickhouse
-    : createClickHouseSingleton();
+  if (
+    globalForClickHouse.clickhouse &&
+    globalForClickHouse.clickhouseConfigKey === clickHouseConfigKey
+  ) {
+    return globalForClickHouse.clickhouse;
+  }
 
-globalForClickHouse.clickhouse = clickhouse;
-globalForClickHouse.clickhouseConfigKey = clickHouseConfigKey;
+  const clickHouseClient = createClickHouseSingleton();
+  globalForClickHouse.clickhouse = clickHouseClient;
+  globalForClickHouse.clickhouseConfigKey = clickHouseConfigKey;
+
+  return clickHouseClient;
+}
+
+export const clickhouse = createLazyProxy(getClickHouseClient);
 
 export async function pingClickHouse() {
-  return clickhouse.ping();
+  return getClickHouseClient().ping();
 }

@@ -1,0 +1,13 @@
+node_modules
+.svelte-kit
+build
+.git
+.gitignore
+.env
+dev-err.txt
+dev-out.txt
+offers-console.txt
+offers-network.txt
+offers-after-fix-console.txt
+offers-after-fix-network.txt
+npm-debug.log*
