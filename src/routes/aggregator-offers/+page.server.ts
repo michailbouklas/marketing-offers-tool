@@ -20,9 +20,10 @@ import {
   mapOffersFilterFormToFilters,
   offersFilterFormSchema,
 } from "$lib/services/offers-filter-form";
+import { requireAuthenticatedUser } from "$lib/server/auth-guards";
 
 export const load: PageServerLoad = async (event) => {
-  await requireAdminUser(event);
+  requireAuthenticatedUser(event);
 
   const { url } = event;
   const filterValues = getOffersFilterFormData(url);

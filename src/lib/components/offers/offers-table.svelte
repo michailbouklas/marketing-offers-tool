@@ -11,6 +11,7 @@
   };
 
   let { offers, highlightedOfferId = null, onEdit }: Props = $props();
+  const canEdit = $derived(Boolean(onEdit));
 
   const dateFormatter = new Intl.DateTimeFormat("en-GB", {
     dateStyle: "medium",
@@ -69,7 +70,9 @@
       <Table.Head class="min-w-44">Ends</Table.Head>
       <Table.Head class="min-w-44">Created</Table.Head>
       <Table.Head class="min-w-44">Updated</Table.Head>
-      <Table.Head class="min-w-28 text-right">Actions</Table.Head>
+      {#if canEdit}
+        <Table.Head class="min-w-28 text-right">Actions</Table.Head>
+      {/if}
     </Table.Row>
   </Table.Header>
   <Table.Body>
@@ -120,17 +123,23 @@
           <Table.Cell>{formatDate(offer.ends_at)}</Table.Cell>
           <Table.Cell>{formatDate(offer.created_at)}</Table.Cell>
           <Table.Cell>{formatDate(offer.updated_at)}</Table.Cell>
-          <Table.Cell class="text-right">
-            <Button variant="outline" size="sm" onclick={() => onEdit?.(offer)}>
-              Edit
-            </Button>
-          </Table.Cell>
+          {#if canEdit}
+            <Table.Cell class="text-right">
+              <Button
+                variant="outline"
+                size="sm"
+                onclick={() => onEdit?.(offer)}
+              >
+                Edit
+              </Button>
+            </Table.Cell>
+          {/if}
         </Table.Row>
       {/each}
     {:else}
       <Table.Row>
         <Table.Cell
-          colspan={12}
+          colspan={canEdit ? 12 : 11}
           class="text-muted-foreground py-12 text-center text-sm"
         >
           No offers matched these filters. Adjust the sidebar criteria or clear

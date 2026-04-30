@@ -64,10 +64,5 @@ export function isPublicPath(pathname: string) {
 }
 
 export function isAdminPath(pathname: string) {
-  return (
-    pathname === "/aggregator-offers" ||
-    pathname.startsWith("/aggregator-offers/") ||
-    pathname === "/admin" ||
-    pathname.startsWith("/admin/")
-  );
+  return pathname === "/admin" || pathname.startsWith("/admin/");
 }

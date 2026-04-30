@@ -21,6 +21,7 @@
   let filtersOpen = $state(false);
   let selectedOffer = $state<AggregatorOffer | null>(null);
   let highlightedOfferId = $state<number | null>(null);
+  const canManageOffers = $derived(data.user?.role === "admin");
 
   const activeCount = $derived(
     data.offers.filter((offer) => offer.active).length,
@@ -163,55 +164,57 @@
                 </Dialog.Content>
               </Dialog.Root>
 
-              <Dialog.Root bind:open={createOfferOpen}>
-                <Dialog.Trigger class={buttonVariants()}>
-                  Create Offer
-                </Dialog.Trigger>
-                <Dialog.Content class="sm:max-w-3xl">
-                  <Dialog.Header>
-                    <Dialog.Title>Create Offer</Dialog.Title>
-                    <Dialog.Description>
-                      Add a new aggregator campaign and save it directly to the
-                      offers registry.
-                    </Dialog.Description>
-                  </Dialog.Header>
+              {#if canManageOffers}
+                <Dialog.Root bind:open={createOfferOpen}>
+                  <Dialog.Trigger class={buttonVariants()}>
+                    Create Offer
+                  </Dialog.Trigger>
+                  <Dialog.Content class="sm:max-w-3xl">
+                    <Dialog.Header>
+                      <Dialog.Title>Create Offer</Dialog.Title>
+                      <Dialog.Description>
+                        Add a new aggregator campaign and save it directly to
+                        the offers registry.
+                      </Dialog.Description>
+                    </Dialog.Header>
 
-                  <OfferEditorForm
-                    form={data.createForm}
-                    mode="create"
-                    brands={data.brands}
-                    onSuccess={(message) => {
-                      createOfferOpen = !!message.keepOpen;
-                      handleOfferSaved(message);
-                    }}
-                  />
-                </Dialog.Content>
-              </Dialog.Root>
+                    <OfferEditorForm
+                      form={data.createForm}
+                      mode="create"
+                      brands={data.brands}
+                      onSuccess={(message) => {
+                        createOfferOpen = !!message.keepOpen;
+                        handleOfferSaved(message);
+                      }}
+                    />
+                  </Dialog.Content>
+                </Dialog.Root>
 
-              <Dialog.Root bind:open={editOfferOpen}>
-                <Dialog.Content class="sm:max-w-3xl">
-                  <Dialog.Header>
-                    <Dialog.Title>Edit Offer</Dialog.Title>
-                    <Dialog.Description>
-                      Update the selected campaign details without leaving the
-                      offers workspace.
-                    </Dialog.Description>
-                  </Dialog.Header>
+                <Dialog.Root bind:open={editOfferOpen}>
+                  <Dialog.Content class="sm:max-w-3xl">
+                    <Dialog.Header>
+                      <Dialog.Title>Edit Offer</Dialog.Title>
+                      <Dialog.Description>
+                        Update the selected campaign details without leaving the
+                        offers workspace.
+                      </Dialog.Description>
+                    </Dialog.Header>
 
-                  <OfferEditorForm
-                    form={data.editForm}
-                    mode="edit"
-                    action="?/updateOffer"
-                    values={editValues}
-                    brands={data.brands}
-                    offerDbId={selectedOffer?.id ?? null}
-                    onSuccess={(message) => {
-                      editOfferOpen = false;
-                      handleOfferSaved(message);
-                    }}
-                  />
-                </Dialog.Content>
-              </Dialog.Root>
+                    <OfferEditorForm
+                      form={data.editForm}
+                      mode="edit"
+                      action="?/updateOffer"
+                      values={editValues}
+                      brands={data.brands}
+                      offerDbId={selectedOffer?.id ?? null}
+                      onSuccess={(message) => {
+                        editOfferOpen = false;
+                        handleOfferSaved(message);
+                      }}
+                    />
+                  </Dialog.Content>
+                </Dialog.Root>
+              {/if}
             </div>
           </div>
         </Card.Header>
@@ -219,7 +222,7 @@
           <OffersTable
             offers={data.offers}
             {highlightedOfferId}
-            onEdit={openEditOfferDialog}
+            onEdit={canManageOffers ? openEditOfferDialog : undefined}
           />
         </Card.Content>
       </Card.Root>
