@@ -14,7 +14,6 @@ import {
   mapOfferEditorFormToCreateInput,
   offerEditorFormSchema,
 } from "$lib/services/offer-editor-form";
-import { requireAdminUser } from "$lib/server/auth-guards";
 import {
   getOffersFilterFormData,
   mapOffersFilterFormToFilters,
@@ -62,7 +61,7 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
   createOffer: async (event) => {
-    await requireAdminUser(event);
+    requireAuthenticatedUser(event);
 
     const formData = await event.request.formData();
     const submitMode = formData.get("submitMode")?.toString() ?? "create";
@@ -86,7 +85,7 @@ export const actions: Actions = {
   },
 
   updateOffer: async (event) => {
-    await requireAdminUser(event);
+    requireAuthenticatedUser(event);
 
     const formData = await event.request.formData();
     const offerDbId = Number.parseInt(
