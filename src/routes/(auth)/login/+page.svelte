@@ -16,11 +16,15 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
+  import { getInsecurePasswordSubmissionMessage } from "$lib/services/transport-security";
 
   let { data } = $props();
 
   let isLoading = $state(false);
   let authError = $state("");
+  const insecurePasswordMessage = $derived(
+    getInsecurePasswordSubmissionMessage(),
+  );
 
   const { form, errors, constraints } = superForm(
     untrack(() => data.form),
@@ -32,6 +36,11 @@
 
   async function handleLogin(e: SubmitEvent) {
     e.preventDefault();
+
+    if (insecurePasswordMessage) {
+      authError = insecurePasswordMessage;
+      return;
+    }
 
     const parseResult = loginSchema.safeParse({
       email: $form.email,
@@ -102,6 +111,7 @@
           bind:value={$form.email}
           aria-invalid={!!$errors.email}
           {...$constraints.email}
+          pattern={undefined}
         />
         {#if $errors.email}
           <p class="text-destructive text-sm">{$errors.email}</p>
@@ -125,6 +135,14 @@
         {/if}
       </div>
 
+      {#if insecurePasswordMessage}
+        <div
+          class="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm"
+        >
+          {insecurePasswordMessage}
+        </div>
+      {/if}
+
       {#if authError}
         <div
           class="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-sm"
@@ -133,7 +151,11 @@
         </div>
       {/if}
 
-      <Button type="submit" class="w-full" disabled={isLoading}>
+      <Button
+        type="submit"
+        class="w-full"
+        disabled={isLoading || !!insecurePasswordMessage}
+      >
         {#if isLoading}
           <svg
             xmlns="http://www.w3.org/2000/svg"

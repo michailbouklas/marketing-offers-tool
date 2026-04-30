@@ -231,5 +231,6 @@ Before every new task, use the SymDex MCP server to reindex the project so the s
 - `src/routes/admin/dim-offers/+page.server.ts`: Server load for the admin-only `dim_offers` browser, including active brand filter options and paginated ClickHouse rows.
 - `src/lib/services/home-offer-widgets.ts`: Builds the home page dashboard widget data for active offers, offers expiring exactly two days out, and recently expired offers using Prisma queries and compact previews.
 - `src/lib/services/user-editor-form.ts`: Defines the Zod + superforms schemas and default value mappers for the admin users create/edit dialogs.
+- `src/lib/services/transport-security.ts`: Browser-safe helper for detecting insecure HTTP contexts and blocking password submissions unless the app is running on HTTPS or loopback localhost.
 - `src/lib/services/users.ts`: Shared admin users types for browser-safe imports, including the admin users table row shape.
 - `src/lib/services/users.server.ts`: Server-only user management helpers for listing users and delegating create/update/password changes to Better Auth admin APIs.

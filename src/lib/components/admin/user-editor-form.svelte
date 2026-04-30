@@ -8,6 +8,7 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
   import { formatBrandLabel, type BrandOption } from "$lib/services/brands";
+  import { getInsecurePasswordSubmissionMessage } from "$lib/services/transport-security";
   import {
     createUserFormSchema,
     editUserFormSchema,
@@ -97,13 +98,45 @@
   const editErrors = $derived(
     $errors as Partial<Record<keyof EditUserFormData, string[]>>,
   );
+  const insecurePasswordMessage = $derived.by(() => {
+    const isPasswordChange =
+      mode === "create" || $form.password.trim().length > 0;
+
+    if (!isPasswordChange) {
+      return null;
+    }
+
+    return getInsecurePasswordSubmissionMessage();
+  });
+
+  function handleSubmit(event: SubmitEvent) {
+    if (!insecurePasswordMessage) {
+      return;
+    }
+
+    event.preventDefault();
+  }
 </script>
 
-<form method="POST" {action} use:enhance class="space-y-5">
+<form
+  method="POST"
+  {action}
+  use:enhance
+  onsubmit={handleSubmit}
+  class="space-y-5"
+>
   <div class="space-y-1">
     <h3 class="text-lg font-semibold tracking-[-0.02em]">{title}</h3>
     <p class="text-muted-foreground text-sm leading-6">{description}</p>
   </div>
+
+  {#if insecurePasswordMessage}
+    <div
+      class="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border px-4 py-3 text-sm leading-6"
+    >
+      {insecurePasswordMessage}
+    </div>
+  {/if}
 
   <div class="grid gap-4 sm:grid-cols-2">
     <div class="space-y-2">
@@ -129,6 +162,7 @@
         bind:value={$form.email}
         aria-invalid={!!$errors.email}
         {...$constraints.email}
+        pattern={undefined}
       />
       {#if $errors.email}
         <p class="text-destructive text-sm">{$errors.email}</p>
@@ -216,7 +250,7 @@
   {/if}
 
   <div class="flex justify-end">
-    <Button type="submit" disabled={$submitting}>
+    <Button type="submit" disabled={$submitting || !!insecurePasswordMessage}>
       {$submitting ? "Saving..." : submitLabel}
     </Button>
   </div>
