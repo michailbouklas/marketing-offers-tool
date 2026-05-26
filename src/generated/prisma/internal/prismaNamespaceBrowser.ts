@@ -72,6 +72,8 @@ export const ModelName = {
   dim_offers_audit: "dim_offers_audit",
   subcategories: "subcategories",
   aggregator_offers: "aggregator_offers",
+  GeneratedImage: "GeneratedImage",
+  ReferenceImage: "ReferenceImage",
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -341,6 +343,43 @@ export const Aggregator_offersScalarFieldEnum = {
 
 export type Aggregator_offersScalarFieldEnum =
   (typeof Aggregator_offersScalarFieldEnum)[keyof typeof Aggregator_offersScalarFieldEnum];
+
+export const GeneratedImageScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  prompt: "prompt",
+  finalPrompt: "finalPrompt",
+  provider: "provider",
+  model: "model",
+  requestedWidth: "requestedWidth",
+  requestedHeight: "requestedHeight",
+  generationWidth: "generationWidth",
+  generationHeight: "generationHeight",
+  style: "style",
+  camera: "camera",
+  aspectRatio: "aspectRatio",
+  referenceIds: "referenceIds",
+  localPath: "localPath",
+  remoteUrl: "remoteUrl",
+  status: "status",
+  errorMessage: "errorMessage",
+  durationMs: "durationMs",
+  createdAt: "createdAt",
+} as const;
+
+export type GeneratedImageScalarFieldEnum =
+  (typeof GeneratedImageScalarFieldEnum)[keyof typeof GeneratedImageScalarFieldEnum];
+
+export const ReferenceImageScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  localPath: "localPath",
+  contentType: "contentType",
+  createdAt: "createdAt",
+} as const;
+
+export type ReferenceImageScalarFieldEnum =
+  (typeof ReferenceImageScalarFieldEnum)[keyof typeof ReferenceImageScalarFieldEnum];
 
 export const SortOrder = {
   asc: "asc",

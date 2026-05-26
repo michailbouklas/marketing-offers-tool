@@ -430,6 +430,8 @@ export const ModelName = {
   dim_offers_audit: "dim_offers_audit",
   subcategories: "subcategories",
   aggregator_offers: "aggregator_offers",
+  GeneratedImage: "GeneratedImage",
+  ReferenceImage: "ReferenceImage",
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -469,7 +471,9 @@ export type TypeMap<
       | "dim_offers_staging"
       | "dim_offers_audit"
       | "subcategories"
-      | "aggregator_offers";
+      | "aggregator_offers"
+      | "generatedImage"
+      | "referenceImage";
     txIsolationLevel: TransactionIsolationLevel;
   };
   model: {
@@ -1841,6 +1845,158 @@ export type TypeMap<
         };
       };
     };
+    GeneratedImage: {
+      payload: Prisma.$GeneratedImagePayload<ExtArgs>;
+      fields: Prisma.GeneratedImageFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.GeneratedImageFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedImagePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.GeneratedImageFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedImagePayload>;
+        };
+        findFirst: {
+          args: Prisma.GeneratedImageFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedImagePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.GeneratedImageFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedImagePayload>;
+        };
+        findMany: {
+          args: Prisma.GeneratedImageFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedImagePayload>[];
+        };
+        create: {
+          args: Prisma.GeneratedImageCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedImagePayload>;
+        };
+        createMany: {
+          args: Prisma.GeneratedImageCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.GeneratedImageCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedImagePayload>[];
+        };
+        delete: {
+          args: Prisma.GeneratedImageDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedImagePayload>;
+        };
+        update: {
+          args: Prisma.GeneratedImageUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedImagePayload>;
+        };
+        deleteMany: {
+          args: Prisma.GeneratedImageDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.GeneratedImageUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.GeneratedImageUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedImagePayload>[];
+        };
+        upsert: {
+          args: Prisma.GeneratedImageUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedImagePayload>;
+        };
+        aggregate: {
+          args: Prisma.GeneratedImageAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGeneratedImage>;
+        };
+        groupBy: {
+          args: Prisma.GeneratedImageGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.GeneratedImageGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.GeneratedImageCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.GeneratedImageCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    ReferenceImage: {
+      payload: Prisma.$ReferenceImagePayload<ExtArgs>;
+      fields: Prisma.ReferenceImageFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ReferenceImageFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferenceImagePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ReferenceImageFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferenceImagePayload>;
+        };
+        findFirst: {
+          args: Prisma.ReferenceImageFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferenceImagePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ReferenceImageFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferenceImagePayload>;
+        };
+        findMany: {
+          args: Prisma.ReferenceImageFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferenceImagePayload>[];
+        };
+        create: {
+          args: Prisma.ReferenceImageCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferenceImagePayload>;
+        };
+        createMany: {
+          args: Prisma.ReferenceImageCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ReferenceImageCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferenceImagePayload>[];
+        };
+        delete: {
+          args: Prisma.ReferenceImageDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferenceImagePayload>;
+        };
+        update: {
+          args: Prisma.ReferenceImageUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferenceImagePayload>;
+        };
+        deleteMany: {
+          args: Prisma.ReferenceImageDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ReferenceImageUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ReferenceImageUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferenceImagePayload>[];
+        };
+        upsert: {
+          args: Prisma.ReferenceImageUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReferenceImagePayload>;
+        };
+        aggregate: {
+          args: Prisma.ReferenceImageAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReferenceImage>;
+        };
+        groupBy: {
+          args: Prisma.ReferenceImageGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ReferenceImageGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ReferenceImageCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ReferenceImageCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
   };
 } & {
   other: {
@@ -2132,6 +2288,43 @@ export const Aggregator_offersScalarFieldEnum = {
 export type Aggregator_offersScalarFieldEnum =
   (typeof Aggregator_offersScalarFieldEnum)[keyof typeof Aggregator_offersScalarFieldEnum];
 
+export const GeneratedImageScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  prompt: "prompt",
+  finalPrompt: "finalPrompt",
+  provider: "provider",
+  model: "model",
+  requestedWidth: "requestedWidth",
+  requestedHeight: "requestedHeight",
+  generationWidth: "generationWidth",
+  generationHeight: "generationHeight",
+  style: "style",
+  camera: "camera",
+  aspectRatio: "aspectRatio",
+  referenceIds: "referenceIds",
+  localPath: "localPath",
+  remoteUrl: "remoteUrl",
+  status: "status",
+  errorMessage: "errorMessage",
+  durationMs: "durationMs",
+  createdAt: "createdAt",
+} as const;
+
+export type GeneratedImageScalarFieldEnum =
+  (typeof GeneratedImageScalarFieldEnum)[keyof typeof GeneratedImageScalarFieldEnum];
+
+export const ReferenceImageScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  localPath: "localPath",
+  contentType: "contentType",
+  createdAt: "createdAt",
+} as const;
+
+export type ReferenceImageScalarFieldEnum =
+  (typeof ReferenceImageScalarFieldEnum)[keyof typeof ReferenceImageScalarFieldEnum];
+
 export const SortOrder = {
   asc: "asc",
   desc: "desc",
@@ -2338,6 +2531,18 @@ export type ListEnumAggregatorFieldRefInput<$PrismaModel> = FieldRefInputType<
 >;
 
 /**
+ * Reference to a field of type 'GeneratedImageStatus'
+ */
+export type EnumGeneratedImageStatusFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "GeneratedImageStatus">;
+
+/**
+ * Reference to a field of type 'GeneratedImageStatus[]'
+ */
+export type ListEnumGeneratedImageStatusFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "GeneratedImageStatus[]">;
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -2474,6 +2679,8 @@ export type GlobalOmitConfig = {
   dim_offers_audit?: Prisma.dim_offers_auditOmit;
   subcategories?: Prisma.subcategoriesOmit;
   aggregator_offers?: Prisma.aggregator_offersOmit;
+  generatedImage?: Prisma.GeneratedImageOmit;
+  referenceImage?: Prisma.ReferenceImageOmit;
 };
 
 /* Types for Logging */

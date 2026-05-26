@@ -1,0 +1,41 @@
+# Harness v4 Configuration
+# Edit this file, then run `harness sync` to generate CC plugin files.
+
+[project]
+name = "marketing-offers-tool"
+version = "0.1.0"
+description = "SvelteKit tool for marketing teams to manage aggregator offers (Wolt, Bolt) and track offer performance."
+
+[agent]
+# default = "security-reviewer"
+
+[env]
+# CLAUDE_CODE_SUBPROCESS_ENV_SCRUB = "1"
+
+[safety.permissions]
+deny = [
+  "Bash(sudo:*)",
+]
+ask = [
+  "Bash(rm -r:*)",
+  "Bash(git push --force:*)",
+]
+
+# Optional R03 break-glass. TOML only; YAML does not support this list.
+# [[safety.guardrail.protectedPathAskList]]
+# path = ".env"
+# reason = "customer deploy env update"
+
+# Allow edits to .env.example (template file with no secrets) — used for
+# documenting required env vars during feature development.
+[[safety.guardrail.protectedPathAskList]]
+path = ".env.example"
+reason = "env template documentation (no secrets)"
+
+[safety.sandbox]
+failIfUnavailable = false
+
+[safety.sandbox.filesystem]
+# denyRead = [".env", "secrets/**"]
+# allowRead = [".env.example"]
+

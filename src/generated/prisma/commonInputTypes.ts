@@ -815,6 +815,40 @@ export type EnumAggregatorWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumAggregatorFilter<$PrismaModel>;
 };
 
+export type EnumGeneratedImageStatusFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.GeneratedImageStatus
+    | Prisma.EnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.GeneratedImageStatus[]
+    | Prisma.ListEnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.GeneratedImageStatus[]
+    | Prisma.ListEnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumGeneratedImageStatusFilter<$PrismaModel>
+    | $Enums.GeneratedImageStatus;
+};
+
+export type EnumGeneratedImageStatusWithAggregatesFilter<$PrismaModel = never> =
+  {
+    equals?:
+      | $Enums.GeneratedImageStatus
+      | Prisma.EnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+    in?:
+      | $Enums.GeneratedImageStatus[]
+      | Prisma.ListEnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+    notIn?:
+      | $Enums.GeneratedImageStatus[]
+      | Prisma.ListEnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+    not?:
+      | Prisma.NestedEnumGeneratedImageStatusWithAggregatesFilter<$PrismaModel>
+      | $Enums.GeneratedImageStatus;
+    _count?: Prisma.NestedIntFilter<$PrismaModel>;
+    _min?: Prisma.NestedEnumGeneratedImageStatusFilter<$PrismaModel>;
+    _max?: Prisma.NestedEnumGeneratedImageStatusFilter<$PrismaModel>;
+  };
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>;
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
@@ -1536,4 +1570,39 @@ export type NestedEnumAggregatorWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumAggregatorFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumAggregatorFilter<$PrismaModel>;
+};
+
+export type NestedEnumGeneratedImageStatusFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.GeneratedImageStatus
+    | Prisma.EnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.GeneratedImageStatus[]
+    | Prisma.ListEnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.GeneratedImageStatus[]
+    | Prisma.ListEnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumGeneratedImageStatusFilter<$PrismaModel>
+    | $Enums.GeneratedImageStatus;
+};
+
+export type NestedEnumGeneratedImageStatusWithAggregatesFilter<
+  $PrismaModel = never,
+> = {
+  equals?:
+    | $Enums.GeneratedImageStatus
+    | Prisma.EnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.GeneratedImageStatus[]
+    | Prisma.ListEnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.GeneratedImageStatus[]
+    | Prisma.ListEnumGeneratedImageStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumGeneratedImageStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.GeneratedImageStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumGeneratedImageStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumGeneratedImageStatusFilter<$PrismaModel>;
 };

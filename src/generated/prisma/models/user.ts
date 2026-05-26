@@ -237,6 +237,8 @@ export type userWhereInput = {
   accounts?: Prisma.AccountListRelationFilter;
   brand_assignments?: Prisma.User_brandListRelationFilter;
   dim_offers_audits?: Prisma.Dim_offers_auditListRelationFilter;
+  generated_images?: Prisma.GeneratedImageListRelationFilter;
+  reference_images?: Prisma.ReferenceImageListRelationFilter;
 };
 
 export type userOrderByWithRelationInput = {
@@ -255,6 +257,8 @@ export type userOrderByWithRelationInput = {
   accounts?: Prisma.accountOrderByRelationAggregateInput;
   brand_assignments?: Prisma.user_brandOrderByRelationAggregateInput;
   dim_offers_audits?: Prisma.dim_offers_auditOrderByRelationAggregateInput;
+  generated_images?: Prisma.GeneratedImageOrderByRelationAggregateInput;
+  reference_images?: Prisma.ReferenceImageOrderByRelationAggregateInput;
 };
 
 export type userWhereUniqueInput = Prisma.AtLeast<
@@ -277,6 +281,8 @@ export type userWhereUniqueInput = Prisma.AtLeast<
     accounts?: Prisma.AccountListRelationFilter;
     brand_assignments?: Prisma.User_brandListRelationFilter;
     dim_offers_audits?: Prisma.Dim_offers_auditListRelationFilter;
+    generated_images?: Prisma.GeneratedImageListRelationFilter;
+    reference_images?: Prisma.ReferenceImageListRelationFilter;
   },
   "id" | "email"
 >;
@@ -339,6 +345,8 @@ export type userCreateInput = {
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput;
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput;
   dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateInput = {
@@ -357,6 +365,8 @@ export type userUncheckedCreateInput = {
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput;
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput;
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userUpdateInput = {
@@ -379,6 +389,8 @@ export type userUpdateInput = {
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput;
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput;
   dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateInput = {
@@ -401,6 +413,8 @@ export type userUncheckedUpdateInput = {
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput;
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput;
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateManyInput = {
@@ -615,6 +629,58 @@ export type userUpdateOneWithoutDim_offers_auditsNestedInput = {
   >;
 };
 
+export type userCreateNestedOneWithoutGenerated_imagesInput = {
+  create?: Prisma.XOR<
+    Prisma.userCreateWithoutGenerated_imagesInput,
+    Prisma.userUncheckedCreateWithoutGenerated_imagesInput
+  >;
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutGenerated_imagesInput;
+  connect?: Prisma.userWhereUniqueInput;
+};
+
+export type userUpdateOneRequiredWithoutGenerated_imagesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.userCreateWithoutGenerated_imagesInput,
+    Prisma.userUncheckedCreateWithoutGenerated_imagesInput
+  >;
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutGenerated_imagesInput;
+  upsert?: Prisma.userUpsertWithoutGenerated_imagesInput;
+  connect?: Prisma.userWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.userUpdateToOneWithWhereWithoutGenerated_imagesInput,
+      Prisma.userUpdateWithoutGenerated_imagesInput
+    >,
+    Prisma.userUncheckedUpdateWithoutGenerated_imagesInput
+  >;
+};
+
+export type userCreateNestedOneWithoutReference_imagesInput = {
+  create?: Prisma.XOR<
+    Prisma.userCreateWithoutReference_imagesInput,
+    Prisma.userUncheckedCreateWithoutReference_imagesInput
+  >;
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutReference_imagesInput;
+  connect?: Prisma.userWhereUniqueInput;
+};
+
+export type userUpdateOneRequiredWithoutReference_imagesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.userCreateWithoutReference_imagesInput,
+    Prisma.userUncheckedCreateWithoutReference_imagesInput
+  >;
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutReference_imagesInput;
+  upsert?: Prisma.userUpsertWithoutReference_imagesInput;
+  connect?: Prisma.userWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.userUpdateToOneWithWhereWithoutReference_imagesInput,
+      Prisma.userUpdateWithoutReference_imagesInput
+    >,
+    Prisma.userUncheckedUpdateWithoutReference_imagesInput
+  >;
+};
+
 export type userCreateWithoutBrand_assignmentsInput = {
   id: string;
   name: string;
@@ -630,6 +696,8 @@ export type userCreateWithoutBrand_assignmentsInput = {
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput;
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput;
   dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutBrand_assignmentsInput = {
@@ -647,6 +715,8 @@ export type userUncheckedCreateWithoutBrand_assignmentsInput = {
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput;
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput;
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutBrand_assignmentsInput = {
@@ -696,6 +766,8 @@ export type userUpdateWithoutBrand_assignmentsInput = {
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput;
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput;
   dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutBrand_assignmentsInput = {
@@ -717,6 +789,8 @@ export type userUncheckedUpdateWithoutBrand_assignmentsInput = {
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput;
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput;
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutSessionsInput = {
@@ -734,6 +808,8 @@ export type userCreateWithoutSessionsInput = {
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput;
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput;
   dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutSessionsInput = {
@@ -751,6 +827,8 @@ export type userUncheckedCreateWithoutSessionsInput = {
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput;
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput;
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutSessionsInput = {
@@ -800,6 +878,8 @@ export type userUpdateWithoutSessionsInput = {
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput;
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput;
   dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutSessionsInput = {
@@ -821,6 +901,8 @@ export type userUncheckedUpdateWithoutSessionsInput = {
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput;
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput;
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutAccountsInput = {
@@ -838,6 +920,8 @@ export type userCreateWithoutAccountsInput = {
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput;
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput;
   dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutAccountsInput = {
@@ -855,6 +939,8 @@ export type userUncheckedCreateWithoutAccountsInput = {
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput;
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput;
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutAccountsInput = {
@@ -904,6 +990,8 @@ export type userUpdateWithoutAccountsInput = {
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput;
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput;
   dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutAccountsInput = {
@@ -925,6 +1013,8 @@ export type userUncheckedUpdateWithoutAccountsInput = {
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput;
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput;
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutDim_offers_auditsInput = {
@@ -942,6 +1032,8 @@ export type userCreateWithoutDim_offers_auditsInput = {
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput;
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput;
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutDim_offers_auditsInput = {
@@ -959,6 +1051,8 @@ export type userUncheckedCreateWithoutDim_offers_auditsInput = {
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput;
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput;
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutDim_offers_auditsInput = {
@@ -1008,6 +1102,8 @@ export type userUpdateWithoutDim_offers_auditsInput = {
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput;
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput;
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutDim_offers_auditsInput = {
@@ -1029,6 +1125,232 @@ export type userUncheckedUpdateWithoutDim_offers_auditsInput = {
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput;
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput;
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput;
+};
+
+export type userCreateWithoutGenerated_imagesInput = {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string | null;
+  role?: string | null;
+  banned?: boolean | null;
+  banReason?: string | null;
+  banExpires?: Date | string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  sessions?: Prisma.sessionCreateNestedManyWithoutUserInput;
+  accounts?: Prisma.accountCreateNestedManyWithoutUserInput;
+  brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput;
+  dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput;
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput;
+};
+
+export type userUncheckedCreateWithoutGenerated_imagesInput = {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string | null;
+  role?: string | null;
+  banned?: boolean | null;
+  banReason?: string | null;
+  banExpires?: Date | string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput;
+  accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput;
+  brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput;
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput;
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput;
+};
+
+export type userCreateOrConnectWithoutGenerated_imagesInput = {
+  where: Prisma.userWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.userCreateWithoutGenerated_imagesInput,
+    Prisma.userUncheckedCreateWithoutGenerated_imagesInput
+  >;
+};
+
+export type userUpsertWithoutGenerated_imagesInput = {
+  update: Prisma.XOR<
+    Prisma.userUpdateWithoutGenerated_imagesInput,
+    Prisma.userUncheckedUpdateWithoutGenerated_imagesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.userCreateWithoutGenerated_imagesInput,
+    Prisma.userUncheckedCreateWithoutGenerated_imagesInput
+  >;
+  where?: Prisma.userWhereInput;
+};
+
+export type userUpdateToOneWithWhereWithoutGenerated_imagesInput = {
+  where?: Prisma.userWhereInput;
+  data: Prisma.XOR<
+    Prisma.userUpdateWithoutGenerated_imagesInput,
+    Prisma.userUncheckedUpdateWithoutGenerated_imagesInput
+  >;
+};
+
+export type userUpdateWithoutGenerated_imagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banExpires?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput;
+  accounts?: Prisma.accountUpdateManyWithoutUserNestedInput;
+  brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput;
+  dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput;
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput;
+};
+
+export type userUncheckedUpdateWithoutGenerated_imagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banExpires?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput;
+  accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput;
+  brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput;
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput;
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput;
+};
+
+export type userCreateWithoutReference_imagesInput = {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string | null;
+  role?: string | null;
+  banned?: boolean | null;
+  banReason?: string | null;
+  banExpires?: Date | string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  sessions?: Prisma.sessionCreateNestedManyWithoutUserInput;
+  accounts?: Prisma.accountCreateNestedManyWithoutUserInput;
+  brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput;
+  dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput;
+};
+
+export type userUncheckedCreateWithoutReference_imagesInput = {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string | null;
+  role?: string | null;
+  banned?: boolean | null;
+  banReason?: string | null;
+  banExpires?: Date | string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput;
+  accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput;
+  brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput;
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput;
+};
+
+export type userCreateOrConnectWithoutReference_imagesInput = {
+  where: Prisma.userWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.userCreateWithoutReference_imagesInput,
+    Prisma.userUncheckedCreateWithoutReference_imagesInput
+  >;
+};
+
+export type userUpsertWithoutReference_imagesInput = {
+  update: Prisma.XOR<
+    Prisma.userUpdateWithoutReference_imagesInput,
+    Prisma.userUncheckedUpdateWithoutReference_imagesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.userCreateWithoutReference_imagesInput,
+    Prisma.userUncheckedCreateWithoutReference_imagesInput
+  >;
+  where?: Prisma.userWhereInput;
+};
+
+export type userUpdateToOneWithWhereWithoutReference_imagesInput = {
+  where?: Prisma.userWhereInput;
+  data: Prisma.XOR<
+    Prisma.userUpdateWithoutReference_imagesInput,
+    Prisma.userUncheckedUpdateWithoutReference_imagesInput
+  >;
+};
+
+export type userUpdateWithoutReference_imagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banExpires?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput;
+  accounts?: Prisma.accountUpdateManyWithoutUserNestedInput;
+  brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput;
+  dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput;
+};
+
+export type userUncheckedUpdateWithoutReference_imagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banExpires?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput;
+  accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput;
+  brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput;
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 /**
@@ -1040,6 +1362,8 @@ export type UserCountOutputType = {
   accounts: number;
   brand_assignments: number;
   dim_offers_audits: number;
+  generated_images: number;
+  reference_images: number;
 };
 
 export type UserCountOutputTypeSelect<
@@ -1050,6 +1374,8 @@ export type UserCountOutputTypeSelect<
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs;
   brand_assignments?: boolean | UserCountOutputTypeCountBrand_assignmentsArgs;
   dim_offers_audits?: boolean | UserCountOutputTypeCountDim_offers_auditsArgs;
+  generated_images?: boolean | UserCountOutputTypeCountGenerated_imagesArgs;
+  reference_images?: boolean | UserCountOutputTypeCountReference_imagesArgs;
 };
 
 /**
@@ -1105,6 +1431,26 @@ export type UserCountOutputTypeCountDim_offers_auditsArgs<
   where?: Prisma.dim_offers_auditWhereInput;
 };
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountGenerated_imagesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.GeneratedImageWhereInput;
+};
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountReference_imagesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.ReferenceImageWhereInput;
+};
+
 export type userSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
@@ -1125,6 +1471,8 @@ export type userSelect<
     accounts?: boolean | Prisma.user$accountsArgs<ExtArgs>;
     brand_assignments?: boolean | Prisma.user$brand_assignmentsArgs<ExtArgs>;
     dim_offers_audits?: boolean | Prisma.user$dim_offers_auditsArgs<ExtArgs>;
+    generated_images?: boolean | Prisma.user$generated_imagesArgs<ExtArgs>;
+    reference_images?: boolean | Prisma.user$reference_imagesArgs<ExtArgs>;
     _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["user"]
@@ -1209,6 +1557,8 @@ export type userInclude<
   accounts?: boolean | Prisma.user$accountsArgs<ExtArgs>;
   brand_assignments?: boolean | Prisma.user$brand_assignmentsArgs<ExtArgs>;
   dim_offers_audits?: boolean | Prisma.user$dim_offers_auditsArgs<ExtArgs>;
+  generated_images?: boolean | Prisma.user$generated_imagesArgs<ExtArgs>;
+  reference_images?: boolean | Prisma.user$reference_imagesArgs<ExtArgs>;
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type userIncludeCreateManyAndReturn<
@@ -1230,6 +1580,8 @@ export type $userPayload<
     accounts: Prisma.$accountPayload<ExtArgs>[];
     brand_assignments: Prisma.$user_brandPayload<ExtArgs>[];
     dim_offers_audits: Prisma.$dim_offers_auditPayload<ExtArgs>[];
+    generated_images: Prisma.$GeneratedImagePayload<ExtArgs>[];
+    reference_images: Prisma.$ReferenceImagePayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1832,6 +2184,28 @@ export interface Prisma__userClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$dim_offers_auditPayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  generated_images<T extends Prisma.user$generated_imagesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.user$generated_imagesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$GeneratedImagePayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  reference_images<T extends Prisma.user$reference_imagesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.user$reference_imagesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$ReferenceImagePayload<ExtArgs>,
         T,
         "findMany",
         GlobalOmitOptions
@@ -2449,6 +2823,68 @@ export type user$dim_offers_auditsArgs<
   distinct?:
     | Prisma.Dim_offers_auditScalarFieldEnum
     | Prisma.Dim_offers_auditScalarFieldEnum[];
+};
+
+/**
+ * user.generated_images
+ */
+export type user$generated_imagesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the GeneratedImage
+   */
+  select?: Prisma.GeneratedImageSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the GeneratedImage
+   */
+  omit?: Prisma.GeneratedImageOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GeneratedImageInclude<ExtArgs> | null;
+  where?: Prisma.GeneratedImageWhereInput;
+  orderBy?:
+    | Prisma.GeneratedImageOrderByWithRelationInput
+    | Prisma.GeneratedImageOrderByWithRelationInput[];
+  cursor?: Prisma.GeneratedImageWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.GeneratedImageScalarFieldEnum
+    | Prisma.GeneratedImageScalarFieldEnum[];
+};
+
+/**
+ * user.reference_images
+ */
+export type user$reference_imagesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ReferenceImage
+   */
+  select?: Prisma.ReferenceImageSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the ReferenceImage
+   */
+  omit?: Prisma.ReferenceImageOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReferenceImageInclude<ExtArgs> | null;
+  where?: Prisma.ReferenceImageWhereInput;
+  orderBy?:
+    | Prisma.ReferenceImageOrderByWithRelationInput
+    | Prisma.ReferenceImageOrderByWithRelationInput[];
+  cursor?: Prisma.ReferenceImageWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.ReferenceImageScalarFieldEnum
+    | Prisma.ReferenceImageScalarFieldEnum[];
 };
 
 /**

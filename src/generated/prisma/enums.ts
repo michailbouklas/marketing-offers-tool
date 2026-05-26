@@ -48,3 +48,12 @@ export const DimOffersAuditSource = {
 
 export type DimOffersAuditSource =
   (typeof DimOffersAuditSource)[keyof typeof DimOffersAuditSource];
+
+export const GeneratedImageStatus = {
+  pending: "pending",
+  completed: "completed",
+  failed: "failed",
+} as const;
+
+export type GeneratedImageStatus =
+  (typeof GeneratedImageStatus)[keyof typeof GeneratedImageStatus];

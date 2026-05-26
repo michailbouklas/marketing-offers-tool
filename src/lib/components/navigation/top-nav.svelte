@@ -9,6 +9,7 @@
     { href: "/", label: "Home" },
     { href: "/aggregator-offers", label: "Aggregator Offers" },
     { href: "/offers-data-quality", label: "Data Quality" },
+    { href: "/image-generator", label: "Image Generator" },
     ...(user?.role === "admin"
       ? [
           { href: "/admin/pending-submissions", label: "Pending submissions" },
@@ -40,11 +41,11 @@
         <div
           class="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-2xl text-sm font-semibold tracking-[0.16em] uppercase shadow-sm"
         >
-          MOT
+          MT
         </div>
         <div class="space-y-0.5">
           <p class="text-sm font-semibold tracking-[-0.02em]">
-            Marketing Offers Tool
+            Marketing Tools
           </p>
           <p class="text-muted-foreground text-xs">
             Internal operations workspace

@@ -1,0 +1,7 @@
+{
+  "timestamp": "2026-05-26T10:15:29Z",
+  "changed_file": "src/routes/image-generator/composer-types.ts",
+  "test_command": "npx vitest run --reporter=verbose",
+  "related_test": "",
+  "recommendation": "テストの実行を推奨します"
+}

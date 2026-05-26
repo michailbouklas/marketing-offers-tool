@@ -117,19 +117,21 @@ model user {
   accounts          account[]
   brand_assignments user_brand[]
   dim_offers_audits dim_offers_audit[] @relation("DimOffersAuditActor")
+  generated_images  GeneratedImage[]
+  reference_images  ReferenceImage[]
 }
 
 model session {
-  id        String   @id
-  expiresAt DateTime
-  token     String   @unique
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
+  id             String   @id
+  expiresAt      DateTime
+  token          String   @unique
+  createdAt      DateTime
+  updatedAt      DateTime
+  ipAddress      String?
+  userAgent      String?
   impersonatedBy String?
-  userId    String
-  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  user           user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model account {
@@ -212,19 +214,19 @@ model dim_offers_staging {
 }
 
 model dim_offers_audit {
-  id             Int                  @id @default(autoincrement())
-  item_code      String               @db.VarChar
+  id             Int                        @id @default(autoincrement())
+  item_code      String                     @db.VarChar
   action         DimOffersAuditAction
-  source         DimOffersAuditSource @default(gap_approval)
-  changed_by     String               @db.VarChar
-  changed_at     DateTime             @default(now())
+  source         DimOffersAuditSource       @default(gap_approval)
+  changed_by     String                     @db.VarChar
+  changed_at     DateTime                   @default(now())
   staging_id     Int?
   dq_id          Int?
   before_values  Json?
   after_values   Json
   changed_fields String[]
-  actor          user?                @relation("DimOffersAuditActor", fields: [changed_by], references: [id], onDelete: Restrict)
-  staging_record dim_offers_staging?  @relation(fields: [staging_id], references: [id], onDelete: SetNull)
+  actor          user?                      @relation("DimOffersAuditActor", fields: [changed_by], references: [id], onDelete: Restrict)
+  staging_record dim_offers_staging?        @relation(fields: [staging_id], references: [id], onDelete: SetNull)
   gap_record     dq_missing_offers_pricing? @relation(fields: [dq_id], references: [dq_id], onDelete: SetNull)
 
   @@index([item_code])
@@ -286,4 +288,107 @@ model aggregator_offers {
   updated_at DateTime   @updatedAt
 
   @@index([brand_id])
+}
+
+model GeneratedImage {
+  id               String               @id @default(cuid())
+  userId           String
+  user             user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompt           String               @db.Text
+  finalPrompt      String               @db.Text
+  provider         String
+  model            String?
+  requestedWidth   Int
+  requestedHeight  Int
+  generationWidth  Int
+  generationHeight Int
+  style            String?
+  camera           String?
+  aspectRatio      String?
+  referenceIds     Json
+  localPath        String?
+  remoteUrl        String?              @db.Text
+  status           GeneratedImageStatus
+  errorMessage     String?              @db.Text
+  durationMs       Int?
+  createdAt        DateTime             @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model ReferenceImage {
+  id          String   @id @default(cuid())
+  userId      String
+  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  localPath   String
+  contentType String
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+enum GeneratedImageStatus {
+  pending
+  completed
+  failed
+}
+
+model api_BOLT_header {
+  id               Int              @default(autoincrement())
+  documentid       String           @id(map: "PK_api_BOLT_header") @db.VarChar(100)
+  documentdate     DateTime?        @db.Timestamp(6)
+  invoicenumber    String?          @db.VarChar(254)
+  timeframe        String?          @db.VarChar(100)
+  scenario         Int              @default(1)
+  je1_date         DateTime?        @db.Timestamp(6)
+  je2_date         DateTime?        @db.Timestamp(6)
+  bpcode           String?          @db.VarChar(50)
+  bpname           String?          @db.VarChar(150)
+  bolt_storename   String?          @db.VarChar(150)
+  distributionrule String?          @db.VarChar(50)
+  project          String?          @db.VarChar(50)
+  erpdatabase      String?          @db.VarChar(100)
+  totalpayout      Decimal?         @db.Decimal(19, 6)
+  createdat        DateTime?        @default(now()) @db.Timestamp(6)
+  erpsent          String?          @default("N") @db.VarChar
+  erpcreatedat     DateTime?        @db.Timestamp(6)
+  erpcomments      String?          @db.VarChar(254)
+  api_BOLT_lines   api_BOLT_lines[]
+}
+
+model api_BOLT_lines {
+  documentid      String          @db.VarChar(50)
+  linenumber      Int
+  je_number       Int             @default(1)
+  transtype       String?         @db.VarChar(20)
+  linedetails     String?         @db.VarChar(1000)
+  amount          Decimal?        @db.Decimal(19, 6)
+  vatamount       Decimal?        @db.Decimal(19, 6)
+  totalamount     Decimal?        @db.Decimal(19, 6)
+  accountcode     String?         @db.VarChar(50)
+  vatcode         String?         @db.VarChar(20)
+  api_BOLT_header api_BOLT_header @relation(fields: [documentid], references: [documentid], onDelete: Cascade)
+
+  @@id([documentid, je_number, linenumber], map: "PK_api_BOLT_lines")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model bolt_company_mappings {
+  invoice_store_name String?
+  bp_code            Float?
+  bp_name            String?
+  distribution_rule  String?
+  cost_center        String?
+  erpdatabase        String?
+
+  @@ignore
+}
+
+model bolt_regex_patters {
+  id          Int     @id @default(autoincrement())
+  regex       String
+  example     String?
+  category    String
+  accountcode Int?
+  vatcode     String?
 }

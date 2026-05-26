@@ -1,4 +1,4 @@
-import { redirect } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 import { isAdminRole } from "$lib/auth/roles";
 import { prisma } from "$lib/server/prisma";
 import type { RequestEvent } from "@sveltejs/kit";
@@ -6,6 +6,17 @@ import type { RequestEvent } from "@sveltejs/kit";
 export function requireAuthenticatedUser(event: RequestEvent) {
   if (!event.locals.session) {
     redirect(302, "/login");
+  }
+
+  return {
+    session: event.locals.session,
+    user: event.locals.user,
+  };
+}
+
+export function requireAuthenticatedApiUser(event: RequestEvent) {
+  if (!event.locals.session || !event.locals.user) {
+    error(401, "Unauthorized");
   }
 
   return {
@@ -61,6 +72,10 @@ export async function getAuthenticatedUserRole(event: RequestEvent) {
 
 export function isPublicPath(pathname: string) {
   return pathname === "/login" || pathname.startsWith("/api/auth");
+}
+
+export function isApiPath(pathname: string) {
+  return pathname === "/api" || pathname.startsWith("/api/");
 }
 
 export function isAdminPath(pathname: string) {

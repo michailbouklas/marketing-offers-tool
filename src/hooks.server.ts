@@ -3,6 +3,7 @@ import { isAdminRole } from "$lib/auth/roles";
 import {
   getAuthenticatedUserRole,
   isAdminPath,
+  isApiPath,
   isPublicPath,
 } from "$lib/server/auth-guards";
 import { svelteKitHandler } from "better-auth/svelte-kit";
@@ -25,7 +26,11 @@ const sessionHandle: Handle = async ({ event, resolve }) => {
 
   const { pathname } = event.url;
 
-  if (!event.locals.session && !isPublicPath(pathname)) {
+  if (
+    !event.locals.session &&
+    !isPublicPath(pathname) &&
+    !isApiPath(pathname)
+  ) {
     redirect(302, "/login");
   }
 

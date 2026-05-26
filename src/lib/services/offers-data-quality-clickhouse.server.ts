@@ -69,7 +69,34 @@ export type MissingOfferQueueRow = {
 const DEFAULT_LOOKBACK_DAYS = 90;
 const DEFAULT_MISSING_OFFERS_SINCE = "2024-01-01";
 const OFFER_ITEM_CATEGORIES = [
-'Amount Of Money Offers','Bolt Offers PH','Call Center Offers','Call Center Offers KFC','FOODY Offers PH','FOODY RMS','FOODY RMS ALL BRANDS','Offers','Offers BK','Offers HOBO','Offers JMO','Offers KFC','Offers KYP','Offers NER','Offers PAT','Offers PAU','Offers PDE','Offers TAV','Offers VER','Online Offers','Online\\CK Offers','Pair Offers','PH Offers','Single Item Offers','Taco Bell Offers','Up Selling Offers','Wolt Offers','Wolt Offers WAG' 
+  "Amount Of Money Offers",
+  "Bolt Offers PH",
+  "Call Center Offers",
+  "Call Center Offers KFC",
+  "FOODY Offers PH",
+  "FOODY RMS",
+  "FOODY RMS ALL BRANDS",
+  "Offers",
+  "Offers BK",
+  "Offers HOBO",
+  "Offers JMO",
+  "Offers KFC",
+  "Offers KYP",
+  "Offers NER",
+  "Offers PAT",
+  "Offers PAU",
+  "Offers PDE",
+  "Offers TAV",
+  "Offers VER",
+  "Online Offers",
+  "Online\\CK Offers",
+  "Pair Offers",
+  "PH Offers",
+  "Single Item Offers",
+  "Taco Bell Offers",
+  "Up Selling Offers",
+  "Wolt Offers",
+  "Wolt Offers WAG",
 ] as const;
 
 function parseLookbackDays(value: string | undefined) {

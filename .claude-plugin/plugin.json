@@ -1,0 +1,6 @@
+{
+  "name": "marketing-offers-tool",
+  "version": "0.1.0",
+  "description": "SvelteKit tool for marketing teams to manage aggregator offers (Wolt, Bolt) and track offer performance.",
+  "skills": ["./skills/"]
+}

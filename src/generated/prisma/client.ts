@@ -136,3 +136,13 @@ export type subcategories = Prisma.subcategoriesModel;
  *
  */
 export type aggregator_offers = Prisma.aggregator_offersModel;
+/**
+ * Model GeneratedImage
+ *
+ */
+export type GeneratedImage = Prisma.GeneratedImageModel;
+/**
+ * Model ReferenceImage
+ *
+ */
+export type ReferenceImage = Prisma.ReferenceImageModel;
