@@ -71,7 +71,11 @@
       <Table.Head class="min-w-44">Created</Table.Head>
       <Table.Head class="min-w-44">Updated</Table.Head>
       {#if canEdit}
-        <Table.Head class="min-w-28 text-right">Actions</Table.Head>
+        <Table.Head
+          class="bg-background sticky right-0 z-10 min-w-28 text-right"
+        >
+          Actions
+        </Table.Head>
       {/if}
     </Table.Row>
   </Table.Header>
@@ -124,7 +128,9 @@
           <Table.Cell>{formatDate(offer.created_at)}</Table.Cell>
           <Table.Cell>{formatDate(offer.updated_at)}</Table.Cell>
           {#if canEdit}
-            <Table.Cell class="text-right">
+            <Table.Cell
+              class={`sticky right-0 z-10 text-right ${offer.id === highlightedOfferId ? "bg-primary/5" : "bg-background"}`}
+            >
               <Button
                 variant="outline"
                 size="sm"
