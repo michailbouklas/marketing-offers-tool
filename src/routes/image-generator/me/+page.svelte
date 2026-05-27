@@ -1,18 +1,62 @@
 <script lang="ts">
   import { Badge } from "$lib/components/ui/badge/index.js";
-  import { Button } from "$lib/components/ui/button/index.js";
+  import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
+  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
+  import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
-  import type { GeneratedImageDTO } from "$lib/services/image-generator/image-generator";
+  import {
+    BRAND_NONE_KEY,
+    type GeneratedImageDTO,
+  } from "$lib/services/image-generator/image-generator";
+  import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
 
   let detailsOpen = $state(false);
   let selectedImageId = $state<string | null>(null);
+
+  const brands = $derived(data.brands);
+  let brandFilterOpen = $state(false);
+  let selectedBrandKeys = $state<string[]>([...data.filters.brand]);
+
+  // Re-sync local selection with the applied server state after a navigation
+  // (e.g. after Apply/Clear), without clobbering in-popover edits.
+  $effect(() => {
+    selectedBrandKeys = [...data.filters.brand];
+  });
+
+  function brandKeyLabel(key: string): string {
+    if (key === BRAND_NONE_KEY) {
+      return "No brand";
+    }
+    return brands.find((brand) => String(brand.id) === key)?.name ?? key;
+  }
+
+  function isBrandKeySelected(key: string): boolean {
+    return selectedBrandKeys.includes(key);
+  }
+
+  function toggleBrandKey(key: string) {
+    selectedBrandKeys = isBrandKeySelected(key)
+      ? selectedBrandKeys.filter((existing) => existing !== key)
+      : [...selectedBrandKeys, key];
+  }
+
+  function selectAllBrands() {
+    selectedBrandKeys = [
+      BRAND_NONE_KEY,
+      ...brands.map((brand) => String(brand.id)),
+    ];
+  }
+
+  function clearBrandSelection() {
+    selectedBrandKeys = [];
+  }
 
   const images = $derived(data.imagePage.items);
   const promptGroups = $derived(data.promptGroups);
@@ -23,11 +67,21 @@
   const pageSize = $derived(data.imagePage.pageSize);
   const totalItems = $derived(data.imagePage.totalItems);
   const totalPages = $derived(data.imagePage.totalPages);
+  const appliedBrandKeys = $derived(data.filters.brand);
+  const brandFilterSummary = $derived.by(() => {
+    if (selectedBrandKeys.length === 0) {
+      return "All brands";
+    }
+
+    const labels = selectedBrandKeys.map(brandKeyLabel);
+    return labels.length <= 2 ? labels.join(", ") : `${labels.length} selected`;
+  });
   const hasActiveFilters = $derived(
     Boolean(
       data.filters.date ||
       data.filters.model ||
       data.filters.provider ||
+      appliedBrandKeys.length > 0 ||
       isPromptView,
     ),
   );
@@ -89,6 +143,10 @@
 
     if (data.filters.provider) {
       params.set("provider", data.filters.provider);
+    }
+
+    for (const key of appliedBrandKeys) {
+      params.append("brand", key);
     }
 
     if (isPromptView) {
@@ -218,7 +276,105 @@
           </NativeSelect.Root>
         </div>
 
-        <div class="flex items-end justify-between gap-3 lg:justify-end">
+        <div class="grid gap-2">
+          <Label id="generation-brand-filter-label">Brands</Label>
+          <Popover.Root bind:open={brandFilterOpen}>
+            <Popover.Trigger
+              aria-labelledby="generation-brand-filter-label"
+              class={`${buttonVariants({ variant: "outline" })} w-full justify-between font-normal`}
+            >
+              <span class="truncate">{brandFilterSummary}</span>
+              <ChevronsUpDownIcon class="size-4 shrink-0 opacity-60" />
+            </Popover.Trigger>
+
+            <Popover.Content align="start" class="w-[20rem] p-0">
+              <div class="flex flex-col">
+                <div class="border-b px-4 py-3">
+                  <p class="text-sm font-medium">Filter by brand</p>
+                  <p class="text-muted-foreground mt-1 text-xs">
+                    Select one or more of your brands. Leave empty to show all.
+                  </p>
+                </div>
+
+                <div
+                  class="flex items-center justify-between gap-2 border-b px-4 py-2"
+                >
+                  <button
+                    type="button"
+                    class="text-sm font-medium underline-offset-4 hover:underline"
+                    onclick={selectAllBrands}
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    class="text-muted-foreground hover:text-foreground text-sm font-medium underline-offset-4 hover:underline"
+                    onclick={clearBrandSelection}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                <div class="max-h-72 overflow-y-auto px-2 py-2">
+                  <button
+                    type="button"
+                    class="hover:bg-accent/50 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
+                    onclick={() => toggleBrandKey(BRAND_NONE_KEY)}
+                  >
+                    <Checkbox
+                      checked={isBrandKeySelected(BRAND_NONE_KEY)}
+                      class="pointer-events-none"
+                    />
+                    <span class="text-muted-foreground text-sm italic">
+                      No brand
+                    </span>
+                  </button>
+
+                  {#each brands as brand (brand.id)}
+                    <button
+                      type="button"
+                      class="hover:bg-accent/50 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
+                      onclick={() => toggleBrandKey(String(brand.id))}
+                    >
+                      <Checkbox
+                        checked={isBrandKeySelected(String(brand.id))}
+                        class="pointer-events-none"
+                      />
+                      <div class="min-w-0">
+                        <p class="truncate text-sm leading-none font-medium">
+                          {brand.name}
+                        </p>
+                      </div>
+                    </button>
+                  {/each}
+                </div>
+
+                <div
+                  class="flex items-center justify-between gap-2 border-t px-4 py-3"
+                >
+                  <p class="text-muted-foreground text-xs">
+                    {selectedBrandKeys.length} selected
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onclick={() => (brandFilterOpen = false)}
+                  >
+                    Done
+                  </Button>
+                </div>
+              </div>
+            </Popover.Content>
+          </Popover.Root>
+        </div>
+
+        {#each selectedBrandKeys as key (key)}
+          <input type="hidden" name="brand" value={key} />
+        {/each}
+
+        <div
+          class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:col-span-4"
+        >
           <p class="text-muted-foreground text-sm">
             {#if isPromptView}
               {promptGroups.length} prompt groups, {visibleTotal} images
@@ -230,20 +386,22 @@
               )} of {totalItems}
             {/if}
           </p>
-          <Button
-            type="submit"
-            name="view"
-            value={data.filters.view ?? "table"}
-          >
-            Apply
-          </Button>
-          <Button
-            href="/image-generator/me"
-            variant="outline"
-            disabled={!hasActiveFilters}
-          >
-            Clear
-          </Button>
+          <div class="flex gap-2">
+            <Button
+              type="submit"
+              name="view"
+              value={data.filters.view ?? "table"}
+            >
+              Apply
+            </Button>
+            <Button
+              href="/image-generator/me"
+              variant="outline"
+              disabled={!hasActiveFilters}
+            >
+              Clear
+            </Button>
+          </div>
         </div>
 
         <div

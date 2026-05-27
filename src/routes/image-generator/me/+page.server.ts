@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { requireAuthenticatedUser } from "$lib/server/auth-guards";
+import { listBrandsForUser } from "$lib/services/brands.server";
+import { BRAND_NONE_KEY } from "$lib/services/image-generator/image-generator";
 import {
   listGeneratedImageFilterOptionsForUser,
   listGeneratedImagePromptGroupsForUser,
@@ -29,13 +31,41 @@ export const load: PageServerLoad = async (event) => {
     view: event.url.searchParams.get("view") ?? undefined,
   });
 
+  const brands = await listBrandsForUser(user!.id);
+  const allowedBrandIds = new Set(brands.map((brand) => brand.id));
+  const rawBrandValues = event.url.searchParams.getAll("brand");
+  const includeNoBrand = rawBrandValues.includes(BRAND_NONE_KEY);
+  const selectedBrandIds = [
+    ...new Set(
+      rawBrandValues
+        .map((value) => Number.parseInt(value, 10))
+        .filter((id) => Number.isInteger(id) && allowedBrandIds.has(id)),
+    ),
+  ];
+  const selectedBrandKeys = [
+    ...selectedBrandIds.map((id) => String(id)),
+    ...(includeNoBrand ? [BRAND_NONE_KEY] : []),
+  ];
+
+  const filters = {
+    ...query,
+    brandIds: selectedBrandIds,
+    includeNoBrand,
+  };
+
   const [imagePage, promptGroups, filterOptions] = await Promise.all([
-    listGeneratedImagesHistoryForUser(user!.id, query),
+    listGeneratedImagesHistoryForUser(user!.id, filters),
     query.view === "prompt"
-      ? listGeneratedImagePromptGroupsForUser(user!.id, query)
+      ? listGeneratedImagePromptGroupsForUser(user!.id, filters)
       : Promise.resolve([]),
     listGeneratedImageFilterOptionsForUser(user!.id),
   ]);
 
-  return { imagePage, promptGroups, filterOptions, filters: query };
+  return {
+    imagePage,
+    promptGroups,
+    filterOptions,
+    filters: { ...query, brand: selectedBrandKeys },
+    brands,
+  };
 };

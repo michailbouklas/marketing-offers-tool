@@ -107,14 +107,49 @@ function getClickHouseConfigKey(
   });
 }
 
+// Credentials embedded in CLICKHOUSE_URL take precedence in @clickhouse/client
+// and trigger an "overridden by a URL parameter" warning when username/password
+// are also passed as options. Hoist any URL-embedded credentials into the
+// explicit options (preserving that same precedence) and pass a clean URL so
+// there is a single, authoritative source and no warning.
+function resolveClickHouseCredentials(
+  config: ReturnType<typeof getClickHouseConfig>,
+) {
+  const parsed = new URL(config.url);
+  let { username, password } = config;
+
+  if (parsed.username) {
+    username = decodeURIComponent(parsed.username);
+    parsed.username = "";
+  }
+  if (parsed.password) {
+    password = decodeURIComponent(parsed.password);
+    parsed.password = "";
+  }
+
+  const queryUser = parsed.searchParams.get("user");
+  if (queryUser !== null) {
+    username = queryUser;
+    parsed.searchParams.delete("user");
+  }
+  const queryPassword = parsed.searchParams.get("password");
+  if (queryPassword !== null) {
+    password = queryPassword;
+    parsed.searchParams.delete("password");
+  }
+
+  return { url: parsed.toString(), username, password };
+}
+
 function createClickHouseSingleton() {
   const config = getClickHouseConfig();
+  const { url, username, password } = resolveClickHouseCredentials(config);
 
   return createClient({
-    url: config.url,
+    url,
     database: config.database,
-    username: config.username,
-    password: config.password,
+    username,
+    password,
     request_timeout: config.requestTimeout,
   });
 }

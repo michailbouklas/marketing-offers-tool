@@ -16,6 +16,8 @@ export interface GeneratedImagesHistoryFilters {
   date?: string;
   model?: string;
   provider?: string;
+  brandIds?: number[];
+  includeNoBrand?: boolean;
   page?: number;
   pageSize?: number;
 }
@@ -165,6 +167,16 @@ function buildHistoryWhere(
   filters: GeneratedImagesHistoryFilters,
 ): Prisma.GeneratedImageWhereInput {
   const dateRange = getDateRange(filters.date);
+  const brandIds = filters.brandIds ?? [];
+  const brandConditions: Prisma.GeneratedImageWhereInput[] = [];
+
+  if (brandIds.length > 0) {
+    brandConditions.push({ brandId: { in: brandIds } });
+  }
+
+  if (filters.includeNoBrand) {
+    brandConditions.push({ brandId: null });
+  }
 
   return {
     userId,
@@ -176,6 +188,7 @@ function buildHistoryWhere(
             filters.model === DEFAULT_MODEL_FILTER_VALUE ? null : filters.model,
         }
       : {}),
+    ...(brandConditions.length > 0 ? { OR: brandConditions } : {}),
   };
 }
 

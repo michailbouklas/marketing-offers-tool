@@ -106,3 +106,9 @@
 {"file":"src/lib/components/navigation/app-sidebar.svelte","action":"Write","timestamp":"2026-05-27T08:36:08Z","important":false}
 {"file":"src/lib/components/navigation/top-nav.svelte","action":"Edit","timestamp":"2026-05-27T08:36:35Z","important":false}
 {"file":"src/routes/+layout.svelte","action":"Edit","timestamp":"2026-05-27T08:36:43Z","important":false}
+{"file":"src/lib/server/clickhouse.ts","action":"Edit","timestamp":"2026-05-27T08:46:51Z","important":false}
+{"file":"src/lib/services/image-generator/image-generator.server.ts","action":"Edit","timestamp":"2026-05-27T09:01:32Z","important":false}
+{"file":"src/routes/image-generator/me/+page.server.ts","action":"Edit","timestamp":"2026-05-27T09:02:10Z","important":false}
+{"file":"src/lib/services/image-generator/image-generator.ts","action":"Edit","timestamp":"2026-05-27T09:02:51Z","important":false}
+{"file":"src/routes/image-generator/me/+page.svelte","action":"Edit","timestamp":"2026-05-27T09:04:15Z","important":false}
+{"file":"src/lib/components/admin/user-editor-form.svelte","action":"Edit","timestamp":"2026-05-27T09:14:16Z","important":false}

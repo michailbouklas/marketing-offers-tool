@@ -27,3 +27,7 @@ export interface ListGeneratedImagesQuery {
 
 export const DEFAULT_LIST_LIMIT = 50;
 export const MAX_LIST_LIMIT = 200;
+
+// Query-param sentinel used by the brand filter to match generations that
+// are not associated with any brand (GeneratedImage.brandId is null).
+export const BRAND_NONE_KEY = "none";

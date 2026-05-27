@@ -219,7 +219,6 @@
         name="brandIds"
         class="min-h-36"
         multiple
-        size={Math.max(Math.min(brands.length, 6), 4)}
         bind:value={$form.brandIds}
         aria-invalid={!!$errors.brandIds}
       >
