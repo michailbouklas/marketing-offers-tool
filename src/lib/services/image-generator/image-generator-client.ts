@@ -20,8 +20,48 @@ export interface GenerateClientBody {
   camera?: string;
   aspectRatio?: "square" | "widescreen" | "tiktok";
   references?: string[];
+  brandId?: number;
+  brandGuidelines?: string;
   allModels?: boolean;
   samplesPerModel?: number;
+}
+
+export interface BrandAssetDTO {
+  id: string;
+  brandId: number;
+  name: string;
+  contentType: string;
+  sizeBytes: number;
+  createdAt: string;
+}
+
+export async function listBrandAssets(
+  brandId: number,
+): Promise<BrandAssetDTO[]> {
+  const url = new URL("/api/brand-assets", window.location.origin);
+  url.searchParams.set("brandId", String(brandId));
+  const res = await fetch(url.toString());
+  const { items } = await jsonOrThrow<{ items: BrandAssetDTO[] }>(res);
+  return items;
+}
+
+export async function attachBrandAssetAsReference(
+  assetId: string,
+): Promise<ReferenceUploadResult> {
+  const res = await fetch("/api/images/references/from-brand-asset", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ assetId }),
+  });
+  return jsonOrThrow<ReferenceUploadResult>(res);
+}
+
+export async function fetchBrandGuidelines(brandId: number): Promise<string> {
+  const url = new URL("/api/brand-guidelines", window.location.origin);
+  url.searchParams.set("brandId", String(brandId));
+  const res = await fetch(url.toString());
+  const { markdown } = await jsonOrThrow<{ markdown: string }>(res);
+  return markdown;
 }
 
 async function jsonOrThrow<T>(res: Response): Promise<T> {

@@ -63,6 +63,8 @@ model brand {
   active            Boolean             @default(true)
   aggregator_offers aggregator_offers[]
   user_assignments  user_brand[]
+  brand_assets      BrandAsset[]
+  generated_images  GeneratedImage[]
 }
 
 model user_brand {
@@ -294,6 +296,8 @@ model GeneratedImage {
   id               String               @id @default(cuid())
   userId           String
   user             user                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brandId          Int?
+  brand            brand?               @relation(fields: [brandId], references: [id], onDelete: SetNull)
   prompt           String               @db.Text
   finalPrompt      String               @db.Text
   provider         String
@@ -314,6 +318,20 @@ model GeneratedImage {
   createdAt        DateTime             @default(now())
 
   @@index([userId, createdAt])
+  @@index([brandId, createdAt])
+}
+
+model BrandAsset {
+  id          String   @id @default(cuid())
+  brandId     Int
+  brand       brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  name        String
+  localPath   String
+  contentType String
+  sizeBytes   Int
+  createdAt   DateTime @default(now())
+
+  @@index([brandId, createdAt])
 }
 
 model ReferenceImage {
@@ -367,7 +385,7 @@ model api_BOLT_lines {
   totalamount     Decimal?        @db.Decimal(19, 6)
   accountcode     String?         @db.VarChar(50)
   vatcode         String?         @db.VarChar(20)
-  api_BOLT_header api_BOLT_header @relation(fields: [documentid], references: [documentid], onDelete: Cascade)
+  api_BOLT_header api_BOLT_header @relation(fields: [documentid], references: [documentid], onUpdate: Cascade, onDelete: Cascade)
 
   @@id([documentid, je_number, linenumber], map: "PK_api_BOLT_lines")
 }

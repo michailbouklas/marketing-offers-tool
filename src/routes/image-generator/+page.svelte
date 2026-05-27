@@ -1,22 +1,29 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
+  import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import { Button } from "$lib/components/ui/button/index.js";
+  import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import {
     Card,
     CardContent,
     CardHeader,
     CardTitle,
   } from "$lib/components/ui/card/index.js";
+  import BrandAssetGalleryDialog from "./BrandAssetGalleryDialog.svelte";
   import ImageGrid from "./ImageGrid.svelte";
   import PromptComposer from "./PromptComposer.svelte";
+  import { formatBrandLabel } from "$lib/services/brands";
   import type { ComposerState, SubmitPayload } from "./composer-types";
   import type { GeneratedImageDTO } from "$lib/services/image-generator/image-generator";
   import {
+    attachBrandAssetAsReference,
     enhancePrompt,
+    fetchBrandGuidelines,
     fetchImagesSince,
+    listBrandAssets,
     submitGeneration,
     uploadReferences,
+    type BrandAssetDTO,
   } from "$lib/services/image-generator/image-generator-client";
   import type { PageData } from "./$types";
 
@@ -31,6 +38,20 @@
     $state();
   let suppressEnhanceOnce = $state(false);
   let elapsedById = $state<Record<string, number>>({});
+
+  let selectedBrandId = $state<number | null>(null);
+  let galleryOpen = $state(false);
+  let galleryLoading = $state(false);
+  let galleryAssets = $state<BrandAssetDTO[] | null>(null);
+  let selectedBrandGuidelines = $state<string | null>(null);
+  const assetCache = new Map<number, BrandAssetDTO[]>();
+  const guidelinesCache = new Map<number, string>();
+
+  const selectedBrand = $derived(
+    selectedBrandId === null
+      ? null
+      : (data.brands.find((b) => b.id === selectedBrandId) ?? null),
+  );
 
   let pollHandle: ReturnType<typeof setInterval> | null = null;
   let elapsedHandle: ReturnType<typeof setInterval> | null = null;
@@ -81,7 +102,12 @@
   }
 
   async function refresh() {
-    const since = items.length > 0 ? items[0]!.createdAt : null;
+    const pendingRows = items.filter((item) => item.status === "pending");
+    const since =
+      pendingRows.length > 0
+        ? pendingRows[pendingRows.length - 1]!.createdAt
+        : (items[0]?.createdAt ?? null);
+
     try {
       const { items: fresh } = await fetchImagesSince(since);
       mergeRows(fresh);
@@ -136,10 +162,11 @@
         aspectRatio:
           payload.aspectRatio === "none" ? undefined : payload.aspectRatio,
         references: referenceIds.length > 0 ? referenceIds : undefined,
+        brandId: selectedBrandId ?? undefined,
+        brandGuidelines:
+          selectedBrandId !== null ? payload.brandGuidelines : undefined,
         allModels: payload.allModels,
-        samplesPerModel: payload.allModels
-          ? payload.samplesPerModel
-          : undefined,
+        samplesPerModel: payload.samplesPerModel,
       });
       mergeRows(created);
       ensurePollers();
@@ -219,14 +246,88 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  $effect(() => {
+  function selectBrand(brandId: number) {
+    const next = selectedBrandId === brandId ? null : brandId;
+    selectedBrandId = next;
+    if (next === null) {
+      selectedBrandGuidelines = null;
+      return;
+    }
+    void loadBrandGuidelines(next);
+  }
+
+  async function loadBrandGuidelines(brandId: number) {
+    const cached = guidelinesCache.get(brandId);
+    if (cached !== undefined) {
+      selectedBrandGuidelines = cached;
+      return;
+    }
+    try {
+      const markdown = await fetchBrandGuidelines(brandId);
+      guidelinesCache.set(brandId, markdown);
+      if (selectedBrandId === brandId) {
+        selectedBrandGuidelines = markdown;
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  async function openBrandGallery() {
+    if (selectedBrandId === null) return;
+    const brandId = selectedBrandId;
+    galleryOpen = true;
+
+    const cached = assetCache.get(brandId);
+    if (cached) {
+      galleryAssets = cached;
+      galleryLoading = false;
+      return;
+    }
+
+    galleryLoading = true;
+    galleryAssets = null;
+    try {
+      const fetched = await listBrandAssets(brandId);
+      assetCache.set(brandId, fetched);
+      if (selectedBrandId === brandId && galleryOpen) {
+        galleryAssets = fetched;
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+      galleryOpen = false;
+    } finally {
+      galleryLoading = false;
+    }
+  }
+
+  function handleGalleryOpenChange(open: boolean) {
+    galleryOpen = open;
+    if (!open) {
+      galleryAssets = null;
+    }
+  }
+
+  async function attachBrandAsset(asset: BrandAssetDTO) {
+    try {
+      const ref = await attachBrandAssetAsReference(asset.id);
+      composer?.loadFrom({ referenceIds: [ref.id], enhance: false });
+      suppressEnhanceOnce = true;
+      galleryOpen = false;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  onMount(() => {
     trackPending(items);
     if (hasPending()) ensurePollers();
-  });
 
-  onDestroy(() => {
-    if (pollHandle) clearInterval(pollHandle);
-    if (elapsedHandle) clearInterval(elapsedHandle);
+    return () => {
+      if (pollHandle) clearInterval(pollHandle);
+      if (elapsedHandle) clearInterval(elapsedHandle);
+    };
   });
 </script>
 
@@ -236,16 +337,60 @@
 
 <main class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
   <div class="space-y-1">
-    <h1 class="text-2xl font-semibold tracking-tight">Image Generator</h1>
-    <p class="text-muted-foreground text-sm">
-      Generate images from prompts using configured AI providers.
-    </p>
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="space-y-1">
+        <h1 class="text-2xl font-semibold tracking-tight">Image Generator</h1>
+        <p class="text-muted-foreground text-sm">
+          Generate images from prompts using configured AI providers.
+        </p>
+      </div>
+      <Button href="/image-generator/me" variant="outline" size="sm">
+        My generated images
+      </Button>
+    </div>
+    <div class="space-y-2 pt-3">
+      <p class="text-sm font-medium">Available brand rules</p>
+      {#if data.brands.length > 0}
+        <div class="flex flex-wrap items-center gap-2">
+          <ButtonGroup.Root
+            class="flex max-w-full flex-wrap"
+            aria-label="Available brand rules"
+          >
+            {#each data.brands as brand (brand.id)}
+              <Button
+                variant={selectedBrandId === brand.id ? "default" : "outline"}
+                size="sm"
+                type="button"
+                aria-pressed={selectedBrandId === brand.id}
+                onclick={() => selectBrand(brand.id)}
+              >
+                {formatBrandLabel(brand)}
+              </Button>
+            {/each}
+          </ButtonGroup.Root>
+          <Button
+            variant={selectedBrandId === null ? "secondary" : "default"}
+            size="sm"
+            type="button"
+            disabled={selectedBrandId === null}
+            onclick={openBrandGallery}
+          >
+            View brand assets
+          </Button>
+        </div>
+      {:else}
+        <p class="text-muted-foreground text-sm">
+          No active brand rules are assigned to your account.
+        </p>
+      {/if}
+    </div>
   </div>
 
   <PromptComposer
     bind:this={composer}
     config={data.config}
     {busy}
+    brandGuidelines={selectedBrandGuidelines}
     onSubmit={handleSubmit}
     onUploadReferences={handleUploadReferences}
   />
@@ -283,5 +428,14 @@
     {elapsedById}
     onReprompt={handleReprompt}
     onEditWithReference={handleEditWithReference}
+  />
+
+  <BrandAssetGalleryDialog
+    open={galleryOpen}
+    brandName={selectedBrand ? formatBrandLabel(selectedBrand) : null}
+    assets={galleryAssets}
+    loading={galleryLoading}
+    onOpenChange={handleGalleryOpenChange}
+    onUseAsReference={attachBrandAsset}
   />
 </main>

@@ -253,6 +253,8 @@ export type brandWhereInput = {
   active?: Prisma.BoolFilter<"brand"> | boolean;
   aggregator_offers?: Prisma.Aggregator_offersListRelationFilter;
   user_assignments?: Prisma.User_brandListRelationFilter;
+  brand_assets?: Prisma.BrandAssetListRelationFilter;
+  generated_images?: Prisma.GeneratedImageListRelationFilter;
 };
 
 export type brandOrderByWithRelationInput = {
@@ -267,6 +269,8 @@ export type brandOrderByWithRelationInput = {
   active?: Prisma.SortOrder;
   aggregator_offers?: Prisma.aggregator_offersOrderByRelationAggregateInput;
   user_assignments?: Prisma.user_brandOrderByRelationAggregateInput;
+  brand_assets?: Prisma.BrandAssetOrderByRelationAggregateInput;
+  generated_images?: Prisma.GeneratedImageOrderByRelationAggregateInput;
 };
 
 export type brandWhereUniqueInput = Prisma.AtLeast<
@@ -285,6 +289,8 @@ export type brandWhereUniqueInput = Prisma.AtLeast<
     active?: Prisma.BoolFilter<"brand"> | boolean;
     aggregator_offers?: Prisma.Aggregator_offersListRelationFilter;
     user_assignments?: Prisma.User_brandListRelationFilter;
+    brand_assets?: Prisma.BrandAssetListRelationFilter;
+    generated_images?: Prisma.GeneratedImageListRelationFilter;
   },
   "id"
 >;
@@ -339,6 +345,8 @@ export type brandCreateInput = {
   active?: boolean;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
+  brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUncheckedCreateInput = {
@@ -353,6 +361,8 @@ export type brandUncheckedCreateInput = {
   active?: boolean;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
+  brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUpdateInput = {
@@ -366,6 +376,8 @@ export type brandUpdateInput = {
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
+  brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandUncheckedUpdateInput = {
@@ -380,6 +392,8 @@ export type brandUncheckedUpdateInput = {
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
+  brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandCreateManyInput = {
@@ -466,6 +480,11 @@ export type BrandScalarRelationFilter = {
   isNot?: Prisma.brandWhereInput;
 };
 
+export type BrandNullableScalarRelationFilter = {
+  is?: Prisma.brandWhereInput | null;
+  isNot?: Prisma.brandWhereInput | null;
+};
+
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean;
 };
@@ -522,6 +541,60 @@ export type brandUpdateOneRequiredWithoutAggregator_offersNestedInput = {
   >;
 };
 
+export type brandCreateNestedOneWithoutGenerated_imagesInput = {
+  create?: Prisma.XOR<
+    Prisma.brandCreateWithoutGenerated_imagesInput,
+    Prisma.brandUncheckedCreateWithoutGenerated_imagesInput
+  >;
+  connectOrCreate?: Prisma.brandCreateOrConnectWithoutGenerated_imagesInput;
+  connect?: Prisma.brandWhereUniqueInput;
+};
+
+export type brandUpdateOneWithoutGenerated_imagesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.brandCreateWithoutGenerated_imagesInput,
+    Prisma.brandUncheckedCreateWithoutGenerated_imagesInput
+  >;
+  connectOrCreate?: Prisma.brandCreateOrConnectWithoutGenerated_imagesInput;
+  upsert?: Prisma.brandUpsertWithoutGenerated_imagesInput;
+  disconnect?: Prisma.brandWhereInput | boolean;
+  delete?: Prisma.brandWhereInput | boolean;
+  connect?: Prisma.brandWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.brandUpdateToOneWithWhereWithoutGenerated_imagesInput,
+      Prisma.brandUpdateWithoutGenerated_imagesInput
+    >,
+    Prisma.brandUncheckedUpdateWithoutGenerated_imagesInput
+  >;
+};
+
+export type brandCreateNestedOneWithoutBrand_assetsInput = {
+  create?: Prisma.XOR<
+    Prisma.brandCreateWithoutBrand_assetsInput,
+    Prisma.brandUncheckedCreateWithoutBrand_assetsInput
+  >;
+  connectOrCreate?: Prisma.brandCreateOrConnectWithoutBrand_assetsInput;
+  connect?: Prisma.brandWhereUniqueInput;
+};
+
+export type brandUpdateOneRequiredWithoutBrand_assetsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.brandCreateWithoutBrand_assetsInput,
+    Prisma.brandUncheckedCreateWithoutBrand_assetsInput
+  >;
+  connectOrCreate?: Prisma.brandCreateOrConnectWithoutBrand_assetsInput;
+  upsert?: Prisma.brandUpsertWithoutBrand_assetsInput;
+  connect?: Prisma.brandWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.brandUpdateToOneWithWhereWithoutBrand_assetsInput,
+      Prisma.brandUpdateWithoutBrand_assetsInput
+    >,
+    Prisma.brandUncheckedUpdateWithoutBrand_assetsInput
+  >;
+};
+
 export type brandCreateWithoutUser_assignmentsInput = {
   name: string;
   alias?: string;
@@ -532,6 +605,8 @@ export type brandCreateWithoutUser_assignmentsInput = {
   description?: string | null;
   active?: boolean;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
+  brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUncheckedCreateWithoutUser_assignmentsInput = {
@@ -545,6 +620,8 @@ export type brandUncheckedCreateWithoutUser_assignmentsInput = {
   description?: string | null;
   active?: boolean;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
+  brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
 };
 
 export type brandCreateOrConnectWithoutUser_assignmentsInput = {
@@ -585,6 +662,8 @@ export type brandUpdateWithoutUser_assignmentsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
+  brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandUncheckedUpdateWithoutUser_assignmentsInput = {
@@ -598,6 +677,8 @@ export type brandUncheckedUpdateWithoutUser_assignmentsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
+  brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandCreateWithoutAggregator_offersInput = {
@@ -610,6 +691,8 @@ export type brandCreateWithoutAggregator_offersInput = {
   description?: string | null;
   active?: boolean;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
+  brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUncheckedCreateWithoutAggregator_offersInput = {
@@ -623,6 +706,8 @@ export type brandUncheckedCreateWithoutAggregator_offersInput = {
   description?: string | null;
   active?: boolean;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
+  brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
 };
 
 export type brandCreateOrConnectWithoutAggregator_offersInput = {
@@ -663,6 +748,8 @@ export type brandUpdateWithoutAggregator_offersInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
+  brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandUncheckedUpdateWithoutAggregator_offersInput = {
@@ -676,6 +763,180 @@ export type brandUncheckedUpdateWithoutAggregator_offersInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
+  brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
+};
+
+export type brandCreateWithoutGenerated_imagesInput = {
+  name: string;
+  alias?: string;
+  logo?: string;
+  slug?: string;
+  created_at?: Date | string;
+  updated_at: Date | string;
+  description?: string | null;
+  active?: boolean;
+  aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
+  user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
+  brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
+};
+
+export type brandUncheckedCreateWithoutGenerated_imagesInput = {
+  id?: number;
+  name: string;
+  alias?: string;
+  logo?: string;
+  slug?: string;
+  created_at?: Date | string;
+  updated_at: Date | string;
+  description?: string | null;
+  active?: boolean;
+  aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
+  user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
+  brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
+};
+
+export type brandCreateOrConnectWithoutGenerated_imagesInput = {
+  where: Prisma.brandWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.brandCreateWithoutGenerated_imagesInput,
+    Prisma.brandUncheckedCreateWithoutGenerated_imagesInput
+  >;
+};
+
+export type brandUpsertWithoutGenerated_imagesInput = {
+  update: Prisma.XOR<
+    Prisma.brandUpdateWithoutGenerated_imagesInput,
+    Prisma.brandUncheckedUpdateWithoutGenerated_imagesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.brandCreateWithoutGenerated_imagesInput,
+    Prisma.brandUncheckedCreateWithoutGenerated_imagesInput
+  >;
+  where?: Prisma.brandWhereInput;
+};
+
+export type brandUpdateToOneWithWhereWithoutGenerated_imagesInput = {
+  where?: Prisma.brandWhereInput;
+  data: Prisma.XOR<
+    Prisma.brandUpdateWithoutGenerated_imagesInput,
+    Prisma.brandUncheckedUpdateWithoutGenerated_imagesInput
+  >;
+};
+
+export type brandUpdateWithoutGenerated_imagesInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  alias?: Prisma.StringFieldUpdateOperationsInput | string;
+  logo?: Prisma.StringFieldUpdateOperationsInput | string;
+  slug?: Prisma.StringFieldUpdateOperationsInput | string;
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
+  user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
+  brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
+};
+
+export type brandUncheckedUpdateWithoutGenerated_imagesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  alias?: Prisma.StringFieldUpdateOperationsInput | string;
+  logo?: Prisma.StringFieldUpdateOperationsInput | string;
+  slug?: Prisma.StringFieldUpdateOperationsInput | string;
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
+  user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
+  brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
+};
+
+export type brandCreateWithoutBrand_assetsInput = {
+  name: string;
+  alias?: string;
+  logo?: string;
+  slug?: string;
+  created_at?: Date | string;
+  updated_at: Date | string;
+  description?: string | null;
+  active?: boolean;
+  aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
+  user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
+};
+
+export type brandUncheckedCreateWithoutBrand_assetsInput = {
+  id?: number;
+  name: string;
+  alias?: string;
+  logo?: string;
+  slug?: string;
+  created_at?: Date | string;
+  updated_at: Date | string;
+  description?: string | null;
+  active?: boolean;
+  aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
+  user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
+};
+
+export type brandCreateOrConnectWithoutBrand_assetsInput = {
+  where: Prisma.brandWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.brandCreateWithoutBrand_assetsInput,
+    Prisma.brandUncheckedCreateWithoutBrand_assetsInput
+  >;
+};
+
+export type brandUpsertWithoutBrand_assetsInput = {
+  update: Prisma.XOR<
+    Prisma.brandUpdateWithoutBrand_assetsInput,
+    Prisma.brandUncheckedUpdateWithoutBrand_assetsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.brandCreateWithoutBrand_assetsInput,
+    Prisma.brandUncheckedCreateWithoutBrand_assetsInput
+  >;
+  where?: Prisma.brandWhereInput;
+};
+
+export type brandUpdateToOneWithWhereWithoutBrand_assetsInput = {
+  where?: Prisma.brandWhereInput;
+  data: Prisma.XOR<
+    Prisma.brandUpdateWithoutBrand_assetsInput,
+    Prisma.brandUncheckedUpdateWithoutBrand_assetsInput
+  >;
+};
+
+export type brandUpdateWithoutBrand_assetsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  alias?: Prisma.StringFieldUpdateOperationsInput | string;
+  logo?: Prisma.StringFieldUpdateOperationsInput | string;
+  slug?: Prisma.StringFieldUpdateOperationsInput | string;
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
+  user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
+};
+
+export type brandUncheckedUpdateWithoutBrand_assetsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  alias?: Prisma.StringFieldUpdateOperationsInput | string;
+  logo?: Prisma.StringFieldUpdateOperationsInput | string;
+  slug?: Prisma.StringFieldUpdateOperationsInput | string;
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
+  user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
 };
 
 /**
@@ -685,6 +946,8 @@ export type brandUncheckedUpdateWithoutAggregator_offersInput = {
 export type BrandCountOutputType = {
   aggregator_offers: number;
   user_assignments: number;
+  brand_assets: number;
+  generated_images: number;
 };
 
 export type BrandCountOutputTypeSelect<
@@ -693,6 +956,8 @@ export type BrandCountOutputTypeSelect<
 > = {
   aggregator_offers?: boolean | BrandCountOutputTypeCountAggregator_offersArgs;
   user_assignments?: boolean | BrandCountOutputTypeCountUser_assignmentsArgs;
+  brand_assets?: boolean | BrandCountOutputTypeCountBrand_assetsArgs;
+  generated_images?: boolean | BrandCountOutputTypeCountGenerated_imagesArgs;
 };
 
 /**
@@ -728,6 +993,26 @@ export type BrandCountOutputTypeCountUser_assignmentsArgs<
   where?: Prisma.user_brandWhereInput;
 };
 
+/**
+ * BrandCountOutputType without action
+ */
+export type BrandCountOutputTypeCountBrand_assetsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.BrandAssetWhereInput;
+};
+
+/**
+ * BrandCountOutputType without action
+ */
+export type BrandCountOutputTypeCountGenerated_imagesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.GeneratedImageWhereInput;
+};
+
 export type brandSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
@@ -744,6 +1029,8 @@ export type brandSelect<
     active?: boolean;
     aggregator_offers?: boolean | Prisma.brand$aggregator_offersArgs<ExtArgs>;
     user_assignments?: boolean | Prisma.brand$user_assignmentsArgs<ExtArgs>;
+    brand_assets?: boolean | Prisma.brand$brand_assetsArgs<ExtArgs>;
+    generated_images?: boolean | Prisma.brand$generated_imagesArgs<ExtArgs>;
     _count?: boolean | Prisma.BrandCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["brand"]
@@ -818,6 +1105,8 @@ export type brandInclude<
 > = {
   aggregator_offers?: boolean | Prisma.brand$aggregator_offersArgs<ExtArgs>;
   user_assignments?: boolean | Prisma.brand$user_assignmentsArgs<ExtArgs>;
+  brand_assets?: boolean | Prisma.brand$brand_assetsArgs<ExtArgs>;
+  generated_images?: boolean | Prisma.brand$generated_imagesArgs<ExtArgs>;
   _count?: boolean | Prisma.BrandCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type brandIncludeCreateManyAndReturn<
@@ -837,6 +1126,8 @@ export type $brandPayload<
   objects: {
     aggregator_offers: Prisma.$aggregator_offersPayload<ExtArgs>[];
     user_assignments: Prisma.$user_brandPayload<ExtArgs>[];
+    brand_assets: Prisma.$BrandAssetPayload<ExtArgs>[];
+    generated_images: Prisma.$GeneratedImagePayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1421,6 +1712,28 @@ export interface Prisma__brandClient<
       >
     | Null
   >;
+  brand_assets<T extends Prisma.brand$brand_assetsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.brand$brand_assetsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$BrandAssetPayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  generated_images<T extends Prisma.brand$generated_imagesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.brand$generated_imagesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$GeneratedImagePayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1972,6 +2285,68 @@ export type brand$user_assignmentsArgs<
   distinct?:
     | Prisma.User_brandScalarFieldEnum
     | Prisma.User_brandScalarFieldEnum[];
+};
+
+/**
+ * brand.brand_assets
+ */
+export type brand$brand_assetsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the BrandAsset
+   */
+  select?: Prisma.BrandAssetSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the BrandAsset
+   */
+  omit?: Prisma.BrandAssetOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BrandAssetInclude<ExtArgs> | null;
+  where?: Prisma.BrandAssetWhereInput;
+  orderBy?:
+    | Prisma.BrandAssetOrderByWithRelationInput
+    | Prisma.BrandAssetOrderByWithRelationInput[];
+  cursor?: Prisma.BrandAssetWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.BrandAssetScalarFieldEnum
+    | Prisma.BrandAssetScalarFieldEnum[];
+};
+
+/**
+ * brand.generated_images
+ */
+export type brand$generated_imagesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the GeneratedImage
+   */
+  select?: Prisma.GeneratedImageSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the GeneratedImage
+   */
+  omit?: Prisma.GeneratedImageOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GeneratedImageInclude<ExtArgs> | null;
+  where?: Prisma.GeneratedImageWhereInput;
+  orderBy?:
+    | Prisma.GeneratedImageOrderByWithRelationInput
+    | Prisma.GeneratedImageOrderByWithRelationInput[];
+  cursor?: Prisma.GeneratedImageWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.GeneratedImageScalarFieldEnum
+    | Prisma.GeneratedImageScalarFieldEnum[];
 };
 
 /**

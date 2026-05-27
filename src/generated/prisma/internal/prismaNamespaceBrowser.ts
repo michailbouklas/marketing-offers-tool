@@ -73,7 +73,11 @@ export const ModelName = {
   subcategories: "subcategories",
   aggregator_offers: "aggregator_offers",
   GeneratedImage: "GeneratedImage",
+  BrandAsset: "BrandAsset",
   ReferenceImage: "ReferenceImage",
+  api_BOLT_header: "api_BOLT_header",
+  api_BOLT_lines: "api_BOLT_lines",
+  bolt_regex_patters: "bolt_regex_patters",
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -347,6 +351,7 @@ export type Aggregator_offersScalarFieldEnum =
 export const GeneratedImageScalarFieldEnum = {
   id: "id",
   userId: "userId",
+  brandId: "brandId",
   prompt: "prompt",
   finalPrompt: "finalPrompt",
   provider: "provider",
@@ -370,6 +375,19 @@ export const GeneratedImageScalarFieldEnum = {
 export type GeneratedImageScalarFieldEnum =
   (typeof GeneratedImageScalarFieldEnum)[keyof typeof GeneratedImageScalarFieldEnum];
 
+export const BrandAssetScalarFieldEnum = {
+  id: "id",
+  brandId: "brandId",
+  name: "name",
+  localPath: "localPath",
+  contentType: "contentType",
+  sizeBytes: "sizeBytes",
+  createdAt: "createdAt",
+} as const;
+
+export type BrandAssetScalarFieldEnum =
+  (typeof BrandAssetScalarFieldEnum)[keyof typeof BrandAssetScalarFieldEnum];
+
 export const ReferenceImageScalarFieldEnum = {
   id: "id",
   userId: "userId",
@@ -380,6 +398,59 @@ export const ReferenceImageScalarFieldEnum = {
 
 export type ReferenceImageScalarFieldEnum =
   (typeof ReferenceImageScalarFieldEnum)[keyof typeof ReferenceImageScalarFieldEnum];
+
+export const Api_BOLT_headerScalarFieldEnum = {
+  id: "id",
+  documentid: "documentid",
+  documentdate: "documentdate",
+  invoicenumber: "invoicenumber",
+  timeframe: "timeframe",
+  scenario: "scenario",
+  je1_date: "je1_date",
+  je2_date: "je2_date",
+  bpcode: "bpcode",
+  bpname: "bpname",
+  bolt_storename: "bolt_storename",
+  distributionrule: "distributionrule",
+  project: "project",
+  erpdatabase: "erpdatabase",
+  totalpayout: "totalpayout",
+  createdat: "createdat",
+  erpsent: "erpsent",
+  erpcreatedat: "erpcreatedat",
+  erpcomments: "erpcomments",
+} as const;
+
+export type Api_BOLT_headerScalarFieldEnum =
+  (typeof Api_BOLT_headerScalarFieldEnum)[keyof typeof Api_BOLT_headerScalarFieldEnum];
+
+export const Api_BOLT_linesScalarFieldEnum = {
+  documentid: "documentid",
+  linenumber: "linenumber",
+  je_number: "je_number",
+  transtype: "transtype",
+  linedetails: "linedetails",
+  amount: "amount",
+  vatamount: "vatamount",
+  totalamount: "totalamount",
+  accountcode: "accountcode",
+  vatcode: "vatcode",
+} as const;
+
+export type Api_BOLT_linesScalarFieldEnum =
+  (typeof Api_BOLT_linesScalarFieldEnum)[keyof typeof Api_BOLT_linesScalarFieldEnum];
+
+export const Bolt_regex_pattersScalarFieldEnum = {
+  id: "id",
+  regex: "regex",
+  example: "example",
+  category: "category",
+  accountcode: "accountcode",
+  vatcode: "vatcode",
+} as const;
+
+export type Bolt_regex_pattersScalarFieldEnum =
+  (typeof Bolt_regex_pattersScalarFieldEnum)[keyof typeof Bolt_regex_pattersScalarFieldEnum];
 
 export const SortOrder = {
   asc: "asc",

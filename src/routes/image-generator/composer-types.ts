@@ -38,8 +38,10 @@ export interface ComposerState {
   allModels: boolean;
   samplesPerModel: number;
   referenceIds: string[];
+  brandId?: number | null;
 }
 
 export interface SubmitPayload extends ComposerState {
   referenceFiles: File[];
+  brandGuidelines?: string;
 }

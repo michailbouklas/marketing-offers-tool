@@ -431,7 +431,11 @@ export const ModelName = {
   subcategories: "subcategories",
   aggregator_offers: "aggregator_offers",
   GeneratedImage: "GeneratedImage",
+  BrandAsset: "BrandAsset",
   ReferenceImage: "ReferenceImage",
+  api_BOLT_header: "api_BOLT_header",
+  api_BOLT_lines: "api_BOLT_lines",
+  bolt_regex_patters: "bolt_regex_patters",
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -473,7 +477,11 @@ export type TypeMap<
       | "subcategories"
       | "aggregator_offers"
       | "generatedImage"
-      | "referenceImage";
+      | "brandAsset"
+      | "referenceImage"
+      | "api_BOLT_header"
+      | "api_BOLT_lines"
+      | "bolt_regex_patters";
     txIsolationLevel: TransactionIsolationLevel;
   };
   model: {
@@ -1921,6 +1929,82 @@ export type TypeMap<
         };
       };
     };
+    BrandAsset: {
+      payload: Prisma.$BrandAssetPayload<ExtArgs>;
+      fields: Prisma.BrandAssetFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.BrandAssetFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandAssetPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.BrandAssetFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandAssetPayload>;
+        };
+        findFirst: {
+          args: Prisma.BrandAssetFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandAssetPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.BrandAssetFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandAssetPayload>;
+        };
+        findMany: {
+          args: Prisma.BrandAssetFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandAssetPayload>[];
+        };
+        create: {
+          args: Prisma.BrandAssetCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandAssetPayload>;
+        };
+        createMany: {
+          args: Prisma.BrandAssetCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.BrandAssetCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandAssetPayload>[];
+        };
+        delete: {
+          args: Prisma.BrandAssetDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandAssetPayload>;
+        };
+        update: {
+          args: Prisma.BrandAssetUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandAssetPayload>;
+        };
+        deleteMany: {
+          args: Prisma.BrandAssetDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.BrandAssetUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.BrandAssetUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandAssetPayload>[];
+        };
+        upsert: {
+          args: Prisma.BrandAssetUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandAssetPayload>;
+        };
+        aggregate: {
+          args: Prisma.BrandAssetAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBrandAsset>;
+        };
+        groupBy: {
+          args: Prisma.BrandAssetGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.BrandAssetGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.BrandAssetCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.BrandAssetCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     ReferenceImage: {
       payload: Prisma.$ReferenceImagePayload<ExtArgs>;
       fields: Prisma.ReferenceImageFieldRefs;
@@ -1993,6 +2077,234 @@ export type TypeMap<
           args: Prisma.ReferenceImageCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.ReferenceImageCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    api_BOLT_header: {
+      payload: Prisma.$api_BOLT_headerPayload<ExtArgs>;
+      fields: Prisma.api_BOLT_headerFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.api_BOLT_headerFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_headerPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.api_BOLT_headerFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_headerPayload>;
+        };
+        findFirst: {
+          args: Prisma.api_BOLT_headerFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_headerPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.api_BOLT_headerFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_headerPayload>;
+        };
+        findMany: {
+          args: Prisma.api_BOLT_headerFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_headerPayload>[];
+        };
+        create: {
+          args: Prisma.api_BOLT_headerCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_headerPayload>;
+        };
+        createMany: {
+          args: Prisma.api_BOLT_headerCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.api_BOLT_headerCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_headerPayload>[];
+        };
+        delete: {
+          args: Prisma.api_BOLT_headerDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_headerPayload>;
+        };
+        update: {
+          args: Prisma.api_BOLT_headerUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_headerPayload>;
+        };
+        deleteMany: {
+          args: Prisma.api_BOLT_headerDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.api_BOLT_headerUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.api_BOLT_headerUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_headerPayload>[];
+        };
+        upsert: {
+          args: Prisma.api_BOLT_headerUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_headerPayload>;
+        };
+        aggregate: {
+          args: Prisma.Api_BOLT_headerAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateApi_BOLT_header>;
+        };
+        groupBy: {
+          args: Prisma.api_BOLT_headerGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Api_BOLT_headerGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.api_BOLT_headerCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Api_BOLT_headerCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    api_BOLT_lines: {
+      payload: Prisma.$api_BOLT_linesPayload<ExtArgs>;
+      fields: Prisma.api_BOLT_linesFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.api_BOLT_linesFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_linesPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.api_BOLT_linesFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_linesPayload>;
+        };
+        findFirst: {
+          args: Prisma.api_BOLT_linesFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_linesPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.api_BOLT_linesFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_linesPayload>;
+        };
+        findMany: {
+          args: Prisma.api_BOLT_linesFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_linesPayload>[];
+        };
+        create: {
+          args: Prisma.api_BOLT_linesCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_linesPayload>;
+        };
+        createMany: {
+          args: Prisma.api_BOLT_linesCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.api_BOLT_linesCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_linesPayload>[];
+        };
+        delete: {
+          args: Prisma.api_BOLT_linesDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_linesPayload>;
+        };
+        update: {
+          args: Prisma.api_BOLT_linesUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_linesPayload>;
+        };
+        deleteMany: {
+          args: Prisma.api_BOLT_linesDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.api_BOLT_linesUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.api_BOLT_linesUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_linesPayload>[];
+        };
+        upsert: {
+          args: Prisma.api_BOLT_linesUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$api_BOLT_linesPayload>;
+        };
+        aggregate: {
+          args: Prisma.Api_BOLT_linesAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateApi_BOLT_lines>;
+        };
+        groupBy: {
+          args: Prisma.api_BOLT_linesGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Api_BOLT_linesGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.api_BOLT_linesCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Api_BOLT_linesCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    bolt_regex_patters: {
+      payload: Prisma.$bolt_regex_pattersPayload<ExtArgs>;
+      fields: Prisma.bolt_regex_pattersFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.bolt_regex_pattersFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$bolt_regex_pattersPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.bolt_regex_pattersFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$bolt_regex_pattersPayload>;
+        };
+        findFirst: {
+          args: Prisma.bolt_regex_pattersFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$bolt_regex_pattersPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.bolt_regex_pattersFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$bolt_regex_pattersPayload>;
+        };
+        findMany: {
+          args: Prisma.bolt_regex_pattersFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$bolt_regex_pattersPayload>[];
+        };
+        create: {
+          args: Prisma.bolt_regex_pattersCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$bolt_regex_pattersPayload>;
+        };
+        createMany: {
+          args: Prisma.bolt_regex_pattersCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.bolt_regex_pattersCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$bolt_regex_pattersPayload>[];
+        };
+        delete: {
+          args: Prisma.bolt_regex_pattersDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$bolt_regex_pattersPayload>;
+        };
+        update: {
+          args: Prisma.bolt_regex_pattersUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$bolt_regex_pattersPayload>;
+        };
+        deleteMany: {
+          args: Prisma.bolt_regex_pattersDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.bolt_regex_pattersUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.bolt_regex_pattersUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$bolt_regex_pattersPayload>[];
+        };
+        upsert: {
+          args: Prisma.bolt_regex_pattersUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$bolt_regex_pattersPayload>;
+        };
+        aggregate: {
+          args: Prisma.Bolt_regex_pattersAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBolt_regex_patters>;
+        };
+        groupBy: {
+          args: Prisma.bolt_regex_pattersGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Bolt_regex_pattersGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.bolt_regex_pattersCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Bolt_regex_pattersCountAggregateOutputType>
             | number;
         };
       };
@@ -2291,6 +2603,7 @@ export type Aggregator_offersScalarFieldEnum =
 export const GeneratedImageScalarFieldEnum = {
   id: "id",
   userId: "userId",
+  brandId: "brandId",
   prompt: "prompt",
   finalPrompt: "finalPrompt",
   provider: "provider",
@@ -2314,6 +2627,19 @@ export const GeneratedImageScalarFieldEnum = {
 export type GeneratedImageScalarFieldEnum =
   (typeof GeneratedImageScalarFieldEnum)[keyof typeof GeneratedImageScalarFieldEnum];
 
+export const BrandAssetScalarFieldEnum = {
+  id: "id",
+  brandId: "brandId",
+  name: "name",
+  localPath: "localPath",
+  contentType: "contentType",
+  sizeBytes: "sizeBytes",
+  createdAt: "createdAt",
+} as const;
+
+export type BrandAssetScalarFieldEnum =
+  (typeof BrandAssetScalarFieldEnum)[keyof typeof BrandAssetScalarFieldEnum];
+
 export const ReferenceImageScalarFieldEnum = {
   id: "id",
   userId: "userId",
@@ -2324,6 +2650,59 @@ export const ReferenceImageScalarFieldEnum = {
 
 export type ReferenceImageScalarFieldEnum =
   (typeof ReferenceImageScalarFieldEnum)[keyof typeof ReferenceImageScalarFieldEnum];
+
+export const Api_BOLT_headerScalarFieldEnum = {
+  id: "id",
+  documentid: "documentid",
+  documentdate: "documentdate",
+  invoicenumber: "invoicenumber",
+  timeframe: "timeframe",
+  scenario: "scenario",
+  je1_date: "je1_date",
+  je2_date: "je2_date",
+  bpcode: "bpcode",
+  bpname: "bpname",
+  bolt_storename: "bolt_storename",
+  distributionrule: "distributionrule",
+  project: "project",
+  erpdatabase: "erpdatabase",
+  totalpayout: "totalpayout",
+  createdat: "createdat",
+  erpsent: "erpsent",
+  erpcreatedat: "erpcreatedat",
+  erpcomments: "erpcomments",
+} as const;
+
+export type Api_BOLT_headerScalarFieldEnum =
+  (typeof Api_BOLT_headerScalarFieldEnum)[keyof typeof Api_BOLT_headerScalarFieldEnum];
+
+export const Api_BOLT_linesScalarFieldEnum = {
+  documentid: "documentid",
+  linenumber: "linenumber",
+  je_number: "je_number",
+  transtype: "transtype",
+  linedetails: "linedetails",
+  amount: "amount",
+  vatamount: "vatamount",
+  totalamount: "totalamount",
+  accountcode: "accountcode",
+  vatcode: "vatcode",
+} as const;
+
+export type Api_BOLT_linesScalarFieldEnum =
+  (typeof Api_BOLT_linesScalarFieldEnum)[keyof typeof Api_BOLT_linesScalarFieldEnum];
+
+export const Bolt_regex_pattersScalarFieldEnum = {
+  id: "id",
+  regex: "regex",
+  example: "example",
+  category: "category",
+  accountcode: "accountcode",
+  vatcode: "vatcode",
+} as const;
+
+export type Bolt_regex_pattersScalarFieldEnum =
+  (typeof Bolt_regex_pattersScalarFieldEnum)[keyof typeof Bolt_regex_pattersScalarFieldEnum];
 
 export const SortOrder = {
   asc: "asc",
@@ -2680,7 +3059,11 @@ export type GlobalOmitConfig = {
   subcategories?: Prisma.subcategoriesOmit;
   aggregator_offers?: Prisma.aggregator_offersOmit;
   generatedImage?: Prisma.GeneratedImageOmit;
+  brandAsset?: Prisma.BrandAssetOmit;
   referenceImage?: Prisma.ReferenceImageOmit;
+  api_BOLT_header?: Prisma.api_BOLT_headerOmit;
+  api_BOLT_lines?: Prisma.api_BOLT_linesOmit;
+  bolt_regex_patters?: Prisma.bolt_regex_pattersOmit;
 };
 
 /* Types for Logging */

@@ -27,6 +27,7 @@ export type AggregateGeneratedImage = {
 };
 
 export type GeneratedImageAvgAggregateOutputType = {
+  brandId: number | null;
   requestedWidth: number | null;
   requestedHeight: number | null;
   generationWidth: number | null;
@@ -35,6 +36,7 @@ export type GeneratedImageAvgAggregateOutputType = {
 };
 
 export type GeneratedImageSumAggregateOutputType = {
+  brandId: number | null;
   requestedWidth: number | null;
   requestedHeight: number | null;
   generationWidth: number | null;
@@ -45,6 +47,7 @@ export type GeneratedImageSumAggregateOutputType = {
 export type GeneratedImageMinAggregateOutputType = {
   id: string | null;
   userId: string | null;
+  brandId: number | null;
   prompt: string | null;
   finalPrompt: string | null;
   provider: string | null;
@@ -67,6 +70,7 @@ export type GeneratedImageMinAggregateOutputType = {
 export type GeneratedImageMaxAggregateOutputType = {
   id: string | null;
   userId: string | null;
+  brandId: number | null;
   prompt: string | null;
   finalPrompt: string | null;
   provider: string | null;
@@ -89,6 +93,7 @@ export type GeneratedImageMaxAggregateOutputType = {
 export type GeneratedImageCountAggregateOutputType = {
   id: number;
   userId: number;
+  brandId: number;
   prompt: number;
   finalPrompt: number;
   provider: number;
@@ -111,6 +116,7 @@ export type GeneratedImageCountAggregateOutputType = {
 };
 
 export type GeneratedImageAvgAggregateInputType = {
+  brandId?: true;
   requestedWidth?: true;
   requestedHeight?: true;
   generationWidth?: true;
@@ -119,6 +125,7 @@ export type GeneratedImageAvgAggregateInputType = {
 };
 
 export type GeneratedImageSumAggregateInputType = {
+  brandId?: true;
   requestedWidth?: true;
   requestedHeight?: true;
   generationWidth?: true;
@@ -129,6 +136,7 @@ export type GeneratedImageSumAggregateInputType = {
 export type GeneratedImageMinAggregateInputType = {
   id?: true;
   userId?: true;
+  brandId?: true;
   prompt?: true;
   finalPrompt?: true;
   provider?: true;
@@ -151,6 +159,7 @@ export type GeneratedImageMinAggregateInputType = {
 export type GeneratedImageMaxAggregateInputType = {
   id?: true;
   userId?: true;
+  brandId?: true;
   prompt?: true;
   finalPrompt?: true;
   provider?: true;
@@ -173,6 +182,7 @@ export type GeneratedImageMaxAggregateInputType = {
 export type GeneratedImageCountAggregateInputType = {
   id?: true;
   userId?: true;
+  brandId?: true;
   prompt?: true;
   finalPrompt?: true;
   provider?: true;
@@ -294,6 +304,7 @@ export type GeneratedImageGroupByArgs<
 export type GeneratedImageGroupByOutputType = {
   id: string;
   userId: string;
+  brandId: number | null;
   prompt: string;
   finalPrompt: string;
   provider: string;
@@ -339,6 +350,7 @@ export type GeneratedImageWhereInput = {
   NOT?: Prisma.GeneratedImageWhereInput | Prisma.GeneratedImageWhereInput[];
   id?: Prisma.StringFilter<"GeneratedImage"> | string;
   userId?: Prisma.StringFilter<"GeneratedImage"> | string;
+  brandId?: Prisma.IntNullableFilter<"GeneratedImage"> | number | null;
   prompt?: Prisma.StringFilter<"GeneratedImage"> | string;
   finalPrompt?: Prisma.StringFilter<"GeneratedImage"> | string;
   provider?: Prisma.StringFilter<"GeneratedImage"> | string;
@@ -360,11 +372,16 @@ export type GeneratedImageWhereInput = {
   durationMs?: Prisma.IntNullableFilter<"GeneratedImage"> | number | null;
   createdAt?: Prisma.DateTimeFilter<"GeneratedImage"> | Date | string;
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.userWhereInput>;
+  brand?: Prisma.XOR<
+    Prisma.BrandNullableScalarRelationFilter,
+    Prisma.brandWhereInput
+  > | null;
 };
 
 export type GeneratedImageOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
   userId?: Prisma.SortOrder;
+  brandId?: Prisma.SortOrderInput | Prisma.SortOrder;
   prompt?: Prisma.SortOrder;
   finalPrompt?: Prisma.SortOrder;
   provider?: Prisma.SortOrder;
@@ -384,6 +401,7 @@ export type GeneratedImageOrderByWithRelationInput = {
   durationMs?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   user?: Prisma.userOrderByWithRelationInput;
+  brand?: Prisma.brandOrderByWithRelationInput;
 };
 
 export type GeneratedImageWhereUniqueInput = Prisma.AtLeast<
@@ -393,6 +411,7 @@ export type GeneratedImageWhereUniqueInput = Prisma.AtLeast<
     OR?: Prisma.GeneratedImageWhereInput[];
     NOT?: Prisma.GeneratedImageWhereInput | Prisma.GeneratedImageWhereInput[];
     userId?: Prisma.StringFilter<"GeneratedImage"> | string;
+    brandId?: Prisma.IntNullableFilter<"GeneratedImage"> | number | null;
     prompt?: Prisma.StringFilter<"GeneratedImage"> | string;
     finalPrompt?: Prisma.StringFilter<"GeneratedImage"> | string;
     provider?: Prisma.StringFilter<"GeneratedImage"> | string;
@@ -417,6 +436,10 @@ export type GeneratedImageWhereUniqueInput = Prisma.AtLeast<
     durationMs?: Prisma.IntNullableFilter<"GeneratedImage"> | number | null;
     createdAt?: Prisma.DateTimeFilter<"GeneratedImage"> | Date | string;
     user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.userWhereInput>;
+    brand?: Prisma.XOR<
+      Prisma.BrandNullableScalarRelationFilter,
+      Prisma.brandWhereInput
+    > | null;
   },
   "id"
 >;
@@ -424,6 +447,7 @@ export type GeneratedImageWhereUniqueInput = Prisma.AtLeast<
 export type GeneratedImageOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
   userId?: Prisma.SortOrder;
+  brandId?: Prisma.SortOrderInput | Prisma.SortOrder;
   prompt?: Prisma.SortOrder;
   finalPrompt?: Prisma.SortOrder;
   provider?: Prisma.SortOrder;
@@ -459,6 +483,10 @@ export type GeneratedImageScalarWhereWithAggregatesInput = {
     | Prisma.GeneratedImageScalarWhereWithAggregatesInput[];
   id?: Prisma.StringWithAggregatesFilter<"GeneratedImage"> | string;
   userId?: Prisma.StringWithAggregatesFilter<"GeneratedImage"> | string;
+  brandId?:
+    | Prisma.IntNullableWithAggregatesFilter<"GeneratedImage">
+    | number
+    | null;
   prompt?: Prisma.StringWithAggregatesFilter<"GeneratedImage"> | string;
   finalPrompt?: Prisma.StringWithAggregatesFilter<"GeneratedImage"> | string;
   provider?: Prisma.StringWithAggregatesFilter<"GeneratedImage"> | string;
@@ -529,11 +557,13 @@ export type GeneratedImageCreateInput = {
   durationMs?: number | null;
   createdAt?: Date | string;
   user: Prisma.userCreateNestedOneWithoutGenerated_imagesInput;
+  brand?: Prisma.brandCreateNestedOneWithoutGenerated_imagesInput;
 };
 
 export type GeneratedImageUncheckedCreateInput = {
   id?: string;
   userId: string;
+  brandId?: number | null;
   prompt: string;
   finalPrompt: string;
   provider: string;
@@ -580,11 +610,13 @@ export type GeneratedImageUpdateInput = {
   durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   user?: Prisma.userUpdateOneRequiredWithoutGenerated_imagesNestedInput;
+  brand?: Prisma.brandUpdateOneWithoutGenerated_imagesNestedInput;
 };
 
 export type GeneratedImageUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   userId?: Prisma.StringFieldUpdateOperationsInput | string;
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   prompt?: Prisma.StringFieldUpdateOperationsInput | string;
   finalPrompt?: Prisma.StringFieldUpdateOperationsInput | string;
   provider?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -613,6 +645,7 @@ export type GeneratedImageUncheckedUpdateInput = {
 export type GeneratedImageCreateManyInput = {
   id?: string;
   userId: string;
+  brandId?: number | null;
   prompt: string;
   finalPrompt: string;
   provider: string;
@@ -663,6 +696,7 @@ export type GeneratedImageUpdateManyMutationInput = {
 export type GeneratedImageUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   userId?: Prisma.StringFieldUpdateOperationsInput | string;
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   prompt?: Prisma.StringFieldUpdateOperationsInput | string;
   finalPrompt?: Prisma.StringFieldUpdateOperationsInput | string;
   provider?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -701,6 +735,7 @@ export type GeneratedImageOrderByRelationAggregateInput = {
 export type GeneratedImageCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   userId?: Prisma.SortOrder;
+  brandId?: Prisma.SortOrder;
   prompt?: Prisma.SortOrder;
   finalPrompt?: Prisma.SortOrder;
   provider?: Prisma.SortOrder;
@@ -722,6 +757,7 @@ export type GeneratedImageCountOrderByAggregateInput = {
 };
 
 export type GeneratedImageAvgOrderByAggregateInput = {
+  brandId?: Prisma.SortOrder;
   requestedWidth?: Prisma.SortOrder;
   requestedHeight?: Prisma.SortOrder;
   generationWidth?: Prisma.SortOrder;
@@ -732,6 +768,7 @@ export type GeneratedImageAvgOrderByAggregateInput = {
 export type GeneratedImageMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   userId?: Prisma.SortOrder;
+  brandId?: Prisma.SortOrder;
   prompt?: Prisma.SortOrder;
   finalPrompt?: Prisma.SortOrder;
   provider?: Prisma.SortOrder;
@@ -754,6 +791,7 @@ export type GeneratedImageMaxOrderByAggregateInput = {
 export type GeneratedImageMinOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   userId?: Prisma.SortOrder;
+  brandId?: Prisma.SortOrder;
   prompt?: Prisma.SortOrder;
   finalPrompt?: Prisma.SortOrder;
   provider?: Prisma.SortOrder;
@@ -774,11 +812,122 @@ export type GeneratedImageMinOrderByAggregateInput = {
 };
 
 export type GeneratedImageSumOrderByAggregateInput = {
+  brandId?: Prisma.SortOrder;
   requestedWidth?: Prisma.SortOrder;
   requestedHeight?: Prisma.SortOrder;
   generationWidth?: Prisma.SortOrder;
   generationHeight?: Prisma.SortOrder;
   durationMs?: Prisma.SortOrder;
+};
+
+export type GeneratedImageCreateNestedManyWithoutBrandInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.GeneratedImageCreateWithoutBrandInput,
+        Prisma.GeneratedImageUncheckedCreateWithoutBrandInput
+      >
+    | Prisma.GeneratedImageCreateWithoutBrandInput[]
+    | Prisma.GeneratedImageUncheckedCreateWithoutBrandInput[];
+  connectOrCreate?:
+    | Prisma.GeneratedImageCreateOrConnectWithoutBrandInput
+    | Prisma.GeneratedImageCreateOrConnectWithoutBrandInput[];
+  createMany?: Prisma.GeneratedImageCreateManyBrandInputEnvelope;
+  connect?:
+    | Prisma.GeneratedImageWhereUniqueInput
+    | Prisma.GeneratedImageWhereUniqueInput[];
+};
+
+export type GeneratedImageUncheckedCreateNestedManyWithoutBrandInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.GeneratedImageCreateWithoutBrandInput,
+        Prisma.GeneratedImageUncheckedCreateWithoutBrandInput
+      >
+    | Prisma.GeneratedImageCreateWithoutBrandInput[]
+    | Prisma.GeneratedImageUncheckedCreateWithoutBrandInput[];
+  connectOrCreate?:
+    | Prisma.GeneratedImageCreateOrConnectWithoutBrandInput
+    | Prisma.GeneratedImageCreateOrConnectWithoutBrandInput[];
+  createMany?: Prisma.GeneratedImageCreateManyBrandInputEnvelope;
+  connect?:
+    | Prisma.GeneratedImageWhereUniqueInput
+    | Prisma.GeneratedImageWhereUniqueInput[];
+};
+
+export type GeneratedImageUpdateManyWithoutBrandNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.GeneratedImageCreateWithoutBrandInput,
+        Prisma.GeneratedImageUncheckedCreateWithoutBrandInput
+      >
+    | Prisma.GeneratedImageCreateWithoutBrandInput[]
+    | Prisma.GeneratedImageUncheckedCreateWithoutBrandInput[];
+  connectOrCreate?:
+    | Prisma.GeneratedImageCreateOrConnectWithoutBrandInput
+    | Prisma.GeneratedImageCreateOrConnectWithoutBrandInput[];
+  upsert?:
+    | Prisma.GeneratedImageUpsertWithWhereUniqueWithoutBrandInput
+    | Prisma.GeneratedImageUpsertWithWhereUniqueWithoutBrandInput[];
+  createMany?: Prisma.GeneratedImageCreateManyBrandInputEnvelope;
+  set?:
+    | Prisma.GeneratedImageWhereUniqueInput
+    | Prisma.GeneratedImageWhereUniqueInput[];
+  disconnect?:
+    | Prisma.GeneratedImageWhereUniqueInput
+    | Prisma.GeneratedImageWhereUniqueInput[];
+  delete?:
+    | Prisma.GeneratedImageWhereUniqueInput
+    | Prisma.GeneratedImageWhereUniqueInput[];
+  connect?:
+    | Prisma.GeneratedImageWhereUniqueInput
+    | Prisma.GeneratedImageWhereUniqueInput[];
+  update?:
+    | Prisma.GeneratedImageUpdateWithWhereUniqueWithoutBrandInput
+    | Prisma.GeneratedImageUpdateWithWhereUniqueWithoutBrandInput[];
+  updateMany?:
+    | Prisma.GeneratedImageUpdateManyWithWhereWithoutBrandInput
+    | Prisma.GeneratedImageUpdateManyWithWhereWithoutBrandInput[];
+  deleteMany?:
+    | Prisma.GeneratedImageScalarWhereInput
+    | Prisma.GeneratedImageScalarWhereInput[];
+};
+
+export type GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.GeneratedImageCreateWithoutBrandInput,
+        Prisma.GeneratedImageUncheckedCreateWithoutBrandInput
+      >
+    | Prisma.GeneratedImageCreateWithoutBrandInput[]
+    | Prisma.GeneratedImageUncheckedCreateWithoutBrandInput[];
+  connectOrCreate?:
+    | Prisma.GeneratedImageCreateOrConnectWithoutBrandInput
+    | Prisma.GeneratedImageCreateOrConnectWithoutBrandInput[];
+  upsert?:
+    | Prisma.GeneratedImageUpsertWithWhereUniqueWithoutBrandInput
+    | Prisma.GeneratedImageUpsertWithWhereUniqueWithoutBrandInput[];
+  createMany?: Prisma.GeneratedImageCreateManyBrandInputEnvelope;
+  set?:
+    | Prisma.GeneratedImageWhereUniqueInput
+    | Prisma.GeneratedImageWhereUniqueInput[];
+  disconnect?:
+    | Prisma.GeneratedImageWhereUniqueInput
+    | Prisma.GeneratedImageWhereUniqueInput[];
+  delete?:
+    | Prisma.GeneratedImageWhereUniqueInput
+    | Prisma.GeneratedImageWhereUniqueInput[];
+  connect?:
+    | Prisma.GeneratedImageWhereUniqueInput
+    | Prisma.GeneratedImageWhereUniqueInput[];
+  update?:
+    | Prisma.GeneratedImageUpdateWithWhereUniqueWithoutBrandInput
+    | Prisma.GeneratedImageUpdateWithWhereUniqueWithoutBrandInput[];
+  updateMany?:
+    | Prisma.GeneratedImageUpdateManyWithWhereWithoutBrandInput
+    | Prisma.GeneratedImageUpdateManyWithWhereWithoutBrandInput[];
+  deleteMany?:
+    | Prisma.GeneratedImageScalarWhereInput
+    | Prisma.GeneratedImageScalarWhereInput[];
 };
 
 export type GeneratedImageCreateNestedManyWithoutUserInput = {
@@ -895,8 +1044,32 @@ export type EnumGeneratedImageStatusFieldUpdateOperationsInput = {
   set?: $Enums.GeneratedImageStatus;
 };
 
-export type GeneratedImageCreateWithoutUserInput = {
+export type GeneratedImageCreateWithoutBrandInput = {
   id?: string;
+  prompt: string;
+  finalPrompt: string;
+  provider: string;
+  model?: string | null;
+  requestedWidth: number;
+  requestedHeight: number;
+  generationWidth: number;
+  generationHeight: number;
+  style?: string | null;
+  camera?: string | null;
+  aspectRatio?: string | null;
+  referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
+  localPath?: string | null;
+  remoteUrl?: string | null;
+  status: $Enums.GeneratedImageStatus;
+  errorMessage?: string | null;
+  durationMs?: number | null;
+  createdAt?: Date | string;
+  user: Prisma.userCreateNestedOneWithoutGenerated_imagesInput;
+};
+
+export type GeneratedImageUncheckedCreateWithoutBrandInput = {
+  id?: string;
+  userId: string;
   prompt: string;
   finalPrompt: string;
   provider: string;
@@ -917,8 +1090,108 @@ export type GeneratedImageCreateWithoutUserInput = {
   createdAt?: Date | string;
 };
 
+export type GeneratedImageCreateOrConnectWithoutBrandInput = {
+  where: Prisma.GeneratedImageWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.GeneratedImageCreateWithoutBrandInput,
+    Prisma.GeneratedImageUncheckedCreateWithoutBrandInput
+  >;
+};
+
+export type GeneratedImageCreateManyBrandInputEnvelope = {
+  data:
+    | Prisma.GeneratedImageCreateManyBrandInput
+    | Prisma.GeneratedImageCreateManyBrandInput[];
+  skipDuplicates?: boolean;
+};
+
+export type GeneratedImageUpsertWithWhereUniqueWithoutBrandInput = {
+  where: Prisma.GeneratedImageWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.GeneratedImageUpdateWithoutBrandInput,
+    Prisma.GeneratedImageUncheckedUpdateWithoutBrandInput
+  >;
+  create: Prisma.XOR<
+    Prisma.GeneratedImageCreateWithoutBrandInput,
+    Prisma.GeneratedImageUncheckedCreateWithoutBrandInput
+  >;
+};
+
+export type GeneratedImageUpdateWithWhereUniqueWithoutBrandInput = {
+  where: Prisma.GeneratedImageWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.GeneratedImageUpdateWithoutBrandInput,
+    Prisma.GeneratedImageUncheckedUpdateWithoutBrandInput
+  >;
+};
+
+export type GeneratedImageUpdateManyWithWhereWithoutBrandInput = {
+  where: Prisma.GeneratedImageScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.GeneratedImageUpdateManyMutationInput,
+    Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandInput
+  >;
+};
+
+export type GeneratedImageScalarWhereInput = {
+  AND?:
+    | Prisma.GeneratedImageScalarWhereInput
+    | Prisma.GeneratedImageScalarWhereInput[];
+  OR?: Prisma.GeneratedImageScalarWhereInput[];
+  NOT?:
+    | Prisma.GeneratedImageScalarWhereInput
+    | Prisma.GeneratedImageScalarWhereInput[];
+  id?: Prisma.StringFilter<"GeneratedImage"> | string;
+  userId?: Prisma.StringFilter<"GeneratedImage"> | string;
+  brandId?: Prisma.IntNullableFilter<"GeneratedImage"> | number | null;
+  prompt?: Prisma.StringFilter<"GeneratedImage"> | string;
+  finalPrompt?: Prisma.StringFilter<"GeneratedImage"> | string;
+  provider?: Prisma.StringFilter<"GeneratedImage"> | string;
+  model?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  requestedWidth?: Prisma.IntFilter<"GeneratedImage"> | number;
+  requestedHeight?: Prisma.IntFilter<"GeneratedImage"> | number;
+  generationWidth?: Prisma.IntFilter<"GeneratedImage"> | number;
+  generationHeight?: Prisma.IntFilter<"GeneratedImage"> | number;
+  style?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  camera?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  aspectRatio?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  referenceIds?: Prisma.JsonFilter<"GeneratedImage">;
+  localPath?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  remoteUrl?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  status?:
+    | Prisma.EnumGeneratedImageStatusFilter<"GeneratedImage">
+    | $Enums.GeneratedImageStatus;
+  errorMessage?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  durationMs?: Prisma.IntNullableFilter<"GeneratedImage"> | number | null;
+  createdAt?: Prisma.DateTimeFilter<"GeneratedImage"> | Date | string;
+};
+
+export type GeneratedImageCreateWithoutUserInput = {
+  id?: string;
+  prompt: string;
+  finalPrompt: string;
+  provider: string;
+  model?: string | null;
+  requestedWidth: number;
+  requestedHeight: number;
+  generationWidth: number;
+  generationHeight: number;
+  style?: string | null;
+  camera?: string | null;
+  aspectRatio?: string | null;
+  referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
+  localPath?: string | null;
+  remoteUrl?: string | null;
+  status: $Enums.GeneratedImageStatus;
+  errorMessage?: string | null;
+  durationMs?: number | null;
+  createdAt?: Date | string;
+  brand?: Prisma.brandCreateNestedOneWithoutGenerated_imagesInput;
+};
+
 export type GeneratedImageUncheckedCreateWithoutUserInput = {
   id?: string;
+  brandId?: number | null;
   prompt: string;
   finalPrompt: string;
   provider: string;
@@ -982,40 +1255,116 @@ export type GeneratedImageUpdateManyWithWhereWithoutUserInput = {
   >;
 };
 
-export type GeneratedImageScalarWhereInput = {
-  AND?:
-    | Prisma.GeneratedImageScalarWhereInput
-    | Prisma.GeneratedImageScalarWhereInput[];
-  OR?: Prisma.GeneratedImageScalarWhereInput[];
-  NOT?:
-    | Prisma.GeneratedImageScalarWhereInput
-    | Prisma.GeneratedImageScalarWhereInput[];
-  id?: Prisma.StringFilter<"GeneratedImage"> | string;
-  userId?: Prisma.StringFilter<"GeneratedImage"> | string;
-  prompt?: Prisma.StringFilter<"GeneratedImage"> | string;
-  finalPrompt?: Prisma.StringFilter<"GeneratedImage"> | string;
-  provider?: Prisma.StringFilter<"GeneratedImage"> | string;
-  model?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
-  requestedWidth?: Prisma.IntFilter<"GeneratedImage"> | number;
-  requestedHeight?: Prisma.IntFilter<"GeneratedImage"> | number;
-  generationWidth?: Prisma.IntFilter<"GeneratedImage"> | number;
-  generationHeight?: Prisma.IntFilter<"GeneratedImage"> | number;
-  style?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
-  camera?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
-  aspectRatio?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
-  referenceIds?: Prisma.JsonFilter<"GeneratedImage">;
-  localPath?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
-  remoteUrl?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+export type GeneratedImageCreateManyBrandInput = {
+  id?: string;
+  userId: string;
+  prompt: string;
+  finalPrompt: string;
+  provider: string;
+  model?: string | null;
+  requestedWidth: number;
+  requestedHeight: number;
+  generationWidth: number;
+  generationHeight: number;
+  style?: string | null;
+  camera?: string | null;
+  aspectRatio?: string | null;
+  referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
+  localPath?: string | null;
+  remoteUrl?: string | null;
+  status: $Enums.GeneratedImageStatus;
+  errorMessage?: string | null;
+  durationMs?: number | null;
+  createdAt?: Date | string;
+};
+
+export type GeneratedImageUpdateWithoutBrandInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  prompt?: Prisma.StringFieldUpdateOperationsInput | string;
+  finalPrompt?: Prisma.StringFieldUpdateOperationsInput | string;
+  provider?: Prisma.StringFieldUpdateOperationsInput | string;
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  requestedWidth?: Prisma.IntFieldUpdateOperationsInput | number;
+  requestedHeight?: Prisma.IntFieldUpdateOperationsInput | number;
+  generationWidth?: Prisma.IntFieldUpdateOperationsInput | number;
+  generationHeight?: Prisma.IntFieldUpdateOperationsInput | number;
+  style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
+  localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?:
-    | Prisma.EnumGeneratedImageStatusFilter<"GeneratedImage">
+    | Prisma.EnumGeneratedImageStatusFieldUpdateOperationsInput
     | $Enums.GeneratedImageStatus;
-  errorMessage?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
-  durationMs?: Prisma.IntNullableFilter<"GeneratedImage"> | number | null;
-  createdAt?: Prisma.DateTimeFilter<"GeneratedImage"> | Date | string;
+  errorMessage?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  user?: Prisma.userUpdateOneRequiredWithoutGenerated_imagesNestedInput;
+};
+
+export type GeneratedImageUncheckedUpdateWithoutBrandInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  userId?: Prisma.StringFieldUpdateOperationsInput | string;
+  prompt?: Prisma.StringFieldUpdateOperationsInput | string;
+  finalPrompt?: Prisma.StringFieldUpdateOperationsInput | string;
+  provider?: Prisma.StringFieldUpdateOperationsInput | string;
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  requestedWidth?: Prisma.IntFieldUpdateOperationsInput | number;
+  requestedHeight?: Prisma.IntFieldUpdateOperationsInput | number;
+  generationWidth?: Prisma.IntFieldUpdateOperationsInput | number;
+  generationHeight?: Prisma.IntFieldUpdateOperationsInput | number;
+  style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
+  localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumGeneratedImageStatusFieldUpdateOperationsInput
+    | $Enums.GeneratedImageStatus;
+  errorMessage?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type GeneratedImageUncheckedUpdateManyWithoutBrandInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  userId?: Prisma.StringFieldUpdateOperationsInput | string;
+  prompt?: Prisma.StringFieldUpdateOperationsInput | string;
+  finalPrompt?: Prisma.StringFieldUpdateOperationsInput | string;
+  provider?: Prisma.StringFieldUpdateOperationsInput | string;
+  model?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  requestedWidth?: Prisma.IntFieldUpdateOperationsInput | number;
+  requestedHeight?: Prisma.IntFieldUpdateOperationsInput | number;
+  generationWidth?: Prisma.IntFieldUpdateOperationsInput | number;
+  generationHeight?: Prisma.IntFieldUpdateOperationsInput | number;
+  style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
+  localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumGeneratedImageStatusFieldUpdateOperationsInput
+    | $Enums.GeneratedImageStatus;
+  errorMessage?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type GeneratedImageCreateManyUserInput = {
   id?: string;
+  brandId?: number | null;
   prompt: string;
   finalPrompt: string;
   provider: string;
@@ -1061,10 +1410,12 @@ export type GeneratedImageUpdateWithoutUserInput = {
     | null;
   durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  brand?: Prisma.brandUpdateOneWithoutGenerated_imagesNestedInput;
 };
 
 export type GeneratedImageUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   prompt?: Prisma.StringFieldUpdateOperationsInput | string;
   finalPrompt?: Prisma.StringFieldUpdateOperationsInput | string;
   provider?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1092,6 +1443,7 @@ export type GeneratedImageUncheckedUpdateWithoutUserInput = {
 
 export type GeneratedImageUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   prompt?: Prisma.StringFieldUpdateOperationsInput | string;
   finalPrompt?: Prisma.StringFieldUpdateOperationsInput | string;
   provider?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1124,6 +1476,7 @@ export type GeneratedImageSelect<
   {
     id?: boolean;
     userId?: boolean;
+    brandId?: boolean;
     prompt?: boolean;
     finalPrompt?: boolean;
     provider?: boolean;
@@ -1143,6 +1496,7 @@ export type GeneratedImageSelect<
     durationMs?: boolean;
     createdAt?: boolean;
     user?: boolean | Prisma.userDefaultArgs<ExtArgs>;
+    brand?: boolean | Prisma.GeneratedImage$brandArgs<ExtArgs>;
   },
   ExtArgs["result"]["generatedImage"]
 >;
@@ -1154,6 +1508,7 @@ export type GeneratedImageSelectCreateManyAndReturn<
   {
     id?: boolean;
     userId?: boolean;
+    brandId?: boolean;
     prompt?: boolean;
     finalPrompt?: boolean;
     provider?: boolean;
@@ -1173,6 +1528,7 @@ export type GeneratedImageSelectCreateManyAndReturn<
     durationMs?: boolean;
     createdAt?: boolean;
     user?: boolean | Prisma.userDefaultArgs<ExtArgs>;
+    brand?: boolean | Prisma.GeneratedImage$brandArgs<ExtArgs>;
   },
   ExtArgs["result"]["generatedImage"]
 >;
@@ -1184,6 +1540,7 @@ export type GeneratedImageSelectUpdateManyAndReturn<
   {
     id?: boolean;
     userId?: boolean;
+    brandId?: boolean;
     prompt?: boolean;
     finalPrompt?: boolean;
     provider?: boolean;
@@ -1203,6 +1560,7 @@ export type GeneratedImageSelectUpdateManyAndReturn<
     durationMs?: boolean;
     createdAt?: boolean;
     user?: boolean | Prisma.userDefaultArgs<ExtArgs>;
+    brand?: boolean | Prisma.GeneratedImage$brandArgs<ExtArgs>;
   },
   ExtArgs["result"]["generatedImage"]
 >;
@@ -1210,6 +1568,7 @@ export type GeneratedImageSelectUpdateManyAndReturn<
 export type GeneratedImageSelectScalar = {
   id?: boolean;
   userId?: boolean;
+  brandId?: boolean;
   prompt?: boolean;
   finalPrompt?: boolean;
   provider?: boolean;
@@ -1236,6 +1595,7 @@ export type GeneratedImageOmit<
 > = runtime.Types.Extensions.GetOmit<
   | "id"
   | "userId"
+  | "brandId"
   | "prompt"
   | "finalPrompt"
   | "provider"
@@ -1261,18 +1621,21 @@ export type GeneratedImageInclude<
     runtime.Types.Extensions.DefaultArgs,
 > = {
   user?: boolean | Prisma.userDefaultArgs<ExtArgs>;
+  brand?: boolean | Prisma.GeneratedImage$brandArgs<ExtArgs>;
 };
 export type GeneratedImageIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
   user?: boolean | Prisma.userDefaultArgs<ExtArgs>;
+  brand?: boolean | Prisma.GeneratedImage$brandArgs<ExtArgs>;
 };
 export type GeneratedImageIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
   user?: boolean | Prisma.userDefaultArgs<ExtArgs>;
+  brand?: boolean | Prisma.GeneratedImage$brandArgs<ExtArgs>;
 };
 
 export type $GeneratedImagePayload<
@@ -1282,11 +1645,13 @@ export type $GeneratedImagePayload<
   name: "GeneratedImage";
   objects: {
     user: Prisma.$userPayload<ExtArgs>;
+    brand: Prisma.$brandPayload<ExtArgs> | null;
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
       id: string;
       userId: string;
+      brandId: number | null;
       prompt: string;
       finalPrompt: string;
       provider: string;
@@ -1881,6 +2246,19 @@ export interface Prisma__GeneratedImageClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  brand<T extends Prisma.GeneratedImage$brandArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.GeneratedImage$brandArgs<ExtArgs>>,
+  ): Prisma.Prisma__brandClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$brandPayload<ExtArgs>,
+      T,
+      "findUniqueOrThrow",
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1925,6 +2303,7 @@ export interface Prisma__GeneratedImageClient<
 export interface GeneratedImageFieldRefs {
   readonly id: Prisma.FieldRef<"GeneratedImage", "String">;
   readonly userId: Prisma.FieldRef<"GeneratedImage", "String">;
+  readonly brandId: Prisma.FieldRef<"GeneratedImage", "Int">;
   readonly prompt: Prisma.FieldRef<"GeneratedImage", "String">;
   readonly finalPrompt: Prisma.FieldRef<"GeneratedImage", "String">;
   readonly provider: Prisma.FieldRef<"GeneratedImage", "String">;
@@ -2411,6 +2790,28 @@ export type GeneratedImageDeleteManyArgs<
    * Limit how many GeneratedImages to delete.
    */
   limit?: number;
+};
+
+/**
+ * GeneratedImage.brand
+ */
+export type GeneratedImage$brandArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the brand
+   */
+  select?: Prisma.brandSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the brand
+   */
+  omit?: Prisma.brandOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.brandInclude<ExtArgs> | null;
+  where?: Prisma.brandWhereInput;
 };
 
 /**

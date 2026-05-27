@@ -6,6 +6,7 @@ import {
   parseRequestedSize,
 } from "$lib/server/image-size";
 import { buildImageGeneratorConfig } from "$lib/services/image-providers/config.server";
+import { getBrandGuidelines } from "$lib/services/brand-context/brand-context.server";
 import type { GeneratedImageDTO } from "./image-generator";
 
 export const generateBodySchema = z.object({
@@ -17,6 +18,8 @@ export const generateBodySchema = z.object({
   camera: z.string().min(1).optional(),
   aspectRatio: z.enum(["square", "widescreen", "tiktok"]).optional(),
   references: z.array(z.string().min(1)).optional(),
+  brandId: z.number().int().positive().optional(),
+  brandGuidelines: z.string().max(50_000).optional(),
   allModels: z.boolean().optional(),
   samplesPerModel: z.number().int().positive().optional(),
 });
@@ -47,8 +50,12 @@ export function buildFinalPrompt(input: {
   style?: string | null;
   camera?: string | null;
   aspectRatio?: string | null;
+  brandGuidelines?: string | null;
 }): string {
   const parts: string[] = [];
+  if (input.brandGuidelines && input.brandGuidelines.trim().length > 0) {
+    parts.push(input.brandGuidelines.trim());
+  }
   if (input.style && input.style !== "none") {
     parts.push(`Style: ${input.style}.`);
   }
@@ -79,9 +86,8 @@ export async function createPendingGenerations(
     );
   }
 
-  const samplesPerModel = args.body.allModels
-    ? (args.body.samplesPerModel ?? 3)
-    : 1;
+  const samplesPerModel =
+    args.body.samplesPerModel ?? (args.body.allModels ? 3 : 1);
   if (samplesPerModel > env.SAMPLES_PER_MODEL_MAX) {
     throw new GenerateValidationError(
       `samplesPerModel ${samplesPerModel} exceeds max ${env.SAMPLES_PER_MODEL_MAX}`,
@@ -116,11 +122,41 @@ export async function createPendingGenerations(
     }
   }
 
+  const brandId = args.body.brandId ?? null;
+  let brandGuidelines: string | null = null;
+  if (brandId !== null) {
+    const assignment = await prisma.user_brand.findUnique({
+      where: { userId_brandId: { userId: args.userId, brandId } },
+      select: { brandId: true },
+    });
+    if (!assignment) {
+      throw new GenerateValidationError(
+        `Brand ${brandId} is not assigned to this user`,
+      );
+    }
+    const brand = await prisma.brand.findUnique({
+      where: { id: brandId },
+      select: { slug: true, active: true },
+    });
+    if (!brand || !brand.active || !brand.slug) {
+      throw new GenerateValidationError(
+        `Brand ${brandId} is not available for image generation`,
+      );
+    }
+    // A client-supplied override (edited in the composer) takes precedence over
+    // the stored guidelines file; undefined means "use the brand's saved file".
+    brandGuidelines =
+      args.body.brandGuidelines !== undefined
+        ? args.body.brandGuidelines
+        : await getBrandGuidelines(brand.slug, env.UPLOADS_DIR);
+  }
+
   const finalPrompt = buildFinalPrompt({
     prompt: args.body.prompt,
     style: args.body.style,
     camera: args.body.camera,
     aspectRatio: args.body.aspectRatio,
+    brandGuidelines,
   });
 
   const rows: GeneratedImageDTO[] = [];
@@ -129,6 +165,7 @@ export async function createPendingGenerations(
       const row = await prisma.generatedImage.create({
         data: {
           userId: args.userId,
+          brandId,
           prompt: args.body.prompt,
           finalPrompt,
           provider: args.body.provider,

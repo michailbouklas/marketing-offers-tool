@@ -16,13 +16,25 @@ vi.mock("$lib/server/prisma", () => ({
     referenceImage: {
       findMany: vi.fn(),
     },
+    user_brand: {
+      findUnique: vi.fn(),
+    },
+    brand: {
+      findUnique: vi.fn(),
+    },
   },
+}));
+
+vi.mock("$lib/services/brand-context/brand-context.server", () => ({
+  getBrandGuidelines: vi.fn(),
 }));
 
 const envModule = await import("$lib/server/env");
 const configModule =
   await import("$lib/services/image-providers/config.server");
 const prismaModule = await import("$lib/server/prisma");
+const brandContextModule =
+  await import("$lib/services/brand-context/brand-context.server");
 const { buildFinalPrompt, createPendingGenerations, GenerateValidationError } =
   await import("./generate.server");
 
@@ -35,6 +47,18 @@ const createMock = prismaModule.prisma.generatedImage
   .create as unknown as ReturnType<typeof vi.fn>;
 const refFindMock = prismaModule.prisma.referenceImage
   .findMany as unknown as ReturnType<typeof vi.fn>;
+const userBrandFindMock = (
+  prismaModule.prisma as unknown as {
+    user_brand: { findUnique: ReturnType<typeof vi.fn> };
+  }
+).user_brand.findUnique;
+const brandFindMock = (
+  prismaModule.prisma as unknown as {
+    brand: { findUnique: ReturnType<typeof vi.fn> };
+  }
+).brand.findUnique;
+const getBrandGuidelinesMock =
+  brandContextModule.getBrandGuidelines as unknown as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   mockEnv.mockReturnValue({
@@ -68,6 +92,9 @@ beforeEach(() => {
     createdAt: new Date("2026-05-26T12:00:00.000Z"),
   }));
   refFindMock.mockResolvedValue([]);
+  userBrandFindMock.mockResolvedValue(null);
+  brandFindMock.mockResolvedValue(null);
+  getBrandGuidelinesMock.mockResolvedValue(null);
 });
 
 afterEach(() => {
@@ -101,6 +128,26 @@ describe("buildFinalPrompt", () => {
         aspectRatio: "none",
       }),
     ).toBe("Camera: macro shot. a cat");
+  });
+
+  it("prepends brand guidelines before style/camera/aspect/prompt", () => {
+    expect(
+      buildFinalPrompt({
+        prompt: "a cat",
+        style: "photorealistic",
+        camera: "macro shot",
+        aspectRatio: "widescreen",
+        brandGuidelines: "Brand: vibrant colours.",
+      }),
+    ).toBe(
+      "Brand: vibrant colours. Style: photorealistic. Camera: macro shot. Aspect ratio: widescreen. a cat",
+    );
+  });
+
+  it("skips blank/whitespace brand guidelines", () => {
+    expect(buildFinalPrompt({ prompt: "a cat", brandGuidelines: "   " })).toBe(
+      "a cat",
+    );
   });
 });
 
@@ -239,5 +286,124 @@ describe("createPendingGenerations", () => {
       generationWidth: 1536,
       generationHeight: 1024,
     });
+  });
+
+  it("rejects an unassigned brandId with GenerateValidationError", async () => {
+    userBrandFindMock.mockResolvedValue(null);
+    await expect(
+      createPendingGenerations({
+        userId: "user-1",
+        body: { prompt: "x", provider: "imagerouter", brandId: 42 },
+      }),
+    ).rejects.toBeInstanceOf(GenerateValidationError);
+    expect(createMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects an assigned but inactive / slug-less brand", async () => {
+    userBrandFindMock.mockResolvedValue({ brandId: 42 });
+    brandFindMock.mockResolvedValue({ slug: "", active: true });
+    await expect(
+      createPendingGenerations({
+        userId: "user-1",
+        body: { prompt: "x", provider: "imagerouter", brandId: 42 },
+      }),
+    ).rejects.toBeInstanceOf(GenerateValidationError);
+    expect(createMock).not.toHaveBeenCalled();
+  });
+
+  it("prepends brand guidelines and persists brandId on each row", async () => {
+    userBrandFindMock.mockResolvedValue({ brandId: 42 });
+    brandFindMock.mockResolvedValue({ slug: "acme", active: true });
+    getBrandGuidelinesMock.mockResolvedValue("Brand rules: pop colours.");
+
+    const rows = await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "a cat",
+        provider: "imagerouter",
+        style: "photorealistic",
+        brandId: 42,
+      },
+    });
+
+    expect(getBrandGuidelinesMock).toHaveBeenCalledWith("acme", "./uploads");
+    expect(rows[0]!.finalPrompt.startsWith("Brand rules: pop colours.")).toBe(
+      true,
+    );
+    for (const call of createMock.mock.calls) {
+      expect(call[0]!.data.brandId).toBe(42);
+    }
+  });
+
+  it("persists null brandId when none is provided", async () => {
+    await createPendingGenerations({
+      userId: "user-1",
+      body: { prompt: "x", provider: "imagerouter" },
+    });
+    expect(createMock.mock.calls[0]![0].data.brandId).toBeNull();
+    expect(userBrandFindMock).not.toHaveBeenCalled();
+  });
+
+  it("honors samplesPerModel for a single model (allModels=false)", async () => {
+    const rows = await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "a cat",
+        provider: "imagerouter",
+        model: "gpt-image-1",
+        samplesPerModel: 3,
+      },
+    });
+    expect(rows).toHaveLength(3);
+    for (const call of createMock.mock.calls) {
+      expect(call[0]!.data.model).toBe("gpt-image-1");
+    }
+  });
+
+  it("rejects samplesPerModel > max even for a single model", async () => {
+    await expect(
+      createPendingGenerations({
+        userId: "user-1",
+        body: { prompt: "x", provider: "imagerouter", samplesPerModel: 999 },
+      }),
+    ).rejects.toBeInstanceOf(GenerateValidationError);
+    expect(createMock).not.toHaveBeenCalled();
+  });
+
+  it("uses a client-supplied brandGuidelines override instead of the file", async () => {
+    userBrandFindMock.mockResolvedValue({ brandId: 42 });
+    brandFindMock.mockResolvedValue({ slug: "acme", active: true });
+    getBrandGuidelinesMock.mockResolvedValue("STORED guidelines.");
+
+    const rows = await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "a cat",
+        provider: "imagerouter",
+        brandId: 42,
+        brandGuidelines: "EDITED guidelines.",
+      },
+    });
+
+    expect(getBrandGuidelinesMock).not.toHaveBeenCalled();
+    expect(rows[0]!.finalPrompt.startsWith("EDITED guidelines.")).toBe(true);
+  });
+
+  it("treats an empty brandGuidelines override as no guidelines prefix", async () => {
+    userBrandFindMock.mockResolvedValue({ brandId: 42 });
+    brandFindMock.mockResolvedValue({ slug: "acme", active: true });
+
+    const rows = await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "a cat",
+        provider: "imagerouter",
+        brandId: 42,
+        brandGuidelines: "",
+      },
+    });
+
+    expect(getBrandGuidelinesMock).not.toHaveBeenCalled();
+    expect(rows[0]!.finalPrompt).toBe("a cat");
   });
 });

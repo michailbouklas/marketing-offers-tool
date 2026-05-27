@@ -213,3 +213,72 @@ Providers whose API key is unset are hidden from the dropdown via `/api/images/c
 
 - `UPLOADS_DIR` location in production deployment (Docker volume) — document during Polish phase.
 - Garbage collection for orphaned reference images that never end up in a `GeneratedImage.referenceIds` — defer; track if disk fills.
+
+## Brand context (v2)
+
+Reverses the v1 "Brand pipeline" deferral (see _Deltas from prototype_ and _Non-goals_). Adds optional brand selection on the composer, brand-owned reference assets, and admin-managed brand guidelines.
+
+### Selection model
+
+- Single-select on `/image-generator`: clicking a brand button highlights it; clicking again clears.
+- Brand visibility on the composer continues to come from `user_brand` assignments; no extra grants are introduced.
+- Selection is page-local — it does not persist across navigations and is reset between visits.
+- The composer's Enhance flow is **not** brand-aware; brand guidelines apply only to generation, not enhancement.
+
+### File layout
+
+All brand files live under `UPLOADS_DIR`:
+
+- `${UPLOADS_DIR}/brands/${slug}/guidelines.md` — markdown guidelines, 1 file per brand.
+- `${UPLOADS_DIR}/brands/${slug}/assets/<assetId>.<ext>` — brand-owned reference images.
+
+`brand.slug` is the on-disk key (human-readable, stable for backups). An empty slug blocks uploads and guideline edits with a 400 from the admin endpoints.
+
+### `finalPrompt` ordering
+
+`buildFinalPrompt` prepends the brand guidelines string at the start, before any style/camera/aspect parts, before the user prompt. Order:
+
+```
+<brand guidelines> Style: <…>. Camera: <…>. Aspect ratio: <…>. <user prompt>
+```
+
+Empty/whitespace guidelines are skipped.
+
+### Asset → reference materialisation
+
+Picking a brand asset in the gallery dialog `POST`s to `/api/images/references/from-brand-asset`, which:
+
+1. Verifies the asset's brand is assigned to the calling user (403 otherwise).
+2. Copies the file (not a symlink) from `BrandAsset.localPath` to `${UPLOADS_DIR}/references/<newId>.<ext>`.
+3. Creates a per-user `ReferenceImage` row pointing at that new file.
+
+This keeps `orchestrate.server.ts` untouched — the orchestrator still sees a plain `ReferenceImage` with a local path it owns.
+
+### Persistence
+
+- `GeneratedImage.brandId` (nullable, `onDelete: SetNull`) records which brand a generation was attributed to.
+- `BrandAsset { id, brandId, name, localPath, contentType, sizeBytes, createdAt }` is the row table; one row per uploaded file.
+
+### Admin route
+
+`/admin/brands` (gated by `requireAdminUser`) lists brands with their asset count.
+`/admin/brands/[id]` exposes:
+
+- Guidelines markdown editor (PUT `/api/admin/brands/[brandId]/guidelines`, max 50 KB).
+- Multi-file drop-zone upload (POST `/api/admin/brands/[brandId]/assets`).
+- Per-asset delete with confirmation (DELETE `/api/admin/brands/[brandId]/assets/[assetId]`).
+
+### API surface added
+
+| Method | Path                                           | Auth  | Purpose                                       |
+| ------ | ---------------------------------------------- | ----- | --------------------------------------------- |
+| GET    | `/api/brand-assets?brandId=<n>`                | user  | List a brand's assets (user must be assigned) |
+| GET    | `/api/brand-assets/[id]`                       | user  | Stream a single asset binary                  |
+| POST   | `/api/images/references/from-brand-asset`      | user  | Materialise asset as a personal reference     |
+| GET    | `/api/admin/brands/[brandId]/assets`           | admin | List brand assets                             |
+| POST   | `/api/admin/brands/[brandId]/assets`           | admin | Multi-file upload                             |
+| DELETE | `/api/admin/brands/[brandId]/assets/[assetId]` | admin | Delete asset (row + file)                     |
+| GET    | `/api/admin/brands/[brandId]/guidelines`       | admin | Read guidelines markdown                      |
+| PUT    | `/api/admin/brands/[brandId]/guidelines`       | admin | Write guidelines markdown                     |
+
+`POST /api/images/generate` now accepts an optional `brandId: number`; the server rejects unassigned brands with 400.

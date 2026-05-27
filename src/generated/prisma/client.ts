@@ -142,7 +142,27 @@ export type aggregator_offers = Prisma.aggregator_offersModel;
  */
 export type GeneratedImage = Prisma.GeneratedImageModel;
 /**
+ * Model BrandAsset
+ *
+ */
+export type BrandAsset = Prisma.BrandAssetModel;
+/**
  * Model ReferenceImage
  *
  */
 export type ReferenceImage = Prisma.ReferenceImageModel;
+/**
+ * Model api_BOLT_header
+ *
+ */
+export type api_BOLT_header = Prisma.api_BOLT_headerModel;
+/**
+ * Model api_BOLT_lines
+ *
+ */
+export type api_BOLT_lines = Prisma.api_BOLT_linesModel;
+/**
+ * Model bolt_regex_patters
+ *
+ */
+export type bolt_regex_patters = Prisma.bolt_regex_pattersModel;

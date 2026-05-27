@@ -44,11 +44,11 @@
 
 ## Phase 4: Polish
 
-| Task | 内容                                                                                                                                                                                                                      | DoD                                                                  | Depends | Status      |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------- | ----------- |
-| 4.1  | Run `bun run svelte-autofixer`, `bun run check`, `bun run lint`, `bun run test`. Fix any new findings. [tdd:skip:meta-task]                                                                                               | All commands exit 0                                                  | 3.7     | cc:完了     |
-| 4.2  | Manual smoke: log in as a regular user, generate with each provider, generate with All Models (verify 3 × N skeletons), upload reference, edit via Re-prompt, edit via reference, download. Document any provider quirks. | Smoke checklist attached to PR with screenshots                      | 4.1     | cc:TODO     |
-| 4.3  | Deploy doc note: `UPLOADS_DIR` must point at a persistent volume. Update README / runbook. [tdd:skip:docs-only]                                                                                                           | One paragraph added to README or `docs/` documenting the requirement | 4.1     | cc:完了     |
+| Task | 内容                                                                                                                                                                                                                      | DoD                                                                  | Depends | Status  |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------- | ------- |
+| 4.1  | Run `bun run svelte-autofixer`, `bun run check`, `bun run lint`, `bun run test`. Fix any new findings. [tdd:skip:meta-task]                                                                                               | All commands exit 0                                                  | 3.7     | cc:完了 |
+| 4.2  | Manual smoke: log in as a regular user, generate with each provider, generate with All Models (verify 3 × N skeletons), upload reference, edit via Re-prompt, edit via reference, download. Document any provider quirks. | Smoke checklist attached to PR with screenshots                      | 4.1     | cc:TODO |
+| 4.3  | Deploy doc note: `UPLOADS_DIR` must point at a persistent volume. Update README / runbook. [tdd:skip:docs-only]                                                                                                           | One paragraph added to README or `docs/` documenting the requirement | 4.1     | cc:完了 |
 
 ---
 

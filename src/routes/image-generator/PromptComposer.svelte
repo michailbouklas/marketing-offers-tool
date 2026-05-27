@@ -33,6 +33,7 @@
     config: ImageGeneratorConfig;
     busy?: boolean;
     initial?: Partial<ComposerState> | null;
+    brandGuidelines?: string | null;
     onSubmit: (state: SubmitPayload) => void;
     onUploadReferences?: (files: File[]) => Promise<string[]>;
   }
@@ -41,6 +42,7 @@
     config,
     busy = false,
     initial = null,
+    brandGuidelines = null,
     onSubmit,
     onUploadReferences,
   }: Props = $props();
@@ -64,7 +66,24 @@
   let samplesPerModel = $state(3);
   let referenceFiles = $state<File[]>([]);
   let preUploadedReferenceIds = $state<string[]>([]);
+  let guidelinesText = $state("");
+  let showGuidelines = $state(false);
   let didInit = $state(false);
+
+  // Keep the editable guidelines in sync with the selected brand. Editing the
+  // textarea detaches from this until a different brand's guidelines arrive.
+  let lastBrandGuidelines = $state<string | null>(null);
+  $effect(() => {
+    if (brandGuidelines !== lastBrandGuidelines) {
+      lastBrandGuidelines = brandGuidelines;
+      guidelinesText = brandGuidelines ?? "";
+      if (!brandGuidelines) showGuidelines = false;
+    }
+  });
+
+  const hasBrandGuidelines = $derived(
+    typeof brandGuidelines === "string" && brandGuidelines.trim().length > 0,
+  );
 
   $effect(() => {
     if (didInit) return;
@@ -83,6 +102,15 @@
   });
 
   const samplesMax = $derived(Math.max(1, config.samplesPerModelMax));
+
+  // Clamp to [1, samplesMax] so the user can never request more than the
+  // server's SAMPLES_PER_MODEL_MAX (applies to single-model runs too).
+  $effect(() => {
+    const n = Number(samplesPerModel);
+    if (!Number.isFinite(n)) return;
+    const clamped = Math.min(samplesMax, Math.max(1, Math.floor(n)));
+    if (clamped !== samplesPerModel) samplesPerModel = clamped;
+  });
 
   const providerModels = $derived(
     config.providers.find((p) => p.id === provider)?.models ?? [],
@@ -128,6 +156,7 @@
       samplesPerModel,
       referenceIds,
       referenceFiles,
+      brandGuidelines: hasBrandGuidelines ? guidelinesText : undefined,
     });
 
     referenceFiles = [];
@@ -138,6 +167,10 @@
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
     referenceFiles = Array.from(input.files);
+  }
+
+  function removeReference(id: string) {
+    preUploadedReferenceIds = preUploadedReferenceIds.filter((r) => r !== id);
   }
 
   export function loadFrom(state: Partial<ComposerState>) {
@@ -177,6 +210,38 @@
             bind:value={prompt}
           />
         </div>
+
+        {#if hasBrandGuidelines}
+          <div class="grid gap-2">
+            <div class="flex items-center justify-between">
+              <Label for="brandGuidelines">Brand guidelines</Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onclick={() => (showGuidelines = !showGuidelines)}
+              >
+                {showGuidelines ? "Hide" : "Edit guidelines"}
+              </Button>
+            </div>
+            {#if showGuidelines}
+              <Textarea
+                id="brandGuidelines"
+                rows={5}
+                bind:value={guidelinesText}
+              />
+              <p class="text-muted-foreground text-xs">
+                Prepended to the prompt for this brand. Edits apply to this
+                session's generations only and are not saved back to the brand.
+              </p>
+            {:else}
+              <p class="text-muted-foreground text-xs">
+                This brand's guidelines will be applied. Click "Edit guidelines"
+                to review or tweak them for this generation.
+              </p>
+            {/if}
+          </div>
+        {/if}
 
         <div class="grid gap-3 sm:grid-cols-2">
           <div class="grid gap-2">
@@ -262,12 +327,29 @@
             onchange={handleFileSelect}
           />
           {#if preUploadedReferenceIds.length > 0}
-            <p class="text-muted-foreground text-xs">
-              {preUploadedReferenceIds.length} pre-attached reference{preUploadedReferenceIds.length ===
-              1
-                ? ""
-                : "s"}
-            </p>
+            <div class="flex flex-wrap gap-2">
+              {#each preUploadedReferenceIds as refId (refId)}
+                <div
+                  class="border-input bg-muted relative size-16 overflow-hidden rounded-md border"
+                >
+                  <img
+                    src={`/api/images/references/${refId}`}
+                    alt="Attached reference"
+                    class="size-full object-cover"
+                    loading="lazy"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Remove reference"
+                    title="Remove reference"
+                    class="bg-background/90 text-foreground hover:bg-destructive hover:text-destructive-foreground absolute top-0.5 right-0.5 flex size-5 items-center justify-center rounded-full border text-xs leading-none shadow-sm"
+                    onclick={() => removeReference(refId)}
+                  >
+                    ×
+                  </button>
+                </div>
+              {/each}
+            </div>
           {/if}
         </div>
 
@@ -289,10 +371,11 @@
               type="number"
               min={1}
               max={samplesMax}
+              step={1}
               class="w-20"
               bind:value={samplesPerModel}
-              disabled={!allModels}
             />
+            <span class="text-muted-foreground text-xs">max {samplesMax}</span>
           </div>
         </div>
 
