@@ -17,7 +17,7 @@ description: "Skill for the Server area of marketing-offers-tool. 82 symbols acr
 
 | File | Symbols |
 |------|---------|
-| `src/lib/server/brand-storage.ts` | readBrandGuidelines, ensureSafeSlug, brandDir, brandGuidelinesPath, ensureBrandDir (+7) |
+| `src/lib/server/brand-storage.ts` | ensureSafeSlug, brandDir, brandGuidelinesPath, ensureBrandDir, readBrandGuidelines (+7) |
 | `src/lib/server/clickhouse.ts` | loadEnvFileValues, parseRequestTimeout, getRequiredEnv, getEnvValue, getClickHouseConfig (+5) |
 | `src/lib/server/env.ts` | loadEnvFileValues, readEnv, loadImageGeneratorEnv, getImageGeneratorEnv, hasImageRouterProvider (+1) |
 | `src/lib/server/auth-guards.ts` | requireAdminUser, getAuthenticatedUserRole, isPublicPath, isApiPath, isAdminPath |
@@ -35,33 +35,33 @@ Start here when exploring this area:
 - **`getImageGeneratorEnv`** (Function) — `src/lib/server/env.ts:166`
 - **`hasImageRouterProvider`** (Function) — `src/lib/server/env.ts:171`
 - **`hasOpenAIProvider`** (Function) — `src/lib/server/env.ts:175`
-- **`readBrandGuidelines`** (Function) — `src/lib/server/brand-storage.ts:131`
 - **`GET`** (Function) — `src/routes/api/brand-guidelines/+server.ts:7`
+- **`GET`** (Function) — `src/routes/api/brand-assets/+server.ts:6`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `GenerateValidationError` | Class | `src/lib/services/image-generator/generate.server.ts` | 37 |
+| `GenerateValidationError` | Class | `src/lib/services/image-generator/generate.server.ts` | 38 |
 | `getImageGeneratorEnv` | Function | `src/lib/server/env.ts` | 166 |
 | `hasImageRouterProvider` | Function | `src/lib/server/env.ts` | 171 |
 | `hasOpenAIProvider` | Function | `src/lib/server/env.ts` | 175 |
-| `readBrandGuidelines` | Function | `src/lib/server/brand-storage.ts` | 131 |
 | `GET` | Function | `src/routes/api/brand-guidelines/+server.ts` | 7 |
 | `GET` | Function | `src/routes/api/brand-assets/+server.ts` | 6 |
 | `listBrandAssets` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 19 |
 | `getBrandGuidelines` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 87 |
+| `setBrandGuidelines` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 94 |
 | `load` | Function | `src/routes/admin/brands/[id]/+page.server.ts` | 10 |
 | `GET` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 45 |
 | `PUT` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 55 |
 | `load` | Function | `src/routes/+layout.server.ts` | 3 |
 | `load` | Function | `src/routes/admin/+page.server.ts` | 3 |
+| `listBrands` | Function | `src/lib/services/brands.server.ts` | 7 |
 | `requireAdminUser` | Function | `src/lib/server/auth-guards.ts` | 27 |
 | `getAuthenticatedUserRole` | Function | `src/lib/server/auth-guards.ts` | 45 |
-| `listBrands` | Function | `src/lib/services/brands.server.ts` | 7 |
+| `load` | Function | `src/routes/admin/dim-offers/+page.server.ts` | 35 |
 | `createUser` | Function | `src/routes/admin/users/+page.server.ts` | 40 |
 | `updateUser` | Function | `src/routes/admin/users/+page.server.ts` | 72 |
-| `load` | Function | `src/routes/admin/brands/+page.server.ts` | 5 |
 
 ## Execution Flows
 
@@ -76,15 +76,14 @@ Start here when exploring this area:
 | `PingClickHouse → LoadEnvFileValues` | intra_community | 6 |
 | `CreateBrandAsset → EnsureSafeSlug` | cross_community | 6 |
 | `POST → LoadEnvFileValues` | cross_community | 5 |
-| `GET → LoadEnvFileValues` | intra_community | 5 |
+| `POST → LoadEnvFileValues` | cross_community | 5 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
 | [id] | 5 calls |
-| Services | 2 calls |
-| Aggregator-offers | 1 calls |
+| Services | 3 calls |
 
 ## How to Explore
 

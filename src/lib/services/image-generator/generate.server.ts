@@ -13,6 +13,7 @@ export const generateBodySchema = z.object({
   prompt: z.string().min(1, "prompt is required"),
   provider: z.enum(["imagerouter", "openai"]),
   model: z.string().min(1).optional(),
+  models: z.array(z.string().min(1)).optional(),
   size: z.string().min(1).optional(),
   style: z.string().min(1).optional(),
   camera: z.string().min(1).optional(),
@@ -87,16 +88,35 @@ export async function createPendingGenerations(
   }
 
   const samplesPerModel =
-    args.body.samplesPerModel ?? (args.body.allModels ? 3 : 1);
+    args.body.samplesPerModel ??
+    (args.body.allModels || (args.body.models?.length ?? 0) > 1 ? 3 : 1);
   if (samplesPerModel > env.SAMPLES_PER_MODEL_MAX) {
     throw new GenerateValidationError(
       `samplesPerModel ${samplesPerModel} exceeds max ${env.SAMPLES_PER_MODEL_MAX}`,
     );
   }
 
-  const models = args.body.allModels
-    ? provider.models
-    : [args.body.model ?? env.DEFAULT_MODEL];
+  // Resolution order:
+  //   1. body.models (explicit multi-select from the composer) — must all be
+  //      configured for the provider.
+  //   2. body.allModels (legacy "fan out across the provider").
+  //   3. [body.model ?? env.DEFAULT_MODEL] (single-model legacy path).
+  let models: string[];
+  const explicitModels = args.body.models?.filter((m) => m.length > 0) ?? [];
+  if (explicitModels.length > 0) {
+    const unknown = explicitModels.filter((m) => !provider.models.includes(m));
+    if (unknown.length > 0) {
+      throw new GenerateValidationError(
+        `Models not configured for provider "${args.body.provider}": ${unknown.join(", ")}`,
+      );
+    }
+    // De-duplicate while preserving the first-seen order.
+    models = [...new Set(explicitModels)];
+  } else if (args.body.allModels) {
+    models = provider.models;
+  } else {
+    models = [args.body.model ?? env.DEFAULT_MODEL];
+  }
   if (models.length === 0) {
     throw new GenerateValidationError(
       `Provider "${args.body.provider}" has no configured models`,

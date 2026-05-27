@@ -1,23 +1,22 @@
 ---
 name: id
-description: "Skill for the [id] area of marketing-offers-tool. 7 symbols across 7 files."
+description: "Skill for the [id] area of marketing-offers-tool. 6 symbols across 6 files."
 ---
 
 # [id]
 
-7 symbols | 7 files | Cohesion: 52%
+6 symbols | 6 files | Cohesion: 50%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how load, requireAuthenticatedApiUser, buildImageGeneratorConfig work
+- Understanding how requireAuthenticatedApiUser, buildImageGeneratorConfig, GET work
 - Modifying [id]-related functionality
 
 ## Key Files
 
 | File | Symbols |
 |------|---------|
-| `src/routes/image-generator/+page.server.ts` | load |
 | `src/lib/server/auth-guards.ts` | requireAuthenticatedApiUser |
 | `src/lib/services/image-providers/config.server.ts` | buildImageGeneratorConfig |
 | `src/routes/api/images/config/+server.ts` | GET |
@@ -29,17 +28,16 @@ description: "Skill for the [id] area of marketing-offers-tool. 7 symbols across
 
 Start here when exploring this area:
 
-- **`load`** (Function) — `src/routes/image-generator/+page.server.ts:5`
 - **`requireAuthenticatedApiUser`** (Function) — `src/lib/server/auth-guards.ts:16`
 - **`buildImageGeneratorConfig`** (Function) — `src/lib/services/image-providers/config.server.ts:7`
 - **`GET`** (Function) — `src/routes/api/images/config/+server.ts:5`
 - **`GET`** (Function) — `src/routes/api/brand-assets/[id]/+server.ts:6`
+- **`GET`** (Function) — `src/routes/api/images/[id]/file/+server.ts:6`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `load` | Function | `src/routes/image-generator/+page.server.ts` | 5 |
 | `requireAuthenticatedApiUser` | Function | `src/lib/server/auth-guards.ts` | 16 |
 | `buildImageGeneratorConfig` | Function | `src/lib/services/image-providers/config.server.ts` | 7 |
 | `GET` | Function | `src/routes/api/images/config/+server.ts` | 5 |
@@ -59,12 +57,10 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Aggregator-offers | 1 calls |
-| Services | 1 calls |
 | Server | 1 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "load"})` — see callers and callees
+1. `gitnexus_context({name: "requireAuthenticatedApiUser"})` — see callers and callees
 2. `gitnexus_query({query: "[id]"})` — find related execution flows
 3. Read key files listed above for implementation details

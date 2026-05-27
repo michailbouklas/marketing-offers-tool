@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button/index.js";
+  import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
   import {
     Card,
     CardContent,
@@ -13,7 +13,9 @@
     NativeSelect,
     NativeSelectOption,
   } from "$lib/components/ui/native-select/index.js";
+  import * as Popover from "$lib/components/ui/popover/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
+  import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
   import type { Snippet } from "svelte";
   import type {
     ImageGeneratorConfig,
@@ -63,13 +65,13 @@
 
   let prompt = $state("");
   let provider = $state<ImageProviderId>("imagerouter");
-  let model = $state("");
+  let selectedModels = $state<string[]>([]);
+  let modelPickerOpen = $state(false);
   let size = $state("1024x1024");
   let style = $state<Style>("none");
   let camera = $state<Camera>("none");
   let aspectRatio = $state<AspectRatio>("none");
   let enhance = $state(true);
-  let allModels = $state(false);
   let samplesPerModel = $state(1);
   let referenceFiles = $state<File[]>([]);
   let preUploadedReferenceIds = $state<string[]>([]);
@@ -97,13 +99,16 @@
     didInit = true;
     prompt = initial?.prompt ?? "";
     provider = (initial?.provider as ImageProviderId) ?? defaultProvider;
-    model = initial?.model ?? defaultModel;
+    const initialModels =
+      initial?.models && initial.models.length > 0
+        ? initial.models
+        : [defaultModel];
+    selectedModels = [...initialModels];
     size = initial?.size ?? "1024x1024";
     style = initial?.style ?? "none";
     camera = initial?.camera ?? "none";
     aspectRatio = initial?.aspectRatio ?? "none";
     enhance = initial?.enhance ?? true;
-    allModels = initial?.allModels ?? false;
     samplesPerModel = initial?.samplesPerModel ?? 1;
     preUploadedReferenceIds = initial?.referenceIds ?? [];
   });
@@ -123,11 +128,53 @@
     config.providers.find((p) => p.id === provider)?.models ?? [],
   );
 
+  // Drop any selected models that no longer exist on the active provider.
+  // If nothing is left, fall back to the provider's first model so the user
+  // can submit immediately after switching providers.
   $effect(() => {
-    if (providerModels.length > 0 && !providerModels.includes(model)) {
-      model = providerModels[0]!;
+    const validSet = new Set(providerModels);
+    const filtered = selectedModels.filter((m) => validSet.has(m));
+    if (filtered.length !== selectedModels.length) {
+      selectedModels =
+        filtered.length > 0
+          ? filtered
+          : providerModels.length > 0
+            ? [providerModels[0]!]
+            : [];
     }
   });
+
+  const allProviderModelsSelected = $derived(
+    providerModels.length > 0 &&
+      selectedModels.length === providerModels.length,
+  );
+
+  const modelSummary = $derived.by(() => {
+    if (providerModels.length === 0) return "No models configured";
+    if (selectedModels.length === 0) return "No models selected";
+    if (allProviderModelsSelected)
+      return `All models (${providerModels.length})`;
+    if (selectedModels.length === 1) return selectedModels[0]!;
+    return `${selectedModels.length} selected`;
+  });
+
+  function isModelSelected(model: string): boolean {
+    return selectedModels.includes(model);
+  }
+
+  function toggleModel(model: string) {
+    selectedModels = isModelSelected(model)
+      ? selectedModels.filter((m) => m !== model)
+      : [...selectedModels, model];
+  }
+
+  function selectAllModels() {
+    selectedModels = [...providerModels];
+  }
+
+  function clearModelSelection() {
+    selectedModels = [];
+  }
 
   const effectiveSize = $derived.by(() => {
     if (aspectRatio === "square") return "1024x1024";
@@ -137,7 +184,10 @@
   });
 
   const canSubmit = $derived(
-    prompt.trim().length > 0 && providerModels.length > 0 && !busy,
+    prompt.trim().length > 0 &&
+      providerModels.length > 0 &&
+      selectedModels.length > 0 &&
+      !busy,
   );
 
   async function handleSubmit(event: SubmitEvent) {
@@ -153,13 +203,12 @@
     onSubmit({
       prompt: prompt.trim(),
       provider,
-      model,
+      models: [...selectedModels],
       size: effectiveSize,
       style,
       camera,
       aspectRatio,
       enhance,
-      allModels,
       samplesPerModel,
       referenceIds,
       referenceFiles,
@@ -183,13 +232,12 @@
   export function loadFrom(state: Partial<ComposerState>) {
     if (state.prompt !== undefined) prompt = state.prompt;
     if (state.provider) provider = state.provider;
-    if (state.model) model = state.model;
+    if (state.models) selectedModels = [...state.models];
     if (state.size) size = state.size;
     if (state.style) style = state.style;
     if (state.camera) camera = state.camera;
     if (state.aspectRatio) aspectRatio = state.aspectRatio;
     if (state.enhance !== undefined) enhance = state.enhance;
-    if (state.allModels !== undefined) allModels = state.allModels;
     if (state.samplesPerModel !== undefined)
       samplesPerModel = state.samplesPerModel;
     if (state.referenceIds) preUploadedReferenceIds = state.referenceIds;
@@ -263,12 +311,93 @@
           </div>
 
           <div class="grid gap-2">
-            <Label for="model">Model</Label>
-            <NativeSelect id="model" bind:value={model}>
-              {#each providerModels as m (m)}
-                <NativeSelectOption value={m}>{m}</NativeSelectOption>
-              {/each}
-            </NativeSelect>
+            <Label id="composer-model-label">Models</Label>
+            <Popover.Root bind:open={modelPickerOpen}>
+              <Popover.Trigger
+                aria-labelledby="composer-model-label"
+                disabled={providerModels.length === 0}
+                class={`${buttonVariants({ variant: "outline" })} w-full justify-between font-normal`}
+              >
+                <span class="truncate">{modelSummary}</span>
+                <ChevronsUpDownIcon class="size-4 shrink-0 opacity-60" />
+              </Popover.Trigger>
+
+              <Popover.Content align="start" class="w-[22rem] p-0">
+                <div class="flex flex-col">
+                  <div class="border-b px-4 py-3">
+                    <p class="text-sm font-medium">Pick models</p>
+                    <p class="text-muted-foreground mt-1 text-xs">
+                      Generate one batch per selected model. Pick at least one.
+                    </p>
+                  </div>
+
+                  <div
+                    class="flex items-center justify-between gap-2 border-b px-4 py-2"
+                  >
+                    <button
+                      type="button"
+                      class="text-sm font-medium underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={providerModels.length === 0 ||
+                        allProviderModelsSelected}
+                      onclick={selectAllModels}
+                    >
+                      Select all
+                    </button>
+                    <button
+                      type="button"
+                      class="text-muted-foreground hover:text-foreground text-sm font-medium underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={selectedModels.length === 0}
+                      onclick={clearModelSelection}
+                    >
+                      Clear
+                    </button>
+                  </div>
+
+                  <div class="max-h-72 overflow-y-auto px-2 py-2">
+                    {#if providerModels.length === 0}
+                      <p
+                        class="text-muted-foreground px-3 py-4 text-center text-sm"
+                      >
+                        No models configured for this provider.
+                      </p>
+                    {:else}
+                      {#each providerModels as providerModel (providerModel)}
+                        <button
+                          type="button"
+                          class="hover:bg-accent/50 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
+                          onclick={() => toggleModel(providerModel)}
+                        >
+                          <Checkbox
+                            checked={isModelSelected(providerModel)}
+                            class="pointer-events-none"
+                          />
+                          <span
+                            class="min-w-0 truncate text-sm leading-none font-medium"
+                          >
+                            {providerModel}
+                          </span>
+                        </button>
+                      {/each}
+                    {/if}
+                  </div>
+
+                  <div
+                    class="flex items-center justify-between gap-2 border-t px-4 py-3"
+                  >
+                    <p class="text-muted-foreground text-xs">
+                      {selectedModels.length} selected
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onclick={() => (modelPickerOpen = false)}
+                    >
+                      Done
+                    </Button>
+                  </div>
+                </div>
+              </Popover.Content>
+            </Popover.Root>
           </div>
 
           <div class="grid gap-2">
@@ -382,11 +511,6 @@
           <label class="flex items-center gap-2 text-sm">
             <Checkbox bind:checked={enhance} />
             Enhance prompt
-          </label>
-
-          <label class="flex items-center gap-2 text-sm">
-            <Checkbox bind:checked={allModels} />
-            All models
           </label>
 
           <div class="flex items-center gap-2">

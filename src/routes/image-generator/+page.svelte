@@ -137,7 +137,7 @@
     return {
       prompt: promptToSend,
       provider: payload.provider,
-      model: payload.allModels ? undefined : payload.model,
+      models: payload.models,
       size: payload.size,
       style: payload.style === "none" ? undefined : payload.style,
       camera: payload.camera === "none" ? undefined : payload.camera,
@@ -148,7 +148,6 @@
       brandId: selectedBrandId ?? undefined,
       brandGuidelines:
         selectedBrandId !== null ? payload.brandGuidelines : undefined,
-      allModels: payload.allModels,
       samplesPerModel: payload.samplesPerModel,
     };
   }
@@ -265,7 +264,7 @@
   function handleReprompt(item: GeneratedImageDTO) {
     composer?.loadFrom({
       prompt: item.prompt,
-      model: item.model ?? undefined,
+      models: item.model ? [item.model] : undefined,
       size: `${item.requestedWidth}x${item.requestedHeight}`,
       style: (item.style ?? "none") as ComposerState["style"],
       camera: (item.camera ?? "none") as ComposerState["camera"],

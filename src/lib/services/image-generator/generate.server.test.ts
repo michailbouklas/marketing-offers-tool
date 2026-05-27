@@ -406,4 +406,75 @@ describe("createPendingGenerations", () => {
     expect(getBrandGuidelinesMock).not.toHaveBeenCalled();
     expect(rows[0]!.finalPrompt).toBe("a cat");
   });
+
+  it("creates one batch per model when body.models has explicit picks", async () => {
+    const rows = await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "a cat",
+        provider: "imagerouter",
+        models: ["openai/gpt-image-1", "google/nano-banana-2"],
+        samplesPerModel: 2,
+      },
+    });
+
+    expect(rows).toHaveLength(4); // 2 samples × 2 models
+    const models = createMock.mock.calls.map((c) => c[0]!.data.model);
+    expect(models.filter((m) => m === "openai/gpt-image-1")).toHaveLength(2);
+    expect(models.filter((m) => m === "google/nano-banana-2")).toHaveLength(2);
+  });
+
+  it("rejects body.models entries that are not configured on the provider", async () => {
+    await expect(
+      createPendingGenerations({
+        userId: "user-1",
+        body: {
+          prompt: "x",
+          provider: "imagerouter",
+          models: ["openai/gpt-image-1", "fictional/unknown-model"],
+        },
+      }),
+    ).rejects.toBeInstanceOf(GenerateValidationError);
+    expect(createMock).not.toHaveBeenCalled();
+  });
+
+  it("falls back to allModels/model when body.models is empty or missing", async () => {
+    const rows = await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "a cat",
+        provider: "imagerouter",
+        models: [],
+        model: "openai/gpt-image-1",
+      },
+    });
+    expect(rows).toHaveLength(1);
+    expect(createMock.mock.calls[0]![0].data.model).toBe("openai/gpt-image-1");
+  });
+
+  it("defaults samplesPerModel to 3 when body.models has multiple entries", async () => {
+    const rows = await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "a cat",
+        provider: "imagerouter",
+        models: ["openai/gpt-image-1", "google/nano-banana-2"],
+      },
+    });
+    expect(rows).toHaveLength(6); // 3 samples × 2 models
+  });
+
+  it("de-duplicates body.models entries", async () => {
+    const rows = await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "a cat",
+        provider: "imagerouter",
+        models: ["openai/gpt-image-1", "openai/gpt-image-1"],
+        samplesPerModel: 1,
+      },
+    });
+    expect(rows).toHaveLength(1);
+    expect(createMock.mock.calls[0]![0].data.model).toBe("openai/gpt-image-1");
+  });
 });

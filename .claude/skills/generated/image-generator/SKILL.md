@@ -30,7 +30,7 @@ Start here when exploring this area:
 - **`listGeneratedImagesHistoryForUser`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:194`
 - **`listGeneratedImagePromptGroupsForUser`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:221`
 - **`listGeneratedImageFilterOptionsForUser`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:242`
-- **`listBrandAssets`** (Function) — `src/lib/services/image-generator/image-generator-client.ts:43`
+- **`listBrandAssets`** (Function) — `src/lib/services/image-generator/image-generator-client.ts:44`
 
 ## Key Symbols
 
@@ -40,20 +40,20 @@ Start here when exploring this area:
 | `listGeneratedImagesHistoryForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 194 |
 | `listGeneratedImagePromptGroupsForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 221 |
 | `listGeneratedImageFilterOptionsForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 242 |
-| `listBrandAssets` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 43 |
-| `attachBrandAssetAsReference` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 53 |
-| `fetchBrandGuidelines` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 64 |
-| `uploadReferences` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 80 |
-| `enhancePrompt` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 94 |
-| `submitGeneration` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 107 |
-| `fetchImagesSince` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 118 |
+| `listBrandAssets` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 44 |
+| `attachBrandAssetAsReference` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 54 |
+| `fetchBrandGuidelines` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 65 |
+| `uploadReferences` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 81 |
+| `enhancePrompt` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 95 |
+| `submitGeneration` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 108 |
+| `fetchImagesSince` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 119 |
 | `GET` | Function | `src/routes/api/images/+server.ts` | 5 |
 | `listGeneratedImagesForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 102 |
 | `clampPage` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 132 |
 | `clampPageSize` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 140 |
 | `getDateRange` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 148 |
 | `buildHistoryWhere` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 164 |
-| `jsonOrThrow` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 72 |
+| `jsonOrThrow` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 73 |
 | `clampLimit` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 87 |
 | `parseSince` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 94 |
 
@@ -70,8 +70,7 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Aggregator-offers | 1 calls |
-| Services | 1 calls |
+| Services | 2 calls |
 | [id] | 1 calls |
 
 ## How to Explore

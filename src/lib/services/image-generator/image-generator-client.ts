@@ -21,6 +21,7 @@ export interface GenerateClientBody {
   prompt: string;
   provider: ImageGeneratorConfig["providers"][number]["id"];
   model?: string;
+  models?: string[];
   size?: string;
   style?: string;
   camera?: string;

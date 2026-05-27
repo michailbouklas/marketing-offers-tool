@@ -29,13 +29,12 @@ export type AspectRatio = "none" | "square" | "widescreen" | "tiktok";
 export interface ComposerState {
   prompt: string;
   provider: ImageProviderId;
-  model: string;
+  models: string[];
   size: string;
   style: Style;
   camera: Camera;
   aspectRatio: AspectRatio;
   enhance: boolean;
-  allModels: boolean;
   samplesPerModel: number;
   referenceIds: string[];
   brandId?: number | null;
