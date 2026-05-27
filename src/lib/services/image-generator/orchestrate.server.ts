@@ -4,7 +4,12 @@ import { resizeToRequested } from "$lib/server/image-size";
 import { prisma } from "$lib/server/prisma";
 import { getImageProvider } from "$lib/services/image-providers/factory.server";
 
-export async function generateOneRow(rowId: string): Promise<void> {
+export type OutputFormat = "png" | "jpg";
+
+export async function generateOneRow(
+  rowId: string,
+  outputFormat: OutputFormat = "png",
+): Promise<void> {
   const start = Date.now();
 
   let row: Awaited<ReturnType<typeof prisma.generatedImage.findUnique>> | null =
@@ -43,6 +48,7 @@ export async function generateOneRow(rowId: string): Promise<void> {
     const normalized = await resizeToRequested(output.bytes, {
       width: row.requestedWidth,
       height: row.requestedHeight,
+      format: outputFormat,
     });
 
     const env = getImageGeneratorEnv();
@@ -50,6 +56,7 @@ export async function generateOneRow(rowId: string): Promise<void> {
       env.UPLOADS_DIR,
       row.id,
       normalized,
+      outputFormat,
     );
 
     await prisma.generatedImage.update({
@@ -84,10 +91,13 @@ export async function generateOneRow(rowId: string): Promise<void> {
   }
 }
 
-export function kickoffPendingGenerations(rowIds: string[]): void {
+export function kickoffPendingGenerations(
+  rowIds: string[],
+  outputFormat: OutputFormat = "png",
+): void {
   for (const id of rowIds) {
     setImmediate(() => {
-      void generateOneRow(id);
+      void generateOneRow(id, outputFormat);
     });
   }
 }

@@ -11,6 +11,14 @@ const bodySchema = z.object({
   prompt: z.string().min(1, "prompt is required"),
   brandGuidelines: z.string().optional(),
   referenceIds: z.array(z.string()).optional(),
+  clarifications: z
+    .array(
+      z.object({
+        question: z.string().min(1),
+        answer: z.string().min(1),
+      }),
+    )
+    .optional(),
 });
 
 export const POST: RequestHandler = async (event) => {
@@ -39,11 +47,20 @@ export const POST: RequestHandler = async (event) => {
   );
 
   const enhancer = new PromptEnhancer({ apiKey: env.OPENAI_API_KEY });
-  const result = await enhancer.enhance(
-    parsed.data.prompt,
-    parsed.data.brandGuidelines,
-    referenceImages,
-  );
+  const clarifications = parsed.data.clarifications ?? [];
+  const result =
+    clarifications.length > 0
+      ? await enhancer.enhanceWithClarifications(
+          parsed.data.prompt,
+          clarifications,
+          parsed.data.brandGuidelines,
+          referenceImages,
+        )
+      : await enhancer.enhance(
+          parsed.data.prompt,
+          parsed.data.brandGuidelines,
+          referenceImages,
+        );
   return json(result);
 };
 

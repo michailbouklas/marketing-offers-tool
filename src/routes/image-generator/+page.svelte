@@ -143,6 +143,7 @@
       camera: payload.camera === "none" ? undefined : payload.camera,
       aspectRatio:
         payload.aspectRatio === "none" ? undefined : payload.aspectRatio,
+      outputFormat: payload.outputFormat,
       references:
         payload.referenceIds.length > 0 ? payload.referenceIds : undefined,
       brandId: selectedBrandId ?? undefined,
@@ -211,12 +212,6 @@
       .filter((qa): qa is { question: string; answer: string } =>
         Boolean(qa.answer),
       );
-    const merged =
-      answered.length > 0
-        ? `${payload.prompt}\n\nClarifications:\n${answered
-            .map((qa) => `- ${qa.question} ${qa.answer}`)
-            .join("\n")}`
-        : payload.prompt;
     const brandGuidelines = pendingBrandGuidelines;
     pendingClarification = null;
     pendingCritique = null;
@@ -226,11 +221,15 @@
     busy = true;
     try {
       const result = await enhancePrompt(
-        merged,
+        payload.prompt,
         brandGuidelines,
         payload.referenceIds,
+        answered.length > 0 ? answered : undefined,
       );
-      const toSend = result.enhancedPrompt ?? merged;
+      // The clarifications branch on the server always returns an
+      // enhancedPrompt, but fall back to the original prompt rather than
+      // leaking any Q&A formatting if it ever doesn't.
+      const toSend = result.enhancedPrompt ?? payload.prompt;
       const { items: created } = await submitGeneration(
         buildGenerateBody(payload, toSend),
       );

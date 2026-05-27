@@ -22,6 +22,9 @@ export const ASPECT_RATIOS = [
   { value: "tiktok", label: "tiktok (1024×1536)" },
 ] as const;
 
+export const OUTPUT_FORMATS = ["png", "jpg"] as const;
+export type OutputFormat = (typeof OUTPUT_FORMATS)[number];
+
 export type Style = (typeof STYLES)[number];
 export type Camera = (typeof CAMERAS)[number];
 export type AspectRatio = "none" | "square" | "widescreen" | "tiktok";
@@ -34,6 +37,7 @@ export interface ComposerState {
   style: Style;
   camera: Camera;
   aspectRatio: AspectRatio;
+  outputFormat: OutputFormat;
   enhance: boolean;
   samplesPerModel: number;
   referenceIds: string[];

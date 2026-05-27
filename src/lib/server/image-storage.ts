@@ -14,9 +14,14 @@ function ensureSafeId(id: string): string {
   return id;
 }
 
-export function imageFilePath(uploadsDir: string, id: string): string {
+export function imageFilePath(
+  uploadsDir: string,
+  id: string,
+  format: "png" | "jpg" = "png",
+): string {
   const safeId = ensureSafeId(id);
-  return join(uploadsDir, IMAGES_SUBDIR, `${safeId}.png`);
+  const ext = format === "jpg" ? "jpg" : "png";
+  return join(uploadsDir, IMAGES_SUBDIR, `${safeId}.${ext}`);
 }
 
 async function ensureImagesDir(uploadsDir: string): Promise<string> {
@@ -29,10 +34,12 @@ export async function writeImageBytes(
   uploadsDir: string,
   id: string,
   bytes: Buffer,
+  format: "png" | "jpg" = "png",
 ): Promise<string> {
   const safeId = ensureSafeId(id);
   await ensureImagesDir(uploadsDir);
-  const filePath = join(uploadsDir, IMAGES_SUBDIR, `${safeId}.png`);
+  const ext = format === "jpg" ? "jpg" : "png";
+  const filePath = join(uploadsDir, IMAGES_SUBDIR, `${safeId}.${ext}`);
   await writeFile(filePath, bytes, { mode: 0o600 });
   return filePath;
 }

@@ -210,4 +210,144 @@ describe("PromptEnhancer", () => {
       PromptEnhancerError,
     );
   });
+
+  describe("enhanceWithClarifications", () => {
+    it("rewrites the prompt using the original prompt and structured Q&A, never re-asking", async () => {
+      const calls: RecordedCall[] = [];
+      const enhancer = new PromptEnhancer({
+        apiKey: "sk-test",
+        fetch: recorderFetch(calls, () =>
+          chatResponse({
+            enhancedPrompt:
+              "A juicy taco filled with grilled chicken and onions, set inside a vibrant Taco Bell restaurant under bold colourful lighting",
+          }),
+        ),
+      });
+
+      const result = await enhancer.enhanceWithClarifications(
+        "an image of a juicy taco",
+        [
+          {
+            question: "What specific ingredients do you want to highlight?",
+            answer: "chicken and onions",
+          },
+          {
+            question: "What kind of environment?",
+            answer: "a taco bell restaurant",
+          },
+          { question: "What lighting style?", answer: "vibrant colors" },
+        ],
+        "Brand: Taco Bell. Use bold, vibrant purple and magenta tones.",
+      );
+
+      expect(result.enhancedPrompt).toMatch(/chicken and onions/);
+      expect(result.enhancedPrompt).not.toMatch(/Clarifications:/i);
+      expect(result.clarifyingQuestions).toBeUndefined();
+      expect(result.critique).toBeUndefined();
+
+      expect(calls).toHaveLength(1);
+      const body = JSON.parse(calls[0]!.init.body as string);
+      // Uses the dedicated rewrite system prompt, not the dual-mode one.
+      expect(body.messages[0].content).toContain(
+        "Do NOT ask any further questions",
+      );
+      expect(body.messages[0].content).toContain(
+        'Do NOT prepend or append a separate "Clarifications:" section',
+      );
+      // User message includes the original prompt, the brand guidelines, and
+      // each Q/A pair as structured context.
+      expect(body.messages[1].content).toContain("Original draft prompt:");
+      expect(body.messages[1].content).toContain("an image of a juicy taco");
+      expect(body.messages[1].content).toContain("Brand design guidelines:");
+      expect(body.messages[1].content).toContain("Brand: Taco Bell.");
+      expect(body.messages[1].content).toContain("Q: What lighting style?");
+      expect(body.messages[1].content).toContain("A: vibrant colors");
+    });
+
+    it("strips clarifyingQuestions and critique from the model output even if leaked", async () => {
+      const enhancer = new PromptEnhancer({
+        apiKey: "sk-test",
+        fetch: recorderFetch([], () =>
+          chatResponse({
+            enhancedPrompt: "A vivid taco scene with chicken and onions",
+            critique: "still vague",
+            clarifyingQuestions: [{ question: "leftover question?" }],
+          }),
+        ),
+      });
+
+      const result = await enhancer.enhanceWithClarifications("a taco", [
+        { question: "Ingredients?", answer: "chicken" },
+      ]);
+
+      expect(result).toEqual({
+        enhancedPrompt: "A vivid taco scene with chicken and onions",
+      });
+    });
+
+    it("throws when the rewrite path returns no enhancedPrompt", async () => {
+      const enhancer = new PromptEnhancer({
+        apiKey: "sk-test",
+        fetch: recorderFetch([], () =>
+          chatResponse({
+            clarifyingQuestions: [{ question: "still unclear?" }],
+          }),
+        ),
+      });
+
+      await expect(
+        enhancer.enhanceWithClarifications("a taco", [
+          { question: "Ingredients?", answer: "chicken" },
+        ]),
+      ).rejects.toBeInstanceOf(PromptEnhancerError);
+    });
+
+    it("falls back to the standard enhance pass when no usable answers are provided", async () => {
+      const calls: RecordedCall[] = [];
+      const enhancer = new PromptEnhancer({
+        apiKey: "sk-test",
+        fetch: recorderFetch(calls, () =>
+          chatResponse({ enhancedPrompt: "rewritten" }),
+        ),
+      });
+
+      const result = await enhancer.enhanceWithClarifications("a taco", [
+        { question: "Ingredients?", answer: "   " },
+        { question: "", answer: "ignored" },
+      ]);
+
+      expect(result.enhancedPrompt).toBe("rewritten");
+      const body = JSON.parse(calls[0]!.init.body as string);
+      // Used the standard system prompt, not the rewrite-with-clarifications one.
+      expect(body.messages[0].content).toContain(
+        "do exactly one of the following",
+      );
+      expect(body.messages[1].content).toBe("a taco");
+    });
+
+    it("forwards reference images on the rewrite path", async () => {
+      const calls: RecordedCall[] = [];
+      const enhancer = new PromptEnhancer({
+        apiKey: "sk-test",
+        fetch: recorderFetch(calls, () =>
+          chatResponse({ enhancedPrompt: "ok" }),
+        ),
+      });
+
+      await enhancer.enhanceWithClarifications(
+        "put it in a box",
+        [{ question: "Where?", answer: "an office desk" }],
+        undefined,
+        ["data:image/png;base64,AAA"],
+      );
+
+      const body = JSON.parse(calls[0]!.init.body as string);
+      expect(Array.isArray(body.messages[1].content)).toBe(true);
+      expect(body.messages[1].content[0].type).toBe("text");
+      expect(body.messages[1].content[1]).toEqual({
+        type: "image_url",
+        image_url: { url: "data:image/png;base64,AAA" },
+      });
+    });
+  });
 });

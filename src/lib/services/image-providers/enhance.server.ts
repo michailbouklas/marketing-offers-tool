@@ -36,9 +36,48 @@ Given the user's draft prompt, do exactly one of the following and reply with JS
 
 Reply with valid JSON only. Do not include any prose outside the JSON object.`;
 
+// Used after the user has answered earlier clarifying questions. The model is
+// no longer allowed to ask more questions — it must produce a single rewritten
+// prompt that integrates the answers into the original prompt naturally.
+const REWRITE_WITH_CLARIFICATIONS_PROMPT = `You are a prompt-engineering assistant for a text-to-image tool.
+
+You will receive:
+- The user's original draft prompt.
+- A list of clarifying questions you previously asked, each paired with the
+  user's answer.
+- Optionally the active brand's design guidelines.
+- Optionally one or more reference images that will be passed to the image model.
+
+Your task is to rewrite the original prompt into a single coherent, vivid image
+prompt that fully incorporates the information from the answers. Treat the
+answers as facts about the desired image and weave them into the prompt as
+natural descriptive language.
+
+Hard rules:
+- Do NOT ask any further questions.
+- Do NOT include the questions, the answers verbatim, the words "Clarifications",
+  "Q:", "A:", bullet lists of Q&A, or any meta-commentary about the rewriting
+  process in the output.
+- Do NOT prepend or append a separate "Clarifications:" section.
+- Output one self-contained prompt as a single string. No markdown sections, no
+  headings, no preamble.
+- Honour the brand guidelines when present.
+- When reference images are attached, write the prompt as an instruction that
+  builds on them rather than re-describing what they already show.
+
+Reply with valid JSON only, in exactly this shape and no other keys:
+{"enhancedPrompt": "..."}
+
+Do not include any prose outside the JSON object.`;
+
 export interface ClarifyingQuestion {
   question: string;
   example?: string;
+}
+
+export interface ClarificationAnswer {
+  question: string;
+  answer: string;
 }
 
 export interface EnhanceResult {
@@ -86,6 +125,71 @@ export class PromptEnhancer {
       ? `Brand design guidelines:\n${guidelines}\n\nDraft prompt:\n${prompt}`
       : prompt;
 
+    return this.callChatCompletion(SYSTEM_PROMPT, textContent, referenceImages);
+  }
+
+  // Rewrites the original prompt using the user's answers to the previously
+  // asked clarifying questions. Always returns an `enhancedPrompt` — the
+  // system prompt forbids further questions — so callers can rely on a single
+  // coherent prompt without leaking the Q&A formatting.
+  async enhanceWithClarifications(
+    prompt: string,
+    answers: ClarificationAnswer[],
+    brandGuidelines?: string,
+    referenceImages?: string[],
+  ): Promise<EnhanceResult> {
+    const cleanedAnswers = answers
+      .map((qa) => ({
+        question: qa.question.trim(),
+        answer: qa.answer.trim(),
+      }))
+      .filter((qa) => qa.question !== "" && qa.answer !== "");
+
+    if (cleanedAnswers.length === 0) {
+      // No usable answers — fall back to a normal enhance pass on the original
+      // prompt rather than asking the model to "rewrite with no clarifications".
+      return this.enhance(prompt, brandGuidelines, referenceImages);
+    }
+
+    const guidelines = brandGuidelines?.trim();
+    const sections: string[] = [];
+    if (guidelines) {
+      sections.push(`Brand design guidelines:\n${guidelines}`);
+    }
+    sections.push(`Original draft prompt:\n${prompt}`);
+    sections.push(
+      `Clarifying questions and the user's answers (incorporate these into the rewritten prompt without listing them):\n${cleanedAnswers
+        .map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`)
+        .join("\n\n")}`,
+    );
+    const textContent = sections.join("\n\n");
+
+    const result = await this.callChatCompletion(
+      REWRITE_WITH_CLARIFICATIONS_PROMPT,
+      textContent,
+      referenceImages,
+    );
+
+    // Defensive: this code path must always end up with an enhancedPrompt.
+    if (!result.enhancedPrompt) {
+      throw new PromptEnhancerError(
+        "Prompt rewrite did not return an enhancedPrompt",
+        200,
+        result,
+      );
+    }
+
+    // Drop any stray clarifyingQuestions / critique the model may have leaked
+    // through despite the system prompt — callers should not branch on them
+    // for the rewrite path.
+    return { enhancedPrompt: result.enhancedPrompt };
+  }
+
+  private async callChatCompletion(
+    systemPrompt: string,
+    textContent: string,
+    referenceImages?: string[],
+  ): Promise<EnhanceResult> {
     const images = (referenceImages ?? []).filter((url) => url.trim() !== "");
     const userMessage =
       images.length > 0
@@ -109,7 +213,7 @@ export class PromptEnhancer {
       },
       body: JSON.stringify({
         model: this.model,
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, userMessage],
+        messages: [{ role: "system", content: systemPrompt }, userMessage],
         response_format: { type: "json_object" },
       }),
     });

@@ -36,12 +36,16 @@ export const GET: RequestHandler = async (event) => {
     error(404, "Not found");
   }
 
+  const ext = row.localPath.split(".").pop()?.toLowerCase() ?? "png";
+  const contentType =
+    ext === "jpg" || ext === "jpeg" ? "image/jpeg" : "image/png";
+
   return new Response(new Uint8Array(bytes), {
     status: 200,
     headers: {
-      "content-type": "image/png",
+      "content-type": contentType,
       "content-length": String(bytes.length),
-      "content-disposition": `inline; filename="${id}.png"`,
+      "content-disposition": `inline; filename="${id}.${ext}"`,
     },
   });
 };

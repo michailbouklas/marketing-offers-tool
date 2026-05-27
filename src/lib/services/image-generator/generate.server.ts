@@ -18,6 +18,7 @@ export const generateBodySchema = z.object({
   style: z.string().min(1).optional(),
   camera: z.string().min(1).optional(),
   aspectRatio: z.enum(["square", "widescreen", "tiktok"]).optional(),
+  outputFormat: z.enum(["png", "jpg"]).optional(),
   references: z.array(z.string().min(1)).optional(),
   brandId: z.number().int().positive().optional(),
   brandGuidelines: z.string().max(50_000).optional(),

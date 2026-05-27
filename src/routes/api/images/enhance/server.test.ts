@@ -17,6 +17,7 @@ vi.mock("$lib/server/prisma", () => ({
 vi.mock("$lib/services/image-providers/enhance.server", () => ({
   PromptEnhancer: vi.fn().mockImplementation(() => ({
     enhance: vi.fn(),
+    enhanceWithClarifications: vi.fn(),
   })),
 }));
 
@@ -204,5 +205,53 @@ describe("POST /api/images/enhance", () => {
 
     const body = await response.json();
     expect(body).toEqual({ enhancedPrompt: "A vivid red cube on white" });
+  });
+
+  it("routes to enhanceWithClarifications when clarifications are provided", async () => {
+    const fakeEnhance = vi.fn();
+    const fakeRewrite = vi
+      .fn()
+      .mockResolvedValue({ enhancedPrompt: "rewritten with answers" });
+    MockEnhancer.mockImplementation(() => ({
+      enhance: fakeEnhance,
+      enhanceWithClarifications: fakeRewrite,
+    }));
+
+    const response = await (POST as (e: RequestEvent) => Promise<Response>)(
+      buildEvent({
+        prompt: "a juicy taco",
+        brandGuidelines: "Brand: Taco Bell.",
+        clarifications: [
+          { question: "Ingredients?", answer: "chicken and onions" },
+          { question: "Background?", answer: "a taco bell restaurant" },
+        ],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toEqual({ enhancedPrompt: "rewritten with answers" });
+    expect(fakeEnhance).not.toHaveBeenCalled();
+    expect(fakeRewrite).toHaveBeenCalledWith(
+      "a juicy taco",
+      [
+        { question: "Ingredients?", answer: "chicken and onions" },
+        { question: "Background?", answer: "a taco bell restaurant" },
+      ],
+      "Brand: Taco Bell.",
+      undefined,
+    );
+  });
+
+  it("rejects clarifications with empty question or answer", async () => {
+    const response = await (POST as (e: RequestEvent) => Promise<Response>)(
+      buildEvent({
+        prompt: "p",
+        clarifications: [{ question: "", answer: "x" }],
+      }),
+    ).catch((thrown: Response) => thrown);
+
+    expect(response.status).toBe(400);
+    expect(MockEnhancer).not.toHaveBeenCalled();
   });
 });

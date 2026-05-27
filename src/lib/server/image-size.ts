@@ -78,14 +78,22 @@ export function mapToNearestSupportedSize(
 
 export async function resizeToRequested(
   bytes: Buffer,
-  requested: ImageDimensions,
+  requested: ImageDimensions & { format?: "png" | "jpg" },
 ): Promise<Buffer> {
   const meta = await sharp(bytes).metadata();
-  if (meta.width === requested.width && meta.height === requested.height) {
-    return bytes;
+  const needsResize =
+    meta.width !== requested.width || meta.height !== requested.height;
+  const format = requested.format ?? "png";
+
+  let pipeline = sharp(bytes);
+  if (needsResize) {
+    pipeline = pipeline.resize(requested.width, requested.height, {
+      fit: "cover",
+    });
   }
-  return sharp(bytes)
-    .resize(requested.width, requested.height, { fit: "cover" })
-    .png()
-    .toBuffer();
+
+  if (format === "jpg") {
+    return pipeline.jpeg({ quality: 90 }).toBuffer();
+  }
+  return pipeline.png().toBuffer();
 }

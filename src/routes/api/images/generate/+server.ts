@@ -28,7 +28,10 @@ export const POST: RequestHandler = async (event) => {
       userId: user.id,
       body: parsed.data,
     });
-    kickoffPendingGenerations(items.map((item) => item.id));
+    kickoffPendingGenerations(
+      items.map((item) => item.id),
+      parsed.data.outputFormat ?? "png",
+    );
     return json({ items });
   } catch (e) {
     if (e instanceof GenerateValidationError) {

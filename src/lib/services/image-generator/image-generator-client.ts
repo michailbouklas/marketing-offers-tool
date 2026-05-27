@@ -11,6 +11,11 @@ export interface ClarifyingQuestion {
   example?: string;
 }
 
+export interface ClarificationAnswer {
+  question: string;
+  answer: string;
+}
+
 export interface EnhanceResult {
   critique?: string;
   clarifyingQuestions?: ClarifyingQuestion[];
@@ -26,6 +31,7 @@ export interface GenerateClientBody {
   style?: string;
   camera?: string;
   aspectRatio?: "square" | "widescreen" | "tiktok";
+  outputFormat?: "png" | "jpg";
   references?: string[];
   brandId?: number;
   brandGuidelines?: string;
@@ -97,11 +103,20 @@ export async function enhancePrompt(
   prompt: string,
   brandGuidelines?: string,
   referenceIds?: string[],
+  clarifications?: ClarificationAnswer[],
 ): Promise<EnhanceResult> {
   const res = await fetch("/api/images/enhance", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ prompt, brandGuidelines, referenceIds }),
+    body: JSON.stringify({
+      prompt,
+      brandGuidelines,
+      referenceIds,
+      clarifications:
+        clarifications && clarifications.length > 0
+          ? clarifications
+          : undefined,
+    }),
   });
   return jsonOrThrow<EnhanceResult>(res);
 }

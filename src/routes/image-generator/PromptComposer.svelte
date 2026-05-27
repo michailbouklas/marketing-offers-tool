@@ -24,10 +24,12 @@
   import {
     ASPECT_RATIOS,
     CAMERAS,
+    OUTPUT_FORMATS,
     STYLES,
     type AspectRatio,
     type Camera,
     type ComposerState,
+    type OutputFormat,
     type Style,
     type SubmitPayload,
   } from "./composer-types";
@@ -71,6 +73,7 @@
   let style = $state<Style>("none");
   let camera = $state<Camera>("none");
   let aspectRatio = $state<AspectRatio>("none");
+  let outputFormat = $state<OutputFormat>("png");
   let enhance = $state(true);
   let samplesPerModel = $state(1);
   let referenceFiles = $state<File[]>([]);
@@ -108,6 +111,7 @@
     style = initial?.style ?? "none";
     camera = initial?.camera ?? "none";
     aspectRatio = initial?.aspectRatio ?? "none";
+    outputFormat = initial?.outputFormat ?? "png";
     enhance = initial?.enhance ?? true;
     samplesPerModel = initial?.samplesPerModel ?? 1;
     preUploadedReferenceIds = initial?.referenceIds ?? [];
@@ -208,6 +212,7 @@
       style,
       camera,
       aspectRatio,
+      outputFormat,
       enhance,
       samplesPerModel,
       referenceIds,
@@ -237,6 +242,7 @@
     if (state.style) style = state.style;
     if (state.camera) camera = state.camera;
     if (state.aspectRatio) aspectRatio = state.aspectRatio;
+    if (state.outputFormat) outputFormat = state.outputFormat;
     if (state.enhance !== undefined) enhance = state.enhance;
     if (state.samplesPerModel !== undefined)
       samplesPerModel = state.samplesPerModel;
@@ -449,6 +455,17 @@
             <NativeSelect id="camera" bind:value={camera}>
               {#each CAMERAS as c (c)}
                 <NativeSelectOption value={c}>{c}</NativeSelectOption>
+              {/each}
+            </NativeSelect>
+          </div>
+
+          <div class="grid gap-2">
+            <Label for="outputFormat">Output format</Label>
+            <NativeSelect id="outputFormat" bind:value={outputFormat}>
+              {#each OUTPUT_FORMATS as f (f)}
+                <NativeSelectOption value={f}
+                  >{f.toUpperCase()}</NativeSelectOption
+                >
               {/each}
             </NativeSelect>
           </div>
