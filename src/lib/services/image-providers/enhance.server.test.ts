@@ -104,6 +104,44 @@ describe("PromptEnhancer", () => {
     ]);
   });
 
+  it("sends reference images as multimodal content alongside the text", async () => {
+    const calls: RecordedCall[] = [];
+    const enhancer = new PromptEnhancer({
+      apiKey: "sk-test",
+      fetch: recorderFetch(calls, () =>
+        chatResponse({ enhancedPrompt: "taco in a box on an office desk" }),
+      ),
+    });
+
+    const result = await enhancer.enhance("put it in a box", undefined, [
+      "data:image/png;base64,AAA",
+      "data:image/webp;base64,BBB",
+    ]);
+
+    expect(result.enhancedPrompt).toBe("taco in a box on an office desk");
+
+    const body = JSON.parse(calls[0]!.init.body as string);
+    expect(body.model).toBe("gpt-4o-mini");
+    expect(body.messages[1].content).toEqual([
+      { type: "text", text: "put it in a box" },
+      { type: "image_url", image_url: { url: "data:image/png;base64,AAA" } },
+      { type: "image_url", image_url: { url: "data:image/webp;base64,BBB" } },
+    ]);
+  });
+
+  it("keeps content a plain string when no reference images are passed", async () => {
+    const calls: RecordedCall[] = [];
+    const enhancer = new PromptEnhancer({
+      apiKey: "sk-test",
+      fetch: recorderFetch(calls, () => chatResponse({ enhancedPrompt: "ok" })),
+    });
+
+    await enhancer.enhance("a cat", undefined, []);
+
+    const body = JSON.parse(calls[0]!.init.body as string);
+    expect(body.messages[1].content).toBe("a cat");
+  });
+
   it("returns enhancedPrompt when the model rewrites the prompt", async () => {
     const calls: RecordedCall[] = [];
     const enhancer = new PromptEnhancer({

@@ -1,0 +1,1 @@
+Brand: Taco Bell. Use bold, vibrant purple and magenta tones with warm appetising highlights on the food. Show Mexican-inspired fast food (tacos, burritos, nachos) photographed at a 45° angle with crisp, fresh ingredients spilling out. Lighting should be punchy and high-contrast with a playful, youthful energy. Avoid muted or pastel palettes.

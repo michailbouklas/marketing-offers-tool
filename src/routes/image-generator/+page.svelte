@@ -21,6 +21,7 @@
     uploadReferences,
     type BrandAssetDTO,
     type ClarifyingQuestion,
+    type GenerateClientBody,
   } from "$lib/services/image-generator/image-generator-client";
   import type { PageData } from "./$types";
 
@@ -30,7 +31,7 @@
   let busy = $state(false);
   let pendingClarification = $state<ClarifyingQuestion[] | null>(null);
   let pendingCritique = $state<string | null>(null);
-  let pendingPrompt = $state<string | null>(null);
+  let pendingPayload = $state<SubmitPayload | null>(null);
   let pendingBrandGuidelines = $state<string | undefined>(undefined);
   let pendingAnswers = $state<string[]>([]);
   let composer: { loadFrom: (s: Partial<ComposerState>) => void } | undefined =
@@ -127,25 +128,52 @@
     stopPollersIfQuiet();
   }
 
+  // Reconstructs the full generation request from a composer payload so the
+  // enhance/clarify detour never drops references or composer settings.
+  function buildGenerateBody(
+    payload: SubmitPayload,
+    promptToSend: string,
+  ): GenerateClientBody {
+    return {
+      prompt: promptToSend,
+      provider: payload.provider,
+      model: payload.allModels ? undefined : payload.model,
+      size: payload.size,
+      style: payload.style === "none" ? undefined : payload.style,
+      camera: payload.camera === "none" ? undefined : payload.camera,
+      aspectRatio:
+        payload.aspectRatio === "none" ? undefined : payload.aspectRatio,
+      references:
+        payload.referenceIds.length > 0 ? payload.referenceIds : undefined,
+      brandId: selectedBrandId ?? undefined,
+      brandGuidelines:
+        selectedBrandId !== null ? payload.brandGuidelines : undefined,
+      allModels: payload.allModels,
+      samplesPerModel: payload.samplesPerModel,
+    };
+  }
+
   async function handleSubmit(payload: SubmitPayload) {
     if (busy) return;
     busy = true;
     try {
       let promptToSend = payload.prompt;
-      let referenceIds = payload.referenceIds;
 
-      const shouldEnhance =
-        payload.enhance && referenceIds.length === 0 && !suppressEnhanceOnce;
+      const shouldEnhance = payload.enhance && !suppressEnhanceOnce;
 
       if (shouldEnhance) {
         const brandGuidelines =
           selectedBrandId !== null ? payload.brandGuidelines : undefined;
-        const result = await enhancePrompt(payload.prompt, brandGuidelines);
+        const result = await enhancePrompt(
+          payload.prompt,
+          brandGuidelines,
+          payload.referenceIds,
+        );
         if (result.clarifyingQuestions?.length) {
           pendingClarification = result.clarifyingQuestions;
           pendingCritique = result.critique ?? null;
           pendingAnswers = result.clarifyingQuestions.map(() => "");
-          pendingPrompt = payload.prompt;
+          pendingPayload = payload;
           pendingBrandGuidelines = brandGuidelines;
           return;
         }
@@ -156,22 +184,9 @@
 
       suppressEnhanceOnce = false;
 
-      const { items: created } = await submitGeneration({
-        prompt: promptToSend,
-        provider: payload.provider,
-        model: payload.allModels ? undefined : payload.model,
-        size: payload.size,
-        style: payload.style === "none" ? undefined : payload.style,
-        camera: payload.camera === "none" ? undefined : payload.camera,
-        aspectRatio:
-          payload.aspectRatio === "none" ? undefined : payload.aspectRatio,
-        references: referenceIds.length > 0 ? referenceIds : undefined,
-        brandId: selectedBrandId ?? undefined,
-        brandGuidelines:
-          selectedBrandId !== null ? payload.brandGuidelines : undefined,
-        allModels: payload.allModels,
-        samplesPerModel: payload.samplesPerModel,
-      });
+      const { items: created } = await submitGeneration(
+        buildGenerateBody(payload, promptToSend),
+      );
       mergeRows(created);
       ensurePollers();
     } catch (err) {
@@ -187,7 +202,8 @@
   }
 
   async function submitWithClarifications() {
-    if (!pendingPrompt || !pendingClarification) return;
+    if (!pendingPayload || !pendingClarification) return;
+    const payload = pendingPayload;
     const answered = pendingClarification
       .map((q, i) => ({
         question: q.question,
@@ -198,24 +214,27 @@
       );
     const merged =
       answered.length > 0
-        ? `${pendingPrompt}\n\nClarifications:\n${answered
+        ? `${payload.prompt}\n\nClarifications:\n${answered
             .map((qa) => `- ${qa.question} ${qa.answer}`)
             .join("\n")}`
-        : pendingPrompt;
+        : payload.prompt;
     const brandGuidelines = pendingBrandGuidelines;
     pendingClarification = null;
     pendingCritique = null;
-    pendingPrompt = null;
+    pendingPayload = null;
     pendingBrandGuidelines = undefined;
     pendingAnswers = [];
     busy = true;
     try {
-      const result = await enhancePrompt(merged, brandGuidelines);
+      const result = await enhancePrompt(
+        merged,
+        brandGuidelines,
+        payload.referenceIds,
+      );
       const toSend = result.enhancedPrompt ?? merged;
-      const { items: created } = await submitGeneration({
-        prompt: toSend,
-        provider: data.config.defaultProvider ?? "imagerouter",
-      });
+      const { items: created } = await submitGeneration(
+        buildGenerateBody(payload, toSend),
+      );
       mergeRows(created);
       ensurePollers();
     } catch (err) {
@@ -226,17 +245,14 @@
   }
 
   function skipClarifications() {
-    if (!pendingPrompt) return;
-    const promptToSend = pendingPrompt;
+    if (!pendingPayload) return;
+    const payload = pendingPayload;
     pendingClarification = null;
     pendingCritique = null;
-    pendingPrompt = null;
+    pendingPayload = null;
     pendingBrandGuidelines = undefined;
     pendingAnswers = [];
-    void submitGeneration({
-      prompt: promptToSend,
-      provider: data.config.defaultProvider ?? "imagerouter",
-    })
+    void submitGeneration(buildGenerateBody(payload, payload.prompt))
       .then(({ items: created }) => {
         mergeRows(created);
         ensurePollers();

@@ -1,8 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { RequestEvent } from "@sveltejs/kit";
 
 vi.mock("$lib/server/env", () => ({
   getImageGeneratorEnv: vi.fn(),
+}));
+
+vi.mock("$lib/server/prisma", () => ({
+  prisma: {
+    referenceImage: { findMany: vi.fn() },
+  },
 }));
 
 vi.mock("$lib/services/image-providers/enhance.server", () => ({
@@ -12,6 +21,7 @@ vi.mock("$lib/services/image-providers/enhance.server", () => ({
 }));
 
 const envModule = await import("$lib/server/env");
+const prismaModule = await import("$lib/server/prisma");
 const enhanceModule =
   await import("$lib/services/image-providers/enhance.server");
 const { POST } = await import("./+server");
@@ -19,6 +29,11 @@ const { POST } = await import("./+server");
 const mockEnv = envModule.getImageGeneratorEnv as unknown as ReturnType<
   typeof vi.fn
 >;
+const findManyMock = (
+  prismaModule.prisma as unknown as {
+    referenceImage: { findMany: ReturnType<typeof vi.fn> };
+  }
+).referenceImage.findMany;
 const MockEnhancer = enhanceModule.PromptEnhancer as unknown as ReturnType<
   typeof vi.fn
 >;
@@ -120,7 +135,11 @@ describe("POST /api/images/enhance", () => {
         { question: "What style?", example: "photorealistic" },
       ],
     });
-    expect(fakeEnhance).toHaveBeenCalledWith("draw something", undefined);
+    expect(fakeEnhance).toHaveBeenCalledWith(
+      "draw something",
+      undefined,
+      undefined,
+    );
   });
 
   it("forwards brandGuidelines to the enhancer when provided", async () => {
@@ -134,7 +153,43 @@ describe("POST /api/images/enhance", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(fakeEnhance).toHaveBeenCalledWith("a logo", "Use navy and gold.");
+    expect(fakeEnhance).toHaveBeenCalledWith(
+      "a logo",
+      "Use navy and gold.",
+      undefined,
+    );
+  });
+
+  it("loads owned reference images as data URLs and forwards them", async () => {
+    const fakeEnhance = vi
+      .fn()
+      .mockResolvedValue({ enhancedPrompt: "boxed taco on a desk" });
+    MockEnhancer.mockImplementation(() => ({ enhance: fakeEnhance }));
+
+    const workdir = mkdtempSync(join(tmpdir(), "enhance-ref-"));
+    const imgPath = join(workdir, "taco.png");
+    const bytes = Buffer.from([1, 2, 3, 4]);
+    writeFileSync(imgPath, bytes);
+    findManyMock.mockResolvedValue([
+      { localPath: imgPath, contentType: "image/png" },
+    ]);
+
+    try {
+      const response = await (POST as (e: RequestEvent) => Promise<Response>)(
+        buildEvent({ prompt: "put it in a box", referenceIds: ["ref-1"] }),
+      );
+
+      expect(response.status).toBe(200);
+      expect(findManyMock).toHaveBeenCalledWith({
+        where: { id: { in: ["ref-1"] }, userId: "user-1" },
+        select: { localPath: true, contentType: true },
+      });
+      expect(fakeEnhance).toHaveBeenCalledWith("put it in a box", undefined, [
+        `data:image/png;base64,${bytes.toString("base64")}`,
+      ]);
+    } finally {
+      rmSync(workdir, { recursive: true, force: true });
+    }
   });
 
   it("returns enhancedPrompt when the enhancer rewrites it", async () => {

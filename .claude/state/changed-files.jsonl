@@ -119,3 +119,4 @@
 {"file":"src/routes/api/images/enhance/+server.ts","action":"Edit","timestamp":"2026-05-27T09:32:19Z","important":false}
 {"file":"src/routes/image-generator/+page.svelte","action":"Edit","timestamp":"2026-05-27T09:33:54Z","important":false}
 {"file":"src/routes/image-generator/BrandAssetGalleryDialog.svelte","action":"Edit","timestamp":"2026-05-27T09:46:38Z","important":false}
+{"file":"src/lib/services/image-generator/image-generator-client.ts","action":"Edit","timestamp":"2026-05-27T10:41:14Z","important":false}

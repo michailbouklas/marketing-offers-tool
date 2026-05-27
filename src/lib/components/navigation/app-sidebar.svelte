@@ -6,9 +6,7 @@
   import StoreIcon from "@lucide/svelte/icons/store";
   import ShieldCheckIcon from "@lucide/svelte/icons/shield-check";
   import ImageIcon from "@lucide/svelte/icons/image";
-  import InboxIcon from "@lucide/svelte/icons/inbox";
-  import DatabaseIcon from "@lucide/svelte/icons/database";
-  import UsersIcon from "@lucide/svelte/icons/users";
+  import ShieldIcon from "@lucide/svelte/icons/shield";
   import type { Component } from "svelte";
 
   type NavItem = { href: string; label: string; icon: Component };
@@ -25,19 +23,7 @@
     },
     { href: "/image-generator", label: "Image Generator", icon: ImageIcon },
     ...(user?.role === "admin"
-      ? [
-          {
-            href: "/admin/pending-submissions",
-            label: "Pending submissions",
-            icon: InboxIcon,
-          },
-          {
-            href: "/admin/dim-offers",
-            label: "Dim offers",
-            icon: DatabaseIcon,
-          },
-          { href: "/admin/users", label: "Users", icon: UsersIcon },
-        ]
+      ? [{ href: "/admin", label: "Admin", icon: ShieldIcon }]
       : []),
   ]);
 

@@ -95,11 +95,12 @@ export async function uploadReferences(
 export async function enhancePrompt(
   prompt: string,
   brandGuidelines?: string,
+  referenceIds?: string[],
 ): Promise<EnhanceResult> {
   const res = await fetch("/api/images/enhance", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ prompt, brandGuidelines }),
+    body: JSON.stringify({ prompt, brandGuidelines, referenceIds }),
   });
   return jsonOrThrow<EnhanceResult>(res);
 }

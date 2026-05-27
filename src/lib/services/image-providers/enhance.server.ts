@@ -6,6 +6,17 @@ You may be given the active brand's design guidelines. When they are present, us
 them to decide whether the prompt fits the brand and to ask sharper, brand-aware
 questions (e.g. about palette, tone, typography, or how the brand frames products).
 
+You may also be given one or more reference images the user has attached. These
+exact images will be passed to the image model, so treat their contents as already
+decided. When reference images are present:
+- Do NOT critique or ask about details already visible in them (the subject, its
+  colour, or styling shown in the image are settled).
+- Focus your critique and questions on what the images alone do not pin down: the
+  new setting, composition, lighting, camera, mood, and how the referenced subject
+  should be combined with the rest of the scene.
+- When enhancing, write the prompt as an instruction that builds on the attached
+  image(s) rather than re-describing what they already show.
+
 Given the user's draft prompt, do exactly one of the following and reply with JSON:
 
 1. If the prompt is vague, too generic, internally contradictory, or otherwise
@@ -68,11 +79,27 @@ export class PromptEnhancer {
   async enhance(
     prompt: string,
     brandGuidelines?: string,
+    referenceImages?: string[],
   ): Promise<EnhanceResult> {
     const guidelines = brandGuidelines?.trim();
-    const userContent = guidelines
+    const textContent = guidelines
       ? `Brand design guidelines:\n${guidelines}\n\nDraft prompt:\n${prompt}`
       : prompt;
+
+    const images = (referenceImages ?? []).filter((url) => url.trim() !== "");
+    const userMessage =
+      images.length > 0
+        ? {
+            role: "user" as const,
+            content: [
+              { type: "text" as const, text: textContent },
+              ...images.map((url) => ({
+                type: "image_url" as const,
+                image_url: { url },
+              })),
+            ],
+          }
+        : { role: "user" as const, content: textContent };
 
     const response = await this.fetchFn(`${this.baseUrl}/v1/chat/completions`, {
       method: "POST",
@@ -82,10 +109,7 @@ export class PromptEnhancer {
       },
       body: JSON.stringify({
         model: this.model,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userContent },
-        ],
+        messages: [{ role: "system", content: SYSTEM_PROMPT }, userMessage],
         response_format: { type: "json_object" },
       }),
     });

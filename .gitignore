@@ -24,3 +24,5 @@ vite.config.ts.timestamp-*
 
 /../generated/prisma
 uploads/*
+!uploads/brands/
+!uploads/brands/**
