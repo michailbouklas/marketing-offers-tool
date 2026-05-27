@@ -5,7 +5,7 @@ description: "Skill for the Aggregator-offers area of marketing-offers-tool. 4 s
 
 # Aggregator-offers
 
-4 symbols | 3 files | Cohesion: 40%
+4 symbols | 3 files | Cohesion: 36%
 
 ## When to Use
 
@@ -41,13 +41,18 @@ Start here when exploring this area:
 
 ## Execution Flows
 
-| Flow                              | Type            | Steps |
-| --------------------------------- | --------------- | ----- |
-| `Load → RequireAuthenticatedUser` | cross_community | 3     |
-| `Load → RequireAuthenticatedUser` | cross_community | 3     |
-| `GET → RequireAuthenticatedUser`  | cross_community | 3     |
-| `POST → RequireAuthenticatedUser` | cross_community | 3     |
-| `Load → RequireAuthenticatedUser` | cross_community | 3     |
+| Flow                                | Type            | Steps |
+| ----------------------------------- | --------------- | ----- |
+| `Load → RequireAuthenticatedUser`   | cross_community | 3     |
+| `GET → RequireAuthenticatedUser`    | cross_community | 3     |
+| `PUT → RequireAuthenticatedUser`    | cross_community | 3     |
+| `POST → RequireAuthenticatedUser`   | cross_community | 3     |
+| `Load → RequireAuthenticatedUser`   | cross_community | 3     |
+| `GET → RequireAuthenticatedUser`    | cross_community | 3     |
+| `Load → RequireAuthenticatedUser`   | cross_community | 3     |
+| `DELETE → RequireAuthenticatedUser` | cross_community | 3     |
+| `POST → RequireAuthenticatedUser`   | cross_community | 3     |
+| `GET → RequireAuthenticatedUser`    | cross_community | 3     |
 
 ## How to Explore
 

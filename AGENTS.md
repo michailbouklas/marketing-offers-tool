@@ -239,7 +239,7 @@ Before every new task, use the SymDex MCP server to reindex the project so the s
 
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **marketing-offers-tool** (1007 symbols, 1685 relationships, 75 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **marketing-offers-tool** (2080 symbols, 3574 relationships, 165 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -278,8 +278,13 @@ This project is indexed by GitNexus as **marketing-offers-tool** (1007 symbols, 
 | Tools, resources, schema reference             | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md`           |
 | Index, status, clean, wiki CLI commands        | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md`             |
 | Work in the Services area (131 symbols)        | `.claude/skills/generated/services/SKILL.md`                |
-| Work in the Server area (31 symbols)           | `.claude/skills/generated/server/SKILL.md`                  |
+| Work in the Server area (80 symbols)           | `.claude/skills/generated/server/SKILL.md`                  |
+| Work in the Image-providers area (29 symbols)  | `.claude/skills/generated/image-providers/SKILL.md`         |
+| Work in the Image-generator area (20 symbols)  | `.claude/skills/generated/image-generator/SKILL.md`         |
 | Work in the Scripts area (11 symbols)          | `.claude/skills/generated/scripts/SKILL.md`                 |
+| Work in the [id] area (7 symbols)              | `.claude/skills/generated/id/SKILL.md`                      |
 | Work in the Aggregator-offers area (4 symbols) | `.claude/skills/generated/aggregator-offers/SKILL.md`       |
+| Work in the Brand-context area (4 symbols)     | `.claude/skills/generated/brand-context/SKILL.md`           |
+| Work in the Assets area (4 symbols)            | `.claude/skills/generated/assets/SKILL.md`                  |
 
 <!-- gitnexus:end -->

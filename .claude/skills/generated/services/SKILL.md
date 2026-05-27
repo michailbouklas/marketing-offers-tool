@@ -5,63 +5,63 @@ description: "Skill for the Services area of marketing-offers-tool. 131 symbols 
 
 # Services
 
-131 symbols | 31 files | Cohesion: 80%
+131 symbols | 31 files | Cohesion: 83%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how listAdminDimOffersRows, listAdminDimOffersPage, load work
+- Understanding how approveGapSubmission, rejectGapSubmission, getStagingRecordById work
 - Modifying services-related functionality
 
 ## Key Files
 
-| File                                                        | Symbols                                                                                                                           |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/services/offers-data-quality.ts`                   | parseMissingFields, getBrandAliases, getSelectedBrandAliases, getDefaultGapPricingFormData, applyGapPricingLookupDefaults (+12)   |
-| `src/lib/services/offers-data-quality-postgres.server.ts`   | listGapRecords, listChannels, getPendingStagingRecordByGapId, validateCategorySubcategoryPair, createDimOffersStagingRecord (+10) |
-| `src/lib/services/admin-dim-offers.server.ts`               | parseCount, getSortExpression, buildFilterClauses, buildWhereClause, buildBaseQueryParams (+9)                                    |
-| `src/lib/services/offers-data-quality.server.ts`            | getOpenGapList, getGapFormData, mapPendingSubmission, getPendingGapSubmission, getPendingGapSubmissionQueue (+9)                  |
-| `src/lib/services/offers-data-quality-clickhouse.server.ts` | parseLookbackDays, formatDate, subtractDays, getTransactionItemContext, insertDimOffer (+7)                                       |
-| `src/lib/services/offers-filter-form.ts`                    | mapOffersFilterFormToFilters, applyLifecyclePreset, toStartOfDay, toEndOfDay, toLocalStartOfDay (+3)                              |
-| `src/lib/services/users.server.ts`                          | listUsers, normalizeRole, createUser, updateUser, validateBrandIds (+1)                                                           |
-| `src/lib/services/dim-offers-audit.server.ts`               | listChangedFields, createDimOffersAuditRecord, parseNullableNumber, isSnapshotRecord, mapSnapshotToAdminRow (+1)                  |
-| `src/lib/services/user-editor-form.ts`                      | getDefaultCreateUserFormData, getDefaultEditUserFormData, normalizeUserRole, normalizeBrandIds                                    |
-| `src/lib/services/home-offer-widgets.ts`                    | getStartOfDay, getEndOfDay, addDays, getHomeOfferWidgets                                                                          |
+| File                                                        | Symbols                                                                                                                                          |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/lib/services/offers-data-quality.ts`                   | getDefaultGapPricingFormData, applyGapPricingLookupDefaults, mapGapLoadResponseToGapPricingFormData, formatInputNumber, parseMissingFields (+12) |
+| `src/lib/services/offers-data-quality-postgres.server.ts`   | getStagingRecordById, updateDimOffersStagingStatus, updateGapRecordStatus, listChannels, getPendingStagingRecordByItemCode (+10)                 |
+| `src/lib/services/offers-data-quality.server.ts`            | approveGapSubmission, rejectGapSubmission, mapPendingSubmission, getPendingGapSubmission, getGapFormData (+9)                                    |
+| `src/lib/services/admin-dim-offers.server.ts`               | parseCount, getSortExpression, buildFilterClauses, buildWhereClause, buildBaseQueryParams (+9)                                                   |
+| `src/lib/services/offers-data-quality-clickhouse.server.ts` | insertDimOffer, updateDimOffer, parseNullableNumber, formatNullableFixedNumber, getCurrentDimOfferValues (+7)                                    |
+| `src/lib/services/offers-filter-form.ts`                    | mapOffersFilterFormToFilters, applyLifecyclePreset, toStartOfDay, toEndOfDay, toLocalStartOfDay (+3)                                             |
+| `src/lib/services/dim-offers-audit.server.ts`               | listChangedFields, createDimOffersAuditRecord, parseNullableNumber, isSnapshotRecord, mapSnapshotToAdminRow (+1)                                 |
+| `src/lib/services/users.server.ts`                          | listUsers, normalizeRole, createUser, updateUser, validateBrandIds (+1)                                                                          |
+| `src/lib/services/user-editor-form.ts`                      | getDefaultCreateUserFormData, getDefaultEditUserFormData, normalizeUserRole, normalizeBrandIds                                                   |
+| `src/lib/services/home-offer-widgets.ts`                    | getStartOfDay, getEndOfDay, addDays, getHomeOfferWidgets                                                                                         |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`listAdminDimOffersRows`** (Function) — `src/lib/services/admin-dim-offers.server.ts:297`
-- **`listAdminDimOffersPage`** (Function) — `src/lib/services/admin-dim-offers.server.ts:382`
-- **`load`** (Function) — `src/routes/offers-data-quality/+page.server.ts:20`
-- **`parseMissingFields`** (Function) — `src/lib/services/offers-data-quality.ts:350`
-- **`getBrandAliases`** (Function) — `src/lib/services/offers-data-quality.ts:381`
+- **`approveGapSubmission`** (Function) — `src/lib/services/offers-data-quality.server.ts:332`
+- **`rejectGapSubmission`** (Function) — `src/lib/services/offers-data-quality.server.ts:411`
+- **`getStagingRecordById`** (Function) — `src/lib/services/offers-data-quality-postgres.server.ts:118`
+- **`updateDimOffersStagingStatus`** (Function) — `src/lib/services/offers-data-quality-postgres.server.ts:184`
+- **`updateGapRecordStatus`** (Function) — `src/lib/services/offers-data-quality-postgres.server.ts:201`
 
 ## Key Symbols
 
-| Symbol                                   | Type     | File                                                      | Line |
-| ---------------------------------------- | -------- | --------------------------------------------------------- | ---- |
-| `listAdminDimOffersRows`                 | Function | `src/lib/services/admin-dim-offers.server.ts`             | 297  |
-| `listAdminDimOffersPage`                 | Function | `src/lib/services/admin-dim-offers.server.ts`             | 382  |
-| `load`                                   | Function | `src/routes/offers-data-quality/+page.server.ts`          | 20   |
-| `parseMissingFields`                     | Function | `src/lib/services/offers-data-quality.ts`                 | 350  |
-| `getBrandAliases`                        | Function | `src/lib/services/offers-data-quality.ts`                 | 381  |
-| `getSelectedBrandAliases`                | Function | `src/lib/services/offers-data-quality.ts`                 | 387  |
-| `getOpenGapList`                         | Function | `src/lib/services/offers-data-quality.server.ts`          | 245  |
-| `listGapRecords`                         | Function | `src/lib/services/offers-data-quality-postgres.server.ts` | 91   |
-| `listBrandsForUser`                      | Function | `src/lib/services/brands.server.ts`                       | 25   |
-| `GET`                                    | Function | `src/routes/api/gaps/+server.ts`                          | 20   |
-| `listUsers`                              | Function | `src/lib/services/users.server.ts`                        | 9    |
-| `getDefaultCreateUserFormData`           | Function | `src/lib/services/user-editor-form.ts`                    | 76   |
-| `getDefaultEditUserFormData`             | Function | `src/lib/services/user-editor-form.ts`                    | 86   |
-| `load`                                   | Function | `src/routes/admin/users/+page.server.ts`                  | 15   |
-| `mapOffersFilterFormToFilters`           | Function | `src/lib/services/offers-filter-form.ts`                  | 77   |
-| `getDefaultGapPricingFormData`           | Function | `src/lib/services/offers-data-quality.ts`                 | 272  |
-| `applyGapPricingLookupDefaults`          | Function | `src/lib/services/offers-data-quality.ts`                 | 285  |
-| `mapGapLoadResponseToGapPricingFormData` | Function | `src/lib/services/offers-data-quality.ts`                 | 309  |
-| `listChannels`                           | Function | `src/lib/services/offers-data-quality-postgres.server.ts` | 37   |
-| `load`                                   | Function | `src/routes/offers-data-quality/[id]/+page.server.ts`     | 22   |
+| Symbol                                   | Type     | File                                                             | Line |
+| ---------------------------------------- | -------- | ---------------------------------------------------------------- | ---- |
+| `approveGapSubmission`                   | Function | `src/lib/services/offers-data-quality.server.ts`                 | 332  |
+| `rejectGapSubmission`                    | Function | `src/lib/services/offers-data-quality.server.ts`                 | 411  |
+| `getStagingRecordById`                   | Function | `src/lib/services/offers-data-quality-postgres.server.ts`        | 118  |
+| `updateDimOffersStagingStatus`           | Function | `src/lib/services/offers-data-quality-postgres.server.ts`        | 184  |
+| `updateGapRecordStatus`                  | Function | `src/lib/services/offers-data-quality-postgres.server.ts`        | 201  |
+| `insertDimOffer`                         | Function | `src/lib/services/offers-data-quality-clickhouse.server.ts`      | 377  |
+| `updateDimOffer`                         | Function | `src/lib/services/offers-data-quality-clickhouse.server.ts`      | 400  |
+| `createDimOffersAuditRecord`             | Function | `src/lib/services/dim-offers-audit.server.ts`                    | 32   |
+| `POST`                                   | Function | `src/routes/api/gaps/submissions/bulk/+server.ts`                | 12   |
+| `POST`                                   | Function | `src/routes/api/gaps/submissions/[stagingId]/reject/+server.ts`  | 10   |
+| `POST`                                   | Function | `src/routes/api/gaps/submissions/[stagingId]/approve/+server.ts` | 10   |
+| `listAdminDimOffersRows`                 | Function | `src/lib/services/admin-dim-offers.server.ts`                    | 297  |
+| `listAdminDimOffersPage`                 | Function | `src/lib/services/admin-dim-offers.server.ts`                    | 382  |
+| `getDefaultGapPricingFormData`           | Function | `src/lib/services/offers-data-quality.ts`                        | 272  |
+| `applyGapPricingLookupDefaults`          | Function | `src/lib/services/offers-data-quality.ts`                        | 285  |
+| `mapGapLoadResponseToGapPricingFormData` | Function | `src/lib/services/offers-data-quality.ts`                        | 309  |
+| `getPendingGapSubmission`                | Function | `src/lib/services/offers-data-quality.server.ts`                 | 174  |
+| `listChannels`                           | Function | `src/lib/services/offers-data-quality-postgres.server.ts`        | 37   |
+| `getPendingStagingRecordByItemCode`      | Function | `src/lib/services/offers-data-quality-postgres.server.ts`        | 126  |
+| `load`                                   | Function | `src/routes/offers-data-quality/[id]/+page.server.ts`            | 22   |
 
 ## Execution Flows
 
@@ -87,6 +87,6 @@ Start here when exploring this area:
 
 ## How to Explore
 
-1. `gitnexus_context({name: "listAdminDimOffersRows"})` — see callers and callees
+1. `gitnexus_context({name: "approveGapSubmission"})` — see callers and callees
 2. `gitnexus_query({query: "services"})` — find related execution flows
 3. Read key files listed above for implementation details
