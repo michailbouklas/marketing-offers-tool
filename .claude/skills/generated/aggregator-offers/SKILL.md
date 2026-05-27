@@ -10,16 +10,16 @@ description: "Skill for the Aggregator-offers area of marketing-offers-tool. 4 s
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how createOffer, updateOffer, mapOfferEditorFormToCreateInput work
+- Understanding how createOffer, updateOffer, requireAuthenticatedUser work
 - Modifying aggregator-offers-related functionality
 
 ## Key Files
 
-| File                                           | Symbols                         |
-| ---------------------------------------------- | ------------------------------- |
-| `src/routes/aggregator-offers/+page.server.ts` | createOffer, updateOffer        |
-| `src/lib/services/offer-editor-form.ts`        | mapOfferEditorFormToCreateInput |
-| `src/lib/server/auth-guards.ts`                | requireAuthenticatedUser        |
+| File | Symbols |
+|------|---------|
+| `src/routes/aggregator-offers/+page.server.ts` | createOffer, updateOffer |
+| `src/lib/server/auth-guards.ts` | requireAuthenticatedUser |
+| `src/lib/services/offer-editor-form.ts` | mapOfferEditorFormToCreateInput |
 
 ## Entry Points
 
@@ -27,32 +27,32 @@ Start here when exploring this area:
 
 - **`createOffer`** (Function) — `src/routes/aggregator-offers/+page.server.ts:62`
 - **`updateOffer`** (Function) — `src/routes/aggregator-offers/+page.server.ts:86`
-- **`mapOfferEditorFormToCreateInput`** (Function) — `src/lib/services/offer-editor-form.ts:78`
 - **`requireAuthenticatedUser`** (Function) — `src/lib/server/auth-guards.ts:5`
+- **`mapOfferEditorFormToCreateInput`** (Function) — `src/lib/services/offer-editor-form.ts:78`
 
 ## Key Symbols
 
-| Symbol                            | Type     | File                                           | Line |
-| --------------------------------- | -------- | ---------------------------------------------- | ---- |
-| `createOffer`                     | Function | `src/routes/aggregator-offers/+page.server.ts` | 62   |
-| `updateOffer`                     | Function | `src/routes/aggregator-offers/+page.server.ts` | 86   |
-| `mapOfferEditorFormToCreateInput` | Function | `src/lib/services/offer-editor-form.ts`        | 78   |
-| `requireAuthenticatedUser`        | Function | `src/lib/server/auth-guards.ts`                | 5    |
+| Symbol | Type | File | Line |
+|--------|------|------|------|
+| `createOffer` | Function | `src/routes/aggregator-offers/+page.server.ts` | 62 |
+| `updateOffer` | Function | `src/routes/aggregator-offers/+page.server.ts` | 86 |
+| `requireAuthenticatedUser` | Function | `src/lib/server/auth-guards.ts` | 5 |
+| `mapOfferEditorFormToCreateInput` | Function | `src/lib/services/offer-editor-form.ts` | 78 |
 
 ## Execution Flows
 
-| Flow                                | Type            | Steps |
-| ----------------------------------- | --------------- | ----- |
-| `Load → RequireAuthenticatedUser`   | cross_community | 3     |
-| `GET → RequireAuthenticatedUser`    | cross_community | 3     |
-| `PUT → RequireAuthenticatedUser`    | cross_community | 3     |
-| `POST → RequireAuthenticatedUser`   | cross_community | 3     |
-| `Load → RequireAuthenticatedUser`   | cross_community | 3     |
-| `Load → RequireAuthenticatedUser`   | cross_community | 3     |
-| `GET → RequireAuthenticatedUser`    | cross_community | 3     |
-| `DELETE → RequireAuthenticatedUser` | cross_community | 3     |
-| `POST → RequireAuthenticatedUser`   | cross_community | 3     |
-| `GET → RequireAuthenticatedUser`    | cross_community | 3     |
+| Flow | Type | Steps |
+|------|------|-------|
+| `Load → RequireAuthenticatedUser` | cross_community | 3 |
+| `GET → RequireAuthenticatedUser` | cross_community | 3 |
+| `PUT → RequireAuthenticatedUser` | cross_community | 3 |
+| `POST → RequireAuthenticatedUser` | cross_community | 3 |
+| `Load → RequireAuthenticatedUser` | cross_community | 3 |
+| `Load → RequireAuthenticatedUser` | cross_community | 3 |
+| `GET → RequireAuthenticatedUser` | cross_community | 3 |
+| `DELETE → RequireAuthenticatedUser` | cross_community | 3 |
+| `POST → RequireAuthenticatedUser` | cross_community | 3 |
+| `GET → RequireAuthenticatedUser` | cross_community | 3 |
 
 ## How to Explore
 
