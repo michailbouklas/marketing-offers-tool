@@ -15,17 +15,17 @@ description: "Skill for the Image-providers area of marketing-offers-tool. 29 sy
 
 ## Key Files
 
-| File | Symbols |
-|------|---------|
-| `src/lib/services/image-providers/openai.server.ts` | OpenAIProviderError, generateImage, postGenerations, postEdits, safeParseError (+3) |
+| File                                                     | Symbols                                                                                                   |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `src/lib/services/image-providers/openai.server.ts`      | OpenAIProviderError, generateImage, postGenerations, postEdits, safeParseError (+3)                       |
 | `src/lib/services/image-providers/imagerouter.server.ts` | ImageRouterImageProvider, ImageRouterProviderError, generateImage, safeParseError, resolveImageBytes (+1) |
-| `src/lib/services/image-providers/enhance.server.ts` | PromptEnhancerError, PromptEnhancer, enhance, parseEnhanceContent, safeJson |
-| `src/lib/services/image-providers/types.ts` | generateImage, generateImage, ImageProvider, FakeProvider |
-| `src/lib/services/image-generator/orchestrate.server.ts` | generateOneRow, kickoffPendingGenerations |
-| `src/lib/server/image-size.ts` | resizeToRequested |
-| `src/routes/api/images/generate/+server.ts` | POST |
-| `src/routes/api/images/enhance/+server.ts` | POST |
-| `src/lib/services/image-providers/factory.server.ts` | getImageProvider |
+| `src/lib/services/image-providers/enhance.server.ts`     | PromptEnhancerError, PromptEnhancer, enhance, parseEnhanceContent, safeJson                               |
+| `src/lib/services/image-providers/types.ts`              | generateImage, generateImage, ImageProvider, FakeProvider                                                 |
+| `src/lib/services/image-generator/orchestrate.server.ts` | generateOneRow, kickoffPendingGenerations                                                                 |
+| `src/lib/server/image-size.ts`                           | resizeToRequested                                                                                         |
+| `src/routes/api/images/generate/+server.ts`              | POST                                                                                                      |
+| `src/routes/api/images/enhance/+server.ts`               | POST                                                                                                      |
+| `src/lib/services/image-providers/factory.server.ts`     | getImageProvider                                                                                          |
 
 ## Entry Points
 
@@ -39,50 +39,50 @@ Start here when exploring this area:
 
 ## Key Symbols
 
-| Symbol | Type | File | Line |
-|--------|------|------|------|
-| `OpenAIProviderError` | Class | `src/lib/services/image-providers/openai.server.ts` | 7 |
-| `PromptEnhancerError` | Class | `src/lib/services/image-providers/enhance.server.ts` | 29 |
-| `PromptEnhancer` | Class | `src/lib/services/image-providers/enhance.server.ts` | 40 |
-| `FakeProvider` | Class | `src/lib/services/image-providers/types.ts` | 24 |
-| `OpenAIImageProvider` | Class | `src/lib/services/image-providers/openai.server.ts` | 34 |
-| `ImageRouterImageProvider` | Class | `src/lib/services/image-providers/imagerouter.server.ts` | 33 |
-| `ImageRouterProviderError` | Class | `src/lib/services/image-providers/imagerouter.server.ts` | 6 |
-| `resizeToRequested` | Function | `src/lib/server/image-size.ts` | 78 |
-| `generateOneRow` | Function | `src/lib/services/image-generator/orchestrate.server.ts` | 6 |
-| `kickoffPendingGenerations` | Function | `src/lib/services/image-generator/orchestrate.server.ts` | 86 |
-| `POST` | Function | `src/routes/api/images/generate/+server.ts` | 10 |
-| `POST` | Function | `src/routes/api/images/enhance/+server.ts` | 11 |
-| `getImageProvider` | Function | `src/lib/services/image-providers/factory.server.ts` | 5 |
-| `ImageProvider` | Interface | `src/lib/services/image-providers/types.ts` | 13 |
-| `generateImage` | Method | `src/lib/services/image-providers/openai.server.ts` | 43 |
-| `postGenerations` | Method | `src/lib/services/image-providers/openai.server.ts` | 81 |
-| `postEdits` | Method | `src/lib/services/image-providers/openai.server.ts` | 101 |
-| `generateImage` | Method | `src/lib/services/image-providers/types.ts` | 14 |
-| `generateImage` | Method | `src/lib/services/image-providers/types.ts` | 27 |
-| `enhance` | Method | `src/lib/services/image-providers/enhance.server.ts` | 51 |
+| Symbol                      | Type      | File                                                     | Line |
+| --------------------------- | --------- | -------------------------------------------------------- | ---- |
+| `OpenAIProviderError`       | Class     | `src/lib/services/image-providers/openai.server.ts`      | 7    |
+| `PromptEnhancerError`       | Class     | `src/lib/services/image-providers/enhance.server.ts`     | 29   |
+| `PromptEnhancer`            | Class     | `src/lib/services/image-providers/enhance.server.ts`     | 40   |
+| `FakeProvider`              | Class     | `src/lib/services/image-providers/types.ts`              | 24   |
+| `OpenAIImageProvider`       | Class     | `src/lib/services/image-providers/openai.server.ts`      | 34   |
+| `ImageRouterImageProvider`  | Class     | `src/lib/services/image-providers/imagerouter.server.ts` | 33   |
+| `ImageRouterProviderError`  | Class     | `src/lib/services/image-providers/imagerouter.server.ts` | 6    |
+| `resizeToRequested`         | Function  | `src/lib/server/image-size.ts`                           | 78   |
+| `generateOneRow`            | Function  | `src/lib/services/image-generator/orchestrate.server.ts` | 6    |
+| `kickoffPendingGenerations` | Function  | `src/lib/services/image-generator/orchestrate.server.ts` | 86   |
+| `POST`                      | Function  | `src/routes/api/images/generate/+server.ts`              | 10   |
+| `POST`                      | Function  | `src/routes/api/images/enhance/+server.ts`               | 11   |
+| `getImageProvider`          | Function  | `src/lib/services/image-providers/factory.server.ts`     | 5    |
+| `ImageProvider`             | Interface | `src/lib/services/image-providers/types.ts`              | 13   |
+| `generateImage`             | Method    | `src/lib/services/image-providers/openai.server.ts`      | 43   |
+| `postGenerations`           | Method    | `src/lib/services/image-providers/openai.server.ts`      | 81   |
+| `postEdits`                 | Method    | `src/lib/services/image-providers/openai.server.ts`      | 101  |
+| `generateImage`             | Method    | `src/lib/services/image-providers/types.ts`              | 14   |
+| `generateImage`             | Method    | `src/lib/services/image-providers/types.ts`              | 27   |
+| `enhance`                   | Method    | `src/lib/services/image-providers/enhance.server.ts`     | 51   |
 
 ## Execution Flows
 
-| Flow | Type | Steps |
-|------|------|-------|
-| `POST → LoadEnvFileValues` | cross_community | 6 |
-| `POST → FetchFn` | cross_community | 6 |
-| `POST → LoadEnvFileValues` | cross_community | 5 |
-| `POST → SafeParseError` | cross_community | 5 |
-| `POST → OpenAIProviderError` | cross_community | 5 |
-| `POST → FetchFn` | cross_community | 5 |
-| `POST → ContentTypeFromPath` | cross_community | 5 |
-| `POST → SafeParseError` | cross_community | 5 |
-| `POST → ImageRouterProviderError` | cross_community | 5 |
-| `KickoffPendingGenerations → ContentTypeFromPath` | cross_community | 5 |
+| Flow                                              | Type            | Steps |
+| ------------------------------------------------- | --------------- | ----- |
+| `POST → LoadEnvFileValues`                        | cross_community | 6     |
+| `POST → FetchFn`                                  | cross_community | 6     |
+| `POST → LoadEnvFileValues`                        | cross_community | 5     |
+| `POST → SafeParseError`                           | cross_community | 5     |
+| `POST → OpenAIProviderError`                      | cross_community | 5     |
+| `POST → FetchFn`                                  | cross_community | 5     |
+| `POST → ContentTypeFromPath`                      | cross_community | 5     |
+| `POST → SafeParseError`                           | cross_community | 5     |
+| `POST → ImageRouterProviderError`                 | cross_community | 5     |
+| `KickoffPendingGenerations → ContentTypeFromPath` | cross_community | 5     |
 
 ## Connected Areas
 
-| Area | Connections |
-|------|-------------|
-| Server | 5 calls |
-| [id] | 2 calls |
+| Area   | Connections |
+| ------ | ----------- |
+| Server | 5 calls     |
+| [id]   | 2 calls     |
 
 ## How to Explore
 

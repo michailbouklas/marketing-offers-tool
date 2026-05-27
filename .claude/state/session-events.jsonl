@@ -371,3 +371,60 @@
 {"data":{"command":"grep -E '\"(check|lint|test)\"' package.json; echo \"--- running check ---\"; bun run check 2\u003e\u00261 | tail -40"},"id":"event-000347","state":"stopped","ts":"2026-05-27T09:13:26Z","type":"tool.bash"}
 {"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\admin\\user-editor-form.svelte"},"id":"event-000348","state":"stopped","ts":"2026-05-27T09:14:16Z","type":"tool.edit"}
 {"data":{"command":"bun run check 2\u003e\u00261 | tail -15"},"id":"event-000349","state":"stopped","ts":"2026-05-27T09:14:32Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-providers\\enhance.server.ts"},"id":"event-000350","state":"stopped","ts":"2026-05-27T09:20:55Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-providers\\enhance.server.ts"},"id":"event-000351","state":"stopped","ts":"2026-05-27T09:21:04Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-providers\\enhance.server.ts"},"id":"event-000352","state":"stopped","ts":"2026-05-27T09:21:13Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-providers\\enhance.server.test.ts"},"id":"event-000353","state":"stopped","ts":"2026-05-27T09:21:27Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\api\\images\\enhance\\server.test.ts"},"id":"event-000354","state":"stopped","ts":"2026-05-27T09:21:38Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-generator\\image-generator-client.ts"},"id":"event-000355","state":"stopped","ts":"2026-05-27T09:21:51Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000356","state":"stopped","ts":"2026-05-27T09:22:07Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000357","state":"stopped","ts":"2026-05-27T09:22:13Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000358","state":"stopped","ts":"2026-05-27T09:22:19Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000359","state":"stopped","ts":"2026-05-27T09:22:28Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000360","state":"stopped","ts":"2026-05-27T09:22:36Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000361","state":"stopped","ts":"2026-05-27T09:22:45Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000362","state":"stopped","ts":"2026-05-27T09:22:56Z","type":"tool.edit"}
+{"data":{"command":"bun run svelte-autofixer 2\u003e\u00261 | tail -n 30"},"id":"event-000363","state":"stopped","ts":"2026-05-27T09:23:18Z","type":"tool.bash"}
+{"data":{"command":"bun run test -- --run src/lib/services/image-providers/enhance.server.test.ts src/routes/api/images/enhance/server.test.ts 2\u003e\u00261 | tail -n 40"},"id":"event-000364","state":"stopped","ts":"2026-05-27T09:23:28Z","type":"tool.bash"}
+{"data":{"command":"bun run check 2\u003e\u00261 | tail -n 30"},"id":"event-000365","state":"stopped","ts":"2026-05-27T09:23:44Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\docs\\spec\\image-generator.md"},"id":"event-000366","state":"stopped","ts":"2026-05-27T09:24:20Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\docs\\spec\\image-generator.md"},"id":"event-000367","state":"stopped","ts":"2026-05-27T09:24:26Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-providers\\enhance.server.ts"},"id":"event-000368","state":"stopped","ts":"2026-05-27T09:31:54Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-providers\\enhance.server.ts"},"id":"event-000369","state":"stopped","ts":"2026-05-27T09:32:04Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-providers\\enhance.server.ts"},"id":"event-000370","state":"stopped","ts":"2026-05-27T09:32:11Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\api\\images\\enhance\\+server.ts"},"id":"event-000371","state":"stopped","ts":"2026-05-27T09:32:19Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\api\\images\\enhance\\+server.ts"},"id":"event-000372","state":"stopped","ts":"2026-05-27T09:32:26Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\api\\images\\enhance\\server.test.ts"},"id":"event-000373","state":"stopped","ts":"2026-05-27T09:32:36Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-providers\\enhance.server.test.ts"},"id":"event-000374","state":"stopped","ts":"2026-05-27T09:32:45Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-generator\\image-generator-client.ts"},"id":"event-000375","state":"stopped","ts":"2026-05-27T09:33:00Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-generator\\image-generator-client.ts"},"id":"event-000376","state":"stopped","ts":"2026-05-27T09:33:06Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\PromptComposer.svelte"},"id":"event-000377","state":"stopped","ts":"2026-05-27T09:33:26Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\PromptComposer.svelte"},"id":"event-000378","state":"stopped","ts":"2026-05-27T09:33:33Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\PromptComposer.svelte"},"id":"event-000379","state":"stopped","ts":"2026-05-27T09:33:44Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000380","state":"stopped","ts":"2026-05-27T09:33:54Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000381","state":"stopped","ts":"2026-05-27T09:34:02Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000382","state":"stopped","ts":"2026-05-27T09:34:11Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000383","state":"stopped","ts":"2026-05-27T09:34:18Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000384","state":"stopped","ts":"2026-05-27T09:34:58Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000385","state":"stopped","ts":"2026-05-27T09:35:05Z","type":"tool.edit"}
+{"data":{"command":"bun run svelte-autofixer 2\u003e\u00261 | grep -iE \"error|warn|\\.svelte|\\.ts\" | grep -viE \"unchanged\" | head -n 40"},"id":"event-000386","state":"stopped","ts":"2026-05-27T09:35:25Z","type":"tool.bash"}
+{"data":{"command":"bun run test -- --run src/lib/services/image-providers/enhance.server.test.ts src/routes/api/images/enhance/server.test.ts 2\u003e\u00261 | tail -n 25"},"id":"event-000387","state":"stopped","ts":"2026-05-27T09:35:37Z","type":"tool.bash"}
+{"data":{"command":"bun run check 2\u003e\u00261 | tail -n 20"},"id":"event-000388","state":"stopped","ts":"2026-05-27T09:35:52Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\docs\\spec\\image-generator.md"},"id":"event-000389","state":"stopped","ts":"2026-05-27T09:36:07Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\docs\\spec\\image-generator.md"},"id":"event-000390","state":"stopped","ts":"2026-05-27T09:36:19Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\PromptComposer.svelte"},"id":"event-000391","state":"stopped","ts":"2026-05-27T09:41:23Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\PromptComposer.svelte"},"id":"event-000392","state":"stopped","ts":"2026-05-27T09:41:32Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000393","state":"stopped","ts":"2026-05-27T09:41:42Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000394","state":"stopped","ts":"2026-05-27T09:41:49Z","type":"tool.edit"}
+{"data":{"command":"bun run svelte-autofixer 2\u003e\u00261 | grep -iE \"\\.svelte|\\.ts|error\" | grep -viE \"unchanged\" | head -n 20; echo \"---check---\"; bun run check 2\u003e\u00261 | tail -n 8"},"id":"event-000395","state":"stopped","ts":"2026-05-27T09:42:17Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\BrandAssetGalleryDialog.svelte"},"id":"event-000396","state":"stopped","ts":"2026-05-27T09:46:38Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\BrandAssetGalleryDialog.svelte"},"id":"event-000397","state":"stopped","ts":"2026-05-27T09:46:50Z","type":"tool.edit"}
+{"data":{"command":"bun run svelte-autofixer 2\u003e\u00261 | grep -iE \"BrandAssetGallery|error\" | head; echo \"---check---\"; bun run check 2\u003e\u00261 | tail -n 4"},"id":"event-000398","state":"stopped","ts":"2026-05-27T09:47:18Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\BrandAssetGalleryDialog.svelte"},"id":"event-000399","state":"stopped","ts":"2026-05-27T09:53:33Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000400","state":"stopped","ts":"2026-05-27T09:53:52Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\+page.svelte"},"id":"event-000401","state":"stopped","ts":"2026-05-27T09:53:58Z","type":"tool.edit"}
+{"data":{"command":"bun run svelte-autofixer 2\u003e\u00261 | grep -iE \"BrandAssetGallery|image-generator/\\+page|error\" | head; echo \"---check---\"; bun run check 2\u003e\u00261 | tail -n 6"},"id":"event-000402","state":"stopped","ts":"2026-05-27T09:54:28Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\docs\\spec\\image-generator.md"},"id":"event-000403","state":"stopped","ts":"2026-05-27T09:54:41Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\+layout.svelte"},"id":"event-000404","state":"stopped","ts":"2026-05-27T10:00:42Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\navigation\\top-nav.svelte"},"id":"event-000405","state":"stopped","ts":"2026-05-27T10:00:57Z","type":"tool.edit"}
+{"data":{"command":"bun run svelte-autofixer 2\u003e\u00261 | grep -iE \"top-nav|\\+layout\\.svelte|error\" | grep -viE \"unchanged\" | head; echo \"---check---\"; bun run check 2\u003e\u00261 | tail -n 6"},"id":"event-000406","state":"stopped","ts":"2026-05-27T10:01:25Z","type":"tool.bash"}

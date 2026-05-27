@@ -14,6 +14,7 @@
     NativeSelectOption,
   } from "$lib/components/ui/native-select/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
+  import type { Snippet } from "svelte";
   import type {
     ImageGeneratorConfig,
     ImageProviderId,
@@ -36,6 +37,9 @@
     brandGuidelines?: string | null;
     onSubmit: (state: SubmitPayload) => void;
     onUploadReferences?: (files: File[]) => Promise<string[]>;
+    afterPrompt?: Snippet;
+    onViewBrandAssets?: () => void;
+    canViewBrandAssets?: boolean;
   }
 
   let {
@@ -45,6 +49,9 @@
     brandGuidelines = null,
     onSubmit,
     onUploadReferences,
+    afterPrompt,
+    onViewBrandAssets,
+    canViewBrandAssets = false,
   }: Props = $props();
 
   const defaultProvider = $derived(
@@ -63,7 +70,7 @@
   let aspectRatio = $state<AspectRatio>("none");
   let enhance = $state(true);
   let allModels = $state(false);
-  let samplesPerModel = $state(3);
+  let samplesPerModel = $state(1);
   let referenceFiles = $state<File[]>([]);
   let preUploadedReferenceIds = $state<string[]>([]);
   let guidelinesText = $state("");
@@ -97,7 +104,7 @@
     aspectRatio = initial?.aspectRatio ?? "none";
     enhance = initial?.enhance ?? true;
     allModels = initial?.allModels ?? false;
-    samplesPerModel = initial?.samplesPerModel ?? 3;
+    samplesPerModel = initial?.samplesPerModel ?? 1;
     preUploadedReferenceIds = initial?.referenceIds ?? [];
   });
 
@@ -211,6 +218,8 @@
           />
         </div>
 
+        {@render afterPrompt?.()}
+
         {#if hasBrandGuidelines}
           <div class="grid gap-2">
             <div class="flex items-center justify-between">
@@ -317,7 +326,23 @@
         </div>
 
         <div class="grid gap-2">
-          <Label for="references">Reference images (optional)</Label>
+          <div class="flex items-center justify-between gap-2">
+            <Label for="references">Reference images (optional)</Label>
+            {#if onViewBrandAssets}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!canViewBrandAssets}
+                title={canViewBrandAssets
+                  ? "Browse this brand's assets to use as a reference"
+                  : "Select a brand rule above to browse its assets"}
+                onclick={() => onViewBrandAssets?.()}
+              >
+                View brand assets
+              </Button>
+            {/if}
+          </div>
           <input
             id="references"
             type="file"

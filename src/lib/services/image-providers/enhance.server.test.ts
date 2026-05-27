@@ -28,13 +28,16 @@ function chatResponse(jsonContent: object, status = 200): Response {
 }
 
 describe("PromptEnhancer", () => {
-  it("returns clarifyingQuestions when the model asks for clarification", async () => {
+  it("returns clarifyingQuestions with examples when the model asks for clarification", async () => {
     const calls: RecordedCall[] = [];
     const enhancer = new PromptEnhancer({
       apiKey: "sk-test",
       fetch: recorderFetch(calls, () =>
         chatResponse({
-          clarifyingQuestions: ["What lighting?", "Indoor or outdoor?"],
+          clarifyingQuestions: [
+            { question: "What lighting?", example: "warm sunset light" },
+            { question: "Indoor or outdoor?", example: "a cozy living room" },
+          ],
         }),
       ),
     });
@@ -42,8 +45,8 @@ describe("PromptEnhancer", () => {
     const result = await enhancer.enhance("a cat");
 
     expect(result.clarifyingQuestions).toEqual([
-      "What lighting?",
-      "Indoor or outdoor?",
+      { question: "What lighting?", example: "warm sunset light" },
+      { question: "Indoor or outdoor?", example: "a cozy living room" },
     ]);
     expect(result.enhancedPrompt).toBeUndefined();
 
@@ -53,6 +56,52 @@ describe("PromptEnhancer", () => {
     expect(body.model).toBe("gpt-4o-mini");
     expect(body.response_format).toEqual({ type: "json_object" });
     expect(body.messages[1].content).toBe("a cat");
+  });
+
+  it("returns a critique alongside questions and forwards brand guidelines", async () => {
+    const calls: RecordedCall[] = [];
+    const enhancer = new PromptEnhancer({
+      apiKey: "sk-test",
+      fetch: recorderFetch(calls, () =>
+        chatResponse({
+          critique: "Too generic — no subject, palette, or composition.",
+          clarifyingQuestions: [
+            { question: "Which brand color leads?", example: "navy blue" },
+          ],
+        }),
+      ),
+    });
+
+    const result = await enhancer.enhance("a banner", "Primary color: navy.");
+
+    expect(result.critique).toBe(
+      "Too generic — no subject, palette, or composition.",
+    );
+    expect(result.clarifyingQuestions).toEqual([
+      { question: "Which brand color leads?", example: "navy blue" },
+    ]);
+
+    const body = JSON.parse(calls[0]!.init.body as string);
+    expect(body.messages[1].content).toContain("Primary color: navy.");
+    expect(body.messages[1].content).toContain("a banner");
+  });
+
+  it("normalizes plain-string clarifyingQuestions into objects", async () => {
+    const enhancer = new PromptEnhancer({
+      apiKey: "sk-test",
+      fetch: recorderFetch([], () =>
+        chatResponse({
+          clarifyingQuestions: ["What lighting?", "Indoor or outdoor?"],
+        }),
+      ),
+    });
+
+    const result = await enhancer.enhance("a cat");
+
+    expect(result.clarifyingQuestions).toEqual([
+      { question: "What lighting?" },
+      { question: "Indoor or outdoor?" },
+    ]);
   });
 
   it("returns enhancedPrompt when the model rewrites the prompt", async () => {

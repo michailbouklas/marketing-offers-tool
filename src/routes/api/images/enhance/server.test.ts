@@ -102,9 +102,11 @@ describe("POST /api/images/enhance", () => {
   });
 
   it("returns clarifyingQuestions when the enhancer returns them", async () => {
-    const fakeEnhance = vi
-      .fn()
-      .mockResolvedValue({ clarifyingQuestions: ["What style?"] });
+    const fakeEnhance = vi.fn().mockResolvedValue({
+      clarifyingQuestions: [
+        { question: "What style?", example: "photorealistic" },
+      ],
+    });
     MockEnhancer.mockImplementation(() => ({ enhance: fakeEnhance }));
 
     const response = await (POST as (e: RequestEvent) => Promise<Response>)(
@@ -113,8 +115,26 @@ describe("POST /api/images/enhance", () => {
 
     expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body).toEqual({ clarifyingQuestions: ["What style?"] });
-    expect(fakeEnhance).toHaveBeenCalledWith("draw something");
+    expect(body).toEqual({
+      clarifyingQuestions: [
+        { question: "What style?", example: "photorealistic" },
+      ],
+    });
+    expect(fakeEnhance).toHaveBeenCalledWith("draw something", undefined);
+  });
+
+  it("forwards brandGuidelines to the enhancer when provided", async () => {
+    const fakeEnhance = vi
+      .fn()
+      .mockResolvedValue({ enhancedPrompt: "on brand" });
+    MockEnhancer.mockImplementation(() => ({ enhance: fakeEnhance }));
+
+    const response = await (POST as (e: RequestEvent) => Promise<Response>)(
+      buildEvent({ prompt: "a logo", brandGuidelines: "Use navy and gold." }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(fakeEnhance).toHaveBeenCalledWith("a logo", "Use navy and gold.");
   });
 
   it("returns enhancedPrompt when the enhancer rewrites it", async () => {

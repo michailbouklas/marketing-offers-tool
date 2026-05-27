@@ -6,8 +6,14 @@ export interface ReferenceUploadResult {
   contentType: string;
 }
 
+export interface ClarifyingQuestion {
+  question: string;
+  example?: string;
+}
+
 export interface EnhanceResult {
-  clarifyingQuestions?: string[];
+  critique?: string;
+  clarifyingQuestions?: ClarifyingQuestion[];
   enhancedPrompt?: string;
 }
 
@@ -86,11 +92,14 @@ export async function uploadReferences(
   return jsonOrThrow<ReferenceUploadResult[]>(res);
 }
 
-export async function enhancePrompt(prompt: string): Promise<EnhanceResult> {
+export async function enhancePrompt(
+  prompt: string,
+  brandGuidelines?: string,
+): Promise<EnhanceResult> {
   const res = await fetch("/api/images/enhance", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, brandGuidelines }),
   });
   return jsonOrThrow<EnhanceResult>(res);
 }

@@ -7,6 +7,7 @@ import type { RequestHandler } from "./$types";
 
 const bodySchema = z.object({
   prompt: z.string().min(1, "prompt is required"),
+  brandGuidelines: z.string().optional(),
 });
 
 export const POST: RequestHandler = async (event) => {
@@ -30,6 +31,9 @@ export const POST: RequestHandler = async (event) => {
   }
 
   const enhancer = new PromptEnhancer({ apiKey: env.OPENAI_API_KEY });
-  const result = await enhancer.enhance(parsed.data.prompt);
+  const result = await enhancer.enhance(
+    parsed.data.prompt,
+    parsed.data.brandGuidelines,
+  );
   return json(result);
 };

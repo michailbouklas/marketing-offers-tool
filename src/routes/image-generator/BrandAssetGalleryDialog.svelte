@@ -1,12 +1,8 @@
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
-  import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-  } from "$lib/components/ui/card/index.js";
+  import { cn } from "$lib/utils.js";
+  import CheckIcon from "@lucide/svelte/icons/check";
   import type { BrandAssetDTO } from "$lib/services/image-generator/image-generator-client";
 
   interface Props {
@@ -15,7 +11,7 @@
     assets: BrandAssetDTO[] | null;
     loading: boolean;
     onOpenChange: (open: boolean) => void;
-    onUseAsReference: (asset: BrandAssetDTO) => void | Promise<void>;
+    onUseAsReferences: (assets: BrandAssetDTO[]) => void | Promise<void>;
   }
 
   let {
@@ -24,18 +20,38 @@
     assets,
     loading,
     onOpenChange,
-    onUseAsReference,
+    onUseAsReferences,
   }: Props = $props();
 
-  let busyAssetId = $state<string | null>(null);
+  let selectedIds = $state<string[]>([]);
+  let busy = $state(false);
 
-  async function handleUse(asset: BrandAssetDTO) {
-    if (busyAssetId) return;
-    busyAssetId = asset.id;
+  // Each time the dialog closes, start the next session with a clean selection.
+  $effect(() => {
+    if (!open) {
+      selectedIds = [];
+      busy = false;
+    }
+  });
+
+  function isSelected(id: string): boolean {
+    return selectedIds.includes(id);
+  }
+
+  function toggle(id: string) {
+    selectedIds = isSelected(id)
+      ? selectedIds.filter((x) => x !== id)
+      : [...selectedIds, id];
+  }
+
+  async function confirm() {
+    if (busy || selectedIds.length === 0 || !assets) return;
+    const chosen = assets.filter((a) => selectedIds.includes(a.id));
+    busy = true;
     try {
-      await onUseAsReference(asset);
+      await onUseAsReferences(chosen);
     } finally {
-      busyAssetId = null;
+      busy = false;
     }
   }
 </script>
@@ -46,13 +62,14 @@
     onOpenChange(value);
   }}
 >
-  <Dialog.Content class="max-w-3xl">
+  <Dialog.Content class="w-[80vw] max-w-[80vw] sm:max-w-[80vw]">
     <Dialog.Header>
       <Dialog.Title>
         Brand assets{brandName ? ` — ${brandName}` : ""}
       </Dialog.Title>
       <Dialog.Description>
-        Pick an asset to attach as a reference for the next generation.
+        Select one or more assets to attach as references for the next
+        generation.
       </Dialog.Description>
     </Dialog.Header>
 
@@ -66,35 +83,71 @@
       </p>
     {:else}
       <div
-        class="grid max-h-[60vh] gap-3 overflow-y-auto sm:grid-cols-2 md:grid-cols-3"
+        class="grid max-h-[70vh] gap-4 overflow-y-auto pr-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
       >
         {#each assets as asset (asset.id)}
-          <Card>
-            <CardHeader class="p-3">
-              <CardTitle class="truncate text-sm" title={asset.name}>
-                {asset.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-2 p-3 pt-0">
-              <img
-                src={`/api/brand-assets/${asset.id}`}
-                alt={asset.name}
-                class="bg-muted h-32 w-full rounded object-contain"
-                loading="lazy"
-              />
-              <Button
-                type="button"
-                size="sm"
-                class="w-full"
-                disabled={busyAssetId !== null}
-                onclick={() => handleUse(asset)}
-              >
-                {busyAssetId === asset.id ? "Attaching…" : "Use as reference"}
-              </Button>
-            </CardContent>
-          </Card>
+          <button
+            type="button"
+            aria-pressed={isSelected(asset.id)}
+            class={cn(
+              "bg-card focus-visible:ring-ring relative grid gap-3 rounded-lg border p-3 text-left transition outline-none focus-visible:ring-2",
+              isSelected(asset.id)
+                ? "border-primary ring-primary/40 ring-2"
+                : "border-border hover:border-primary/50",
+            )}
+            onclick={() => toggle(asset.id)}
+          >
+            <span
+              class={cn(
+                "absolute top-2 right-2 flex size-5 items-center justify-center rounded-md border",
+                isSelected(asset.id)
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-input bg-background/90",
+              )}
+              aria-hidden="true"
+            >
+              {#if isSelected(asset.id)}
+                <CheckIcon class="size-3.5" />
+              {/if}
+            </span>
+            <img
+              src={`/api/brand-assets/${asset.id}`}
+              alt={asset.name}
+              class="bg-muted h-40 w-full rounded object-contain"
+              loading="lazy"
+            />
+            <p class="truncate text-sm font-medium" title={asset.name}>
+              {asset.name}
+            </p>
+          </button>
         {/each}
       </div>
+
+      <Dialog.Footer>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={busy}
+          onclick={() => onOpenChange(false)}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          disabled={busy || selectedIds.length === 0}
+          onclick={confirm}
+        >
+          {#if busy}
+            Attaching…
+          {:else if selectedIds.length > 0}
+            Use {selectedIds.length} as reference{selectedIds.length === 1
+              ? ""
+              : "s"}
+          {:else}
+            Use as reference
+          {/if}
+        </Button>
+      </Dialog.Footer>
     {/if}
   </Dialog.Content>
 </Dialog.Root>

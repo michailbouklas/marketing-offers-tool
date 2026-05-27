@@ -3,12 +3,8 @@
   import { toast } from "svelte-sonner";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
-  import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-  } from "$lib/components/ui/card/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
   import BrandAssetGalleryDialog from "./BrandAssetGalleryDialog.svelte";
   import ImageGrid from "./ImageGrid.svelte";
   import PromptComposer from "./PromptComposer.svelte";
@@ -24,6 +20,7 @@
     submitGeneration,
     uploadReferences,
     type BrandAssetDTO,
+    type ClarifyingQuestion,
   } from "$lib/services/image-generator/image-generator-client";
   import type { PageData } from "./$types";
 
@@ -31,9 +28,11 @@
 
   let items = $state<GeneratedImageDTO[]>(data.images);
   let busy = $state(false);
-  let pendingClarification = $state<string[] | null>(null);
+  let pendingClarification = $state<ClarifyingQuestion[] | null>(null);
+  let pendingCritique = $state<string | null>(null);
   let pendingPrompt = $state<string | null>(null);
-  let pendingAnswerForm = $state("");
+  let pendingBrandGuidelines = $state<string | undefined>(undefined);
+  let pendingAnswers = $state<string[]>([]);
   let composer: { loadFrom: (s: Partial<ComposerState>) => void } | undefined =
     $state();
   let suppressEnhanceOnce = $state(false);
@@ -139,10 +138,15 @@
         payload.enhance && referenceIds.length === 0 && !suppressEnhanceOnce;
 
       if (shouldEnhance) {
-        const result = await enhancePrompt(payload.prompt);
+        const brandGuidelines =
+          selectedBrandId !== null ? payload.brandGuidelines : undefined;
+        const result = await enhancePrompt(payload.prompt, brandGuidelines);
         if (result.clarifyingQuestions?.length) {
           pendingClarification = result.clarifyingQuestions;
+          pendingCritique = result.critique ?? null;
+          pendingAnswers = result.clarifyingQuestions.map(() => "");
           pendingPrompt = payload.prompt;
+          pendingBrandGuidelines = brandGuidelines;
           return;
         }
         if (result.enhancedPrompt) {
@@ -183,14 +187,30 @@
   }
 
   async function submitWithClarifications() {
-    if (!pendingPrompt) return;
-    const merged = `${pendingPrompt}\n\nClarifications: ${pendingAnswerForm}`;
+    if (!pendingPrompt || !pendingClarification) return;
+    const answered = pendingClarification
+      .map((q, i) => ({
+        question: q.question,
+        answer: pendingAnswers[i]?.trim(),
+      }))
+      .filter((qa): qa is { question: string; answer: string } =>
+        Boolean(qa.answer),
+      );
+    const merged =
+      answered.length > 0
+        ? `${pendingPrompt}\n\nClarifications:\n${answered
+            .map((qa) => `- ${qa.question} ${qa.answer}`)
+            .join("\n")}`
+        : pendingPrompt;
+    const brandGuidelines = pendingBrandGuidelines;
     pendingClarification = null;
+    pendingCritique = null;
     pendingPrompt = null;
-    pendingAnswerForm = "";
+    pendingBrandGuidelines = undefined;
+    pendingAnswers = [];
     busy = true;
     try {
-      const result = await enhancePrompt(merged);
+      const result = await enhancePrompt(merged, brandGuidelines);
       const toSend = result.enhancedPrompt ?? merged;
       const { items: created } = await submitGeneration({
         prompt: toSend,
@@ -209,8 +229,10 @@
     if (!pendingPrompt) return;
     const promptToSend = pendingPrompt;
     pendingClarification = null;
+    pendingCritique = null;
     pendingPrompt = null;
-    pendingAnswerForm = "";
+    pendingBrandGuidelines = undefined;
+    pendingAnswers = [];
     void submitGeneration({
       prompt: promptToSend,
       provider: data.config.defaultProvider ?? "imagerouter",
@@ -308,10 +330,16 @@
     }
   }
 
-  async function attachBrandAsset(asset: BrandAssetDTO) {
+  async function attachBrandAssets(assets: BrandAssetDTO[]) {
+    if (assets.length === 0) return;
     try {
-      const ref = await attachBrandAssetAsReference(asset.id);
-      composer?.loadFrom({ referenceIds: [ref.id], enhance: false });
+      const refs = await Promise.all(
+        assets.map((asset) => attachBrandAssetAsReference(asset.id)),
+      );
+      composer?.loadFrom({
+        referenceIds: refs.map((r) => r.id),
+        enhance: false,
+      });
       suppressEnhanceOnce = true;
       galleryOpen = false;
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -351,33 +379,22 @@
     <div class="space-y-2 pt-3">
       <p class="text-sm font-medium">Available brand rules</p>
       {#if data.brands.length > 0}
-        <div class="flex flex-wrap items-center gap-2">
-          <ButtonGroup.Root
-            class="flex max-w-full flex-wrap"
-            aria-label="Available brand rules"
-          >
-            {#each data.brands as brand (brand.id)}
-              <Button
-                variant={selectedBrandId === brand.id ? "default" : "outline"}
-                size="sm"
-                type="button"
-                aria-pressed={selectedBrandId === brand.id}
-                onclick={() => selectBrand(brand.id)}
-              >
-                {formatBrandLabel(brand)}
-              </Button>
-            {/each}
-          </ButtonGroup.Root>
-          <Button
-            variant={selectedBrandId === null ? "secondary" : "default"}
-            size="sm"
-            type="button"
-            disabled={selectedBrandId === null}
-            onclick={openBrandGallery}
-          >
-            View brand assets
-          </Button>
-        </div>
+        <ButtonGroup.Root
+          class="flex max-w-full flex-wrap"
+          aria-label="Available brand rules"
+        >
+          {#each data.brands as brand (brand.id)}
+            <Button
+              variant={selectedBrandId === brand.id ? "default" : "outline"}
+              size="sm"
+              type="button"
+              aria-pressed={selectedBrandId === brand.id}
+              onclick={() => selectBrand(brand.id)}
+            >
+              {formatBrandLabel(brand)}
+            </Button>
+          {/each}
+        </ButtonGroup.Root>
       {:else}
         <p class="text-muted-foreground text-sm">
           No active brand rules are assigned to your account.
@@ -386,6 +403,57 @@
     </div>
   </div>
 
+  {#snippet clarificationPanel()}
+    {#if pendingClarification}
+      <div class="bg-muted/40 grid gap-4 rounded-md border p-4">
+        <div class="grid gap-1.5">
+          <p class="text-sm font-medium">A few quick questions</p>
+          {#if pendingCritique}
+            <div
+              class="text-foreground rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs"
+            >
+              <span class="font-medium">Heads up:</span>
+              {pendingCritique}
+            </div>
+          {/if}
+          <p class="text-muted-foreground text-xs">
+            Answer what you can — anything you leave blank is simply skipped.
+          </p>
+        </div>
+        <div class="grid gap-4">
+          {#each pendingClarification as q, i (q.question)}
+            <div class="grid gap-1.5">
+              <Label for={`clarify-${i}`}>{q.question}</Label>
+              <Input
+                id={`clarify-${i}`}
+                placeholder={q.example ? `e.g. ${q.example}` : "Your answer…"}
+                bind:value={pendingAnswers[i]}
+              />
+              {#if q.example}
+                <p class="text-muted-foreground text-xs">
+                  Example: {q.example}
+                </p>
+              {/if}
+            </div>
+          {/each}
+        </div>
+        <div class="flex gap-2">
+          <Button size="sm" onclick={submitWithClarifications} disabled={busy}>
+            Submit answers
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onclick={skipClarifications}
+            disabled={busy}
+          >
+            Skip
+          </Button>
+        </div>
+      </div>
+    {/if}
+  {/snippet}
+
   <PromptComposer
     bind:this={composer}
     config={data.config}
@@ -393,35 +461,10 @@
     brandGuidelines={selectedBrandGuidelines}
     onSubmit={handleSubmit}
     onUploadReferences={handleUploadReferences}
+    afterPrompt={clarificationPanel}
+    onViewBrandAssets={data.brands.length > 0 ? openBrandGallery : undefined}
+    canViewBrandAssets={selectedBrandId !== null}
   />
-
-  {#if pendingClarification}
-    <Card>
-      <CardHeader>
-        <CardTitle>A few quick questions</CardTitle>
-      </CardHeader>
-      <CardContent class="space-y-3">
-        <ul class="list-disc space-y-1 pl-5 text-sm">
-          {#each pendingClarification as q (q)}
-            <li>{q}</li>
-          {/each}
-        </ul>
-        <textarea
-          class="border-input min-h-24 w-full rounded-md border bg-transparent p-2 text-sm"
-          placeholder="Type your answers, or click Skip."
-          bind:value={pendingAnswerForm}
-        ></textarea>
-        <div class="flex gap-2">
-          <Button onclick={submitWithClarifications} disabled={busy}>
-            Submit answers
-          </Button>
-          <Button variant="ghost" onclick={skipClarifications} disabled={busy}>
-            Skip
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  {/if}
 
   <ImageGrid
     {items}
@@ -436,6 +479,6 @@
     assets={galleryAssets}
     loading={galleryLoading}
     onOpenChange={handleGalleryOpenChange}
-    onUseAsReference={attachBrandAsset}
+    onUseAsReferences={attachBrandAssets}
   />
 </main>

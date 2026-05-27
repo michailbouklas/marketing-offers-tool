@@ -1,6 +1,10 @@
 <script lang="ts">
   import { Badge } from "$lib/components/ui/badge/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+  import MoonIcon from "@lucide/svelte/icons/moon";
+  import SunIcon from "@lucide/svelte/icons/sun";
+  import { toggleMode } from "mode-watcher";
 
   // NOTE: The horizontal navigation menu was moved to a vertical left
   // sidebar (see app-sidebar.svelte) because the header ran out of space.
@@ -13,9 +17,25 @@
 >
   <Sidebar.Trigger />
 
-  <Badge variant="outline" class="ml-auto hidden sm:inline-flex">
-    Authenticated
-  </Badge>
+  <div class="ml-auto flex items-center gap-2">
+    <Badge variant="outline" class="hidden sm:inline-flex">Authenticated</Badge>
+    <Button
+      onclick={toggleMode}
+      variant="outline"
+      size="icon"
+      class="relative"
+      aria-label="Toggle dark mode"
+      title="Toggle dark mode"
+    >
+      <SunIcon
+        class="size-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
+      />
+      <MoonIcon
+        class="absolute inset-0 m-auto size-5 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+      />
+      <span class="sr-only">Toggle dark mode</span>
+    </Button>
+  </div>
 </header>
 
 <!--

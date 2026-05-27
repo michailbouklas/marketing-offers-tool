@@ -15,12 +15,12 @@ description: "Skill for the Assets area of marketing-offers-tool. 5 symbols acro
 
 ## Key Files
 
-| File | Symbols |
-|------|---------|
+| File                                                      | Symbols           |
+| --------------------------------------------------------- | ----------------- |
 | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | parseBrandId, GET |
-| `src/routes/api/brand-assets/+server.ts` | GET |
-| `src/lib/services/brand-context/brand-context.server.ts` | listBrandAssets |
-| `src/routes/admin/brands/[id]/+page.server.ts` | load |
+| `src/routes/api/brand-assets/+server.ts`                  | GET               |
+| `src/lib/services/brand-context/brand-context.server.ts`  | listBrandAssets   |
+| `src/routes/admin/brands/[id]/+page.server.ts`            | load              |
 
 ## Entry Points
 
@@ -33,34 +33,34 @@ Start here when exploring this area:
 
 ## Key Symbols
 
-| Symbol | Type | File | Line |
-|--------|------|------|------|
-| `GET` | Function | `src/routes/api/brand-assets/+server.ts` | 6 |
-| `listBrandAssets` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 19 |
-| `load` | Function | `src/routes/admin/brands/[id]/+page.server.ts` | 10 |
-| `GET` | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 22 |
-| `parseBrandId` | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 11 |
+| Symbol            | Type     | File                                                      | Line |
+| ----------------- | -------- | --------------------------------------------------------- | ---- |
+| `GET`             | Function | `src/routes/api/brand-assets/+server.ts`                  | 6    |
+| `listBrandAssets` | Function | `src/lib/services/brand-context/brand-context.server.ts`  | 19   |
+| `load`            | Function | `src/routes/admin/brands/[id]/+page.server.ts`            | 10   |
+| `GET`             | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 22   |
+| `parseBrandId`    | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 11   |
 
 ## Execution Flows
 
-| Flow | Type | Steps |
-|------|------|-------|
-| `Load → EnsureSafeSlug` | cross_community | 6 |
-| `Load → LoadEnvFileValues` | cross_community | 5 |
-| `Load → RequireAuthenticatedUser` | cross_community | 3 |
-| `Load → GetAuthenticatedUserRole` | cross_community | 3 |
-| `Load → IsAdminRole` | cross_community | 3 |
-| `GET → RequireAuthenticatedUser` | cross_community | 3 |
-| `GET → GetAuthenticatedUserRole` | cross_community | 3 |
-| `GET → IsAdminRole` | cross_community | 3 |
+| Flow                              | Type            | Steps |
+| --------------------------------- | --------------- | ----- |
+| `Load → EnsureSafeSlug`           | cross_community | 6     |
+| `Load → LoadEnvFileValues`        | cross_community | 5     |
+| `Load → RequireAuthenticatedUser` | cross_community | 3     |
+| `Load → GetAuthenticatedUserRole` | cross_community | 3     |
+| `Load → IsAdminRole`              | cross_community | 3     |
+| `GET → RequireAuthenticatedUser`  | cross_community | 3     |
+| `GET → GetAuthenticatedUserRole`  | cross_community | 3     |
+| `GET → IsAdminRole`               | cross_community | 3     |
 
 ## Connected Areas
 
-| Area | Connections |
-|------|-------------|
-| Server | 3 calls |
-| [id] | 1 calls |
-| Guidelines | 1 calls |
+| Area       | Connections |
+| ---------- | ----------- |
+| Server     | 3 calls     |
+| [id]       | 1 calls     |
+| Guidelines | 1 calls     |
 
 ## How to Explore
 

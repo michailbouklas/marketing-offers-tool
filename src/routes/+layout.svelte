@@ -1,6 +1,7 @@
 <script lang="ts">
   import "../app.css";
   import { page } from "$app/state";
+  import { ModeWatcher } from "mode-watcher";
   import TopNav from "$lib/components/navigation/top-nav.svelte";
   import AppSidebar from "$lib/components/navigation/app-sidebar.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
@@ -10,6 +11,7 @@
   const user = $derived(page.data.user as { role?: string } | null | undefined);
 </script>
 
+<ModeWatcher />
 <Toaster />
 {#if user}
   <Sidebar.Provider>
