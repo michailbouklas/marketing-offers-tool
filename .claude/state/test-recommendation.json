@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-05-28T10:15:24Z",
-  "changed_file": "scripts/_smoke-dim-items.ts",
+  "timestamp": "2026-05-28T11:55:10Z",
+  "changed_file": "src/lib/services/offers-data-quality.test.ts",
   "test_command": "npx vitest run --reporter=verbose",
   "related_test": "",
   "recommendation": "テストの実行を推奨します"

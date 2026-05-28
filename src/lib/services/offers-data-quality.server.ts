@@ -1,7 +1,7 @@
 import {
-  getActiveItemCodes,
   getCurrentDimOfferValues,
   getDimOfferAuditSnapshot,
+  getOfferEligibleItemCodes,
   getTransactionItemContext,
   insertDimOffer,
   listMissingOfferQueueRows,
@@ -261,7 +261,9 @@ export async function getOpenGapList(
   );
   const [trackedGaps, clickhouseRows] = await Promise.all([
     listGapRecords({ statuses: ["open", "submitted"] }),
-    listMissingOfferQueueRows(),
+    listMissingOfferQueueRows(
+      hasBrandFilter ? { brandAliases: [...allowedBrandAliases] } : undefined,
+    ),
   ]);
 
   const visibleTrackedGaps = trackedGaps.filter(
@@ -269,18 +271,15 @@ export async function getOpenGapList(
       !hasBrandFilter ||
       allowedBrandAliases.has(normalizeBrandAlias(gap.brand)),
   );
-  const visibleClickhouseRows = clickhouseRows.filter(
-    (row) =>
-      !hasBrandFilter ||
-      allowedBrandAliases.has(normalizeBrandAlias(row.brand)),
-  );
 
   const trackedGapByItemCode = new Map(
     visibleTrackedGaps.map((gap) => [gap.trde_item, gap]),
   );
   const queueItems: GapListItem[] = [];
+  const fromClickhouse: string[] = [];
+  const fromPgLeftover: string[] = [];
 
-  for (const row of visibleClickhouseRows) {
+  for (const row of clickhouseRows) {
     const trackedGap = trackedGapByItemCode.get(row.trde_item);
 
     queueItems.push({
@@ -296,6 +295,7 @@ export async function getOpenGapList(
         ? parseMissingFields(trackedGap.missing_fields)
         : getMissingFieldsFromCurrentValues(row.current_dim_offers),
     });
+    fromClickhouse.push(row.trde_item);
 
     trackedGapByItemCode.delete(row.trde_item);
   }
@@ -303,12 +303,12 @@ export async function getOpenGapList(
   const leftoverGaps = Array.from(trackedGapByItemCode.values());
 
   if (leftoverGaps.length > 0) {
-    const activeItemCodes = await getActiveItemCodes(
+    const offerEligibleItemCodes = await getOfferEligibleItemCodes(
       leftoverGaps.map((gap) => gap.trde_item),
     );
 
     for (const gap of leftoverGaps) {
-      if (!activeItemCodes.has(gap.trde_item)) {
+      if (!offerEligibleItemCodes.has(gap.trde_item)) {
         continue;
       }
 
@@ -322,12 +322,47 @@ export async function getOpenGapList(
         status: gap.status,
         missing_fields: parseMissingFields(gap.missing_fields),
       });
+      fromPgLeftover.push(gap.trde_item);
     }
   }
+
+  console.log(
+    `[getOpenGapList] sources: clickhouse=${fromClickhouse.length} pgLeftover=${fromPgLeftover.length}`,
+  );
+  console.log(
+    "[getOpenGapList] from clickhouse query:",
+    JSON.stringify(fromClickhouse),
+  );
+  console.log(
+    "[getOpenGapList] from pg-leftover (active in dim_items but not in CH result):",
+    JSON.stringify(fromPgLeftover),
+  );
 
   const sortedItems = queueItems.sort((left, right) =>
     compareGapItems(left, right, sortBy, sortDir),
   );
+
+  console.log(
+    `[getOpenGapList] brandFilter=${
+      hasBrandFilter ? JSON.stringify([...allowedBrandAliases]) : "none"
+    } (pushed to SQL) sortBy=${sortBy} sortDir=${sortDir} (applied JS-side over merged CH+PG set) totalItems=${sortedItems.length}`,
+  );
+  console.log(
+    "[getOpenGapList] items:",
+    JSON.stringify(
+      sortedItems.map((item) => ({
+        dq_id: item.dq_id,
+        trde_item: item.trde_item,
+        item_name: item.item_name,
+        brand: item.brand,
+        item_category: item.item_category,
+        status: item.status,
+      })),
+      null,
+      2,
+    ),
+  );
+
   const totalItems = sortedItems.length;
   const normalizedPageSize = Math.max(1, pageSize);
   const totalPages = Math.max(1, Math.ceil(totalItems / normalizedPageSize));

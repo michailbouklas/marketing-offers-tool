@@ -23,7 +23,8 @@ The dimension table `apidata_replica.dim_items` is the source of truth for curre
 - **Join key**: `apidata_replica.dim_items.item_code = transaction_details.trde_item`.
 - **Join type**: INNER JOIN — items missing from `dim_items` or with `item_active = false` must not appear.
 - **`getTransactionItemContext`**: same treatment — name from `dim_items`, `item_active = true` enforced. Inactive/missing items return `null`; existing callers already fall back to the persisted gap record.
-- **Already-tracked PostgreSQL gaps** (`dq_missing_offers_pricing`) for inactive/missing items: hidden from the queue overlay rendered by `getOpenGapList`. Filtering happens against the leftover tracked-only set, not against the merged result, so items that simply have no recent transactions but are still active stay visible.
+- **Already-tracked PostgreSQL gaps** (`dq_missing_offers_pricing`) for inactive/missing/recategorized items: hidden from the queue overlay rendered by `getOpenGapList`. Filtering happens against the leftover tracked-only set, not against the merged result, so items that simply have no recent transactions but are still active **and still in an offer category** stay visible.
+- **Recategorization** (revised 2026-05-28): if a tracked item is later moved out of `OFFER_ITEM_CATEGORIES` in `dim_items` (e.g., reclassified as "Snacks A La Carte"), it must disappear from the queue. The helper that gates the leftover set is therefore `getOfferEligibleItemCodes` — checks **both** `item_active = 1` AND `item_category IN (OFFER_ITEM_CATEGORIES)`.
 - **`item_category`**: revised decision (2026-05-28) — now sourced from `dim_items` (column `item_category`) in both the queue query and `getTransactionItemContext`. The `OFFER_ITEM_CATEGORIES` filter is also applied against `di.item_category` so the queue reflects what items currently *are*, not what they were at transaction time.
 - **`brand`**: continues to come from `transaction_details` (the `dim_items` table has no brand column).
 - Only `td.brand` still comes from `transaction_details`; `item_name`, `item_category`, and active-status all flow from `dim_items`.
@@ -69,11 +70,13 @@ The dimension table `apidata_replica.dim_items` is the source of truth for curre
 - `[x]` Replace `any(item_name) AS item_name` with `any(di.item_name) AS item_name`. Keep `any(td.brand)` and `any(td.item_category)` unchanged. `GROUP BY td.trde_item` (or stay with `GROUP BY trde_item` if the alias keeps that resolvable) and `LIMIT 1`.
 - `[x]` Verify callers (`getGapFormData`, `getPendingGapSubmissionQueue`) already treat a `null` return as "use the persisted gap record" — no edits expected.
 
-### 3.3 Add `getActiveItemCodes(itemCodes: string[])` helper
+### 3.3 Add `getOfferEligibleItemCodes(itemCodes: string[])` helper
 
-- `[x]` Add a new exported async function in `src/lib/services/offers-data-quality-clickhouse.server.ts` with signature `getActiveItemCodes(itemCodes: string[]): Promise<Set<string>>`.
+> Revised 2026-05-28: originally named `getActiveItemCodes` and only checked `item_active = 1`. Renamed and extended to also enforce the offer-category check after diagnosing 6 KFC leftovers that survived the active check but had been recategorized out of `OFFER_ITEM_CATEGORIES` in `dim_items`.
+
+- `[x]` Add a new exported async function in `src/lib/services/offers-data-quality-clickhouse.server.ts` with signature `getOfferEligibleItemCodes(itemCodes: string[]): Promise<Set<string>>`.
 - `[x]` Short-circuit to `new Set()` when the input array is empty (no DB call).
-- `[x]` Otherwise: `SELECT item_code FROM apidata_replica.dim_items WHERE item_active = true AND item_code IN ({item_codes:Array(String)})`. Use `query_params: { item_codes: itemCodes }` and `format: "JSONEachRow"`.
+- `[x]` Otherwise: `SELECT item_code FROM apidata_replica.dim_items WHERE item_active = 1 AND item_category IN ({offer_categories:Array(String)}) AND item_code IN ({item_codes:Array(String)})`. Bind both the `OFFER_ITEM_CATEGORIES` constant and the input codes via `query_params`.
 - `[x]` Return a `Set` constructed from the `item_code` values of the result rows.
 
 ---

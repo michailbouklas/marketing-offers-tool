@@ -313,9 +313,17 @@ export async function dimOfferExists(itemCode: string) {
   return rows.length > 0;
 }
 
-export async function listMissingOfferQueueRows(): Promise<
-  MissingOfferQueueRow[]
-> {
+export async function listMissingOfferQueueRows(options?: {
+  brandAliases?: string[];
+}): Promise<MissingOfferQueueRow[]> {
+  const hasBrandFilter = options?.brandAliases !== undefined;
+  const normalizedBrandAliases =
+    options?.brandAliases?.map((value) => value.trim().toLowerCase()) ?? [];
+
+  const brandFilterClause = hasBrandFilter
+    ? "AND lower(td.brand) IN ({brand_aliases:Array(String)})"
+    : "";
+
   const query = `
       SELECT DISTINCT
         td.trde_item,
@@ -341,15 +349,26 @@ export async function listMissingOfferQueueRows(): Promise<
         WHERE td.trde_date >= {since_date:Date}
           AND di.item_category IN ({offer_categories:Array(String)})
           AND di.item_active = 1
+          ${brandFilterClause}
       ) td
       LEFT JOIN dim_offers do ON td.trde_item = do.item_code
       WHERE do.item_code IS NULL
         OR (do.item_code IS NOT NULL AND (do.ideal_price IS NULL OR do.ideal_price = 0))
     `;
-  const queryParams = {
+  const queryParams: Record<string, unknown> = {
     since_date: getMissingOffersSinceDate(),
     offer_categories: [...OFFER_ITEM_CATEGORIES],
   };
+
+  if (hasBrandFilter) {
+    queryParams.brand_aliases = normalizedBrandAliases;
+  }
+
+  console.log("[listMissingOfferQueueRows] query:", query);
+  console.log(
+    "[listMissingOfferQueueRows] params:",
+    JSON.stringify(queryParams),
+  );
 
   const result = await clickhouse.query({
     query,
@@ -371,25 +390,6 @@ export async function listMissingOfferQueueRows(): Promise<
       >
   >();
 
-  console.log("[listMissingOfferQueueRows] query:", query);
-  console.log(
-    "[listMissingOfferQueueRows] params:",
-    JSON.stringify(queryParams),
-  );
-  console.log(
-    `[listMissingOfferQueueRows] returned ${rows.length} row(s):`,
-    JSON.stringify(
-      rows.map((row) => ({
-        trde_item: row.trde_item,
-        item_name: row.item_name,
-        brand: row.brand,
-        item_category: row.item_category,
-      })),
-      null,
-      2,
-    ),
-  );
-
   return rows.map((row) => ({
     trde_item: row.trde_item,
     item_name: row.item_name,
@@ -407,7 +407,7 @@ export async function listMissingOfferQueueRows(): Promise<
   }));
 }
 
-export async function getActiveItemCodes(
+export async function getOfferEligibleItemCodes(
   itemCodes: string[],
 ): Promise<Set<string>> {
   if (itemCodes.length === 0) {
@@ -419,9 +419,11 @@ export async function getActiveItemCodes(
       SELECT item_code
       FROM apidata_replica.dim_items
       WHERE item_active = 1
+        AND item_category IN ({offer_categories:Array(String)})
         AND item_code IN ({item_codes:Array(String)})
     `,
     query_params: {
+      offer_categories: [...OFFER_ITEM_CATEGORIES],
       item_codes: itemCodes,
     },
     format: "JSONEachRow",

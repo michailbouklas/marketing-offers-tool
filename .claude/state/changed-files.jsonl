@@ -126,3 +126,9 @@
 {"file":"docs/specs/add_dim_items/tasks.md","action":"Edit","timestamp":"2026-05-28T09:30:46Z","important":false}
 {"file":"scripts/_describe-dim-items.ts","action":"Write","timestamp":"2026-05-28T09:33:12Z","important":false}
 {"file":"scripts/_smoke-dim-items.ts","action":"Write","timestamp":"2026-05-28T10:15:24Z","important":false}
+{"file":"scripts/_smoke-brand-filter.ts","action":"Write","timestamp":"2026-05-28T10:40:16Z","important":false}
+{"file":"src/lib/services/offers-data-quality.server.ts","action":"Edit","timestamp":"2026-05-28T11:40:30Z","important":false}
+{"file":"scripts/_diagnose-pg-leftovers.ts","action":"Write","timestamp":"2026-05-28T11:52:29Z","important":false}
+{"file":"src/lib/services/offers-data-quality-clickhouse.server.ts","action":"Edit","timestamp":"2026-05-28T11:54:09Z","important":false}
+{"file":"src/lib/services/offers-data-quality.test.ts","action":"Edit","timestamp":"2026-05-28T11:54:36Z","important":true}
+{"file":"docs/specs/add_dim_items/tasks.md","action":"Edit","timestamp":"2026-05-28T11:55:46Z","important":false}

@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
 vi.mock("./offers-data-quality-clickhouse.server", () => ({
-  getActiveItemCodes: vi.fn(),
   getCurrentDimOfferValues: vi.fn(),
   getDimOfferAuditSnapshot: vi.fn(),
+  getOfferEligibleItemCodes: vi.fn(),
   getTransactionItemContext: vi.fn(),
   insertDimOffer: vi.fn(),
   listMissingOfferQueueRows: vi.fn(),
@@ -33,9 +33,10 @@ const helpers = await import("./offers-data-quality");
 const orchestration = await import("./offers-data-quality.server");
 
 const serviceDeps = {
-  getActiveItemCodes: clickhouseDeps.getActiveItemCodes as Mock,
   getCurrentDimOfferValues: clickhouseDeps.getCurrentDimOfferValues as Mock,
   getDimOfferAuditSnapshot: clickhouseDeps.getDimOfferAuditSnapshot as Mock,
+  getOfferEligibleItemCodes:
+    clickhouseDeps.getOfferEligibleItemCodes as Mock,
   getTransactionItemContext: clickhouseDeps.getTransactionItemContext as Mock,
   insertDimOffer: clickhouseDeps.insertDimOffer as Mock,
   listMissingOfferQueueRows: clickhouseDeps.listMissingOfferQueueRows as Mock,
@@ -178,7 +179,7 @@ describe("offers-data-quality helpers", () => {
 describe("offers-data-quality orchestration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    serviceDeps.getActiveItemCodes.mockImplementation(
+    serviceDeps.getOfferEligibleItemCodes.mockImplementation(
       async (itemCodes: string[]) => new Set(itemCodes),
     );
   });
@@ -432,7 +433,7 @@ describe("offers-data-quality orchestration", () => {
         status: "submitted",
       },
     ]);
-    serviceDeps.listMissingOfferQueueRows.mockResolvedValue([
+    const allClickhouseRows = [
       {
         trde_item: "ITM-7",
         item_name: "Tracked item",
@@ -463,7 +464,21 @@ describe("offers-data-quality orchestration", () => {
           mktg_spend: null,
         },
       },
-    ]);
+    ];
+    serviceDeps.listMissingOfferQueueRows.mockImplementation(
+      async (callOptions?: { brandAliases?: string[] }) => {
+        if (!callOptions?.brandAliases) return allClickhouseRows;
+        const allowed = new Set(
+          callOptions.brandAliases.map((value) =>
+            value.trim().toLowerCase(),
+          ),
+        );
+
+        return allClickhouseRows.filter((row) =>
+          allowed.has(row.brand.trim().toLowerCase()),
+        );
+      },
+    );
 
     const queue = await orchestration.getOpenGapList(1, 50, {
       brandAliases: ["bk"],
@@ -609,12 +624,12 @@ describe("offers-data-quality orchestration", () => {
     ]);
   });
 
-  it("hides a tracked-only gap when its item is no longer active in dim_items", async () => {
+  it("hides a tracked-only gap when its item no longer qualifies as an offer in dim_items", async () => {
     serviceDeps.listGapRecords.mockResolvedValue([
       {
         dq_id: 21,
-        trde_item: "ITM-INACTIVE",
-        item_name: "Retired item",
+        trde_item: "ITM-RECATEGORIZED",
+        item_name: "Item moved out of offer category",
         brand: "kfc",
         item_category: "Offers KFC",
         missing_fields: "ideal_price,fc_perc",
@@ -623,18 +638,18 @@ describe("offers-data-quality orchestration", () => {
       },
     ]);
     serviceDeps.listMissingOfferQueueRows.mockResolvedValue([]);
-    serviceDeps.getActiveItemCodes.mockResolvedValue(new Set());
+    serviceDeps.getOfferEligibleItemCodes.mockResolvedValue(new Set());
 
     const queue = await orchestration.getOpenGapList();
 
     expect(queue.items).toEqual([]);
     expect(queue.totalItems).toBe(0);
-    expect(serviceDeps.getActiveItemCodes).toHaveBeenCalledWith([
-      "ITM-INACTIVE",
+    expect(serviceDeps.getOfferEligibleItemCodes).toHaveBeenCalledWith([
+      "ITM-RECATEGORIZED",
     ]);
   });
 
-  it("keeps a tracked-only gap visible when its item is still active in dim_items", async () => {
+  it("keeps a tracked-only gap visible when its item is still an active offer in dim_items", async () => {
     serviceDeps.listGapRecords.mockResolvedValue([
       {
         dq_id: 31,
@@ -648,7 +663,9 @@ describe("offers-data-quality orchestration", () => {
       },
     ]);
     serviceDeps.listMissingOfferQueueRows.mockResolvedValue([]);
-    serviceDeps.getActiveItemCodes.mockResolvedValue(new Set(["ITM-ACTIVE"]));
+    serviceDeps.getOfferEligibleItemCodes.mockResolvedValue(
+      new Set(["ITM-ACTIVE"]),
+    );
 
     const queue = await orchestration.getOpenGapList();
 
