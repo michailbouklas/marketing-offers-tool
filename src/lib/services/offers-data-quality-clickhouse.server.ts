@@ -166,15 +166,18 @@ export async function getTransactionItemContext(
   const result = await clickhouse.query({
     query: `
       SELECT
-        trde_item,
-        any(item_name) AS item_name,
-        any(item_category) AS item_category,
-        any(brand) AS brand
-      FROM transaction_details
-      WHERE trde_item = {trde_item:String}
-        AND trde_item != '-1'
-        AND trde_date >= {lookback_date:Date}
-      GROUP BY trde_item
+        td.trde_item AS trde_item,
+        any(di.item_description) AS item_name,
+        any(di.item_category) AS item_category,
+        any(td.brand) AS brand
+      FROM transaction_details td
+      INNER JOIN apidata_replica.dim_items di
+        ON di.item_code = td.trde_item
+      WHERE td.trde_item = {trde_item:String}
+        AND td.trde_item != '-1'
+        AND td.trde_date >= {lookback_date:Date}
+        AND di.item_active = 1
+      GROUP BY td.trde_item
       LIMIT 1
     `,
     query_params: {
@@ -313,8 +316,7 @@ export async function dimOfferExists(itemCode: string) {
 export async function listMissingOfferQueueRows(): Promise<
   MissingOfferQueueRow[]
 > {
-  const result = await clickhouse.query({
-    query: `
+  const query = `
       SELECT DISTINCT
         td.trde_item,
         td.item_name,
@@ -328,19 +330,30 @@ export async function listMissingOfferQueueRows(): Promise<
         do.ideal_price,
         do.selling_price
       FROM (
-        SELECT DISTINCT trde_item, item_name, brand, item_category
-        FROM transaction_details
-        WHERE trde_date >= {since_date:Date}
-          AND item_category IN ({offer_categories:Array(String)})
+        SELECT DISTINCT
+          td.trde_item,
+          di.item_description AS item_name,
+          td.brand,
+          di.item_category AS item_category
+        FROM transaction_details td
+        INNER JOIN apidata_replica.dim_items di
+          ON di.item_code = td.trde_item
+        WHERE td.trde_date >= {since_date:Date}
+          AND di.item_category IN ({offer_categories:Array(String)})
+          AND di.item_active = 1
       ) td
       LEFT JOIN dim_offers do ON td.trde_item = do.item_code
       WHERE do.item_code IS NULL
         OR (do.item_code IS NOT NULL AND (do.ideal_price IS NULL OR do.ideal_price = 0))
-    `,
-    query_params: {
-      since_date: getMissingOffersSinceDate(),
-      offer_categories: [...OFFER_ITEM_CATEGORIES],
-    },
+    `;
+  const queryParams = {
+    since_date: getMissingOffersSinceDate(),
+    offer_categories: [...OFFER_ITEM_CATEGORIES],
+  };
+
+  const result = await clickhouse.query({
+    query,
+    query_params: queryParams,
     format: "JSONEachRow",
   });
 
@@ -358,6 +371,25 @@ export async function listMissingOfferQueueRows(): Promise<
       >
   >();
 
+  console.log("[listMissingOfferQueueRows] query:", query);
+  console.log(
+    "[listMissingOfferQueueRows] params:",
+    JSON.stringify(queryParams),
+  );
+  console.log(
+    `[listMissingOfferQueueRows] returned ${rows.length} row(s):`,
+    JSON.stringify(
+      rows.map((row) => ({
+        trde_item: row.trde_item,
+        item_name: row.item_name,
+        brand: row.brand,
+        item_category: row.item_category,
+      })),
+      null,
+      2,
+    ),
+  );
+
   return rows.map((row) => ({
     trde_item: row.trde_item,
     item_name: row.item_name,
@@ -373,6 +405,31 @@ export async function listMissingOfferQueueRows(): Promise<
       mktg_spend: parseNullableNumber(row.mktg_spend),
     },
   }));
+}
+
+export async function getActiveItemCodes(
+  itemCodes: string[],
+): Promise<Set<string>> {
+  if (itemCodes.length === 0) {
+    return new Set();
+  }
+
+  const result = await clickhouse.query({
+    query: `
+      SELECT item_code
+      FROM apidata_replica.dim_items
+      WHERE item_active = 1
+        AND item_code IN ({item_codes:Array(String)})
+    `,
+    query_params: {
+      item_codes: itemCodes,
+    },
+    format: "JSONEachRow",
+  });
+
+  const rows = await result.json<{ item_code: string }>();
+
+  return new Set(rows.map((row) => row.item_code));
 }
 
 export async function insertDimOffer(data: UpsertDimOfferInput) {

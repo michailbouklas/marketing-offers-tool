@@ -54,7 +54,8 @@ Start here when exploring this area:
 
 | Area   | Connections |
 | ------ | ----------- |
-| Server | 6 calls     |
+| Server | 4 calls     |
+| Routes | 2 calls     |
 
 ## How to Explore
 

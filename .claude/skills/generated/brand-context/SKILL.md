@@ -49,7 +49,7 @@ Start here when exploring this area:
 
 | Area   | Connections |
 | ------ | ----------- |
-| Server | 1 calls     |
+| Routes | 1 calls     |
 
 ## How to Explore
 

@@ -12,22 +12,22 @@
 
 There are **14 migrations** in `prisma/migrations/`, in this order:
 
-| #   | Migration directory                                     | Nature                                                | Risk        |
-| --- | ------------------------------------------------------- | ----------------------------------------------------- | ----------- |
-| 1   | `0_init`                                                | Initial schema (offers, WOLT tables, etc.)            | Low if DB is empty |
-| 2   | `20260311115213_add_better_auth_tables`                 | Adds `user`, `session`, `account`, `verification`     | Low         |
-| 3   | `20260311133000_add_user_role`                          | Adds `user.role` + backfill                           | Low         |
-| 4   | `20260311142000_add_better_auth_admin_fields`           | Adds `banned`, `banReason`, `banExpires`, `impersonatedBy` | Low    |
-| 5   | `20260312170000_link_aggregator_offers_to_brand`        | **Drops `aggregator_offers.brand_name`, adds NOT NULL `brand_id` FK** | **HIGH — see §4.1** |
-| 6   | `20260317102846_add_categories_subcategories`           | `DROP INDEX brand_slug_key`, adds `categories` + `subcategories` | Medium — see §4.2 |
-| 7   | `20260327082052_add_offers_data_quality_tables`         | Adds DQ enums + `dq_missing_offers_pricing`, `dim_offers_staging`, `channels` | Low |
-| 8   | `20260327094437_add_brand_alias`                        | Adds `brand.alias`                                    | Low         |
-| 9   | `20260327123000_add_user_brand_assignments`             | Adds `user_brand` junction table                      | Low         |
-| 10  | `20260327160000_add_dim_offers_audit`                   | Adds `dim_offers_audit` + enums                       | Low         |
-| 11  | `20260526110000_baseline_bolt_tables`                   | **Creates BOLT tables (baseline of out-of-Prisma changes)** | **HIGH — see §4.3** |
-| 12  | `20260526120000_add_image_generator`                    | Adds `GeneratedImage`, `ReferenceImage` + enum        | Low         |
-| 13  | `20260526130000_reconcile_bolt_drift`                   | Changes `bolt_company_mappings.bp_code` REAL → DOUBLE PRECISION; redefines BOLT lines FK | Medium — see §4.4 |
-| 14  | `20260526133551_add_brand_context_to_image_generator`   | Adds `BrandAsset`, `GeneratedImage.brandId` FK        | Low         |
+| #   | Migration directory                                   | Nature                                                                                   | Risk                |
+| --- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------- |
+| 1   | `0_init`                                              | Initial schema (offers, WOLT tables, etc.)                                               | Low if DB is empty  |
+| 2   | `20260311115213_add_better_auth_tables`               | Adds `user`, `session`, `account`, `verification`                                        | Low                 |
+| 3   | `20260311133000_add_user_role`                        | Adds `user.role` + backfill                                                              | Low                 |
+| 4   | `20260311142000_add_better_auth_admin_fields`         | Adds `banned`, `banReason`, `banExpires`, `impersonatedBy`                               | Low                 |
+| 5   | `20260312170000_link_aggregator_offers_to_brand`      | **Drops `aggregator_offers.brand_name`, adds NOT NULL `brand_id` FK**                    | **HIGH — see §4.1** |
+| 6   | `20260317102846_add_categories_subcategories`         | `DROP INDEX brand_slug_key`, adds `categories` + `subcategories`                         | Medium — see §4.2   |
+| 7   | `20260327082052_add_offers_data_quality_tables`       | Adds DQ enums + `dq_missing_offers_pricing`, `dim_offers_staging`, `channels`            | Low                 |
+| 8   | `20260327094437_add_brand_alias`                      | Adds `brand.alias`                                                                       | Low                 |
+| 9   | `20260327123000_add_user_brand_assignments`           | Adds `user_brand` junction table                                                         | Low                 |
+| 10  | `20260327160000_add_dim_offers_audit`                 | Adds `dim_offers_audit` + enums                                                          | Low                 |
+| 11  | `20260526110000_baseline_bolt_tables`                 | **Creates BOLT tables (baseline of out-of-Prisma changes)**                              | **HIGH — see §4.3** |
+| 12  | `20260526120000_add_image_generator`                  | Adds `GeneratedImage`, `ReferenceImage` + enum                                           | Low                 |
+| 13  | `20260526130000_reconcile_bolt_drift`                 | Changes `bolt_company_mappings.bp_code` REAL → DOUBLE PRECISION; redefines BOLT lines FK | Medium — see §4.4   |
+| 14  | `20260526133551_add_brand_context_to_image_generator` | Adds `BrandAsset`, `GeneratedImage.brandId` FK                                           | Low                 |
 
 The three migrations marked HIGH/Medium need an explicit decision **before** anything is run. Sections 4.1–4.4 below explain each one and what to do.
 
@@ -88,11 +88,11 @@ bunx prisma migrate status
 
 There are three likely outcomes — your next step depends on which one you see:
 
-| `migrate status` output                                                                 | Meaning                                                                                                         | Go to     |
-| --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------- |
-| "Database schema is up to date" + a list of all 14 migrations as **Pending**            | Empty/fresh DB. No `_prisma_migrations` table yet, or it is empty.                                              | §3 (Path A) |
-| "Drift detected" or "following migration(s) have not yet been applied" with extra notes | Prod DB has tables Prisma doesn't know about (e.g. legacy `api_BOLT_*`, `brand`, anything pre-existing).        | §3 (Path B) |
-| "Database schema is up to date" + **no pending migrations**                             | Prod DB already has every migration applied. Nothing to do — skip to §6.                                        | §6        |
+| `migrate status` output                                                                 | Meaning                                                                                                  | Go to       |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------- |
+| "Database schema is up to date" + a list of all 14 migrations as **Pending**            | Empty/fresh DB. No `_prisma_migrations` table yet, or it is empty.                                       | §3 (Path A) |
+| "Drift detected" or "following migration(s) have not yet been applied" with extra notes | Prod DB has tables Prisma doesn't know about (e.g. legacy `api_BOLT_*`, `brand`, anything pre-existing). | §3 (Path B) |
+| "Database schema is up to date" + **no pending migrations**                             | Prod DB already has every migration applied. Nothing to do — skip to §6.                                 | §6          |
 
 Also dump the public-schema relation list for the record, so you can compare it to what Prisma expects:
 

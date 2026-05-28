@@ -120,3 +120,9 @@
 {"file":"src/routes/image-generator/+page.svelte","action":"Edit","timestamp":"2026-05-27T09:33:54Z","important":false}
 {"file":"src/routes/image-generator/BrandAssetGalleryDialog.svelte","action":"Edit","timestamp":"2026-05-27T09:46:38Z","important":false}
 {"file":"src/lib/services/image-generator/image-generator-client.ts","action":"Edit","timestamp":"2026-05-27T10:41:14Z","important":false}
+{"file":"src/lib/services/offers-data-quality-clickhouse.server.ts","action":"Edit","timestamp":"2026-05-28T09:27:36Z","important":false}
+{"file":"src/lib/services/offers-data-quality.server.ts","action":"Edit","timestamp":"2026-05-28T09:28:05Z","important":false}
+{"file":"src/lib/services/offers-data-quality.test.ts","action":"Edit","timestamp":"2026-05-28T09:28:22Z","important":true}
+{"file":"docs/specs/add_dim_items/tasks.md","action":"Edit","timestamp":"2026-05-28T09:30:46Z","important":false}
+{"file":"scripts/_describe-dim-items.ts","action":"Write","timestamp":"2026-05-28T09:33:12Z","important":false}
+{"file":"scripts/_smoke-dim-items.ts","action":"Write","timestamp":"2026-05-28T10:15:24Z","important":false}

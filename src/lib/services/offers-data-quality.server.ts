@@ -1,4 +1,5 @@
 import {
+  getActiveItemCodes,
   getCurrentDimOfferValues,
   getDimOfferAuditSnapshot,
   getTransactionItemContext,
@@ -299,17 +300,29 @@ export async function getOpenGapList(
     trackedGapByItemCode.delete(row.trde_item);
   }
 
-  for (const gap of trackedGapByItemCode.values()) {
-    queueItems.push({
-      dq_id: gap.dq_id,
-      trde_item: gap.trde_item,
-      item_name: gap.item_name,
-      brand: gap.brand.toUpperCase(),
-      item_category: gap.item_category,
-      detected_at: gap.detected_at.toISOString(),
-      status: gap.status,
-      missing_fields: parseMissingFields(gap.missing_fields),
-    });
+  const leftoverGaps = Array.from(trackedGapByItemCode.values());
+
+  if (leftoverGaps.length > 0) {
+    const activeItemCodes = await getActiveItemCodes(
+      leftoverGaps.map((gap) => gap.trde_item),
+    );
+
+    for (const gap of leftoverGaps) {
+      if (!activeItemCodes.has(gap.trde_item)) {
+        continue;
+      }
+
+      queueItems.push({
+        dq_id: gap.dq_id,
+        trde_item: gap.trde_item,
+        item_name: gap.item_name,
+        brand: gap.brand.toUpperCase(),
+        item_category: gap.item_category,
+        detected_at: gap.detected_at.toISOString(),
+        status: gap.status,
+        missing_fields: parseMissingFields(gap.missing_fields),
+      });
+    }
   }
 
   const sortedItems = queueItems.sort((left, right) =>

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
 vi.mock("./offers-data-quality-clickhouse.server", () => ({
+  getActiveItemCodes: vi.fn(),
   getCurrentDimOfferValues: vi.fn(),
   getDimOfferAuditSnapshot: vi.fn(),
   getTransactionItemContext: vi.fn(),
@@ -32,6 +33,7 @@ const helpers = await import("./offers-data-quality");
 const orchestration = await import("./offers-data-quality.server");
 
 const serviceDeps = {
+  getActiveItemCodes: clickhouseDeps.getActiveItemCodes as Mock,
   getCurrentDimOfferValues: clickhouseDeps.getCurrentDimOfferValues as Mock,
   getDimOfferAuditSnapshot: clickhouseDeps.getDimOfferAuditSnapshot as Mock,
   getTransactionItemContext: clickhouseDeps.getTransactionItemContext as Mock,
@@ -176,6 +178,9 @@ describe("offers-data-quality helpers", () => {
 describe("offers-data-quality orchestration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    serviceDeps.getActiveItemCodes.mockImplementation(
+      async (itemCodes: string[]) => new Set(itemCodes),
+    );
   });
 
   it("approves a pending submission by updating an existing dim_offers row", async () => {
@@ -602,5 +607,57 @@ describe("offers-data-quality orchestration", () => {
       "ITM-8",
       "ITM-7",
     ]);
+  });
+
+  it("hides a tracked-only gap when its item is no longer active in dim_items", async () => {
+    serviceDeps.listGapRecords.mockResolvedValue([
+      {
+        dq_id: 21,
+        trde_item: "ITM-INACTIVE",
+        item_name: "Retired item",
+        brand: "kfc",
+        item_category: "Offers KFC",
+        missing_fields: "ideal_price,fc_perc",
+        detected_at: new Date("2026-03-26T10:00:00.000Z"),
+        status: "open",
+      },
+    ]);
+    serviceDeps.listMissingOfferQueueRows.mockResolvedValue([]);
+    serviceDeps.getActiveItemCodes.mockResolvedValue(new Set());
+
+    const queue = await orchestration.getOpenGapList();
+
+    expect(queue.items).toEqual([]);
+    expect(queue.totalItems).toBe(0);
+    expect(serviceDeps.getActiveItemCodes).toHaveBeenCalledWith([
+      "ITM-INACTIVE",
+    ]);
+  });
+
+  it("keeps a tracked-only gap visible when its item is still active in dim_items", async () => {
+    serviceDeps.listGapRecords.mockResolvedValue([
+      {
+        dq_id: 31,
+        trde_item: "ITM-ACTIVE",
+        item_name: "Quiet active item",
+        brand: "kfc",
+        item_category: "Offers KFC",
+        missing_fields: "ideal_price,selling_price",
+        detected_at: new Date("2026-03-26T10:00:00.000Z"),
+        status: "submitted",
+      },
+    ]);
+    serviceDeps.listMissingOfferQueueRows.mockResolvedValue([]);
+    serviceDeps.getActiveItemCodes.mockResolvedValue(new Set(["ITM-ACTIVE"]));
+
+    const queue = await orchestration.getOpenGapList();
+
+    expect(queue.items).toHaveLength(1);
+    expect(queue.items[0]).toMatchObject({
+      dq_id: 31,
+      trde_item: "ITM-ACTIVE",
+      status: "submitted",
+      missing_fields: ["ideal_price", "selling_price"],
+    });
   });
 });
