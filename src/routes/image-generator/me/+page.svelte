@@ -13,6 +13,7 @@
     type GeneratedImageDTO,
   } from "$lib/services/image-generator/image-generator";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
+  import UsageOverTimeChart from "$lib/components/image-generator/usage-over-time-chart.svelte";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -63,6 +64,9 @@
   const isPromptView = $derived(data.filters.view === "prompt");
   const modelOptions = $derived(data.filterOptions.models);
   const providerOptions = $derived(data.filterOptions.providers);
+  // Every generated image has a provider, so a non-empty provider list reliably
+  // means the user has generated at least one image (independent of filters).
+  const hasGeneratedImages = $derived(providerOptions.length > 0);
   const page = $derived(data.imagePage.page);
   const pageSize = $derived(data.imagePage.pageSize);
   const totalItems = $derived(data.imagePage.totalItems);
@@ -221,6 +225,10 @@
       <Button href="/image-generator" variant="outline">Generate more</Button>
     </div>
   </section>
+
+  {#if hasGeneratedImages}
+    <UsageOverTimeChart />
+  {/if}
 
   <section
     class="border-border/70 bg-background/90 overflow-hidden rounded-xl border shadow-sm"

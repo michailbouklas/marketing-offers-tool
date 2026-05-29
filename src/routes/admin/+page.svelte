@@ -4,6 +4,7 @@
   import DatabaseIcon from "@lucide/svelte/icons/database";
   import UsersIcon from "@lucide/svelte/icons/users";
   import StoreIcon from "@lucide/svelte/icons/store";
+  import ImageIcon from "@lucide/svelte/icons/image";
   import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
   import type { Component } from "svelte";
 
@@ -42,6 +43,13 @@
       description:
         "Manage brand guidelines and reference assets used by the image generator.",
       icon: StoreIcon,
+    },
+    {
+      href: "/admin/image-generator-usage",
+      title: "Image generator usage",
+      description:
+        "Track image-generation activity across all users over time, with totals, success rate, and the most active accounts.",
+      icon: ImageIcon,
     },
   ];
 </script>

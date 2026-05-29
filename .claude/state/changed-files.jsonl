@@ -132,3 +132,15 @@
 {"file":"src/lib/services/offers-data-quality-clickhouse.server.ts","action":"Edit","timestamp":"2026-05-28T11:54:09Z","important":false}
 {"file":"src/lib/services/offers-data-quality.test.ts","action":"Edit","timestamp":"2026-05-28T11:54:36Z","important":true}
 {"file":"docs/specs/add_dim_items/tasks.md","action":"Edit","timestamp":"2026-05-28T11:55:46Z","important":false}
+{"file":"src/lib/services/image-generator/image-generator.server.ts","action":"Edit","timestamp":"2026-05-29T08:15:37Z","important":false}
+{"file":"src/routes/api/images/usage/+server.ts","action":"Write","timestamp":"2026-05-29T08:15:54Z","important":false}
+{"file":"src/routes/image-generator/me/UsageOverTimeChart.svelte","action":"Write","timestamp":"2026-05-29T08:16:27Z","important":false}
+{"file":"src/routes/image-generator/me/+page.svelte","action":"Edit","timestamp":"2026-05-29T08:16:38Z","important":false}
+{"file":"src/lib/components/image-generator/usage-over-time-chart.svelte","action":"Write","timestamp":"2026-05-29T08:22:42Z","important":false}
+{"file":"src/routes/api/admin/image-generator/usage/+server.ts","action":"Write","timestamp":"2026-05-29T08:22:58Z","important":false}
+{"file":"src/routes/admin/image-generator-usage/+page.server.ts","action":"Write","timestamp":"2026-05-29T08:23:04Z","important":false}
+{"file":"src/routes/admin/image-generator-usage/+page.svelte","action":"Write","timestamp":"2026-05-29T08:23:34Z","important":false}
+{"file":"src/routes/admin/+page.svelte","action":"Edit","timestamp":"2026-05-29T08:23:41Z","important":false}
+{"file":"src/routes/admin/image-generator-usage/date-range-filter.svelte","action":"Write","timestamp":"2026-05-29T08:35:32Z","important":false}
+{"file":"src/routes/api/admin/image-generator/usage-by-model/+server.ts","action":"Write","timestamp":"2026-05-29T08:41:38Z","important":false}
+{"file":"src/lib/components/image-generator/usage-by-model-chart.svelte","action":"Write","timestamp":"2026-05-29T08:42:08Z","important":false}

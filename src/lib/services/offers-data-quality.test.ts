@@ -35,8 +35,7 @@ const orchestration = await import("./offers-data-quality.server");
 const serviceDeps = {
   getCurrentDimOfferValues: clickhouseDeps.getCurrentDimOfferValues as Mock,
   getDimOfferAuditSnapshot: clickhouseDeps.getDimOfferAuditSnapshot as Mock,
-  getOfferEligibleItemCodes:
-    clickhouseDeps.getOfferEligibleItemCodes as Mock,
+  getOfferEligibleItemCodes: clickhouseDeps.getOfferEligibleItemCodes as Mock,
   getTransactionItemContext: clickhouseDeps.getTransactionItemContext as Mock,
   insertDimOffer: clickhouseDeps.insertDimOffer as Mock,
   listMissingOfferQueueRows: clickhouseDeps.listMissingOfferQueueRows as Mock,
@@ -469,9 +468,7 @@ describe("offers-data-quality orchestration", () => {
       async (callOptions?: { brandAliases?: string[] }) => {
         if (!callOptions?.brandAliases) return allClickhouseRows;
         const allowed = new Set(
-          callOptions.brandAliases.map((value) =>
-            value.trim().toLowerCase(),
-          ),
+          callOptions.brandAliases.map((value) => value.trim().toLowerCase()),
         );
 
         return allClickhouseRows.filter((row) =>

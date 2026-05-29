@@ -81,3 +81,26 @@
 - （必要に応じて追記）
 
 ---
+
+## セッション: 2026-05-29T07:32:20Z
+
+- session_id: `session-1780039927027161900`
+- project: `marketing-offers-tool`
+- branch: `master`
+- started_at: `2026-05-29T07:32:06Z`
+- ended_at: `2026-05-29T07:32:20Z`
+- changes: 0
+
+### 変更ファイル
+
+- （なし）
+
+### 重要な変更（important=true）
+
+- （なし）
+
+### 次回への引き継ぎ（任意）
+
+- （必要に応じて追記）
+
+---

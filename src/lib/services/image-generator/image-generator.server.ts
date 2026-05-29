@@ -41,6 +41,13 @@ export interface GeneratedImagesPromptGroup {
   latestCreatedAt: string;
 }
 
+export interface GeneratedImageUsagePoint {
+  /** UTC day in `YYYY-MM-DD` format. */
+  date: string;
+  /** Number of images the user generated on that day. */
+  count: number;
+}
+
 function toDTO(row: {
   id: string;
   prompt: string;
@@ -238,6 +245,332 @@ export async function listGeneratedImagePromptGroupsForUser(
     items,
     latestCreatedAt: items[0]?.createdAt ?? "",
   }));
+}
+
+function toUtcDayKey(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * Buckets a set of generation timestamps into daily counts, ordered oldest to
+ * newest. Missing days within the active range are filled with zero so the
+ * area chart renders a continuous timeline rather than collapsing gaps between
+ * sparse generations. Rows are assumed to be sorted ascending by `createdAt`.
+ */
+function bucketUsageByDay(
+  rows: { createdAt: Date }[],
+): GeneratedImageUsagePoint[] {
+  if (rows.length === 0) {
+    return [];
+  }
+
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const key = toUtcDayKey(row.createdAt);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+
+  const firstDay = new Date(`${toUtcDayKey(rows[0]!.createdAt)}T00:00:00.000Z`);
+  const lastDay = new Date(
+    `${toUtcDayKey(rows[rows.length - 1]!.createdAt)}T00:00:00.000Z`,
+  );
+
+  const points: GeneratedImageUsagePoint[] = [];
+  for (
+    const cursor = new Date(firstDay);
+    cursor.getTime() <= lastDay.getTime();
+    cursor.setUTCDate(cursor.getUTCDate() + 1)
+  ) {
+    const key = toUtcDayKey(cursor);
+    points.push({ date: key, count: counts.get(key) ?? 0 });
+  }
+
+  return points;
+}
+
+/**
+ * Daily count of images a single user generated, for the usage area chart.
+ */
+export async function getGeneratedImageUsageByDayForUser(
+  userId: string,
+): Promise<GeneratedImageUsagePoint[]> {
+  const rows = await prisma.generatedImage.findMany({
+    where: { userId },
+    select: { createdAt: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return bucketUsageByDay(rows);
+}
+
+export interface UsageDateRange {
+  /** Inclusive start day, `YYYY-MM-DD` (UTC). */
+  from?: string;
+  /** Inclusive end day, `YYYY-MM-DD` (UTC). */
+  to?: string;
+}
+
+const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Validates raw `from`/`to` query values into a `UsageDateRange`, keeping only
+ * well-formed `YYYY-MM-DD` days. Returns `undefined` when neither bound is
+ * usable so callers can treat it as "all time".
+ */
+export function parseUsageDateRange(
+  from: string | null | undefined,
+  to: string | null | undefined,
+): UsageDateRange | undefined {
+  const validFrom = from && DAY_PATTERN.test(from) ? from : undefined;
+  const validTo = to && DAY_PATTERN.test(to) ? to : undefined;
+
+  if (!validFrom && !validTo) {
+    return undefined;
+  }
+
+  return { from: validFrom, to: validTo };
+}
+
+/**
+ * Translates an inclusive `YYYY-MM-DD` day range into a Prisma `createdAt`
+ * filter. The `to` day is made inclusive by querying up to the start of the
+ * following day. Returns an empty object when no usable bounds are given.
+ */
+function buildUsageWhere(
+  range: UsageDateRange | undefined,
+): Prisma.GeneratedImageWhereInput {
+  const createdAt: Prisma.DateTimeFilter = {};
+
+  if (range?.from) {
+    const start = new Date(`${range.from}T00:00:00.000Z`);
+    if (!Number.isNaN(start.getTime())) {
+      createdAt.gte = start;
+    }
+  }
+
+  if (range?.to) {
+    const end = new Date(`${range.to}T00:00:00.000Z`);
+    if (!Number.isNaN(end.getTime())) {
+      end.setUTCDate(end.getUTCDate() + 1);
+      createdAt.lt = end;
+    }
+  }
+
+  return createdAt.gte || createdAt.lt ? { createdAt } : {};
+}
+
+/**
+ * Daily count of images generated across every user, for the admin-wide usage
+ * area chart. Optionally restricted to a day range.
+ */
+export async function getGeneratedImageUsageByDayAllUsers(
+  range?: UsageDateRange,
+): Promise<GeneratedImageUsagePoint[]> {
+  const rows = await prisma.generatedImage.findMany({
+    where: buildUsageWhere(range),
+    select: { createdAt: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return bucketUsageByDay(rows);
+}
+
+export interface ModelUsageSeries {
+  /** Stable, CSS-variable-safe series key (e.g. `model-0`). */
+  key: string;
+  /** Human-readable model name (or "Default model"). */
+  label: string;
+}
+
+export interface ModelUsagePoint {
+  /** UTC day in `YYYY-MM-DD` format. */
+  date: string;
+  /** Count per series key for that day (every series key is present). */
+  counts: Record<string, number>;
+}
+
+export interface ModelUsageOverTime {
+  series: ModelUsageSeries[];
+  points: ModelUsagePoint[];
+}
+
+/**
+ * Daily image counts split by model, for the admin "generations per model over
+ * time" chart. Series are ordered by total volume (most-used first) and keyed
+ * with stable identifiers safe to use as CSS variables. Missing days are filled
+ * with zero so the stacked area chart renders a continuous timeline.
+ */
+export async function getGeneratedImageUsageByModelByDay(
+  range?: UsageDateRange,
+): Promise<ModelUsageOverTime> {
+  const rows = await prisma.generatedImage.findMany({
+    where: buildUsageWhere(range),
+    select: { createdAt: true, model: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  if (rows.length === 0) {
+    return { series: [], points: [] };
+  }
+
+  const totalsByLabel = new Map<string, number>();
+  for (const row of rows) {
+    const label = row.model ?? DEFAULT_MODEL_LABEL;
+    totalsByLabel.set(label, (totalsByLabel.get(label) ?? 0) + 1);
+  }
+
+  const series: ModelUsageSeries[] = [...totalsByLabel.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([label], index) => ({ key: `model-${index}`, label }));
+  const keyByLabel = new Map(series.map((item) => [item.label, item.key]));
+
+  const countsByDay = new Map<string, Map<string, number>>();
+  for (const row of rows) {
+    const day = toUtcDayKey(row.createdAt);
+    const key = keyByLabel.get(row.model ?? DEFAULT_MODEL_LABEL)!;
+    let dayCounts = countsByDay.get(day);
+    if (!dayCounts) {
+      dayCounts = new Map();
+      countsByDay.set(day, dayCounts);
+    }
+    dayCounts.set(key, (dayCounts.get(key) ?? 0) + 1);
+  }
+
+  const firstDay = new Date(`${toUtcDayKey(rows[0]!.createdAt)}T00:00:00.000Z`);
+  const lastDay = new Date(
+    `${toUtcDayKey(rows[rows.length - 1]!.createdAt)}T00:00:00.000Z`,
+  );
+
+  const points: ModelUsagePoint[] = [];
+  for (
+    const cursor = new Date(firstDay);
+    cursor.getTime() <= lastDay.getTime();
+    cursor.setUTCDate(cursor.getUTCDate() + 1)
+  ) {
+    const day = toUtcDayKey(cursor);
+    const dayCounts = countsByDay.get(day);
+    const counts: Record<string, number> = {};
+    for (const item of series) {
+      counts[item.key] = dayCounts?.get(item.key) ?? 0;
+    }
+    points.push({ date: day, counts });
+  }
+
+  return { series, points };
+}
+
+export interface GeneratedImageUsageSummary {
+  totalImages: number;
+  totalUsers: number;
+  completed: number;
+  failed: number;
+}
+
+export interface GeneratedImageBreakdownItem {
+  label: string;
+  count: number;
+}
+
+export interface TopGeneratingUser {
+  userId: string;
+  name: string;
+  email: string;
+  count: number;
+}
+
+export interface AdminImageUsageOverview {
+  summary: GeneratedImageUsageSummary;
+  providers: GeneratedImageBreakdownItem[];
+  models: GeneratedImageBreakdownItem[];
+  topUsers: TopGeneratingUser[];
+}
+
+const DEFAULT_MODEL_LABEL = "Default model";
+
+/**
+ * High-level, all-user image-generation metrics for the admin usage dashboard:
+ * headline counts, a provider breakdown, and the most active generators. All
+ * figures honour the optional day range so they stay in sync with the chart.
+ */
+export async function getAdminImageUsageOverview(
+  range?: UsageDateRange,
+  topUserLimit = 10,
+): Promise<AdminImageUsageOverview> {
+  const where = buildUsageWhere(range);
+
+  const [
+    totalImages,
+    distinctUsers,
+    statusGroups,
+    providerGroups,
+    modelGroups,
+    topUserGroups,
+  ] = await Promise.all([
+    prisma.generatedImage.count({ where }),
+    prisma.generatedImage.groupBy({ by: ["userId"], where }),
+    prisma.generatedImage.groupBy({
+      by: ["status"],
+      where,
+      _count: { _all: true },
+    }),
+    prisma.generatedImage.groupBy({
+      by: ["provider"],
+      where,
+      _count: { _all: true },
+      orderBy: { _count: { provider: "desc" } },
+    }),
+    prisma.generatedImage.groupBy({
+      by: ["model"],
+      where,
+      _count: { _all: true },
+    }),
+    prisma.generatedImage.groupBy({
+      by: ["userId"],
+      where,
+      _count: { _all: true },
+      orderBy: { _count: { userId: "desc" } },
+      take: topUserLimit,
+    }),
+  ]);
+
+  const statusCounts = new Map<string, number>(
+    statusGroups.map((group) => [group.status, group._count._all]),
+  );
+
+  const userRecords = await prisma.user.findMany({
+    where: { id: { in: topUserGroups.map((group) => group.userId) } },
+    select: { id: true, name: true, email: true },
+  });
+  const userById = new Map(userRecords.map((record) => [record.id, record]));
+
+  return {
+    summary: {
+      totalImages,
+      totalUsers: distinctUsers.length,
+      completed: statusCounts.get("completed") ?? 0,
+      failed: statusCounts.get("failed") ?? 0,
+    },
+    providers: providerGroups.map((group) => ({
+      label: group.provider,
+      count: group._count._all,
+    })),
+    // `model` is nullable, so order in JS (Prisma can't sort by `_count._all`).
+    models: modelGroups
+      .map((group) => ({
+        label: group.model ?? DEFAULT_MODEL_LABEL,
+        count: group._count._all,
+      }))
+      .sort((a, b) => b.count - a.count),
+    topUsers: topUserGroups.map((group) => {
+      const record = userById.get(group.userId);
+      return {
+        userId: group.userId,
+        name: record?.name ?? "Unknown user",
+        email: record?.email ?? "—",
+        count: group._count._all,
+      };
+    }),
+  };
 }
 
 export async function listGeneratedImageFilterOptionsForUser(userId: string) {
