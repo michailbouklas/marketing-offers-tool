@@ -1,5 +1,5 @@
 import { json } from "@sveltejs/kit";
-import { requireAdminUser } from "$lib/server/auth-guards";
+import { requireApiAdminPermission } from "$lib/server/auth-guards";
 import {
   getGeneratedImageUsageByModelByDay,
   parseUsageDateRange,
@@ -7,7 +7,7 @@ import {
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async (event) => {
-  await requireAdminUser(event);
+  await requireApiAdminPermission(event, { imageGenerator: ["view-usage"] });
   const range = parseUsageDateRange(
     event.url.searchParams.get("from"),
     event.url.searchParams.get("to"),

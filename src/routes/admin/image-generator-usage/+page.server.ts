@@ -1,4 +1,4 @@
-import { requireAdminUser } from "$lib/server/auth-guards";
+import { requirePermission } from "$lib/server/auth-guards";
 import {
   getAdminImageUsageOverview,
   parseUsageDateRange,
@@ -6,7 +6,9 @@ import {
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
-  await requireAdminUser(event);
+  // /admin hooks gate enforces admin; this additionally requires the usage
+  // analytics capability, so an admin without `usageViewer` is redirected.
+  await requirePermission(event, { imageGenerator: ["view-usage"] });
 
   const range = parseUsageDateRange(
     event.url.searchParams.get("from"),

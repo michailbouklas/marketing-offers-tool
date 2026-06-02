@@ -1,4 +1,10 @@
-export const userRoles = ["user", "admin", "approver"] as const;
+export const userRoles = [
+  "user",
+  "admin",
+  "approver",
+  "usageViewer",
+  "userManager",
+] as const;
 
 export type UserRole = (typeof userRoles)[number];
 
@@ -9,6 +15,8 @@ export const roleLabels: Record<UserRole, string> = {
   user: "User",
   admin: "Admin",
   approver: "Approver",
+  usageViewer: "Usage Viewer",
+  userManager: "User Manager",
 };
 
 /**

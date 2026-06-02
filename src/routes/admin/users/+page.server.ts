@@ -1,7 +1,7 @@
 import { fail } from "@sveltejs/kit";
 import { message, superValidate } from "sveltekit-superforms/server";
 import { zod4 } from "sveltekit-superforms/adapters";
-import { requireAdminUser } from "$lib/server/auth-guards";
+import { requirePermission } from "$lib/server/auth-guards";
 import {
   createUserFormSchema,
   editUserFormSchema,
@@ -14,7 +14,9 @@ import { createUser, listUsers, updateUser } from "$lib/services/users.server";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
-  await requireAdminUser(event);
+  // /admin hooks gate enforces admin; this additionally requires the user
+  // management capability, so an admin without `userManager` is redirected.
+  await requirePermission(event, { user: ["list"] });
 
   const [users, brands, createForm, editForm] = await Promise.all([
     listUsers(),
@@ -39,7 +41,7 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
   createUser: async (event) => {
-    await requireAdminUser(event);
+    await requirePermission(event, { user: ["create"] });
 
     const formData = await event.request.formData();
     const form = await superValidate(formData, zod4(createUserFormSchema), {
@@ -71,7 +73,7 @@ export const actions: Actions = {
   },
 
   updateUser: async (event) => {
-    await requireAdminUser(event);
+    await requirePermission(event, { user: ["set-role"] });
 
     const formData = await event.request.formData();
     const form = await superValidate(formData, zod4(editUserFormSchema), {

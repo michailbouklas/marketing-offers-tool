@@ -19,16 +19,23 @@ export const statement = {
 export const ac = createAccessControl(statement);
 
 /**
- * Granted permissions per role. `admin` keeps full control over the Better
- * Auth defaults plus image generation, but deliberately does NOT include
- * `submission` — approval is a separately-grantable capability (the `approver`
- * role), so an admin can exist without approval rights once approval routes
- * are switched to a permission check.
+ * Granted permissions per role. Privileged capabilities are split into small
+ * additive roles so an admin can be granted exactly the powers they need:
+ *
+ * - `admin` is a marker role (recognised by `isAdminRole` / `adminRoles` for
+ *   the coarse `/admin` gate). It deliberately grants NO resource permissions,
+ *   so on permission-gated routes an admin must also hold the matching
+ *   capability role.
+ * - `approver` — act on gap submissions.
+ * - `usageViewer` — view cross-user image-generation usage analytics.
+ * - `userManager` — manage users (Better Auth's full user/session statements,
+ *   which its admin endpoints check internally).
+ *
+ * Explicit empty action arrays (rather than `{}`) keep a role's resource keys
+ * concrete instead of `never`, which is required for assignability to Better
+ * Auth's `Role` type.
  */
 export const roles = {
-  // Explicit empty action arrays (rather than `{}`) keep the role's resource
-  // keys concrete instead of `never`, which is required for the role to be
-  // assignable to Better Auth's `Role` type.
   user: ac.newRole({
     user: [],
     session: [],
@@ -36,11 +43,19 @@ export const roles = {
     submission: [],
   }),
   admin: ac.newRole({
-    ...adminAc.statements,
-    imageGenerator: ["generate", "view-usage"],
+    user: [],
+    session: [],
+    imageGenerator: [],
+    submission: [],
   }),
   approver: ac.newRole({
     submission: ["approve", "reject"],
+  }),
+  usageViewer: ac.newRole({
+    imageGenerator: ["view-usage"],
+  }),
+  userManager: ac.newRole({
+    ...adminAc.statements,
   }),
 } satisfies Record<UserRole, Role>;
 
