@@ -43,12 +43,12 @@ Start here when exploring this area:
 | ----------------------------------- | --------------- | ----- |
 | `CreateBrandAsset → EnsureSafeSlug` | cross_community | 6     |
 | `POST → LoadEnvFileValues`          | cross_community | 5     |
+| `POST → ParseRoles`                 | cross_community | 4     |
+| `GET → ParseRoles`                  | cross_community | 4     |
 | `POST → RequireAuthenticatedUser`   | cross_community | 3     |
 | `POST → GetAuthenticatedUserRole`   | cross_community | 3     |
-| `POST → IsAdminRole`                | cross_community | 3     |
 | `GET → RequireAuthenticatedUser`    | cross_community | 3     |
 | `GET → GetAuthenticatedUserRole`    | cross_community | 3     |
-| `GET → IsAdminRole`                 | cross_community | 3     |
 
 ## Connected Areas
 

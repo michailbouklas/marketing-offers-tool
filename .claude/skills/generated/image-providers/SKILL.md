@@ -79,10 +79,10 @@ Start here when exploring this area:
 
 ## Connected Areas
 
-| Area   | Connections |
-| ------ | ----------- |
-| Server | 5 calls     |
-| [id]   | 2 calls     |
+| Area            | Connections |
+| --------------- | ----------- |
+| Server          | 6 calls     |
+| Image-generator | 1 calls     |
 
 ## How to Explore
 

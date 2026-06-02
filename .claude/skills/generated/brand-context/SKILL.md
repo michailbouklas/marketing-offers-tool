@@ -41,9 +41,9 @@ Start here when exploring this area:
 
 | Flow                                | Type            | Steps |
 | ----------------------------------- | --------------- | ----- |
+| `DELETE → ParseRoles`               | cross_community | 4     |
 | `DELETE → RequireAuthenticatedUser` | cross_community | 3     |
 | `DELETE → GetAuthenticatedUserRole` | cross_community | 3     |
-| `DELETE → IsAdminRole`              | cross_community | 3     |
 
 ## Connected Areas
 

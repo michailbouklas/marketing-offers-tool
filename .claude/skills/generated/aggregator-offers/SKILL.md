@@ -5,12 +5,12 @@ description: "Skill for the Aggregator-offers area of marketing-offers-tool. 4 s
 
 # Aggregator-offers
 
-4 symbols | 3 files | Cohesion: 36%
+4 symbols | 3 files | Cohesion: 35%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how mapOfferEditorFormToCreateInput, requireAuthenticatedUser, createOffer work
+- Understanding how createOffer, updateOffer, mapOfferEditorFormToCreateInput work
 - Modifying aggregator-offers-related functionality
 
 ## Key Files
@@ -25,19 +25,19 @@ description: "Skill for the Aggregator-offers area of marketing-offers-tool. 4 s
 
 Start here when exploring this area:
 
-- **`mapOfferEditorFormToCreateInput`** (Function) — `src/lib/services/offer-editor-form.ts:78`
-- **`requireAuthenticatedUser`** (Function) — `src/lib/server/auth-guards.ts:5`
 - **`createOffer`** (Function) — `src/routes/aggregator-offers/+page.server.ts:62`
 - **`updateOffer`** (Function) — `src/routes/aggregator-offers/+page.server.ts:86`
+- **`mapOfferEditorFormToCreateInput`** (Function) — `src/lib/services/offer-editor-form.ts:78`
+- **`requireAuthenticatedUser`** (Function) — `src/lib/server/auth-guards.ts:7`
 
 ## Key Symbols
 
 | Symbol                            | Type     | File                                           | Line |
 | --------------------------------- | -------- | ---------------------------------------------- | ---- |
-| `mapOfferEditorFormToCreateInput` | Function | `src/lib/services/offer-editor-form.ts`        | 78   |
-| `requireAuthenticatedUser`        | Function | `src/lib/server/auth-guards.ts`                | 5    |
 | `createOffer`                     | Function | `src/routes/aggregator-offers/+page.server.ts` | 62   |
 | `updateOffer`                     | Function | `src/routes/aggregator-offers/+page.server.ts` | 86   |
+| `mapOfferEditorFormToCreateInput` | Function | `src/lib/services/offer-editor-form.ts`        | 78   |
+| `requireAuthenticatedUser`        | Function | `src/lib/server/auth-guards.ts`                | 7    |
 
 ## Execution Flows
 
@@ -56,6 +56,6 @@ Start here when exploring this area:
 
 ## How to Explore
 
-1. `gitnexus_context({name: "mapOfferEditorFormToCreateInput"})` — see callers and callees
+1. `gitnexus_context({name: "createOffer"})` — see callers and callees
 2. `gitnexus_query({query: "aggregator-offers"})` — find related execution flows
 3. Read key files listed above for implementation details
