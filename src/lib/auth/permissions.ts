@@ -34,6 +34,7 @@ export const ac = createAccessControl(statement);
  *   which its admin endpoints check internally).
  * - `brandManager` — manage brand guidelines and reference assets.
  * - `offerEditor` — create and edit aggregator offers in the registry.
+ * - `imageEditor` — generate images in the image generator.
  * - `superUser` — admin-equivalent that holds every resource permission.
  *
  * Explicit empty action arrays (rather than `{}`) keep a role's resource keys
@@ -67,6 +68,9 @@ export const roles = {
   }),
   offerEditor: ac.newRole({
     offer: ["edit"],
+  }),
+  imageEditor: ac.newRole({
+    imageGenerator: ["generate"],
   }),
   superUser: ac.newRole({
     ...adminAc.statements,

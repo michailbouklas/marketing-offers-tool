@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { isAdminRole } from "$lib/auth/roles";
+  import { hasAnyRole, isAdminRole, type UserRole } from "$lib/auth/roles";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import SignOutButton from "$lib/components/ui/sign-out-button/index.svelte";
   import HouseIcon from "@lucide/svelte/icons/house";
@@ -10,19 +10,44 @@
   import ShieldIcon from "@lucide/svelte/icons/shield";
   import type { Component } from "svelte";
 
-  type NavItem = { href: string; label: string; icon: Component };
+  // `roles` lists the role(s) that may see the item. Omit it for items visible
+  // to everyone. `superUser` is included on capability-gated items since it is
+  // the admin-equivalent that holds every resource permission.
+  type NavItem = {
+    href: string;
+    label: string;
+    icon: Component;
+    roles?: UserRole[];
+  };
 
   const user = $derived(page.data.user as { role?: string } | null | undefined);
 
-  const navigationItems = $derived<NavItem[]>([
+  const allNavItems: NavItem[] = [
     { href: "/", label: "Home", icon: HouseIcon },
-    { href: "/aggregator-offers", label: "Aggregator Offers", icon: StoreIcon },
+    {
+      href: "/aggregator-offers",
+      label: "Aggregator Offers",
+      icon: StoreIcon,
+      roles: ["offerEditor", "superUser"],
+    },
     {
       href: "/offers-data-quality",
       label: "Data Quality",
       icon: ShieldCheckIcon,
+      roles: ["offerEditor", "superUser"],
     },
-    { href: "/image-generator", label: "Image Generator", icon: ImageIcon },
+    {
+      href: "/image-generator",
+      label: "Image Generator",
+      icon: ImageIcon,
+      roles: ["admin", "superUser", "brandManager", "imageEditor"],
+    },
+  ];
+
+  const navigationItems = $derived<NavItem[]>([
+    ...allNavItems.filter(
+      (item) => !item.roles || hasAnyRole(user?.role, item.roles),
+    ),
     ...(isAdminRole(user?.role)
       ? [{ href: "/admin", label: "Admin", icon: ShieldIcon }]
       : []),

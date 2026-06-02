@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAdminRole, parseRoles } from "./roles";
+import { hasAnyRole, isAdminRole, parseRoles } from "./roles";
 
 describe("parseRoles", () => {
   it("returns an empty list for nullish input", () => {
@@ -39,5 +39,25 @@ describe("isAdminRole", () => {
     expect(isAdminRole("approver")).toBe(false);
     expect(isAdminRole(null)).toBe(false);
     expect(isAdminRole(undefined)).toBe(false);
+  });
+});
+
+describe("hasAnyRole", () => {
+  it("is true when a single role is in the allowed list", () => {
+    expect(hasAnyRole("offerEditor", ["offerEditor", "superUser"])).toBe(true);
+  });
+
+  it("is true when any role within a multi-role string is allowed", () => {
+    expect(hasAnyRole("user,imageEditor", ["admin", "imageEditor"])).toBe(true);
+  });
+
+  it("is false when none of the user's roles are allowed", () => {
+    expect(hasAnyRole("user", ["offerEditor", "superUser"])).toBe(false);
+    expect(hasAnyRole("admin", ["offerEditor"])).toBe(false);
+  });
+
+  it("is false for nullish input", () => {
+    expect(hasAnyRole(null, ["admin"])).toBe(false);
+    expect(hasAnyRole(undefined, ["admin"])).toBe(false);
   });
 });

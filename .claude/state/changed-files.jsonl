@@ -187,3 +187,5 @@
 {"file":"src/lib/components/home/metric-link-card.svelte","action":"Write","timestamp":"2026-06-02T12:50:57Z","important":false}
 {"file":"src/lib/components/home/usage-summary-widget.svelte","action":"Write","timestamp":"2026-06-02T12:51:20Z","important":false}
 {"file":"src/routes/+page.svelte","action":"Write","timestamp":"2026-06-02T12:51:51Z","important":false}
+{"file":"src/lib/components/navigation/app-sidebar.svelte","action":"Edit","timestamp":"2026-06-02T13:04:45Z","important":false}
+{"file":"src/lib/auth/roles.test.ts","action":"Edit","timestamp":"2026-06-02T13:05:43Z","important":true}

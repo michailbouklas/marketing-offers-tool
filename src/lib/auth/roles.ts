@@ -6,6 +6,7 @@ export const userRoles = [
   "userManager",
   "brandManager",
   "offerEditor",
+  "imageEditor",
   "superUser",
 ] as const;
 
@@ -29,6 +30,7 @@ export const roleLabels: Record<UserRole, string> = {
   userManager: "User Manager",
   brandManager: "Brand Manager",
   offerEditor: "Offer Editor",
+  imageEditor: "Image Editor",
   superUser: "Super User",
 };
 
@@ -52,4 +54,16 @@ export function parseRoles(role: string | null | undefined): UserRole[] {
 
 export function isAdminRole(role: string | null | undefined): boolean {
   return parseRoles(role).some((parsed) => adminRoles.includes(parsed));
+}
+
+/**
+ * Returns whether any of the user's role(s) appear in `allowed`. Used for
+ * coarse, role-based UI gating (e.g. which sidebar items to render) where a
+ * full permission check is unnecessary or not browser-safe.
+ */
+export function hasAnyRole(
+  role: string | null | undefined,
+  allowed: readonly UserRole[],
+): boolean {
+  return parseRoles(role).some((parsed) => allowed.includes(parsed));
 }

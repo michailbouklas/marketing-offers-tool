@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-02T12:50:42Z",
-  "changed_file": "src/routes/+page.server.ts",
+  "timestamp": "2026-06-02T13:05:54Z",
+  "changed_file": "src/lib/auth/roles.test.ts",
   "test_command": "npx vitest run --reporter=verbose",
   "related_test": "",
   "recommendation": "テストの実行を推奨します"
