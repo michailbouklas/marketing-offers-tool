@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import { isAdminRole } from "$lib/auth/roles";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import SignOutButton from "$lib/components/ui/sign-out-button/index.svelte";
   import HouseIcon from "@lucide/svelte/icons/house";
@@ -22,7 +23,7 @@
       icon: ShieldCheckIcon,
     },
     { href: "/image-generator", label: "Image Generator", icon: ImageIcon },
-    ...(user?.role === "admin"
+    ...(isAdminRole(user?.role)
       ? [{ href: "/admin", label: "Admin", icon: ShieldIcon }]
       : []),
   ]);

@@ -2,6 +2,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import OfferStatusWidget from "$lib/components/home/offer-status-widget.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
+  import { isAdminRole } from "$lib/auth/roles";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -44,7 +45,7 @@
     },
   ]);
   const adminQuickCards = $derived(
-    data.userRole === "admin"
+    isAdminRole(data.userRole)
       ? [
           {
             title: "Pending submissions",

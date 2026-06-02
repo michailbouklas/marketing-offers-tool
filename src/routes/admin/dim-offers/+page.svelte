@@ -5,6 +5,7 @@
   import DownloadIcon from "@lucide/svelte/icons/download";
   import Rows3Icon from "@lucide/svelte/icons/rows-3";
   import DimOffersTable from "$lib/components/admin/dim-offers-table.svelte";
+  import { isAdminRole } from "$lib/auth/roles";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
@@ -30,7 +31,7 @@
   const searchQuery = $derived(data.query ?? "");
 
   const adminQuickLinks = $derived(
-    data.userRole === "admin"
+    isAdminRole(data.userRole)
       ? [
           {
             href: "/admin/pending-submissions",
