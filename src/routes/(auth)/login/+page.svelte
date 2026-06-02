@@ -63,7 +63,7 @@
       if (error) {
         authError = error.message ?? "Invalid email or password.";
       } else {
-        await goto("/");
+        await goto("/", { invalidateAll: true });
       }
     } finally {
       isLoading = false;

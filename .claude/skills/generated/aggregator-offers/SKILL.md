@@ -52,7 +52,7 @@ Start here when exploring this area:
 | `Load → RequireAuthenticatedUser`   | cross_community | 3     |
 | `DELETE → RequireAuthenticatedUser` | cross_community | 3     |
 | `Load → RequireAuthenticatedUser`   | cross_community | 3     |
-| `POST → RequireAuthenticatedUser`   | cross_community | 3     |
+| `GET → RequireAuthenticatedUser`    | cross_community | 3     |
 
 ## How to Explore
 

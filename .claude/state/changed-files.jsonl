@@ -166,3 +166,8 @@
 {"file":"src/routes/api/gaps/submissions/[stagingId]/approve/+server.ts","action":"Edit","timestamp":"2026-06-02T09:15:36Z","important":false}
 {"file":"src/routes/api/gaps/submissions/[stagingId]/reject/+server.ts","action":"Edit","timestamp":"2026-06-02T09:15:45Z","important":false}
 {"file":"src/routes/api/gaps/submissions/bulk/+server.ts","action":"Edit","timestamp":"2026-06-02T09:16:03Z","important":false}
+{"file":"src/routes/admin/image-generator-usage/+page.server.ts","action":"Edit","timestamp":"2026-06-02T09:30:01Z","important":false}
+{"file":"src/routes/api/admin/image-generator/usage/+server.ts","action":"Edit","timestamp":"2026-06-02T09:30:05Z","important":false}
+{"file":"src/routes/api/admin/image-generator/usage-by-model/+server.ts","action":"Edit","timestamp":"2026-06-02T09:30:16Z","important":false}
+{"file":"src/routes/admin/users/+page.server.ts","action":"Edit","timestamp":"2026-06-02T09:30:25Z","important":false}
+{"file":"scripts/grant-roles.ts","action":"Write","timestamp":"2026-06-02T09:31:29Z","important":false}

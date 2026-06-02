@@ -1,67 +1,67 @@
 ---
 name: server
-description: "Skill for the Server area of marketing-offers-tool. 83 symbols across 28 files."
+description: "Skill for the Server area of marketing-offers-tool. 71 symbols across 21 files."
 ---
 
 # Server
 
-83 symbols | 28 files | Cohesion: 76%
+71 symbols | 21 files | Cohesion: 79%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how getImageGeneratorEnv, hasImageRouterProvider, hasOpenAIProvider work
+- Understanding how extensionForContentType, referenceFilePath, writeReferenceFile work
 - Modifying server-related functionality
 
 ## Key Files
 
-| File                                                          | Symbols                                                                                                        |
-| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `src/lib/server/brand-storage.ts`                             | ensureSafeSlug, brandDir, brandGuidelinesPath, ensureBrandDir, readBrandGuidelines (+7)                        |
-| `src/lib/server/clickhouse.ts`                                | loadEnvFileValues, parseRequestTimeout, getRequiredEnv, getEnvValue, getClickHouseConfig (+5)                  |
-| `src/lib/server/auth-guards.ts`                               | requireAdminUser, getAuthenticatedUserRole, requireAuthenticatedApiUser, hasPermission, requirePermission (+4) |
-| `src/lib/server/env.ts`                                       | loadEnvFileValues, readEnv, loadImageGeneratorEnv, getImageGeneratorEnv, hasImageRouterProvider (+1)           |
-| `src/lib/server/reference-storage.ts`                         | ensureSafeId, extensionForContentType, referenceFilePath, ensureReferencesDir, writeReferenceFile              |
-| `src/lib/server/image-storage.ts`                             | ensureSafeId, imageFilePath, ensureImagesDir, writeImageBytes, readImageBytes                                  |
-| `src/lib/server/auth.ts`                                      | getRequiredEnv, getAuthConfig, getAuthConfigKey, createAuth, getAuth                                           |
-| `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | parseBrandId, brandSlugOr404, GET, PUT                                                                         |
-| `src/lib/server/prisma.ts`                                    | getDatabaseUrl, createPrismaClient, hasDataQualityDelegates, getPrismaClient                                   |
-| `src/lib/services/brand-context/brand-context.server.ts`      | listBrandAssets, getBrandGuidelines, setBrandGuidelines                                                        |
+| File                                                     | Symbols                                                                                              |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `src/lib/server/brand-storage.ts`                        | ensureSafeSlug, brandDir, brandGuidelinesPath, ensureBrandDir, readBrandGuidelines (+7)              |
+| `src/lib/server/clickhouse.ts`                           | loadEnvFileValues, parseRequestTimeout, getRequiredEnv, getEnvValue, getClickHouseConfig (+5)        |
+| `src/lib/server/auth-guards.ts`                          | requireAdminUser, getAuthenticatedUserRole, isPublicPath, isApiPath, isAdminPath (+3)                |
+| `src/lib/server/env.ts`                                  | loadEnvFileValues, readEnv, loadImageGeneratorEnv, getImageGeneratorEnv, hasImageRouterProvider (+1) |
+| `src/lib/server/reference-storage.ts`                    | ensureSafeId, extensionForContentType, referenceFilePath, ensureReferencesDir, writeReferenceFile    |
+| `src/lib/server/image-storage.ts`                        | ensureSafeId, imageFilePath, ensureImagesDir, writeImageBytes, readImageBytes                        |
+| `src/lib/server/auth.ts`                                 | getRequiredEnv, getAuthConfig, getAuthConfigKey, createAuth, getAuth                                 |
+| `src/lib/server/prisma.ts`                               | getDatabaseUrl, createPrismaClient, hasDataQualityDelegates, getPrismaClient                         |
+| `src/lib/services/brand-context/brand-context.server.ts` | createBrandAsset, setBrandGuidelines                                                                 |
+| `src/routes/admin/users/+page.server.ts`                 | createUser, updateUser                                                                               |
 
 ## Entry Points
 
 Start here when exploring this area:
 
+- **`extensionForContentType`** (Function) — `src/lib/server/reference-storage.ts:30`
+- **`referenceFilePath`** (Function) — `src/lib/server/reference-storage.ts:38`
+- **`writeReferenceFile`** (Function) — `src/lib/server/reference-storage.ts:53`
 - **`getImageGeneratorEnv`** (Function) — `src/lib/server/env.ts:166`
 - **`hasImageRouterProvider`** (Function) — `src/lib/server/env.ts:171`
-- **`hasOpenAIProvider`** (Function) — `src/lib/server/env.ts:175`
-- **`GET`** (Function) — `src/routes/api/brand-assets/+server.ts:6`
-- **`GET`** (Function) — `src/routes/api/brand-guidelines/+server.ts:7`
 
 ## Key Symbols
 
-| Symbol                     | Type     | File                                                          | Line |
-| -------------------------- | -------- | ------------------------------------------------------------- | ---- |
-| `getImageGeneratorEnv`     | Function | `src/lib/server/env.ts`                                       | 166  |
-| `hasImageRouterProvider`   | Function | `src/lib/server/env.ts`                                       | 171  |
-| `hasOpenAIProvider`        | Function | `src/lib/server/env.ts`                                       | 175  |
-| `GET`                      | Function | `src/routes/api/brand-assets/+server.ts`                      | 6    |
-| `GET`                      | Function | `src/routes/api/brand-guidelines/+server.ts`                  | 7    |
-| `listBrandAssets`          | Function | `src/lib/services/brand-context/brand-context.server.ts`      | 19   |
-| `getBrandGuidelines`       | Function | `src/lib/services/brand-context/brand-context.server.ts`      | 87   |
-| `load`                     | Function | `src/routes/admin/brands/[id]/+page.server.ts`                | 10   |
-| `GET`                      | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 45   |
-| `PUT`                      | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 55   |
-| `load`                     | Function | `src/routes/+layout.server.ts`                                | 3    |
-| `load`                     | Function | `src/routes/admin/+page.server.ts`                            | 3    |
-| `listBrands`               | Function | `src/lib/services/brands.server.ts`                           | 7    |
-| `requireAdminUser`         | Function | `src/lib/server/auth-guards.ts`                               | 29   |
-| `getAuthenticatedUserRole` | Function | `src/lib/server/auth-guards.ts`                               | 106  |
-| `createUser`               | Function | `src/routes/admin/users/+page.server.ts`                      | 40   |
-| `updateUser`               | Function | `src/routes/admin/users/+page.server.ts`                      | 72   |
-| `load`                     | Function | `src/routes/admin/dim-offers/+page.server.ts`                 | 35   |
-| `load`                     | Function | `src/routes/admin/brands/+page.server.ts`                     | 5    |
-| `GET`                      | Function | `src/routes/admin/dim-offers/export/+server.ts`               | 53   |
+| Symbol                     | Type     | File                                                           | Line |
+| -------------------------- | -------- | -------------------------------------------------------------- | ---- |
+| `extensionForContentType`  | Function | `src/lib/server/reference-storage.ts`                          | 30   |
+| `referenceFilePath`        | Function | `src/lib/server/reference-storage.ts`                          | 38   |
+| `writeReferenceFile`       | Function | `src/lib/server/reference-storage.ts`                          | 53   |
+| `getImageGeneratorEnv`     | Function | `src/lib/server/env.ts`                                        | 166  |
+| `hasImageRouterProvider`   | Function | `src/lib/server/env.ts`                                        | 171  |
+| `hasOpenAIProvider`        | Function | `src/lib/server/env.ts`                                        | 175  |
+| `createBrandAsset`         | Function | `src/lib/services/brand-context/brand-context.server.ts`       | 47   |
+| `POST`                     | Function | `src/routes/api/images/references/+server.ts`                  | 11   |
+| `POST`                     | Function | `src/routes/api/images/references/from-brand-asset/+server.ts` | 18   |
+| `POST`                     | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts`      | 42   |
+| `load`                     | Function | `src/routes/+layout.server.ts`                                 | 3    |
+| `load`                     | Function | `src/routes/admin/+page.server.ts`                             | 3    |
+| `listBrands`               | Function | `src/lib/services/brands.server.ts`                            | 7    |
+| `requireAdminUser`         | Function | `src/lib/server/auth-guards.ts`                                | 29   |
+| `getAuthenticatedUserRole` | Function | `src/lib/server/auth-guards.ts`                                | 126  |
+| `createUser`               | Function | `src/routes/admin/users/+page.server.ts`                       | 40   |
+| `updateUser`               | Function | `src/routes/admin/users/+page.server.ts`                       | 72   |
+| `load`                     | Function | `src/routes/admin/dim-offers/+page.server.ts`                  | 35   |
+| `load`                     | Function | `src/routes/admin/brands/+page.server.ts`                      | 5    |
+| `GET`                      | Function | `src/routes/admin/dim-offers/export/+server.ts`                | 53   |
 
 ## Execution Flows
 
@@ -75,19 +75,20 @@ Start here when exploring this area:
 | `CreatePendingGenerations → LoadEnvFileValues` | cross_community | 6     |
 | `PingClickHouse → LoadEnvFileValues`           | intra_community | 6     |
 | `CreateBrandAsset → EnsureSafeSlug`            | cross_community | 6     |
-| `GET → LoadEnvFileValues`                      | intra_community | 5     |
-| `PUT → LoadEnvFileValues`                      | intra_community | 5     |
+| `GET → LoadEnvFileValues`                      | cross_community | 5     |
+| `PUT → LoadEnvFileValues`                      | cross_community | 5     |
 
 ## Connected Areas
 
 | Area              | Connections |
 | ----------------- | ----------- |
-| Services          | 4 calls     |
+| Services          | 5 calls     |
+| [id]              | 3 calls     |
 | Aggregator-offers | 2 calls     |
-| Image-generator   | 1 calls     |
+| Assets            | 1 calls     |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "getImageGeneratorEnv"})` — see callers and callees
+1. `gitnexus_context({name: "extensionForContentType"})` — see callers and callees
 2. `gitnexus_query({query: "server"})` — find related execution flows
 3. Read key files listed above for implementation details

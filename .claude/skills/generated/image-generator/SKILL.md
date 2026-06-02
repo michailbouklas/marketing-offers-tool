@@ -25,8 +25,8 @@ description: "Skill for the Image-generator area of marketing-offers-tool. 40 sy
 | `src/lib/services/image-providers/config.server.ts`              | buildImageGeneratorConfig                                                                                      |
 | `src/routes/api/images/config/+server.ts`                        | GET                                                                                                            |
 | `src/routes/admin/image-generator-usage/+page.server.ts`         | load                                                                                                           |
-| `src/routes/api/admin/image-generator/usage/+server.ts`          | GET                                                                                                            |
 | `src/routes/api/admin/image-generator/usage-by-model/+server.ts` | GET                                                                                                            |
+| `src/routes/api/admin/image-generator/usage/+server.ts`          | GET                                                                                                            |
 
 ## Entry Points
 
@@ -55,8 +55,8 @@ Start here when exploring this area:
 | `getGeneratedImageUsageByDayAllUsers`    | Function | `src/lib/services/image-generator/image-generator.server.ts`     | 365  |
 | `getGeneratedImageUsageByModelByDay`     | Function | `src/lib/services/image-generator/image-generator.server.ts`     | 402  |
 | `getAdminImageUsageOverview`             | Function | `src/lib/services/image-generator/image-generator.server.ts`     | 494  |
-| `GET`                                    | Function | `src/routes/api/admin/image-generator/usage/+server.ts`          | 8    |
 | `GET`                                    | Function | `src/routes/api/admin/image-generator/usage-by-model/+server.ts` | 8    |
+| `GET`                                    | Function | `src/routes/api/admin/image-generator/usage/+server.ts`          | 8    |
 | `load`                                   | Function | `src/routes/image-generator/me/+page.server.ts`                  | 23   |
 | `listGeneratedImagesHistoryForUser`      | Function | `src/lib/services/image-generator/image-generator.server.ts`     | 201  |
 | `listGeneratedImagePromptGroupsForUser`  | Function | `src/lib/services/image-generator/image-generator.server.ts`     | 228  |
@@ -75,16 +75,18 @@ Start here when exploring this area:
 | `Load → ParseRoles`                            | cross_community | 4     |
 | `POST → ToPositiveInt`                         | cross_community | 4     |
 | `GET → ParseRoles`                             | cross_community | 4     |
-| `GET → ToUtcDayKey`                            | intra_community | 4     |
 | `GET → ParseRoles`                             | cross_community | 4     |
+| `GET → ToUtcDayKey`                            | intra_community | 4     |
 
 ## Connected Areas
 
 | Area              | Connections |
 | ----------------- | ----------- |
-| Server            | 8 calls     |
+| Server            | 5 calls     |
 | Aggregator-offers | 2 calls     |
 | Services          | 2 calls     |
+| [id]              | 2 calls     |
+| Guidelines        | 1 calls     |
 
 ## How to Explore
 
