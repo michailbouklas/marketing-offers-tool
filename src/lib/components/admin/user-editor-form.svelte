@@ -7,8 +7,8 @@
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
-  import * as NativeSelect from "$lib/components/ui/native-select/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
+  import { roleLabels, type UserRole } from "$lib/auth/roles";
   import { formatBrandLabel, type BrandOption } from "$lib/services/brands";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
   import { getInsecurePasswordSubmissionMessage } from "$lib/services/transport-security";
@@ -27,7 +27,7 @@
     name: string;
     email: string;
     password: string;
-    role: "user" | "admin";
+    roles: UserRole[];
     brandIds: string[];
     userId?: string;
   };
@@ -81,7 +81,7 @@
     $form.name = nextValues.name;
     $form.email = nextValues.email;
     $form.password = "";
-    $form.role = nextValues.role;
+    $form.roles = [...nextValues.roles];
     $form.brandIds = [...nextValues.brandIds];
 
     if (mode === "edit") {
@@ -118,6 +118,16 @@
   });
 
   let brandPickerOpen = $state(false);
+
+  function isRoleSelected(role: UserRole): boolean {
+    return $form.roles.includes(role);
+  }
+
+  function toggleRole(role: UserRole) {
+    $form.roles = isRoleSelected(role)
+      ? $form.roles.filter((existing) => existing !== role)
+      : [...$form.roles, role];
+  }
 
   function isBrandSelected(brandId: string): boolean {
     return $form.brandIds.includes(brandId);
@@ -242,20 +252,37 @@
     </div>
 
     <div class="space-y-2">
-      <Label for="user-editor-role">Role</Label>
-      <NativeSelect.Root
-        id="user-editor-role"
-        name="role"
-        class="w-full"
-        bind:value={$form.role}
-        aria-invalid={!!$errors.role}
+      <div class="flex items-center justify-between gap-3">
+        <Label id="user-editor-roles-label">Roles</Label>
+        <span class="text-muted-foreground text-xs">Select one or more</span>
+      </div>
+      <div
+        role="group"
+        aria-labelledby="user-editor-roles-label"
+        class="flex flex-wrap gap-2"
       >
-        {#each userRoleOptions as option}
-          <NativeSelect.Option value={option}>{option}</NativeSelect.Option>
+        {#each userRoleOptions as option (option)}
+          <button
+            type="button"
+            class="hover:bg-accent/50 flex items-center gap-2 rounded-lg border px-3 py-2 text-left transition-colors"
+            aria-pressed={isRoleSelected(option)}
+            onclick={() => toggleRole(option)}
+          >
+            <Checkbox
+              checked={isRoleSelected(option)}
+              class="pointer-events-none"
+            />
+            <span class="text-sm leading-none font-medium">
+              {roleLabels[option]}
+            </span>
+          </button>
         {/each}
-      </NativeSelect.Root>
-      {#if $errors.role}
-        <p class="text-destructive text-sm">{$errors.role}</p>
+      </div>
+      {#each $form.roles as role (role)}
+        <input type="hidden" name="roles" value={role} />
+      {/each}
+      {#if $errors.roles}
+        <p class="text-destructive text-sm">{$errors.roles}</p>
       {/if}
     </div>
 

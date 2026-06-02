@@ -5,7 +5,7 @@ export type UserRecord = {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
+  roles: UserRole[];
   brands: BrandOption[];
   createdAt: Date;
   banned: boolean;

@@ -2,6 +2,8 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin } from "better-auth/plugins";
 import { env } from "$env/dynamic/private";
+import { ac, roles } from "$lib/auth/permissions";
+import { adminUserRole, defaultUserRole } from "$lib/auth/roles";
 import { prisma } from "./prisma";
 import { createLazyProxy } from "./lazy-proxy";
 
@@ -48,7 +50,14 @@ function createAuth(config: ReturnType<typeof getAuthConfig>) {
       enabled: true,
       disableSignUp: true,
     },
-    plugins: [admin()],
+    plugins: [
+      admin({
+        ac,
+        roles,
+        adminRoles: [adminUserRole],
+        defaultRole: defaultUserRole,
+      }),
+    ],
   });
 }
 

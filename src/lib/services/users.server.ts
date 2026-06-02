@@ -1,4 +1,4 @@
-import { defaultUserRole, type UserRole } from "$lib/auth/roles";
+import { defaultUserRole, parseRoles, type UserRole } from "$lib/auth/roles";
 import { auth } from "$lib/server/auth";
 import { prisma } from "$lib/server/prisma";
 import type {
@@ -61,7 +61,7 @@ export async function listUsers(): Promise<UserRecord[]> {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: normalizeRole(user.role),
+    roles: normalizeRoles(user.role),
     brands: brandsByUserId.get(user.id) ?? [],
     createdAt: user.createdAt,
     banned: user.banned ?? false,
@@ -76,7 +76,7 @@ export async function createUser(data: CreateUserFormData, headers: Headers) {
       email: data.email,
       name: data.name,
       password: data.password,
-      role: data.role,
+      role: data.roles,
     },
     headers,
   });
@@ -99,7 +99,7 @@ export async function updateUser(
       data: {
         name: data.name,
         email: data.email,
-        role: data.role,
+        role: data.roles,
       },
     },
     headers,
@@ -120,8 +120,9 @@ export async function updateUser(
   return user;
 }
 
-function normalizeRole(role: string | null): UserRole {
-  return role === "admin" ? "admin" : defaultUserRole;
+function normalizeRoles(role: string | null): UserRole[] {
+  const roles = parseRoles(role);
+  return roles.length > 0 ? roles : [defaultUserRole];
 }
 
 async function validateBrandIds(rawBrandIds: string[]) {

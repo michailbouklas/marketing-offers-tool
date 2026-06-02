@@ -2,6 +2,7 @@
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
+  import { adminUserRole, roleLabels } from "$lib/auth/roles";
   import { formatBrandLabel } from "$lib/services/brands";
   import type { UserRecord } from "$lib/services/users";
 
@@ -59,9 +60,15 @@
             {/if}
           </Table.Cell>
           <Table.Cell>
-            <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-              {user.role}
-            </Badge>
+            <div class="flex flex-wrap gap-1.5">
+              {#each user.roles as role (role)}
+                <Badge
+                  variant={role === adminUserRole ? "default" : "secondary"}
+                >
+                  {roleLabels[role]}
+                </Badge>
+              {/each}
+            </div>
           </Table.Cell>
           <Table.Cell>{formatDate(user.createdAt)}</Table.Cell>
           <Table.Cell class="text-right">

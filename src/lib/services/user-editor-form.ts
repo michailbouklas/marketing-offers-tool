@@ -1,4 +1,9 @@
-import { defaultUserRole, userRoles, type UserRole } from "$lib/auth/roles";
+import {
+  defaultUserRole,
+  parseRoles,
+  userRoles,
+  type UserRole,
+} from "$lib/auth/roles";
 import { z } from "zod";
 
 const passwordField = z
@@ -16,6 +21,24 @@ const optionalPasswordField = z
   );
 
 export const userRoleOptions = userRoles;
+
+const rolesField = z.preprocess(
+  (value) => {
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value.split(",").map((role) => role.trim());
+    }
+
+    return [];
+  },
+  z
+    .array(z.enum(userRoles))
+    .refine((roles) => roles.length > 0, "Select at least one role")
+    .default([defaultUserRole]),
+);
 
 const brandIdsField = z.preprocess(
   (value) => {
@@ -40,7 +63,7 @@ export const createUserFormSchema = z.object({
     .min(1, "Email is required")
     .email("Enter a valid email address"),
   password: passwordField,
-  role: z.enum(userRoles).default(defaultUserRole),
+  roles: rolesField,
   brandIds: brandIdsField,
 });
 
@@ -53,7 +76,7 @@ export const editUserFormSchema = z.object({
     .min(1, "Email is required")
     .email("Enter a valid email address"),
   password: optionalPasswordField,
-  role: z.enum(userRoles).default(defaultUserRole),
+  roles: rolesField,
   brandIds: brandIdsField,
 });
 
@@ -70,6 +93,7 @@ type UserEditorDefaults = {
   name?: string | null;
   email?: string | null;
   role?: string | null;
+  roles?: string[] | null;
   brandIds?: string[] | null;
   brands?: Array<{ id: number }> | null;
 };
@@ -79,7 +103,7 @@ export function getDefaultCreateUserFormData(): CreateUserFormData {
     name: "",
     email: "",
     password: "",
-    role: defaultUserRole,
+    roles: [defaultUserRole],
     brandIds: [],
   };
 }
@@ -92,15 +116,21 @@ export function getDefaultEditUserFormData(
     name: user?.name ?? "",
     email: user?.email ?? "",
     password: "",
-    role: normalizeUserRole(user?.role),
+    roles: normalizeUserRoles(user),
     brandIds: normalizeBrandIds(user),
   };
 }
 
-function normalizeUserRole(role: string | null | undefined): UserRole {
-  return userRoles.includes(role as UserRole)
-    ? (role as UserRole)
-    : defaultUserRole;
+function normalizeUserRoles(user?: UserEditorDefaults): UserRole[] {
+  const fromArray = (user?.roles ?? [])
+    .map((role) => role.trim())
+    .filter((role): role is UserRole =>
+      (userRoles as readonly string[]).includes(role),
+    );
+
+  const roles = fromArray.length > 0 ? fromArray : parseRoles(user?.role);
+
+  return roles.length > 0 ? Array.from(new Set(roles)) : [defaultUserRole];
 }
 
 function normalizeBrandIds(user?: UserEditorDefaults) {

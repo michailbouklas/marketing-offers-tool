@@ -1,5 +1,7 @@
 import { error, redirect } from "@sveltejs/kit";
 import { isAdminRole } from "$lib/auth/roles";
+import type { AppPermissions } from "$lib/auth/permissions";
+import { auth } from "$lib/server/auth";
 import { prisma } from "$lib/server/prisma";
 import type { RequestEvent } from "@sveltejs/kit";
 
@@ -41,6 +43,65 @@ export async function requireAdminUser(event: RequestEvent) {
       role,
     },
   };
+}
+
+/**
+ * Returns whether the current user's role(s) grant every requested
+ * permission. The user's `role` may be a comma-separated list of roles
+ * (Better Auth's native multi-role form); `userHasPermission` evaluates the
+ * union across all of them.
+ */
+export async function hasPermission(
+  event: RequestEvent,
+  permissions: AppPermissions,
+) {
+  const user = event.locals.user;
+
+  if (!user) {
+    return false;
+  }
+
+  // Pass the user id so Better Auth evaluates the union across all of the
+  // user's stored roles (the `role` column may be a comma-separated list).
+  const result = await auth.api.userHasPermission({
+    body: { userId: user.id, permissions },
+  });
+
+  return result.success;
+}
+
+/**
+ * Page guard: redirects to home unless the user holds the requested
+ * permissions. Additive to `requireAdminUser` — use it on routes that should
+ * be gated by capability rather than the coarse admin role.
+ */
+export async function requirePermission(
+  event: RequestEvent,
+  permissions: AppPermissions,
+) {
+  const { user, session } = requireAuthenticatedUser(event);
+
+  if (!(await hasPermission(event, permissions))) {
+    redirect(302, "/");
+  }
+
+  return { session, user };
+}
+
+/**
+ * API guard: throws 403 unless the user holds the requested permissions.
+ */
+export async function requireApiPermission(
+  event: RequestEvent,
+  permissions: AppPermissions,
+) {
+  const { user, session } = requireAuthenticatedApiUser(event);
+
+  if (!(await hasPermission(event, permissions))) {
+    error(403, "Forbidden");
+  }
+
+  return { session, user };
 }
 
 export async function getAuthenticatedUserRole(event: RequestEvent) {
