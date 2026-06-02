@@ -15,6 +15,7 @@ import {
   getPendingStagingRecordByItemCode,
   getStagingRecordById,
   listPendingStagingRecords,
+  countPendingStagingRecords,
   listGapRecords,
   updateDimOffersStagingStatus,
   updateGapRecordStatus,
@@ -183,6 +184,15 @@ export async function getPendingGapSubmission(
   }
 
   return mapPendingSubmission(stagingRecord);
+}
+
+/**
+ * Cheap count of pending gap submissions for dashboard widgets. Counts pending
+ * staging records directly rather than building the full queue (which fetches
+ * gap/item/dim context per record via `getPendingGapSubmissionQueue`).
+ */
+export async function getPendingGapSubmissionCount(): Promise<number> {
+  return countPendingStagingRecords();
 }
 
 export async function getPendingGapSubmissionQueue(): Promise<

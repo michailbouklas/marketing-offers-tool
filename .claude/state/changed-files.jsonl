@@ -174,3 +174,16 @@
 {"file":"src/lib/components/navigation/app-sidebar.svelte","action":"Edit","timestamp":"2026-06-02T09:54:05Z","important":false}
 {"file":"src/routes/+page.svelte","action":"Edit","timestamp":"2026-06-02T09:54:46Z","important":false}
 {"file":"src/routes/admin/dim-offers/+page.svelte","action":"Edit","timestamp":"2026-06-02T09:54:50Z","important":false}
+{"file":"C:/Users/mbouklas/.claude/plans/look-into-the-dashboard-velvet-aurora.md","action":"Write","timestamp":"2026-06-02T12:39:08Z","important":false}
+{"file":"docs/specs/dashboard/tasks.md","action":"Write","timestamp":"2026-06-02T12:41:35Z","important":false}
+{"file":"src/lib/auth/roles.ts","action":"Edit","timestamp":"2026-06-02T12:47:38Z","important":false}
+{"file":"src/lib/auth/permissions.ts","action":"Edit","timestamp":"2026-06-02T12:47:48Z","important":false}
+{"file":"src/routes/aggregator-offers/+page.server.ts","action":"Edit","timestamp":"2026-06-02T12:48:54Z","important":false}
+{"file":"src/routes/aggregator-offers/+page.svelte","action":"Edit","timestamp":"2026-06-02T12:49:17Z","important":false}
+{"file":"src/lib/services/users.server.ts","action":"Edit","timestamp":"2026-06-02T12:49:31Z","important":false}
+{"file":"src/lib/services/offers-data-quality-postgres.server.ts","action":"Edit","timestamp":"2026-06-02T12:50:10Z","important":false}
+{"file":"src/lib/services/offers-data-quality.server.ts","action":"Edit","timestamp":"2026-06-02T12:50:20Z","important":false}
+{"file":"src/routes/+page.server.ts","action":"Write","timestamp":"2026-06-02T12:50:42Z","important":false}
+{"file":"src/lib/components/home/metric-link-card.svelte","action":"Write","timestamp":"2026-06-02T12:50:57Z","important":false}
+{"file":"src/lib/components/home/usage-summary-widget.svelte","action":"Write","timestamp":"2026-06-02T12:51:20Z","important":false}
+{"file":"src/routes/+page.svelte","action":"Write","timestamp":"2026-06-02T12:51:51Z","important":false}

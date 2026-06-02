@@ -1,72 +1,61 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button/index.js";
   import OfferStatusWidget from "$lib/components/home/offer-status-widget.svelte";
+  import MetricLinkCard from "$lib/components/home/metric-link-card.svelte";
+  import UsageSummaryWidget from "$lib/components/home/usage-summary-widget.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
-  import { isAdminRole } from "$lib/auth/roles";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
 
-  const widgetCards = $derived([
-    {
-      title: "Active offers",
-      eyebrow: "Live now",
-      description:
-        "Offers that are currently running and still inside their active date window.",
-      countLabel: "currently in market",
-      emptyMessage:
-        "No live offers right now. New launches will appear here first.",
-      footerLabel: "Prioritize the campaigns ending soonest.",
-      tone: "active" as const,
-      widget: data.widgets.activeOffers,
-    },
-    {
-      title: "About to expire",
-      eyebrow: "2-day watchlist",
-      description:
-        "Offers scheduled to end exactly two days from today so the team can react early.",
-      countLabel: "ending in 2 days",
-      emptyMessage: "Nothing hits the two-day expiry window yet.",
-      footerLabel: "Great spot for renewals, swaps, or quick comms.",
-      tone: "warning" as const,
-      widget: data.widgets.expiringSoon,
-    },
-    {
-      title: "Recently expired",
-      eyebrow: "Last 48 hours",
-      description:
-        "Offers whose end date passed during the last two days and may need follow-up.",
-      countLabel: "just wrapped",
-      emptyMessage:
-        "No recent expirations in the last two days. The board is clear.",
-      footerLabel: "Useful for performance checks and post-campaign wrap-up.",
-      tone: "expired" as const,
-      widget: data.widgets.recentlyExpired,
-    },
-  ]);
-  const adminQuickCards = $derived(
-    isAdminRole(data.userRole)
+  const widgetCards = $derived(
+    data.offers
       ? [
           {
-            title: "Pending submissions",
+            title: "Active offers",
+            eyebrow: "Live now",
             description:
-              "Review staged pricing updates before they are written into ClickHouse.",
-            href: "/admin/pending-submissions",
+              "Offers that are currently running and still inside their active date window.",
+            countLabel: "currently in market",
+            emptyMessage:
+              "No live offers right now. New launches will appear here first.",
+            footerLabel: "Prioritize the campaigns ending soonest.",
+            tone: "active" as const,
+            widget: data.offers.activeOffers,
           },
           {
-            title: "Dim offers explorer",
+            title: "About to expire",
+            eyebrow: "2-day watchlist",
             description:
-              "Search, filter, and sort every row in `dim_offers` from the admin workspace.",
-            href: "/admin/dim-offers",
+              "Offers scheduled to end exactly two days from today so the team can react early.",
+            countLabel: "ending in 2 days",
+            emptyMessage: "Nothing hits the two-day expiry window yet.",
+            footerLabel: "Great spot for renewals, swaps, or quick comms.",
+            tone: "warning" as const,
+            widget: data.offers.expiringSoon,
           },
           {
-            title: "Users",
+            title: "Recently expired",
+            eyebrow: "Last 48 hours",
             description:
-              "Maintain internal accounts, roles, and brand assignments.",
-            href: "/admin/users",
+              "Offers whose end date passed during the last two days and may need follow-up.",
+            countLabel: "just wrapped",
+            emptyMessage:
+              "No recent expirations in the last two days. The board is clear.",
+            footerLabel:
+              "Useful for performance checks and post-campaign wrap-up.",
+            tone: "expired" as const,
+            widget: data.offers.recentlyExpired,
           },
         ]
       : [],
+  );
+
+  const hasAnyWidget = $derived(
+    data.access.canEditOffers ||
+      data.access.canApprove ||
+      data.access.canManageUsers ||
+      data.access.canViewUsage,
   );
 </script>
 
@@ -74,7 +63,7 @@
   <title>Aggregator Offers Tool</title>
   <meta
     name="description"
-    content="An offer operations overview with live widgets for active, expiring, and recently expired campaigns."
+    content="A role-aware operations overview surfacing the widgets relevant to your access."
   />
 </svelte:head>
 
@@ -111,76 +100,111 @@
           <h1
             class="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-balance sm:text-5xl lg:text-6xl"
           >
-            Keep the offer board readable before campaigns quietly drift out of
-            view.
+            Dashboard
           </h1>
           <p
             class="text-muted-foreground max-w-3xl text-base leading-7 sm:text-lg"
           >
-            These widgets turn the home page into an at-a-glance operations
-            surface for what is live, what needs attention next, and what just
-            ended.
+            Each widget below reflects the access you hold — offers, approvals,
+            user management, or image-generation usage. The more roles you have,
+            the more you see.
           </p>
         </div>
       </div>
-
-      <div class="flex flex-col gap-3 sm:flex-row lg:flex-col">
-        <Button href="/aggregator-offers" class="rounded-full px-6"
-          >Open offers registry</Button
-        >
-        <Button
-          href="/aggregator-offers"
-          variant="outline"
-          class="rounded-full px-6"
-        >
-          Review all campaigns
-        </Button>
-      </div>
     </section>
 
-    <section class="grid gap-5 xl:grid-cols-3">
-      {#each widgetCards as widget (widget.title)}
-        <OfferStatusWidget {...widget} />
-      {/each}
-    </section>
-
-    {#if adminQuickCards.length > 0}
+    {#if data.offers}
       <section class="space-y-4">
         <div class="space-y-1">
           <p
             class="text-sm font-semibold tracking-[0.18em] text-zinc-500 uppercase"
           >
-            Admin workspace
+            Offers
           </p>
           <h2 class="text-2xl font-semibold tracking-[-0.03em]">
-            Jump straight into review tools
+            Keep the offer board readable before campaigns drift out of view
           </h2>
         </div>
-
-        <div class="grid gap-4 lg:grid-cols-3">
-          {#each adminQuickCards as card (card.href)}
-            <a
-              href={card.href}
-              class="border-border/70 bg-background/88 hover:bg-background flex h-full flex-col justify-between rounded-3xl border p-6 shadow-sm backdrop-blur transition-colors"
-            >
-              <div class="space-y-3">
-                <p class="text-lg font-semibold tracking-[-0.02em]">
-                  {card.title}
-                </p>
-                <p class="text-muted-foreground text-sm leading-6">
-                  {card.description}
-                </p>
-              </div>
-
-              <div
-                class="mt-6 inline-flex items-center gap-2 text-sm font-medium"
-              >
-                <span>Open</span>
-                <span aria-hidden="true">-></span>
-              </div>
-            </a>
+        <div class="grid gap-5 xl:grid-cols-3">
+          {#each widgetCards as widget (widget.title)}
+            <OfferStatusWidget {...widget} />
           {/each}
         </div>
+      </section>
+    {/if}
+
+    {#if data.approvals || data.users}
+      <section class="space-y-4">
+        <div class="space-y-1">
+          <p
+            class="text-sm font-semibold tracking-[0.18em] text-zinc-500 uppercase"
+          >
+            Review &amp; administration
+          </p>
+          <h2 class="text-2xl font-semibold tracking-[-0.03em]">
+            What's waiting on you
+          </h2>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {#if data.approvals}
+            <MetricLinkCard
+              eyebrow="Approvals"
+              title="Pending submissions"
+              metric={data.approvals.pendingCount}
+              metricLabel="awaiting review"
+              description="Staged pricing updates waiting to be approved before they are written into ClickHouse."
+              href="/admin/pending-submissions"
+              cta="Review submissions"
+            />
+          {/if}
+          {#if data.users}
+            <MetricLinkCard
+              eyebrow="User management"
+              title="Users"
+              metric={data.users.userCount}
+              metricLabel="internal accounts"
+              description="Maintain internal accounts, roles, and brand assignments."
+              href="/admin/users"
+              cta="Manage users"
+            />
+          {/if}
+        </div>
+      </section>
+    {/if}
+
+    {#if data.usage}
+      <section class="space-y-4">
+        <div class="space-y-1">
+          <p
+            class="text-sm font-semibold tracking-[0.18em] text-zinc-500 uppercase"
+          >
+            Image generation
+          </p>
+          <h2 class="text-2xl font-semibold tracking-[-0.03em]">
+            Usage across every account
+          </h2>
+        </div>
+        <UsageSummaryWidget
+          summary={data.usage.summary}
+          href="/admin/image-generator-usage"
+        />
+      </section>
+    {/if}
+
+    {#if !hasAnyWidget}
+      <section
+        class="border-border/70 bg-background/88 rounded-3xl border p-10 text-center shadow-sm backdrop-blur"
+      >
+        <p class="text-lg font-semibold tracking-[-0.02em]">
+          No widgets for your roles yet
+        </p>
+        <p
+          class="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-6"
+        >
+          Your account doesn't have a role that surfaces dashboard widgets yet.
+          Ask an administrator to grant you the relevant role to see offers,
+          approvals, user management, or usage here.
+        </p>
       </section>
     {/if}
   </main>

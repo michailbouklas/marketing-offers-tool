@@ -72,21 +72,20 @@ Start here when exploring this area:
 | `GET → LoadEnvFileValues`                      | cross_community | 6     |
 | `CreatePendingGenerations → LoadEnvFileValues` | cross_community | 6     |
 | `Load → GetDateRange`                          | intra_community | 4     |
-| `Load → ParseRoles`                            | cross_community | 4     |
 | `POST → ToPositiveInt`                         | cross_community | 4     |
 | `GET → ParseRoles`                             | cross_community | 4     |
 | `GET → ParseRoles`                             | cross_community | 4     |
 | `GET → ToUtcDayKey`                            | intra_community | 4     |
+| `GET → ToUtcDayKey`                            | cross_community | 4     |
 
 ## Connected Areas
 
 | Area              | Connections |
 | ----------------- | ----------- |
 | Server            | 5 calls     |
+| Services          | 4 calls     |
 | Aggregator-offers | 2 calls     |
-| Services          | 2 calls     |
-| [id]              | 2 calls     |
-| Guidelines        | 1 calls     |
+| Users             | 1 calls     |
 
 ## How to Explore
 

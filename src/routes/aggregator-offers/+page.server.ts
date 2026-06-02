@@ -19,13 +19,18 @@ import {
   mapOffersFilterFormToFilters,
   offersFilterFormSchema,
 } from "$lib/services/offers-filter-form";
-import { requireAuthenticatedUser } from "$lib/server/auth-guards";
+import {
+  hasPermission,
+  requireAuthenticatedUser,
+  requirePermission,
+} from "$lib/server/auth-guards";
 
 export const load: PageServerLoad = async (event) => {
   requireAuthenticatedUser(event);
 
   const { url } = event;
   const filterValues = getOffersFilterFormData(url);
+  const canEditOffers = await hasPermission(event, { offer: ["edit"] });
   const [filterForm, createForm, editForm, offers, brands] = await Promise.all([
     superValidate(filterValues, zod4(offersFilterFormSchema), {
       errors: false,
@@ -56,12 +61,13 @@ export const load: PageServerLoad = async (event) => {
     editForm,
     offers,
     brands,
+    canEditOffers,
   };
 };
 
 export const actions: Actions = {
   createOffer: async (event) => {
-    requireAuthenticatedUser(event);
+    await requirePermission(event, { offer: ["edit"] });
 
     const formData = await event.request.formData();
     const submitMode = formData.get("submitMode")?.toString() ?? "create";
@@ -85,7 +91,7 @@ export const actions: Actions = {
   },
 
   updateOffer: async (event) => {
-    requireAuthenticatedUser(event);
+    await requirePermission(event, { offer: ["edit"] });
 
     const formData = await event.request.formData();
     const offerDbId = Number.parseInt(

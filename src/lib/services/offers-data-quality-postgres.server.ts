@@ -143,6 +143,14 @@ export async function listPendingStagingRecords() {
   });
 }
 
+export async function countPendingStagingRecords() {
+  return prisma.dim_offers_staging.count({
+    where: {
+      status: "pending",
+    },
+  });
+}
+
 export async function validateCategorySubcategoryPair(
   category: string,
   subcategory: string,

@@ -15,6 +15,7 @@ export const statement = {
   imageGenerator: ["generate", "view-usage"],
   submission: ["approve", "reject"],
   brand: ["manage"],
+  offer: ["edit"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -32,6 +33,7 @@ export const ac = createAccessControl(statement);
  * - `userManager` — manage users (Better Auth's full user/session statements,
  *   which its admin endpoints check internally).
  * - `brandManager` — manage brand guidelines and reference assets.
+ * - `offerEditor` — create and edit aggregator offers in the registry.
  * - `superUser` — admin-equivalent that holds every resource permission.
  *
  * Explicit empty action arrays (rather than `{}`) keep a role's resource keys
@@ -63,11 +65,15 @@ export const roles = {
   brandManager: ac.newRole({
     brand: ["manage"],
   }),
+  offerEditor: ac.newRole({
+    offer: ["edit"],
+  }),
   superUser: ac.newRole({
     ...adminAc.statements,
     imageGenerator: ["generate", "view-usage"],
     submission: ["approve", "reject"],
     brand: ["manage"],
+    offer: ["edit"],
   }),
 } satisfies Record<UserRole, Role>;
 

@@ -81,8 +81,7 @@ Start here when exploring this area:
 
 | Area            | Connections |
 | --------------- | ----------- |
-| Server          | 4 calls     |
-| [id]            | 2 calls     |
+| Server          | 6 calls     |
 | Image-generator | 1 calls     |
 
 ## How to Explore

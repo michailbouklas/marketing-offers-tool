@@ -39,17 +39,18 @@ Start here when exploring this area:
 
 ## Execution Flows
 
-| Flow                                | Type            | Steps |
-| ----------------------------------- | --------------- | ----- |
-| `DELETE → ParseRoles`               | cross_community | 4     |
-| `DELETE → RequireAuthenticatedUser` | cross_community | 3     |
-| `DELETE → GetAuthenticatedUserRole` | cross_community | 3     |
+| Flow                                   | Type            | Steps |
+| -------------------------------------- | --------------- | ----- |
+| `DELETE → ParseRoles`                  | cross_community | 4     |
+| `DELETE → RequireAuthenticatedApiUser` | cross_community | 3     |
+| `DELETE → GetAuthenticatedUserRole`    | cross_community | 3     |
+| `DELETE → HasPermission`               | cross_community | 3     |
 
 ## Connected Areas
 
-| Area   | Connections |
-| ------ | ----------- |
-| Server | 1 calls     |
+| Area     | Connections |
+| -------- | ----------- |
+| Services | 1 calls     |
 
 ## How to Explore
 

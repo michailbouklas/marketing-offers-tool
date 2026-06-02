@@ -7,6 +7,11 @@ import type {
 } from "$lib/services/user-editor-form";
 import type { UserRecord } from "$lib/services/users";
 
+/** Total number of internal user accounts. Cheap count for dashboard widgets. */
+export async function countUsers(): Promise<number> {
+  return prisma.user.count();
+}
+
 export async function listUsers(): Promise<UserRecord[]> {
   const users = await prisma.user.findMany({
     select: {

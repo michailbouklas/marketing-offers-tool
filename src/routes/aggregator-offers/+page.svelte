@@ -163,30 +163,32 @@
                 </Dialog.Content>
               </Dialog.Root>
 
-              <Dialog.Root bind:open={createOfferOpen}>
-                <Dialog.Trigger class={buttonVariants()}>
-                  Create Offer
-                </Dialog.Trigger>
-                <Dialog.Content class="sm:max-w-3xl">
-                  <Dialog.Header>
-                    <Dialog.Title>Create Offer</Dialog.Title>
-                    <Dialog.Description>
-                      Add a new aggregator campaign and save it directly to the
-                      offers registry.
-                    </Dialog.Description>
-                  </Dialog.Header>
+              {#if data.canEditOffers}
+                <Dialog.Root bind:open={createOfferOpen}>
+                  <Dialog.Trigger class={buttonVariants()}>
+                    Create Offer
+                  </Dialog.Trigger>
+                  <Dialog.Content class="sm:max-w-3xl">
+                    <Dialog.Header>
+                      <Dialog.Title>Create Offer</Dialog.Title>
+                      <Dialog.Description>
+                        Add a new aggregator campaign and save it directly to
+                        the offers registry.
+                      </Dialog.Description>
+                    </Dialog.Header>
 
-                  <OfferEditorForm
-                    form={data.createForm}
-                    mode="create"
-                    brands={data.brands}
-                    onSuccess={(message) => {
-                      createOfferOpen = !!message.keepOpen;
-                      handleOfferSaved(message);
-                    }}
-                  />
-                </Dialog.Content>
-              </Dialog.Root>
+                    <OfferEditorForm
+                      form={data.createForm}
+                      mode="create"
+                      brands={data.brands}
+                      onSuccess={(message) => {
+                        createOfferOpen = !!message.keepOpen;
+                        handleOfferSaved(message);
+                      }}
+                    />
+                  </Dialog.Content>
+                </Dialog.Root>
+              {/if}
 
               <Dialog.Root bind:open={editOfferOpen}>
                 <Dialog.Content class="sm:max-w-3xl">
@@ -219,7 +221,7 @@
           <OffersTable
             offers={data.offers}
             {highlightedOfferId}
-            onEdit={openEditOfferDialog}
+            onEdit={data.canEditOffers ? openEditOfferDialog : undefined}
           />
         </Card.Content>
       </Card.Root>
