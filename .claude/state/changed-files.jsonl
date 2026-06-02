@@ -144,3 +144,7 @@
 {"file":"src/routes/admin/image-generator-usage/date-range-filter.svelte","action":"Write","timestamp":"2026-05-29T08:35:32Z","important":false}
 {"file":"src/routes/api/admin/image-generator/usage-by-model/+server.ts","action":"Write","timestamp":"2026-05-29T08:41:38Z","important":false}
 {"file":"src/lib/components/image-generator/usage-by-model-chart.svelte","action":"Write","timestamp":"2026-05-29T08:42:08Z","important":false}
+{"file":"src/lib/components/admin/user-editor-form.svelte","action":"Edit","timestamp":"2026-06-02T07:53:44Z","important":false}
+{"file":"scripts/_checkuser.mjs","action":"Write","timestamp":"2026-06-02T08:02:10Z","important":false}
+{"file":"scripts/_reprouser.mjs","action":"Write","timestamp":"2026-06-02T08:04:19Z","important":false}
+{"file":"src/lib/services/users.server.ts","action":"Edit","timestamp":"2026-06-02T08:07:28Z","important":false}

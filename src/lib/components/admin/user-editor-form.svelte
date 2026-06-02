@@ -3,11 +3,14 @@
   import type { SuperValidated } from "sveltekit-superforms";
   import { zod4Client } from "sveltekit-superforms/adapters";
   import { superForm } from "sveltekit-superforms/client";
-  import { Button } from "$lib/components/ui/button/index.js";
+  import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
+  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
+  import * as Popover from "$lib/components/ui/popover/index.js";
   import { formatBrandLabel, type BrandOption } from "$lib/services/brands";
+  import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
   import { getInsecurePasswordSubmissionMessage } from "$lib/services/transport-security";
   import {
     createUserFormSchema,
@@ -56,7 +59,7 @@
   );
 
   // svelte-ignore state_referenced_locally
-  const { form, errors, constraints, enhance, submitting } = superForm(
+  const { form, errors, constraints, enhance, submitting, message } = superForm(
     untrack(() => initialForm),
     {
       applyAction: true,
@@ -98,6 +101,11 @@
   const editErrors = $derived(
     $errors as Partial<Record<keyof EditUserFormData, string[]>>,
   );
+  const actionErrorMessage = $derived(
+    $message && ($message as UserEditorActionMessage).type === "error"
+      ? ($message as UserEditorActionMessage).text
+      : null,
+  );
   const insecurePasswordMessage = $derived.by(() => {
     const isPasswordChange =
       mode === "create" || $form.password.trim().length > 0;
@@ -107,6 +115,39 @@
     }
 
     return getInsecurePasswordSubmissionMessage();
+  });
+
+  let brandPickerOpen = $state(false);
+
+  function isBrandSelected(brandId: string): boolean {
+    return $form.brandIds.includes(brandId);
+  }
+
+  function toggleBrand(brandId: string) {
+    $form.brandIds = isBrandSelected(brandId)
+      ? $form.brandIds.filter((existing) => existing !== brandId)
+      : [...$form.brandIds, brandId];
+  }
+
+  function selectAllBrands() {
+    $form.brandIds = brands.map((brand) => brand.id.toString());
+  }
+
+  function clearBrandSelection() {
+    $form.brandIds = [];
+  }
+
+  const brandPickerSummary = $derived.by(() => {
+    if ($form.brandIds.length === 0) {
+      return "Select brands";
+    }
+
+    const labels = $form.brandIds.map((brandId) => {
+      const brand = brands.find((item) => item.id.toString() === brandId);
+      return brand ? formatBrandLabel(brand) : brandId;
+    });
+
+    return labels.length <= 2 ? labels.join(", ") : `${labels.length} selected`;
   });
 
   function handleSubmit(event: SubmitEvent) {
@@ -129,6 +170,15 @@
     <h3 class="text-lg font-semibold tracking-[-0.02em]">{title}</h3>
     <p class="text-muted-foreground text-sm leading-6">{description}</p>
   </div>
+
+  {#if actionErrorMessage}
+    <div
+      class="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border px-4 py-3 text-sm leading-6"
+      role="alert"
+    >
+      {actionErrorMessage}
+    </div>
+  {/if}
 
   {#if insecurePasswordMessage}
     <div
@@ -211,26 +261,83 @@
 
     <div class="space-y-2 sm:col-span-2">
       <div class="flex items-center justify-between gap-3">
-        <Label for="user-editor-brand-ids">Brands</Label>
+        <Label id="user-editor-brand-ids-label">Brands</Label>
         <span class="text-muted-foreground text-xs">Select one or more</span>
       </div>
-      <NativeSelect.Root
-        id="user-editor-brand-ids"
-        name="brandIds"
-        class="min-h-36"
-        multiple
-        bind:value={$form.brandIds}
-        aria-invalid={!!$errors.brandIds}
-      >
-        {#each brands as brand}
-          <NativeSelect.Option value={brand.id.toString()}>
-            {formatBrandLabel(brand)}
-          </NativeSelect.Option>
-        {/each}
-      </NativeSelect.Root>
-      <p class="text-muted-foreground text-xs leading-5">
-        Hold Ctrl or Command to select multiple brands.
-      </p>
+      <Popover.Root bind:open={brandPickerOpen}>
+        <Popover.Trigger
+          aria-labelledby="user-editor-brand-ids-label"
+          aria-invalid={!!$errors.brandIds}
+          class={`${buttonVariants({ variant: "outline" })} w-full justify-between font-normal`}
+        >
+          <span class="truncate">{brandPickerSummary}</span>
+          <ChevronsUpDownIcon class="size-4 shrink-0 opacity-60" />
+        </Popover.Trigger>
+
+        <Popover.Content
+          align="start"
+          class="w-[var(--bits-popover-anchor-width)] min-w-[20rem] p-0"
+        >
+          <div class="flex flex-col">
+            <div
+              class="flex items-center justify-between gap-2 border-b px-4 py-2"
+            >
+              <button
+                type="button"
+                class="text-sm font-medium underline-offset-4 hover:underline"
+                onclick={selectAllBrands}
+              >
+                Select all
+              </button>
+              <button
+                type="button"
+                class="text-muted-foreground hover:text-foreground text-sm font-medium underline-offset-4 hover:underline"
+                onclick={clearBrandSelection}
+              >
+                Clear
+              </button>
+            </div>
+
+            <div class="max-h-80 overflow-y-auto px-2 py-2">
+              {#each brands as brand (brand.id)}
+                <button
+                  type="button"
+                  class="hover:bg-accent/50 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
+                  onclick={() => toggleBrand(brand.id.toString())}
+                >
+                  <Checkbox
+                    checked={isBrandSelected(brand.id.toString())}
+                    class="pointer-events-none"
+                  />
+                  <div class="min-w-0">
+                    <p class="truncate text-sm leading-none font-medium">
+                      {formatBrandLabel(brand)}
+                    </p>
+                  </div>
+                </button>
+              {/each}
+            </div>
+
+            <div
+              class="flex items-center justify-between gap-2 border-t px-4 py-3"
+            >
+              <p class="text-muted-foreground text-xs">
+                {$form.brandIds.length} selected
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                onclick={() => (brandPickerOpen = false)}
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        </Popover.Content>
+      </Popover.Root>
+      {#each $form.brandIds as brandId (brandId)}
+        <input type="hidden" name="brandIds" value={brandId} />
+      {/each}
       {#if $errors.brandIds}
         <p class="text-destructive text-sm">{$errors.brandIds}</p>
       {/if}

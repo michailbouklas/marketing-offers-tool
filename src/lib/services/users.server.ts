@@ -81,16 +81,7 @@ export async function createUser(data: CreateUserFormData, headers: Headers) {
     headers,
   });
 
-  const createdUser = await prisma.user.findUniqueOrThrow({
-    where: {
-      email: data.email,
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  await replaceUserBrandAssignments(createdUser.id, brandIds);
+  await replaceUserBrandAssignments(result.user.id, brandIds);
 
   return result;
 }
