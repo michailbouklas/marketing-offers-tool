@@ -7,12 +7,16 @@
   import ImageIcon from "@lucide/svelte/icons/image";
   import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
   import type { Component } from "svelte";
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 
   type AdminFeature = {
     href: string;
     title: string;
     description: string;
     icon: Component;
+    accessKey: keyof PageData["access"];
   };
 
   const features: AdminFeature[] = [
@@ -22,6 +26,7 @@
       description:
         "Review staged pricing updates submitted by data-quality reviewers before they are written into ClickHouse.",
       icon: InboxIcon,
+      accessKey: "pendingSubmissions",
     },
     {
       href: "/admin/dim-offers",
@@ -29,6 +34,7 @@
       description:
         "Search, filter, and sort every row in `dim_offers`. Drill into an item to see its audit history.",
       icon: DatabaseIcon,
+      accessKey: "dimOffers",
     },
     {
       href: "/admin/users",
@@ -36,6 +42,7 @@
       description:
         "Create internal accounts, change roles, and assign brands to teammates.",
       icon: UsersIcon,
+      accessKey: "users",
     },
     {
       href: "/admin/brands",
@@ -43,6 +50,7 @@
       description:
         "Manage brand guidelines and reference assets used by the image generator.",
       icon: StoreIcon,
+      accessKey: "brands",
     },
     {
       href: "/admin/image-generator-usage",
@@ -50,8 +58,13 @@
       description:
         "Track image-generation activity across all users over time, with totals, success rate, and the most active accounts.",
       icon: ImageIcon,
+      accessKey: "imageUsage",
     },
   ];
+
+  const visibleFeatures = $derived(
+    features.filter((feature) => data.access[feature.accessKey]),
+  );
 </script>
 
 <svelte:head>
@@ -81,13 +94,12 @@
         Everything that needs an admin role
       </h1>
       <p class="text-muted-foreground max-w-2xl text-base leading-7">
-        Pick a tool below. Each feature here requires the <code>admin</code>
-        role and is hidden from regular users.
+        Pick a tool below. You only see the tools your roles grant access to.
       </p>
     </section>
 
     <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {#each features as feature (feature.href)}
+      {#each visibleFeatures as feature (feature.href)}
         <a
           href={feature.href}
           class="focus-visible:ring-ring/50 group block rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
@@ -126,6 +138,11 @@
             </Card.Footer>
           </Card.Root>
         </a>
+      {:else}
+        <p class="text-muted-foreground text-sm">
+          You don't have access to any admin tools yet. Ask an administrator to
+          grant you the relevant role.
+        </p>
       {/each}
     </section>
   </main>

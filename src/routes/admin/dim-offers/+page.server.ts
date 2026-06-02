@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { requireAdminUser } from "$lib/server/auth-guards";
+import { requirePermission } from "$lib/server/auth-guards";
 import { getAuthenticatedUserRole } from "$lib/server/auth-guards";
 import {
   adminDimOffersSortDirections,
@@ -34,7 +34,9 @@ const searchParamsSchema = z.object({
 });
 
 export const load: PageServerLoad = async (event) => {
-  await requireAdminUser(event);
+  // /admin hooks gate enforces admin; this additionally requires the approver
+  // capability, so an admin without `approver` is redirected.
+  await requirePermission(event, { submission: ["approve"] });
 
   const brands = await listBrands({ active: true });
   const userRole = await getAuthenticatedUserRole(event);

@@ -6,7 +6,7 @@ vi.mock("$lib/services/brand-context/brand-context.server", () => ({
 }));
 
 vi.mock("$lib/server/auth-guards", () => ({
-  requireAdminUser: vi.fn(),
+  requireApiAdminPermission: vi.fn(),
 }));
 
 const brandContextModule =
@@ -14,9 +14,8 @@ const brandContextModule =
 const authModule = await import("$lib/server/auth-guards");
 const { DELETE } = await import("./+server");
 
-const requireAdminMock = authModule.requireAdminUser as unknown as ReturnType<
-  typeof vi.fn
->;
+const requireAdminMock =
+  authModule.requireApiAdminPermission as unknown as ReturnType<typeof vi.fn>;
 const getMock = brandContextModule.getBrandAsset as unknown as ReturnType<
   typeof vi.fn
 >;

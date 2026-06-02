@@ -1,5 +1,5 @@
 import { error, json } from "@sveltejs/kit";
-import { requireAdminUser } from "$lib/server/auth-guards";
+import { requireApiAdminPermission } from "$lib/server/auth-guards";
 import {
   deleteBrandAsset,
   getBrandAsset,
@@ -18,7 +18,7 @@ function parseBrandId(param: string | undefined): number {
 }
 
 export const DELETE: RequestHandler = async (event) => {
-  await requireAdminUser(event);
+  await requireApiAdminPermission(event, { brand: ["manage"] });
   const brandId = parseBrandId(event.params.brandId);
   const assetId = event.params.assetId;
   if (!assetId) {

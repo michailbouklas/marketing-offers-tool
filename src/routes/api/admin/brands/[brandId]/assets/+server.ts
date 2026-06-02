@@ -1,5 +1,5 @@
 import { error, json } from "@sveltejs/kit";
-import { requireAdminUser } from "$lib/server/auth-guards";
+import { requireApiAdminPermission } from "$lib/server/auth-guards";
 import { getImageGeneratorEnv } from "$lib/server/env";
 import { extensionForContentType } from "$lib/server/reference-storage";
 import {
@@ -21,7 +21,7 @@ function parseBrandId(param: string | undefined): number {
 }
 
 export const GET: RequestHandler = async (event) => {
-  await requireAdminUser(event);
+  await requireApiAdminPermission(event, { brand: ["manage"] });
   const brandId = parseBrandId(event.params.brandId);
 
   const rows = await listBrandAssets(brandId);
@@ -41,7 +41,7 @@ export const GET: RequestHandler = async (event) => {
 };
 
 export const POST: RequestHandler = async (event) => {
-  await requireAdminUser(event);
+  await requireApiAdminPermission(event, { brand: ["manage"] });
   const brandId = parseBrandId(event.params.brandId);
 
   const brand = await prisma.brand.findUnique({

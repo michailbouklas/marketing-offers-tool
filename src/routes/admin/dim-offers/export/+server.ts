@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { requireAdminUser } from "$lib/server/auth-guards";
+import { requirePermission } from "$lib/server/auth-guards";
 import {
   adminDimOffersSortDirections,
   adminDimOffersSortFields,
@@ -52,7 +52,7 @@ function formatNumber(value: number | null) {
 }
 
 export const GET: RequestHandler = async (event) => {
-  await requireAdminUser(event);
+  await requirePermission(event, { submission: ["approve"] });
 
   const brands = await listBrands({ active: true });
   const allowedBrandAliases = new Set(

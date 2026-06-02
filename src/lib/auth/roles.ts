@@ -4,12 +4,21 @@ export const userRoles = [
   "approver",
   "usageViewer",
   "userManager",
+  "brandManager",
+  "superUser",
 ] as const;
 
 export type UserRole = (typeof userRoles)[number];
 
 export const defaultUserRole: UserRole = "user";
 export const adminUserRole: UserRole = "admin";
+export const superUserRole: UserRole = "superUser";
+
+/**
+ * Roles that satisfy the coarse `/admin` gate. `superUser` is an
+ * admin-equivalent that additionally holds every resource permission.
+ */
+export const adminRoles: UserRole[] = [adminUserRole, superUserRole];
 
 export const roleLabels: Record<UserRole, string> = {
   user: "User",
@@ -17,6 +26,8 @@ export const roleLabels: Record<UserRole, string> = {
   approver: "Approver",
   usageViewer: "Usage Viewer",
   userManager: "User Manager",
+  brandManager: "Brand Manager",
+  superUser: "Super User",
 };
 
 /**
@@ -38,5 +49,5 @@ export function parseRoles(role: string | null | undefined): UserRole[] {
 }
 
 export function isAdminRole(role: string | null | undefined): boolean {
-  return parseRoles(role).includes(adminUserRole);
+  return parseRoles(role).some((parsed) => adminRoles.includes(parsed));
 }

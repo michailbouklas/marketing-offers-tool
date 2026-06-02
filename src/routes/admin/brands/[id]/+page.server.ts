@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit";
-import { requireAdminUser } from "$lib/server/auth-guards";
+import { requirePermission } from "$lib/server/auth-guards";
 import { getImageGeneratorEnv } from "$lib/server/env";
 import { prisma } from "$lib/server/prisma";
 import {
@@ -9,7 +9,7 @@ import {
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
-  await requireAdminUser(event);
+  await requirePermission(event, { brand: ["manage"] });
 
   const brandId = Number.parseInt(event.params.id ?? "", 10);
   if (!Number.isInteger(brandId) || brandId <= 0) {

@@ -171,3 +171,6 @@
 {"file":"src/routes/api/admin/image-generator/usage-by-model/+server.ts","action":"Edit","timestamp":"2026-06-02T09:30:16Z","important":false}
 {"file":"src/routes/admin/users/+page.server.ts","action":"Edit","timestamp":"2026-06-02T09:30:25Z","important":false}
 {"file":"scripts/grant-roles.ts","action":"Write","timestamp":"2026-06-02T09:31:29Z","important":false}
+{"file":"src/lib/components/navigation/app-sidebar.svelte","action":"Edit","timestamp":"2026-06-02T09:54:05Z","important":false}
+{"file":"src/routes/+page.svelte","action":"Edit","timestamp":"2026-06-02T09:54:46Z","important":false}
+{"file":"src/routes/admin/dim-offers/+page.svelte","action":"Edit","timestamp":"2026-06-02T09:54:50Z","important":false}

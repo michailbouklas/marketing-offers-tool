@@ -1,6 +1,6 @@
 import { error, json } from "@sveltejs/kit";
 import { z } from "zod";
-import { requireAdminUser } from "$lib/server/auth-guards";
+import { requireApiAdminPermission } from "$lib/server/auth-guards";
 import { getImageGeneratorEnv } from "$lib/server/env";
 import {
   getBrandGuidelines,
@@ -44,7 +44,7 @@ async function brandSlugOr404(brandId: number): Promise<string> {
 }
 
 export const GET: RequestHandler = async (event) => {
-  await requireAdminUser(event);
+  await requireApiAdminPermission(event, { brand: ["manage"] });
   const brandId = parseBrandId(event.params.brandId);
   const slug = await brandSlugOr404(brandId);
 
@@ -54,7 +54,7 @@ export const GET: RequestHandler = async (event) => {
 };
 
 export const PUT: RequestHandler = async (event) => {
-  await requireAdminUser(event);
+  await requireApiAdminPermission(event, { brand: ["manage"] });
   const brandId = parseBrandId(event.params.brandId);
   const slug = await brandSlugOr404(brandId);
 

@@ -16,7 +16,7 @@ vi.mock("$lib/services/brand-context/brand-context.server", () => ({
 }));
 
 vi.mock("$lib/server/auth-guards", () => ({
-  requireAdminUser: vi.fn(),
+  requireApiAdminPermission: vi.fn(),
 }));
 
 const envModule = await import("$lib/server/env");
@@ -29,9 +29,8 @@ const { GET, POST } = await import("./+server");
 const mockEnv = envModule.getImageGeneratorEnv as unknown as ReturnType<
   typeof vi.fn
 >;
-const requireAdminMock = authModule.requireAdminUser as unknown as ReturnType<
-  typeof vi.fn
->;
+const requireAdminMock =
+  authModule.requireApiAdminPermission as unknown as ReturnType<typeof vi.fn>;
 const brandFindMock = (
   prismaModule.prisma as unknown as {
     brand: { findUnique: ReturnType<typeof vi.fn> };

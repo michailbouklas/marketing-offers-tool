@@ -1,10 +1,10 @@
 import { error } from "@sveltejs/kit";
-import { requireAdminUser } from "$lib/server/auth-guards";
+import { requirePermission } from "$lib/server/auth-guards";
 import { getAdminDimOfferAuditPageData } from "$lib/services/admin-dim-offers.server";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
-  await requireAdminUser(event);
+  await requirePermission(event, { submission: ["approve"] });
 
   const itemCode = event.params.itemCode?.trim();
 

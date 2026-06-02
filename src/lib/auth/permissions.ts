@@ -14,6 +14,7 @@ export const statement = {
   ...defaultStatements,
   imageGenerator: ["generate", "view-usage"],
   submission: ["approve", "reject"],
+  brand: ["manage"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -30,6 +31,8 @@ export const ac = createAccessControl(statement);
  * - `usageViewer` — view cross-user image-generation usage analytics.
  * - `userManager` — manage users (Better Auth's full user/session statements,
  *   which its admin endpoints check internally).
+ * - `brandManager` — manage brand guidelines and reference assets.
+ * - `superUser` — admin-equivalent that holds every resource permission.
  *
  * Explicit empty action arrays (rather than `{}`) keep a role's resource keys
  * concrete instead of `never`, which is required for assignability to Better
@@ -56,6 +59,15 @@ export const roles = {
   }),
   userManager: ac.newRole({
     ...adminAc.statements,
+  }),
+  brandManager: ac.newRole({
+    brand: ["manage"],
+  }),
+  superUser: ac.newRole({
+    ...adminAc.statements,
+    imageGenerator: ["generate", "view-usage"],
+    submission: ["approve", "reject"],
+    brand: ["manage"],
   }),
 } satisfies Record<UserRole, Role>;
 
