@@ -104,6 +104,26 @@ export async function requireApiPermission(
   return { session, user };
 }
 
+/**
+ * API guard: throws 403 unless the user is an admin AND holds the requested
+ * permissions. Use on API routes that are not behind the `/admin` hooks gate
+ * but should still require admin plus a specific capability (e.g. approvals).
+ */
+export async function requireApiAdminPermission(
+  event: RequestEvent,
+  permissions: AppPermissions,
+) {
+  const { user, session } = requireAuthenticatedApiUser(event);
+
+  const role = await getAuthenticatedUserRole(event);
+
+  if (!isAdminRole(role) || !(await hasPermission(event, permissions))) {
+    error(403, "Forbidden");
+  }
+
+  return { session, user };
+}
+
 export async function getAuthenticatedUserRole(event: RequestEvent) {
   const user = event.locals.user;
 

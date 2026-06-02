@@ -1,5 +1,5 @@
 import { json } from "@sveltejs/kit";
-import { requireAdminUser } from "$lib/server/auth-guards";
+import { requireApiAdminPermission } from "$lib/server/auth-guards";
 import { rejectGapSubmission } from "$lib/services/offers-data-quality.server";
 import { z } from "zod";
 import type { RequestHandler } from "./$types";
@@ -9,7 +9,7 @@ const paramsSchema = z.object({
 });
 
 export const POST: RequestHandler = async (event) => {
-  await requireAdminUser(event);
+  await requireApiAdminPermission(event, { submission: ["reject"] });
 
   const paramsResult = paramsSchema.safeParse(event.params);
 
