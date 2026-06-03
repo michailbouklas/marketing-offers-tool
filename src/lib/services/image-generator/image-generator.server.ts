@@ -61,6 +61,10 @@ function toDTO(row: {
   style: string | null;
   camera: string | null;
   aspectRatio: string | null;
+  negativePrompt: string | null;
+  quality: string | null;
+  background: string | null;
+  inputFidelity: string | null;
   referenceIds: unknown;
   status: string;
   errorMessage: string | null;
@@ -84,6 +88,10 @@ function toDTO(row: {
     style: row.style,
     camera: row.camera,
     aspectRatio: row.aspectRatio,
+    negativePrompt: row.negativePrompt,
+    quality: row.quality,
+    background: row.background,
+    inputFidelity: row.inputFidelity,
     referenceIds,
     status: row.status as GeneratedImageStatus,
     errorMessage: row.errorMessage,

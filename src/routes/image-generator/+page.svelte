@@ -141,9 +141,13 @@
       size: payload.size,
       style: payload.style === "none" ? undefined : payload.style,
       camera: payload.camera === "none" ? undefined : payload.camera,
-      aspectRatio:
-        payload.aspectRatio === "none" ? undefined : payload.aspectRatio,
       outputFormat: payload.outputFormat,
+      negativePrompt:
+        payload.negativePrompt.length > 0 ? payload.negativePrompt : undefined,
+      quality: payload.quality === "auto" ? undefined : payload.quality,
+      background:
+        payload.background === "auto" ? undefined : payload.background,
+      matchReferences: payload.matchReferences ? true : undefined,
       references:
         payload.referenceIds.length > 0 ? payload.referenceIds : undefined,
       brandId: selectedBrandId ?? undefined,
@@ -267,7 +271,10 @@
       size: `${item.requestedWidth}x${item.requestedHeight}`,
       style: (item.style ?? "none") as ComposerState["style"],
       camera: (item.camera ?? "none") as ComposerState["camera"],
-      aspectRatio: (item.aspectRatio ?? "none") as ComposerState["aspectRatio"],
+      negativePrompt: item.negativePrompt ?? "",
+      quality: (item.quality ?? "auto") as ComposerState["quality"],
+      background: (item.background ?? "auto") as ComposerState["background"],
+      matchReferences: item.inputFidelity === "high",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }

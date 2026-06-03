@@ -721,6 +721,17 @@
               </p>
             </div>
           {/if}
+
+          {#if selectedImage.negativePrompt}
+            <div class="space-y-2">
+              <h2 class="text-sm font-semibold">Negative prompt</h2>
+              <p
+                class="bg-muted/60 rounded-md p-3 text-sm leading-6 whitespace-pre-wrap"
+              >
+                {selectedImage.negativePrompt}
+              </p>
+            </div>
+          {/if}
         </div>
 
         <dl class="grid content-start gap-3 text-sm">
@@ -770,6 +781,24 @@
             <dt class="text-muted-foreground">Camera</dt>
             <dd class="mt-1 font-medium">
               {formatNullable(selectedImage.camera)}
+            </dd>
+          </div>
+          <div class="rounded-md border p-3">
+            <dt class="text-muted-foreground">Quality</dt>
+            <dd class="mt-1 font-medium">
+              {formatNullable(selectedImage.quality)}
+            </dd>
+          </div>
+          <div class="rounded-md border p-3">
+            <dt class="text-muted-foreground">Background</dt>
+            <dd class="mt-1 font-medium">
+              {formatNullable(selectedImage.background)}
+            </dd>
+          </div>
+          <div class="rounded-md border p-3">
+            <dt class="text-muted-foreground">Reference fidelity</dt>
+            <dd class="mt-1 font-medium">
+              {formatNullable(selectedImage.inputFidelity)}
             </dd>
           </div>
           <div class="rounded-md border p-3">

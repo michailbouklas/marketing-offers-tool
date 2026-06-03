@@ -80,6 +80,51 @@ describe("OpenAIImageProvider — text-to-image (no references)", () => {
     });
   });
 
+  it("includes quality and background in the generations body", async () => {
+    const calls: RecordedCall[] = [];
+    const provider = new OpenAIImageProvider({
+      apiKey: "sk-test",
+      fetch: recorderFetch(calls, () =>
+        jsonResponse({
+          data: [{ b64_json: Buffer.from("x").toString("base64") }],
+        }),
+      ),
+    });
+    await provider.generateImage({
+      prompt: "p",
+      width: 1024,
+      height: 1024,
+      quality: "high",
+      background: "opaque",
+    });
+
+    const body = JSON.parse(calls[0]!.init.body as string);
+    expect(body.quality).toBe("high");
+    expect(body.background).toBe("opaque");
+  });
+
+  it("forces output_format png when background is transparent", async () => {
+    const calls: RecordedCall[] = [];
+    const provider = new OpenAIImageProvider({
+      apiKey: "sk-test",
+      fetch: recorderFetch(calls, () =>
+        jsonResponse({
+          data: [{ b64_json: Buffer.from("x").toString("base64") }],
+        }),
+      ),
+    });
+    await provider.generateImage({
+      prompt: "p",
+      width: 1024,
+      height: 1024,
+      background: "transparent",
+    });
+
+    const body = JSON.parse(calls[0]!.init.body as string);
+    expect(body.background).toBe("transparent");
+    expect(body.output_format).toBe("png");
+  });
+
   it("respects an explicit model override", async () => {
     const calls: RecordedCall[] = [];
     const provider = new OpenAIImageProvider({
@@ -182,5 +227,35 @@ describe("OpenAIImageProvider — with references", () => {
     expect(images[1]).toBeInstanceOf(Blob);
     expect(await (images[0] as Blob).text()).toBe("AAAA");
     expect(await (images[1] as Blob).text()).toBe("BBBB");
+  });
+
+  it("forwards quality, background, and input_fidelity on the edits form", async () => {
+    const ref = join(workdir, "ref.png");
+    writeFileSync(ref, Buffer.from("AAAA"));
+
+    const calls: RecordedCall[] = [];
+    const provider = new OpenAIImageProvider({
+      apiKey: "sk-test",
+      fetch: recorderFetch(calls, () =>
+        jsonResponse({
+          data: [{ b64_json: Buffer.from("x").toString("base64") }],
+        }),
+      ),
+    });
+    await provider.generateImage({
+      prompt: "edit it",
+      width: 1024,
+      height: 1024,
+      references: [ref],
+      quality: "high",
+      background: "transparent",
+      inputFidelity: "high",
+    });
+
+    const form = calls[0]!.init.body as FormData;
+    expect(form.get("quality")).toBe("high");
+    expect(form.get("background")).toBe("transparent");
+    expect(form.get("output_format")).toBe("png");
+    expect(form.get("input_fidelity")).toBe("high");
   });
 });

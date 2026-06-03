@@ -5,6 +5,12 @@ vi.mock("$lib/server/env", () => ({
   getImageGeneratorEnv: vi.fn(),
 }));
 
+// Avoid a real /v2/models network call; empty caps → models fall back to
+// SUPPORTED_SIZES.
+vi.mock("$lib/services/image-providers/imagerouter-models.server", () => ({
+  fetchImageRouterModelCaps: vi.fn(async () => new Map()),
+}));
+
 const envModule = await import("$lib/server/env");
 const { GET } = await import("./+server");
 
@@ -67,11 +73,11 @@ describe("GET /api/images/config", () => {
     expect(body.defaultProvider).toBe("imagerouter");
     expect(body.defaultModel).toBe("gpt-image-1");
     expect(body.samplesPerModelMax).toBe(5);
-    expect(body.providers[0].models).toEqual([
+    expect(body.providers[0].models.map((m: { id: string }) => m.id)).toEqual([
       "openai/gpt-image-1",
       "google/nano-banana-2",
     ]);
-    expect(body.providers[0].sizes).toContain("1024x1024");
+    expect(body.providers[0].models[0].sizes).toContain("1024x1024");
   });
 
   it("omits imagerouter when IMAGE_ROUTER_API_KEY is unset (only openai returned)", async () => {

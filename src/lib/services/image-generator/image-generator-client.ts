@@ -30,8 +30,11 @@ export interface GenerateClientBody {
   size?: string;
   style?: string;
   camera?: string;
-  aspectRatio?: "square" | "widescreen" | "tiktok";
   outputFormat?: "png" | "jpg";
+  negativePrompt?: string;
+  quality?: "auto" | "low" | "medium" | "high";
+  background?: "auto" | "opaque" | "transparent";
+  matchReferences?: boolean;
   references?: string[];
   brandId?: number;
   brandGuidelines?: string;

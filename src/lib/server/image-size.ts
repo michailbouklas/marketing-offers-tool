@@ -61,11 +61,22 @@ function squaredAspectRatioDelta(
 
 export function mapToNearestSupportedSize(
   requested: ImageDimensions,
+  candidates: ReadonlyArray<ImageDimensions> = PROVIDER_SUPPORTED_SIZES,
 ): ImageDimensions {
-  let best: ImageDimensions = PROVIDER_SUPPORTED_SIZES[0]!;
+  const pool = candidates.length > 0 ? candidates : PROVIDER_SUPPORTED_SIZES;
+
+  // Exact match wins outright (the requested size is natively supported).
+  const exact = pool.find(
+    (c) => c.width === requested.width && c.height === requested.height,
+  );
+  if (exact) {
+    return exact;
+  }
+
+  let best: ImageDimensions = pool[0]!;
   let bestDelta = squaredAspectRatioDelta(requested, best);
 
-  for (const candidate of PROVIDER_SUPPORTED_SIZES.slice(1)) {
+  for (const candidate of pool.slice(1)) {
     const delta = squaredAspectRatioDelta(requested, candidate);
     if (delta < bestDelta) {
       best = candidate;

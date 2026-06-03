@@ -1,6 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
-import type { GenerateInput, GenerateOutput, ImageProvider } from "./types";
+import type {
+  GenerateInput,
+  GenerateOutput,
+  ImageBackground,
+  ImageProvider,
+  ImageQuality,
+  InputFidelity,
+} from "./types";
 
 const OPENAI_BASE_URL = "https://api.openai.com";
 const DEFAULT_MODEL = "gpt-image-1";
@@ -51,8 +58,17 @@ export class OpenAIImageProvider implements ImageProvider {
           prompt: input.prompt,
           size,
           references: input.references,
+          quality: input.quality,
+          background: input.background,
+          inputFidelity: input.inputFidelity,
         })
-      : await this.postGenerations({ model, prompt: input.prompt, size });
+      : await this.postGenerations({
+          model,
+          prompt: input.prompt,
+          size,
+          quality: input.quality,
+          background: input.background,
+        });
 
     if (!response.ok) {
       const body = await safeParseError(response);
@@ -83,19 +99,27 @@ export class OpenAIImageProvider implements ImageProvider {
     model: string;
     prompt: string;
     size: string;
+    quality?: ImageQuality;
+    background?: ImageBackground;
   }): Promise<Response> {
+    const body: Record<string, unknown> = {
+      model: args.model,
+      prompt: args.prompt,
+      size: args.size,
+      n: 1,
+    };
+    if (args.quality) body.quality = args.quality;
+    if (args.background) body.background = args.background;
+    // Transparency requires a format that carries an alpha channel.
+    if (args.background === "transparent") body.output_format = "png";
+
     return this.fetchFn(`${this.baseUrl}/v1/images/generations`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${this.options.apiKey}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify({
-        model: args.model,
-        prompt: args.prompt,
-        size: args.size,
-        n: 1,
-      }),
+      body: JSON.stringify(body),
     });
   }
 
@@ -104,11 +128,20 @@ export class OpenAIImageProvider implements ImageProvider {
     prompt: string;
     size: string;
     references: string[];
+    quality?: ImageQuality;
+    background?: ImageBackground;
+    inputFidelity?: InputFidelity;
   }): Promise<Response> {
     const form = new FormData();
     form.set("model", args.model);
     form.set("prompt", args.prompt);
     form.set("size", args.size);
+    if (args.quality) form.set("quality", args.quality);
+    if (args.background) form.set("background", args.background);
+    // Transparency requires a format that carries an alpha channel.
+    if (args.background === "transparent") form.set("output_format", "png");
+    // input_fidelity only applies to image-edit (reference) requests.
+    if (args.inputFidelity) form.set("input_fidelity", args.inputFidelity);
 
     for (const refPath of args.references) {
       const bytes = await readFile(refPath);

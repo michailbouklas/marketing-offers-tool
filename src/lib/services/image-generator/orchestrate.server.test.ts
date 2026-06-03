@@ -121,6 +121,62 @@ describe("generateOneRow — happy path", () => {
     expect(args.data.durationMs).toBeGreaterThanOrEqual(0);
   });
 
+  it("forwards quality, background, and inputFidelity from the row", async () => {
+    findUnique.mockResolvedValue(
+      makePendingRow({
+        quality: "high",
+        background: "transparent",
+        inputFidelity: "high",
+      }),
+    );
+    const generateMock = vi.fn().mockResolvedValue({ bytes: PNG });
+    getProvider.mockReturnValue({ generateImage: generateMock });
+
+    await generateOneRow("row-1");
+
+    expect(generateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        quality: "high",
+        background: "transparent",
+        inputFidelity: "high",
+      }),
+    );
+  });
+
+  it("ignores unrecognised quality/background/inputFidelity values", async () => {
+    findUnique.mockResolvedValue(
+      makePendingRow({
+        quality: "ultra",
+        background: "rainbow",
+        inputFidelity: "max",
+      }),
+    );
+    const generateMock = vi.fn().mockResolvedValue({ bytes: PNG });
+    getProvider.mockReturnValue({ generateImage: generateMock });
+
+    await generateOneRow("row-1");
+
+    const arg = generateMock.mock.calls[0]![0];
+    expect(arg.quality).toBeUndefined();
+    expect(arg.background).toBeUndefined();
+    expect(arg.inputFidelity).toBeUndefined();
+  });
+
+  it("retries once and completes when the provider fails transiently", async () => {
+    findUnique.mockResolvedValue(makePendingRow());
+    const generateMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("transient 503"))
+      .mockResolvedValue({ bytes: PNG });
+    getProvider.mockReturnValue({ generateImage: generateMock });
+
+    await generateOneRow("row-1");
+
+    expect(generateMock).toHaveBeenCalledTimes(2);
+    expect(updateMock).toHaveBeenCalledTimes(1);
+    expect(updateMock.mock.calls[0]![0].data.status).toBe("completed");
+  });
+
   it("resolves reference paths and forwards them to the provider", async () => {
     findUnique.mockResolvedValue(
       makePendingRow({ referenceIds: ["ref-a", "ref-b"] }),

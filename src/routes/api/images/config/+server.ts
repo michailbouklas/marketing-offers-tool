@@ -5,5 +5,5 @@ import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async (event) => {
   requireAuthenticatedApiUser(event);
-  return json(buildImageGeneratorConfig());
+  return json(await buildImageGeneratorConfig());
 };

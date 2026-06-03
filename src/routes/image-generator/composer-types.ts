@@ -15,29 +15,40 @@ export const CAMERAS = [
   "macro shot",
 ] as const;
 
-export const ASPECT_RATIOS = [
-  { value: "none", label: "(no override)" },
-  { value: "square", label: "square (1024×1024)" },
-  { value: "widescreen", label: "widescreen (1536×1024)" },
-  { value: "tiktok", label: "tiktok (1024×1536)" },
-] as const;
-
 export const OUTPUT_FORMATS = ["png", "jpg"] as const;
 export type OutputFormat = (typeof OUTPUT_FORMATS)[number];
 
+export const QUALITY_OPTIONS = [
+  { value: "auto", label: "auto" },
+  { value: "low", label: "low (fastest)" },
+  { value: "medium", label: "medium" },
+  { value: "high", label: "high (best)" },
+] as const;
+export type Quality = (typeof QUALITY_OPTIONS)[number]["value"];
+
+export const BACKGROUND_OPTIONS = [
+  { value: "auto", label: "auto" },
+  { value: "opaque", label: "opaque" },
+  { value: "transparent", label: "transparent" },
+] as const;
+export type Background = (typeof BACKGROUND_OPTIONS)[number]["value"];
+
 export type Style = (typeof STYLES)[number];
 export type Camera = (typeof CAMERAS)[number];
-export type AspectRatio = "none" | "square" | "widescreen" | "tiktok";
 
 export interface ComposerState {
   prompt: string;
   provider: ImageProviderId;
   models: string[];
+  /** Chosen resolution: a concrete "WxH" or "auto". Aspect ratio is derived. */
   size: string;
   style: Style;
   camera: Camera;
-  aspectRatio: AspectRatio;
   outputFormat: OutputFormat;
+  negativePrompt: string;
+  quality: Quality;
+  background: Background;
+  matchReferences: boolean;
   enhance: boolean;
   samplesPerModel: number;
   referenceIds: string[];

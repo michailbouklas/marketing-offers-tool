@@ -7,7 +7,7 @@ export const load: PageServerLoad = async (event) => {
   const { user } = requireAuthenticatedUser(event);
 
   const [config, brands] = await Promise.all([
-    Promise.resolve(buildImageGeneratorConfig()),
+    buildImageGeneratorConfig(),
     listBrandsForUser(user!.id, { active: true }),
   ]);
 

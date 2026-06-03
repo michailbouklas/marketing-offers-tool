@@ -59,6 +59,10 @@ export type GeneratedImageMinAggregateOutputType = {
   style: string | null;
   camera: string | null;
   aspectRatio: string | null;
+  negativePrompt: string | null;
+  quality: string | null;
+  background: string | null;
+  inputFidelity: string | null;
   localPath: string | null;
   remoteUrl: string | null;
   status: $Enums.GeneratedImageStatus | null;
@@ -82,6 +86,10 @@ export type GeneratedImageMaxAggregateOutputType = {
   style: string | null;
   camera: string | null;
   aspectRatio: string | null;
+  negativePrompt: string | null;
+  quality: string | null;
+  background: string | null;
+  inputFidelity: string | null;
   localPath: string | null;
   remoteUrl: string | null;
   status: $Enums.GeneratedImageStatus | null;
@@ -105,6 +113,10 @@ export type GeneratedImageCountAggregateOutputType = {
   style: number;
   camera: number;
   aspectRatio: number;
+  negativePrompt: number;
+  quality: number;
+  background: number;
+  inputFidelity: number;
   referenceIds: number;
   localPath: number;
   remoteUrl: number;
@@ -148,6 +160,10 @@ export type GeneratedImageMinAggregateInputType = {
   style?: true;
   camera?: true;
   aspectRatio?: true;
+  negativePrompt?: true;
+  quality?: true;
+  background?: true;
+  inputFidelity?: true;
   localPath?: true;
   remoteUrl?: true;
   status?: true;
@@ -171,6 +187,10 @@ export type GeneratedImageMaxAggregateInputType = {
   style?: true;
   camera?: true;
   aspectRatio?: true;
+  negativePrompt?: true;
+  quality?: true;
+  background?: true;
+  inputFidelity?: true;
   localPath?: true;
   remoteUrl?: true;
   status?: true;
@@ -194,6 +214,10 @@ export type GeneratedImageCountAggregateInputType = {
   style?: true;
   camera?: true;
   aspectRatio?: true;
+  negativePrompt?: true;
+  quality?: true;
+  background?: true;
+  inputFidelity?: true;
   referenceIds?: true;
   localPath?: true;
   remoteUrl?: true;
@@ -316,6 +340,10 @@ export type GeneratedImageGroupByOutputType = {
   style: string | null;
   camera: string | null;
   aspectRatio: string | null;
+  negativePrompt: string | null;
+  quality: string | null;
+  background: string | null;
+  inputFidelity: string | null;
   referenceIds: runtime.JsonValue;
   localPath: string | null;
   remoteUrl: string | null;
@@ -362,6 +390,13 @@ export type GeneratedImageWhereInput = {
   style?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
   camera?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
   aspectRatio?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  negativePrompt?:
+    | Prisma.StringNullableFilter<"GeneratedImage">
+    | string
+    | null;
+  quality?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  background?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  inputFidelity?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
   referenceIds?: Prisma.JsonFilter<"GeneratedImage">;
   localPath?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
   remoteUrl?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
@@ -393,6 +428,10 @@ export type GeneratedImageOrderByWithRelationInput = {
   style?: Prisma.SortOrderInput | Prisma.SortOrder;
   camera?: Prisma.SortOrderInput | Prisma.SortOrder;
   aspectRatio?: Prisma.SortOrderInput | Prisma.SortOrder;
+  negativePrompt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  quality?: Prisma.SortOrderInput | Prisma.SortOrder;
+  background?: Prisma.SortOrderInput | Prisma.SortOrder;
+  inputFidelity?: Prisma.SortOrderInput | Prisma.SortOrder;
   referenceIds?: Prisma.SortOrder;
   localPath?: Prisma.SortOrderInput | Prisma.SortOrder;
   remoteUrl?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -423,6 +462,16 @@ export type GeneratedImageWhereUniqueInput = Prisma.AtLeast<
     style?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
     camera?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
     aspectRatio?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+    negativePrompt?:
+      | Prisma.StringNullableFilter<"GeneratedImage">
+      | string
+      | null;
+    quality?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+    background?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+    inputFidelity?:
+      | Prisma.StringNullableFilter<"GeneratedImage">
+      | string
+      | null;
     referenceIds?: Prisma.JsonFilter<"GeneratedImage">;
     localPath?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
     remoteUrl?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
@@ -459,6 +508,10 @@ export type GeneratedImageOrderByWithAggregationInput = {
   style?: Prisma.SortOrderInput | Prisma.SortOrder;
   camera?: Prisma.SortOrderInput | Prisma.SortOrder;
   aspectRatio?: Prisma.SortOrderInput | Prisma.SortOrder;
+  negativePrompt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  quality?: Prisma.SortOrderInput | Prisma.SortOrder;
+  background?: Prisma.SortOrderInput | Prisma.SortOrder;
+  inputFidelity?: Prisma.SortOrderInput | Prisma.SortOrder;
   referenceIds?: Prisma.SortOrder;
   localPath?: Prisma.SortOrderInput | Prisma.SortOrder;
   remoteUrl?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -510,6 +563,22 @@ export type GeneratedImageScalarWhereWithAggregatesInput = {
     | Prisma.StringNullableWithAggregatesFilter<"GeneratedImage">
     | string
     | null;
+  negativePrompt?:
+    | Prisma.StringNullableWithAggregatesFilter<"GeneratedImage">
+    | string
+    | null;
+  quality?:
+    | Prisma.StringNullableWithAggregatesFilter<"GeneratedImage">
+    | string
+    | null;
+  background?:
+    | Prisma.StringNullableWithAggregatesFilter<"GeneratedImage">
+    | string
+    | null;
+  inputFidelity?:
+    | Prisma.StringNullableWithAggregatesFilter<"GeneratedImage">
+    | string
+    | null;
   referenceIds?: Prisma.JsonWithAggregatesFilter<"GeneratedImage">;
   localPath?:
     | Prisma.StringNullableWithAggregatesFilter<"GeneratedImage">
@@ -549,6 +618,10 @@ export type GeneratedImageCreateInput = {
   style?: string | null;
   camera?: string | null;
   aspectRatio?: string | null;
+  negativePrompt?: string | null;
+  quality?: string | null;
+  background?: string | null;
+  inputFidelity?: string | null;
   referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: string | null;
   remoteUrl?: string | null;
@@ -575,6 +648,10 @@ export type GeneratedImageUncheckedCreateInput = {
   style?: string | null;
   camera?: string | null;
   aspectRatio?: string | null;
+  negativePrompt?: string | null;
+  quality?: string | null;
+  background?: string | null;
+  inputFidelity?: string | null;
   referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: string | null;
   remoteUrl?: string | null;
@@ -597,6 +674,16 @@ export type GeneratedImageUpdateInput = {
   style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  negativePrompt?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  quality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  background?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  inputFidelity?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -628,6 +715,16 @@ export type GeneratedImageUncheckedUpdateInput = {
   style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  negativePrompt?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  quality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  background?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  inputFidelity?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -657,6 +754,10 @@ export type GeneratedImageCreateManyInput = {
   style?: string | null;
   camera?: string | null;
   aspectRatio?: string | null;
+  negativePrompt?: string | null;
+  quality?: string | null;
+  background?: string | null;
+  inputFidelity?: string | null;
   referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: string | null;
   remoteUrl?: string | null;
@@ -679,6 +780,16 @@ export type GeneratedImageUpdateManyMutationInput = {
   style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  negativePrompt?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  quality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  background?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  inputFidelity?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -708,6 +819,16 @@ export type GeneratedImageUncheckedUpdateManyInput = {
   style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  negativePrompt?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  quality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  background?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  inputFidelity?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -747,6 +868,10 @@ export type GeneratedImageCountOrderByAggregateInput = {
   style?: Prisma.SortOrder;
   camera?: Prisma.SortOrder;
   aspectRatio?: Prisma.SortOrder;
+  negativePrompt?: Prisma.SortOrder;
+  quality?: Prisma.SortOrder;
+  background?: Prisma.SortOrder;
+  inputFidelity?: Prisma.SortOrder;
   referenceIds?: Prisma.SortOrder;
   localPath?: Prisma.SortOrder;
   remoteUrl?: Prisma.SortOrder;
@@ -780,6 +905,10 @@ export type GeneratedImageMaxOrderByAggregateInput = {
   style?: Prisma.SortOrder;
   camera?: Prisma.SortOrder;
   aspectRatio?: Prisma.SortOrder;
+  negativePrompt?: Prisma.SortOrder;
+  quality?: Prisma.SortOrder;
+  background?: Prisma.SortOrder;
+  inputFidelity?: Prisma.SortOrder;
   localPath?: Prisma.SortOrder;
   remoteUrl?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
@@ -803,6 +932,10 @@ export type GeneratedImageMinOrderByAggregateInput = {
   style?: Prisma.SortOrder;
   camera?: Prisma.SortOrder;
   aspectRatio?: Prisma.SortOrder;
+  negativePrompt?: Prisma.SortOrder;
+  quality?: Prisma.SortOrder;
+  background?: Prisma.SortOrder;
+  inputFidelity?: Prisma.SortOrder;
   localPath?: Prisma.SortOrder;
   remoteUrl?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
@@ -1057,6 +1190,10 @@ export type GeneratedImageCreateWithoutBrandInput = {
   style?: string | null;
   camera?: string | null;
   aspectRatio?: string | null;
+  negativePrompt?: string | null;
+  quality?: string | null;
+  background?: string | null;
+  inputFidelity?: string | null;
   referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: string | null;
   remoteUrl?: string | null;
@@ -1081,6 +1218,10 @@ export type GeneratedImageUncheckedCreateWithoutBrandInput = {
   style?: string | null;
   camera?: string | null;
   aspectRatio?: string | null;
+  negativePrompt?: string | null;
+  quality?: string | null;
+  background?: string | null;
+  inputFidelity?: string | null;
   referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: string | null;
   remoteUrl?: string | null;
@@ -1155,6 +1296,13 @@ export type GeneratedImageScalarWhereInput = {
   style?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
   camera?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
   aspectRatio?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  negativePrompt?:
+    | Prisma.StringNullableFilter<"GeneratedImage">
+    | string
+    | null;
+  quality?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  background?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
+  inputFidelity?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
   referenceIds?: Prisma.JsonFilter<"GeneratedImage">;
   localPath?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
   remoteUrl?: Prisma.StringNullableFilter<"GeneratedImage"> | string | null;
@@ -1179,6 +1327,10 @@ export type GeneratedImageCreateWithoutUserInput = {
   style?: string | null;
   camera?: string | null;
   aspectRatio?: string | null;
+  negativePrompt?: string | null;
+  quality?: string | null;
+  background?: string | null;
+  inputFidelity?: string | null;
   referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: string | null;
   remoteUrl?: string | null;
@@ -1203,6 +1355,10 @@ export type GeneratedImageUncheckedCreateWithoutUserInput = {
   style?: string | null;
   camera?: string | null;
   aspectRatio?: string | null;
+  negativePrompt?: string | null;
+  quality?: string | null;
+  background?: string | null;
+  inputFidelity?: string | null;
   referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: string | null;
   remoteUrl?: string | null;
@@ -1269,6 +1425,10 @@ export type GeneratedImageCreateManyBrandInput = {
   style?: string | null;
   camera?: string | null;
   aspectRatio?: string | null;
+  negativePrompt?: string | null;
+  quality?: string | null;
+  background?: string | null;
+  inputFidelity?: string | null;
   referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: string | null;
   remoteUrl?: string | null;
@@ -1291,6 +1451,16 @@ export type GeneratedImageUpdateWithoutBrandInput = {
   style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  negativePrompt?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  quality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  background?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  inputFidelity?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1320,6 +1490,16 @@ export type GeneratedImageUncheckedUpdateWithoutBrandInput = {
   style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  negativePrompt?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  quality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  background?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  inputFidelity?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1348,6 +1528,16 @@ export type GeneratedImageUncheckedUpdateManyWithoutBrandInput = {
   style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  negativePrompt?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  quality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  background?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  inputFidelity?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1376,6 +1566,10 @@ export type GeneratedImageCreateManyUserInput = {
   style?: string | null;
   camera?: string | null;
   aspectRatio?: string | null;
+  negativePrompt?: string | null;
+  quality?: string | null;
+  background?: string | null;
+  inputFidelity?: string | null;
   referenceIds: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: string | null;
   remoteUrl?: string | null;
@@ -1398,6 +1592,16 @@ export type GeneratedImageUpdateWithoutUserInput = {
   style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  negativePrompt?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  quality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  background?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  inputFidelity?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1427,6 +1631,16 @@ export type GeneratedImageUncheckedUpdateWithoutUserInput = {
   style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  negativePrompt?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  quality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  background?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  inputFidelity?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1455,6 +1669,16 @@ export type GeneratedImageUncheckedUpdateManyWithoutUserInput = {
   style?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   camera?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   aspectRatio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  negativePrompt?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  quality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  background?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  inputFidelity?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   referenceIds?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   localPath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   remoteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1488,6 +1712,10 @@ export type GeneratedImageSelect<
     style?: boolean;
     camera?: boolean;
     aspectRatio?: boolean;
+    negativePrompt?: boolean;
+    quality?: boolean;
+    background?: boolean;
+    inputFidelity?: boolean;
     referenceIds?: boolean;
     localPath?: boolean;
     remoteUrl?: boolean;
@@ -1520,6 +1748,10 @@ export type GeneratedImageSelectCreateManyAndReturn<
     style?: boolean;
     camera?: boolean;
     aspectRatio?: boolean;
+    negativePrompt?: boolean;
+    quality?: boolean;
+    background?: boolean;
+    inputFidelity?: boolean;
     referenceIds?: boolean;
     localPath?: boolean;
     remoteUrl?: boolean;
@@ -1552,6 +1784,10 @@ export type GeneratedImageSelectUpdateManyAndReturn<
     style?: boolean;
     camera?: boolean;
     aspectRatio?: boolean;
+    negativePrompt?: boolean;
+    quality?: boolean;
+    background?: boolean;
+    inputFidelity?: boolean;
     referenceIds?: boolean;
     localPath?: boolean;
     remoteUrl?: boolean;
@@ -1580,6 +1816,10 @@ export type GeneratedImageSelectScalar = {
   style?: boolean;
   camera?: boolean;
   aspectRatio?: boolean;
+  negativePrompt?: boolean;
+  quality?: boolean;
+  background?: boolean;
+  inputFidelity?: boolean;
   referenceIds?: boolean;
   localPath?: boolean;
   remoteUrl?: boolean;
@@ -1607,6 +1847,10 @@ export type GeneratedImageOmit<
   | "style"
   | "camera"
   | "aspectRatio"
+  | "negativePrompt"
+  | "quality"
+  | "background"
+  | "inputFidelity"
   | "referenceIds"
   | "localPath"
   | "remoteUrl"
@@ -1663,6 +1907,10 @@ export type $GeneratedImagePayload<
       style: string | null;
       camera: string | null;
       aspectRatio: string | null;
+      negativePrompt: string | null;
+      quality: string | null;
+      background: string | null;
+      inputFidelity: string | null;
       referenceIds: runtime.JsonValue;
       localPath: string | null;
       remoteUrl: string | null;
@@ -2315,6 +2563,10 @@ export interface GeneratedImageFieldRefs {
   readonly style: Prisma.FieldRef<"GeneratedImage", "String">;
   readonly camera: Prisma.FieldRef<"GeneratedImage", "String">;
   readonly aspectRatio: Prisma.FieldRef<"GeneratedImage", "String">;
+  readonly negativePrompt: Prisma.FieldRef<"GeneratedImage", "String">;
+  readonly quality: Prisma.FieldRef<"GeneratedImage", "String">;
+  readonly background: Prisma.FieldRef<"GeneratedImage", "String">;
+  readonly inputFidelity: Prisma.FieldRef<"GeneratedImage", "String">;
   readonly referenceIds: Prisma.FieldRef<"GeneratedImage", "Json">;
   readonly localPath: Prisma.FieldRef<"GeneratedImage", "String">;
   readonly remoteUrl: Prisma.FieldRef<"GeneratedImage", "String">;

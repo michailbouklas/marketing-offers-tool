@@ -13,6 +13,10 @@ export interface GeneratedImageDTO {
   style: string | null;
   camera: string | null;
   aspectRatio: string | null;
+  negativePrompt: string | null;
+  quality: string | null;
+  background: string | null;
+  inputFidelity: string | null;
   referenceIds: string[];
   status: GeneratedImageStatus;
   errorMessage: string | null;

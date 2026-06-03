@@ -3,8 +3,44 @@ import { writeImageBytes } from "$lib/server/image-storage";
 import { resizeToRequested } from "$lib/server/image-size";
 import { prisma } from "$lib/server/prisma";
 import { getImageProvider } from "$lib/services/image-providers/factory.server";
+import type {
+  ImageBackground,
+  ImageQuality,
+  InputFidelity,
+} from "$lib/services/image-providers/types";
 
 export type OutputFormat = "png" | "jpg";
+
+// One retry before giving up: providers occasionally return transient 5xx /
+// network errors, and re-marking the whole row as failed wastes a generation.
+async function withRetry<T>(fn: () => Promise<T>, attempts = 2): Promise<T> {
+  let lastError: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError;
+}
+
+function isImageQuality(value: unknown): value is ImageQuality {
+  return (
+    value === "auto" ||
+    value === "low" ||
+    value === "medium" ||
+    value === "high"
+  );
+}
+
+function isImageBackground(value: unknown): value is ImageBackground {
+  return value === "auto" || value === "opaque" || value === "transparent";
+}
+
+function isInputFidelity(value: unknown): value is InputFidelity {
+  return value === "high" || value === "low";
+}
 
 export async function generateOneRow(
   rowId: string,
@@ -37,13 +73,25 @@ export async function generateOneRow(
     }
 
     const provider = getImageProvider(row.provider);
-    const output = await provider.generateImage({
-      prompt: row.finalPrompt,
-      width: row.generationWidth,
-      height: row.generationHeight,
-      model: row.model ?? undefined,
-      references: references.length > 0 ? references : undefined,
-    });
+    const quality = isImageQuality(row.quality) ? row.quality : undefined;
+    const background = isImageBackground(row.background)
+      ? row.background
+      : undefined;
+    const inputFidelity = isInputFidelity(row.inputFidelity)
+      ? row.inputFidelity
+      : undefined;
+    const output = await withRetry(() =>
+      provider.generateImage({
+        prompt: row!.finalPrompt,
+        width: row!.generationWidth,
+        height: row!.generationHeight,
+        model: row!.model ?? undefined,
+        references: references.length > 0 ? references : undefined,
+        quality,
+        background,
+        inputFidelity,
+      }),
+    );
 
     const normalized = await resizeToRequested(output.bytes, {
       width: row.requestedWidth,

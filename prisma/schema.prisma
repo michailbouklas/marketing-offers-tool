@@ -309,6 +309,10 @@ model GeneratedImage {
   style            String?
   camera           String?
   aspectRatio      String?
+  negativePrompt   String?              @db.Text
+  quality          String?
+  background       String?
+  inputFidelity    String?
   referenceIds     Json
   localPath        String?
   remoteUrl        String?              @db.Text

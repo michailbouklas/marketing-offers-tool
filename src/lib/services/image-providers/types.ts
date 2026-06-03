@@ -1,9 +1,23 @@
+export type ImageQuality = "auto" | "low" | "medium" | "high";
+export type ImageBackground = "auto" | "opaque" | "transparent";
+export type InputFidelity = "high" | "low";
+
 export interface GenerateInput {
   prompt: string;
   width: number;
   height: number;
   model?: string;
   references?: string[];
+  /** Provider fidelity tier. Maps to OpenAI `quality`. */
+  quality?: ImageQuality;
+  /** Background handling. Maps to OpenAI `background` (transparent/opaque/auto). */
+  background?: ImageBackground;
+  /**
+   * How strongly to match attached reference images. Maps to OpenAI
+   * `input_fidelity` on the edits endpoint; ignored when there are no
+   * references.
+   */
+  inputFidelity?: InputFidelity;
 }
 
 export interface GenerateOutput {

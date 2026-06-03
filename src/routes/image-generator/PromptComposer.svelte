@@ -22,14 +22,24 @@
     ImageProviderId,
   } from "$lib/services/image-providers/config";
   import {
-    ASPECT_RATIOS,
+    AUTO_SIZE,
+    CUSTOM_SIZE,
+    intersectModelSizes,
+    parseSize,
+    ratioOf,
+    sizeLabel,
+  } from "$lib/services/image-providers/model-sizes";
+  import {
+    BACKGROUND_OPTIONS,
     CAMERAS,
     OUTPUT_FORMATS,
+    QUALITY_OPTIONS,
     STYLES,
-    type AspectRatio,
+    type Background,
     type Camera,
     type ComposerState,
     type OutputFormat,
+    type Quality,
     type Style,
     type SubmitPayload,
   } from "./composer-types";
@@ -62,18 +72,25 @@
     config.defaultProvider ?? config.providers[0]?.id ?? "imagerouter",
   );
   const defaultModel = $derived(
-    config.defaultModel ?? config.providers[0]?.models[0] ?? "gpt-image-1",
+    config.defaultModel ?? config.providers[0]?.models[0]?.id ?? "gpt-image-1",
   );
 
   let prompt = $state("");
   let provider = $state<ImageProviderId>("imagerouter");
   let selectedModels = $state<string[]>([]);
   let modelPickerOpen = $state(false);
-  let size = $state("1024x1024");
+  // `sizeChoice` is the dropdown value (a concrete "WxH", "auto", or "custom");
+  // `customSize` holds the free-typed resolution when "custom" is picked.
+  let sizeChoice = $state("1024x1024");
+  let customSize = $state("1024x1024");
+  let aspectFilter = $state("all");
   let style = $state<Style>("none");
   let camera = $state<Camera>("none");
-  let aspectRatio = $state<AspectRatio>("none");
   let outputFormat = $state<OutputFormat>("png");
+  let negativePrompt = $state("");
+  let quality = $state<Quality>("auto");
+  let background = $state<Background>("auto");
+  let matchReferences = $state(false);
   let enhance = $state(true);
   let samplesPerModel = $state(1);
   let referenceFiles = $state<File[]>([]);
@@ -107,11 +124,20 @@
         ? initial.models
         : [defaultModel];
     selectedModels = [...initialModels];
-    size = initial?.size ?? "1024x1024";
+    const initSize = initial?.size;
+    if (initSize && parseSize(initSize)) {
+      customSize = initSize;
+      sizeChoice = initSize;
+    } else if (initSize) {
+      sizeChoice = initSize;
+    }
     style = initial?.style ?? "none";
     camera = initial?.camera ?? "none";
-    aspectRatio = initial?.aspectRatio ?? "none";
     outputFormat = initial?.outputFormat ?? "png";
+    negativePrompt = initial?.negativePrompt ?? "";
+    quality = initial?.quality ?? "auto";
+    background = initial?.background ?? "auto";
+    matchReferences = initial?.matchReferences ?? false;
     enhance = initial?.enhance ?? true;
     samplesPerModel = initial?.samplesPerModel ?? 1;
     preUploadedReferenceIds = initial?.referenceIds ?? [];
@@ -131,22 +157,80 @@
   const providerModels = $derived(
     config.providers.find((p) => p.id === provider)?.models ?? [],
   );
+  const providerModelIds = $derived(providerModels.map((m) => m.id));
 
   // Drop any selected models that no longer exist on the active provider.
   // If nothing is left, fall back to the provider's first model so the user
   // can submit immediately after switching providers.
   $effect(() => {
-    const validSet = new Set(providerModels);
+    const validSet = new Set(providerModelIds);
     const filtered = selectedModels.filter((m) => validSet.has(m));
     if (filtered.length !== selectedModels.length) {
       selectedModels =
         filtered.length > 0
           ? filtered
-          : providerModels.length > 0
-            ? [providerModels[0]!]
+          : providerModelIds.length > 0
+            ? [providerModelIds[0]!]
             : [];
     }
   });
+
+  const selectedModelConfigs = $derived(
+    providerModels.filter((m) => selectedModels.includes(m.id)),
+  );
+
+  // Resolutions every selected model accepts (intersection). May include the
+  // "auto"/"custom" sentinels. Empty = the models share no common size.
+  const availableSizes = $derived(intersectModelSizes(selectedModelConfigs));
+  const noOverlap = $derived(
+    selectedModelConfigs.length > 0 && availableSizes.length === 0,
+  );
+
+  // Distinct aspect ratios present among the concrete sizes, for the filter.
+  const availableRatios = $derived([
+    ...new Set(
+      availableSizes
+        .map((s) => ratioOf(s))
+        .filter((r): r is string => r !== null),
+    ),
+  ]);
+
+  const filteredSizes = $derived(
+    aspectFilter === "all"
+      ? availableSizes
+      : availableSizes.filter((s) => ratioOf(s) === aspectFilter),
+  );
+
+  // Keep the chosen resolution valid as the model selection / filter changes.
+  $effect(() => {
+    if (noOverlap) {
+      if (sizeChoice !== AUTO_SIZE) sizeChoice = AUTO_SIZE;
+      return;
+    }
+    if (filteredSizes.includes(sizeChoice)) return;
+    // A concrete pick that's no longer offered: keep it via the custom field
+    // when custom is available, otherwise snap to the first valid option.
+    if (availableSizes.includes(CUSTOM_SIZE) && parseSize(sizeChoice)) {
+      customSize = sizeChoice;
+      sizeChoice = CUSTOM_SIZE;
+      return;
+    }
+    if (filteredSizes.length > 0) sizeChoice = filteredSizes[0]!;
+  });
+
+  // The resolution actually submitted.
+  const size = $derived(
+    sizeChoice === CUSTOM_SIZE ? customSize.trim() : sizeChoice,
+  );
+
+  const anySupportsQuality = $derived(
+    selectedModelConfigs.length === 0 ||
+      selectedModelConfigs.some((m) => m.supportsQuality),
+  );
+  const anySupportsReferences = $derived(
+    selectedModelConfigs.length === 0 ||
+      selectedModelConfigs.some((m) => m.supportsReferences),
+  );
 
   const allProviderModelsSelected = $derived(
     providerModels.length > 0 &&
@@ -173,18 +257,23 @@
   }
 
   function selectAllModels() {
-    selectedModels = [...providerModels];
+    selectedModels = [...providerModelIds];
   }
 
   function clearModelSelection() {
     selectedModels = [];
   }
 
-  const effectiveSize = $derived.by(() => {
-    if (aspectRatio === "square") return "1024x1024";
-    if (aspectRatio === "widescreen") return "1536x1024";
-    if (aspectRatio === "tiktok") return "1024x1536";
-    return size;
+  const hasReferences = $derived(
+    preUploadedReferenceIds.length > 0 || referenceFiles.length > 0,
+  );
+
+  // Transparency needs an alpha-capable format; JPG can't carry it, so pin the
+  // output to PNG whenever a transparent background is requested.
+  $effect(() => {
+    if (background === "transparent" && outputFormat !== "png") {
+      outputFormat = "png";
+    }
   });
 
   const canSubmit = $derived(
@@ -208,11 +297,15 @@
       prompt: prompt.trim(),
       provider,
       models: [...selectedModels],
-      size: effectiveSize,
+      size,
       style,
       camera,
-      aspectRatio,
       outputFormat,
+      negativePrompt: negativePrompt.trim(),
+      quality,
+      background,
+      // input_fidelity is only meaningful with references attached.
+      matchReferences: matchReferences && referenceIds.length > 0,
       enhance,
       samplesPerModel,
       referenceIds,
@@ -238,11 +331,21 @@
     if (state.prompt !== undefined) prompt = state.prompt;
     if (state.provider) provider = state.provider;
     if (state.models) selectedModels = [...state.models];
-    if (state.size) size = state.size;
+    if (state.size) {
+      if (parseSize(state.size)) {
+        customSize = state.size;
+      }
+      sizeChoice = state.size;
+    }
     if (state.style) style = state.style;
     if (state.camera) camera = state.camera;
-    if (state.aspectRatio) aspectRatio = state.aspectRatio;
     if (state.outputFormat) outputFormat = state.outputFormat;
+    if (state.negativePrompt !== undefined)
+      negativePrompt = state.negativePrompt;
+    if (state.quality) quality = state.quality;
+    if (state.background) background = state.background;
+    if (state.matchReferences !== undefined)
+      matchReferences = state.matchReferences;
     if (state.enhance !== undefined) enhance = state.enhance;
     if (state.samplesPerModel !== undefined)
       samplesPerModel = state.samplesPerModel;
@@ -367,20 +470,20 @@
                         No models configured for this provider.
                       </p>
                     {:else}
-                      {#each providerModels as providerModel (providerModel)}
+                      {#each providerModels as providerModel (providerModel.id)}
                         <button
                           type="button"
                           class="hover:bg-accent/50 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
-                          onclick={() => toggleModel(providerModel)}
+                          onclick={() => toggleModel(providerModel.id)}
                         >
                           <Checkbox
-                            checked={isModelSelected(providerModel)}
+                            checked={isModelSelected(providerModel.id)}
                             class="pointer-events-none"
                           />
                           <span
                             class="min-w-0 truncate text-sm leading-none font-medium"
                           >
-                            {providerModel}
+                            {providerModel.id}
                           </span>
                         </button>
                       {/each}
@@ -406,39 +509,46 @@
             </Popover.Root>
           </div>
 
-          <div class="grid gap-2">
-            <Label for="size">Image size</Label>
-            <NativeSelect
-              id="size"
-              bind:value={size}
-              disabled={aspectRatio !== "none"}
-            >
-              <NativeSelectOption value="1024x1024"
-                >1024×1024</NativeSelectOption
-              >
-              <NativeSelectOption value="1536x1024"
-                >1536×1024</NativeSelectOption
-              >
-              <NativeSelectOption value="1024x1536"
-                >1024×1536</NativeSelectOption
-              >
-            </NativeSelect>
-            {#if aspectRatio !== "none"}
-              <p class="text-muted-foreground text-xs">
-                Overridden by aspect ratio → <code>{effectiveSize}</code>
-              </p>
-            {/if}
-          </div>
+          {#if availableRatios.length > 1}
+            <div class="grid gap-2">
+              <Label for="aspectFilter">Aspect ratio</Label>
+              <NativeSelect id="aspectFilter" bind:value={aspectFilter}>
+                <NativeSelectOption value="all">All ratios</NativeSelectOption>
+                {#each availableRatios as r (r)}
+                  <NativeSelectOption value={r}>{r}</NativeSelectOption>
+                {/each}
+              </NativeSelect>
+            </div>
+          {/if}
 
           <div class="grid gap-2">
-            <Label for="aspectRatio">Aspect ratio</Label>
-            <NativeSelect id="aspectRatio" bind:value={aspectRatio}>
-              {#each ASPECT_RATIOS as a (a.value)}
-                <NativeSelectOption value={a.value}
-                  >{a.label}</NativeSelectOption
-                >
-              {/each}
-            </NativeSelect>
+            <Label for="size">Resolution</Label>
+            {#if noOverlap}
+              <p
+                class="border-input text-muted-foreground rounded-md border px-3 py-2 text-xs"
+              >
+                The selected models share no common resolution — using each
+                model's default (auto).
+              </p>
+            {:else}
+              <NativeSelect id="size" bind:value={sizeChoice}>
+                {#each filteredSizes as s (s)}
+                  <NativeSelectOption value={s}
+                    >{sizeLabel(s)}</NativeSelectOption
+                  >
+                {/each}
+              </NativeSelect>
+              {#if sizeChoice === CUSTOM_SIZE}
+                <Input
+                  aria-label="Custom resolution (WxH)"
+                  placeholder="e.g. 1024x576"
+                  bind:value={customSize}
+                />
+                <p class="text-muted-foreground text-xs">
+                  Width × height in pixels (e.g. <code>1024x576</code>).
+                </p>
+              {/if}
+            {/if}
           </div>
 
           <div class="grid gap-2">
@@ -461,14 +571,61 @@
 
           <div class="grid gap-2">
             <Label for="outputFormat">Output format</Label>
-            <NativeSelect id="outputFormat" bind:value={outputFormat}>
+            <NativeSelect
+              id="outputFormat"
+              bind:value={outputFormat}
+              disabled={background === "transparent"}
+            >
               {#each OUTPUT_FORMATS as f (f)}
                 <NativeSelectOption value={f}
                   >{f.toUpperCase()}</NativeSelectOption
                 >
               {/each}
             </NativeSelect>
+            {#if background === "transparent"}
+              <p class="text-muted-foreground text-xs">
+                Forced to PNG for a transparent background.
+              </p>
+            {/if}
           </div>
+
+          {#if anySupportsQuality}
+            <div class="grid gap-2">
+              <Label for="quality">Quality</Label>
+              <NativeSelect id="quality" bind:value={quality}>
+                {#each QUALITY_OPTIONS as q (q.value)}
+                  <NativeSelectOption value={q.value}
+                    >{q.label}</NativeSelectOption
+                  >
+                {/each}
+              </NativeSelect>
+            </div>
+          {/if}
+
+          <div class="grid gap-2">
+            <Label for="background">Background</Label>
+            <NativeSelect id="background" bind:value={background}>
+              {#each BACKGROUND_OPTIONS as b (b.value)}
+                <NativeSelectOption value={b.value}
+                  >{b.label}</NativeSelectOption
+                >
+              {/each}
+            </NativeSelect>
+          </div>
+        </div>
+
+        <div class="grid gap-2">
+          <Label for="negativePrompt">Negative prompt (optional)</Label>
+          <Textarea
+            id="negativePrompt"
+            placeholder="Things to avoid, e.g. text, watermarks, extra limbs…"
+            rows={2}
+            bind:value={negativePrompt}
+          />
+          <p class="text-muted-foreground text-xs">
+            Steers the model away from unwanted content by adding an "avoid"
+            instruction to the prompt.
+          </p>
         </div>
 
         <div class="grid gap-2">
@@ -521,6 +678,15 @@
                 </div>
               {/each}
             </div>
+          {/if}
+          {#if hasReferences && anySupportsReferences}
+            <label class="flex items-center gap-2 text-sm">
+              <Checkbox bind:checked={matchReferences} />
+              Match references closely
+              <span class="text-muted-foreground text-xs"
+                >(higher fidelity to attached images)</span
+              >
+            </label>
           {/if}
         </div>
 

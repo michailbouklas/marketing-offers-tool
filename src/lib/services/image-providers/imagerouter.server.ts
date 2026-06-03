@@ -50,6 +50,11 @@ export class ImageRouterImageProvider implements ImageProvider {
     form.set("size", size);
     form.set("response_format", "b64_json");
     form.set("output_format", "png");
+    // Forwarded to the proxied OpenAI-compatible model; models that do not
+    // support a given knob simply ignore it.
+    if (input.quality) form.set("quality", input.quality);
+    if (input.background) form.set("background", input.background);
+    if (input.inputFidelity) form.set("input_fidelity", input.inputFidelity);
 
     for (const refPath of input.references ?? []) {
       const bytes = await readFile(refPath);

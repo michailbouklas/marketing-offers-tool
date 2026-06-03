@@ -85,6 +85,53 @@ describe("ImageRouterImageProvider — text-to-image (no references)", () => {
     expect(form.getAll("image[]")).toHaveLength(0);
   });
 
+  it("forwards quality, background, and input_fidelity when provided", async () => {
+    const calls: RecordedCall[] = [];
+    const provider = new ImageRouterImageProvider({
+      apiKey: "ir-test",
+      baseUrl: "https://api.imagerouter.io",
+      fetch: recorderFetch(calls, () =>
+        jsonResponse({
+          data: [{ b64_json: Buffer.from("x").toString("base64") }],
+        }),
+      ),
+    });
+
+    await provider.generateImage({
+      prompt: "p",
+      width: 1024,
+      height: 1024,
+      quality: "medium",
+      background: "transparent",
+      inputFidelity: "high",
+    });
+
+    const form = calls[0]!.init.body as FormData;
+    expect(form.get("quality")).toBe("medium");
+    expect(form.get("background")).toBe("transparent");
+    expect(form.get("input_fidelity")).toBe("high");
+  });
+
+  it("omits the accuracy knobs from the form when not provided", async () => {
+    const calls: RecordedCall[] = [];
+    const provider = new ImageRouterImageProvider({
+      apiKey: "ir-test",
+      baseUrl: "https://api.imagerouter.io",
+      fetch: recorderFetch(calls, () =>
+        jsonResponse({
+          data: [{ b64_json: Buffer.from("x").toString("base64") }],
+        }),
+      ),
+    });
+
+    await provider.generateImage({ prompt: "p", width: 1024, height: 1024 });
+
+    const form = calls[0]!.init.body as FormData;
+    expect(form.get("quality")).toBeNull();
+    expect(form.get("background")).toBeNull();
+    expect(form.get("input_fidelity")).toBeNull();
+  });
+
   it("defaults the model to gpt-image-1 when no model is supplied", async () => {
     const calls: RecordedCall[] = [];
     const provider = new ImageRouterImageProvider({

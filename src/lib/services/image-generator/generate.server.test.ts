@@ -60,6 +60,19 @@ const brandFindMock = (
 const getBrandGuidelinesMock =
   brandContextModule.getBrandGuidelines as unknown as ReturnType<typeof vi.fn>;
 
+function modelCfg(
+  id: string,
+  sizes: string[] = ["1024x1024", "1536x1024", "1024x1536"],
+) {
+  return {
+    id,
+    sizes,
+    supportsQuality: true,
+    supportsReferences: true,
+    supportsMask: false,
+  };
+}
+
 beforeEach(() => {
   mockEnv.mockReturnValue({
     IMAGE_ROUTER_API_KEY: "ir-key",
@@ -76,10 +89,12 @@ beforeEach(() => {
     providers: [
       {
         id: "imagerouter",
-        models: ["openai/gpt-image-1", "google/nano-banana-2"],
-        sizes: ["1024x1024"],
+        models: [
+          modelCfg("openai/gpt-image-1"),
+          modelCfg("google/nano-banana-2"),
+        ],
       },
-      { id: "openai", models: ["gpt-image-1"], sizes: ["1024x1024"] },
+      { id: "openai", models: [modelCfg("gpt-image-1")] },
     ],
     defaultProvider: "imagerouter",
     defaultModel: "gpt-image-1",
@@ -149,6 +164,24 @@ describe("buildFinalPrompt", () => {
       "a cat",
     );
   });
+
+  it("appends a negative-prompt clause after the prompt", () => {
+    expect(
+      buildFinalPrompt({
+        prompt: "a cat",
+        style: "photorealistic",
+        negativePrompt: "text, watermark",
+      }),
+    ).toBe(
+      "Style: photorealistic. a cat Avoid the following: text, watermark.",
+    );
+  });
+
+  it("skips blank/whitespace negative prompts", () => {
+    expect(buildFinalPrompt({ prompt: "a cat", negativePrompt: "   " })).toBe(
+      "a cat",
+    );
+  });
 });
 
 describe("createPendingGenerations", () => {
@@ -210,9 +243,7 @@ describe("createPendingGenerations", () => {
 
   it("rejects a provider that is not configured", async () => {
     mockConfig.mockReturnValue({
-      providers: [
-        { id: "openai", models: ["gpt-image-1"], sizes: ["1024x1024"] },
-      ],
+      providers: [{ id: "openai", models: [modelCfg("gpt-image-1")] }],
       defaultProvider: "openai",
       defaultModel: "gpt-image-1",
       samplesPerModelMax: 5,
@@ -245,16 +276,78 @@ describe("createPendingGenerations", () => {
     });
   });
 
-  it("maps aspectRatio=widescreen to 1536x1024", async () => {
+  it("derives aspectRatio from the chosen resolution", async () => {
     await createPendingGenerations({
       userId: "user-1",
-      body: { prompt: "x", provider: "imagerouter", aspectRatio: "widescreen" },
+      body: { prompt: "x", provider: "imagerouter", size: "1536x1024" },
     });
 
     expect(createMock.mock.calls[0]![0].data).toMatchObject({
       requestedWidth: 1536,
       requestedHeight: 1024,
-      aspectRatio: "widescreen",
+      aspectRatio: "3:2",
+    });
+  });
+
+  it("snaps the requested size to the selected model's supported sizes", async () => {
+    mockConfig.mockReturnValue({
+      providers: [
+        {
+          id: "imagerouter",
+          models: [modelCfg("flux", ["1024x576", "576x1024"])],
+        },
+      ],
+      defaultProvider: "imagerouter",
+      defaultModel: "flux",
+      samplesPerModelMax: 5,
+    });
+
+    await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "x",
+        provider: "imagerouter",
+        models: ["flux"],
+        size: "1024x1024",
+      },
+    });
+
+    const data = createMock.mock.calls[0]![0].data;
+    // 1024×1024 is not offered by this model; it snaps to the nearest by ratio.
+    expect(data.requestedWidth).toBe(1024);
+    expect(data.requestedHeight).toBe(1024);
+    expect(`${data.generationWidth}x${data.generationHeight}`).toBe("576x1024");
+  });
+
+  it("resolves size 'auto' to the model's primary concrete size", async () => {
+    mockConfig.mockReturnValue({
+      providers: [
+        {
+          id: "imagerouter",
+          models: [modelCfg("flux", ["1024x576", "576x1024", "auto"])],
+        },
+      ],
+      defaultProvider: "imagerouter",
+      defaultModel: "flux",
+      samplesPerModelMax: 5,
+    });
+
+    await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "x",
+        provider: "imagerouter",
+        models: ["flux"],
+        size: "auto",
+      },
+    });
+
+    expect(createMock.mock.calls[0]![0].data).toMatchObject({
+      requestedWidth: 1024,
+      requestedHeight: 576,
+      generationWidth: 1024,
+      generationHeight: 576,
+      aspectRatio: null,
     });
   });
 
@@ -462,6 +555,66 @@ describe("createPendingGenerations", () => {
       },
     });
     expect(rows).toHaveLength(6); // 3 samples × 2 models
+  });
+
+  it("persists negativePrompt, quality, and background on each row", async () => {
+    await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "a cat",
+        provider: "imagerouter",
+        negativePrompt: "text, watermark",
+        quality: "high",
+        background: "transparent",
+      },
+    });
+
+    const data = createMock.mock.calls[0]![0].data;
+    expect(data).toMatchObject({
+      negativePrompt: "text, watermark",
+      quality: "high",
+      background: "transparent",
+    });
+    expect(data.finalPrompt).toContain("Avoid the following: text, watermark.");
+  });
+
+  it("maps matchReferences to inputFidelity 'high' only when references exist", async () => {
+    refFindMock.mockResolvedValue([{ id: "ref-1" }]);
+    await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "a cat",
+        provider: "imagerouter",
+        matchReferences: true,
+        references: ["ref-1"],
+      },
+    });
+    expect(createMock.mock.calls[0]![0].data.inputFidelity).toBe("high");
+  });
+
+  it("leaves inputFidelity null when matchReferences is set but no references", async () => {
+    await createPendingGenerations({
+      userId: "user-1",
+      body: {
+        prompt: "a cat",
+        provider: "imagerouter",
+        matchReferences: true,
+      },
+    });
+    expect(createMock.mock.calls[0]![0].data.inputFidelity).toBeNull();
+  });
+
+  it("defaults the new accuracy fields to null when unset", async () => {
+    await createPendingGenerations({
+      userId: "user-1",
+      body: { prompt: "a cat", provider: "imagerouter" },
+    });
+    expect(createMock.mock.calls[0]![0].data).toMatchObject({
+      negativePrompt: null,
+      quality: null,
+      background: null,
+      inputFidelity: null,
+    });
   });
 
   it("de-duplicates body.models entries", async () => {
