@@ -134,6 +134,13 @@ export async function listGeneratedImagesForUser(
   return rows.map(toDTO);
 }
 
+/** Total number of images a single user has generated, for the home widget. */
+export async function countGeneratedImagesForUser(
+  userId: string,
+): Promise<number> {
+  return prisma.generatedImage.count({ where: { userId } });
+}
+
 export async function listAllGeneratedImagesForUser(
   userId: string,
 ): Promise<GeneratedImageDTO[]> {

@@ -4,6 +4,7 @@
   import MetricLinkCard from "$lib/components/home/metric-link-card.svelte";
   import UsageSummaryWidget from "$lib/components/home/usage-summary-widget.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
+  import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -55,7 +56,9 @@
     data.access.canEditOffers ||
       data.access.canApprove ||
       data.access.canManageUsers ||
-      data.access.canViewUsage,
+      data.access.canViewUsage ||
+      data.access.canGenerateImages ||
+      data.access.canManageBrands,
   );
 </script>
 
@@ -129,6 +132,64 @@
           {#each widgetCards as widget (widget.title)}
             <OfferStatusWidget {...widget} />
           {/each}
+        </div>
+      </section>
+    {/if}
+
+    {#if data.imageGeneration}
+      <section class="space-y-4">
+        <div class="space-y-1">
+          <p
+            class="text-sm font-semibold tracking-[0.18em] text-zinc-500 uppercase"
+          >
+            Image generation
+          </p>
+          <h2 class="text-2xl font-semibold tracking-[-0.03em]">
+            Create on-brand marketing images
+          </h2>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {#if data.imageGeneration.canGenerateImages}
+            <MetricLinkCard
+              eyebrow="Image generator"
+              title="Your generated images"
+              metric={data.imageGeneration.generatedImageCount ?? 0}
+              metricLabel="created so far"
+              description="Open the generator to create new on-brand marketing images, or revisit everything you've made."
+              href="/image-generator"
+              cta="Open image generator"
+            />
+          {/if}
+          {#if data.imageGeneration.canManageBrands}
+            <a
+              href="/admin/brands"
+              class="border-border/70 bg-background/88 hover:bg-background group flex h-full flex-col justify-between rounded-3xl border p-6 shadow-sm backdrop-blur transition-colors"
+            >
+              <div class="space-y-4">
+                <Badge
+                  variant="outline"
+                  class="border-primary/20 bg-background/85 text-muted-foreground px-3 py-1 text-[0.7rem] tracking-[0.24em] uppercase shadow-sm"
+                >
+                  Brand assets
+                </Badge>
+                <div class="space-y-1">
+                  <p class="text-lg font-semibold tracking-[-0.02em]">Brands</p>
+                  <p class="text-muted-foreground text-sm leading-6">
+                    Manage brand guidelines and reference assets that feed the
+                    image generator.
+                  </p>
+                </div>
+              </div>
+              <div
+                class="mt-6 inline-flex items-center gap-2 text-sm font-medium"
+              >
+                <span>Manage brands</span>
+                <ArrowRightIcon
+                  class="size-4 transition-transform group-hover:translate-x-1"
+                />
+              </div>
+            </a>
+          {/if}
         </div>
       </section>
     {/if}

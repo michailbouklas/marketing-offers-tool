@@ -1,5 +1,5 @@
 import { auth } from "$lib/server/auth";
-import { isAdminRole } from "$lib/auth/roles";
+import { canAccessAdminSection } from "$lib/auth/roles";
 import {
   getAuthenticatedUserRole,
   isAdminPath,
@@ -37,7 +37,7 @@ const sessionHandle: Handle = async ({ event, resolve }) => {
   if (
     event.locals.session &&
     isAdminPath(pathname) &&
-    !isAdminRole(await getAuthenticatedUserRole(event))
+    !canAccessAdminSection(await getAuthenticatedUserRole(event))
   ) {
     redirect(302, "/");
   }

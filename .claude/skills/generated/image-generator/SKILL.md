@@ -1,67 +1,67 @@
 ---
 name: image-generator
-description: "Skill for the Image-generator area of marketing-offers-tool. 35 symbols across 10 files."
+description: "Skill for the Image-generator area of marketing-offers-tool. 37 symbols across 11 files."
 ---
 
 # Image-generator
 
-35 symbols | 10 files | Cohesion: 84%
+37 symbols | 11 files | Cohesion: 85%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how load, parseUsageDateRange, getGeneratedImageUsageByDayAllUsers work
+- Understanding how getGeneratedImageUsageByDayForUser, parseUsageDateRange, getGeneratedImageUsageByDayAllUsers work
 - Modifying image-generator-related functionality
 
 ## Key Files
 
 | File | Symbols |
 |------|---------|
-| `src/lib/services/image-generator/image-generator.server.ts` | toUtcDayKey, bucketUsageByDay, parseUsageDateRange, buildUsageWhere, getGeneratedImageUsageByDayAllUsers (+12) |
+| `src/lib/services/image-generator/image-generator.server.ts` | toUtcDayKey, bucketUsageByDay, getGeneratedImageUsageByDayForUser, parseUsageDateRange, buildUsageWhere (+13) |
 | `src/lib/services/image-generator/image-generator-client.ts` | listBrandAssets, attachBrandAssetAsReference, fetchBrandGuidelines, jsonOrThrow, uploadReferences (+3) |
 | `src/lib/services/image-generator/generate.server.ts` | GenerateValidationError, buildFinalPrompt, createPendingGenerations |
 | `src/routes/admin/image-generator-usage/+page.server.ts` | load |
+| `src/routes/api/images/usage/+server.ts` | GET |
 | `src/routes/api/admin/image-generator/usage-by-model/+server.ts` | GET |
 | `src/routes/api/admin/image-generator/usage/+server.ts` | GET |
 | `src/routes/image-generator/me/+page.server.ts` | load |
 | `src/lib/services/image-generator/orchestrate.server.ts` | kickoffPendingGenerations |
 | `src/routes/api/images/generate/+server.ts` | POST |
-| `src/routes/api/images/+server.ts` | GET |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`load`** (Function) — `src/routes/admin/image-generator-usage/+page.server.ts:7`
-- **`parseUsageDateRange`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:327`
-- **`getGeneratedImageUsageByDayAllUsers`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:373`
-- **`getGeneratedImageUsageByModelByDay`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:410`
-- **`getAdminImageUsageOverview`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:502`
+- **`getGeneratedImageUsageByDayForUser`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:308`
+- **`parseUsageDateRange`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:334`
+- **`getGeneratedImageUsageByDayAllUsers`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:380`
+- **`getGeneratedImageUsageByModelByDay`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:417`
+- **`getAdminImageUsageOverview`** (Function) — `src/lib/services/image-generator/image-generator.server.ts:509`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
 | `GenerateValidationError` | Class | `src/lib/services/image-generator/generate.server.ts` | 77 |
+| `getGeneratedImageUsageByDayForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 308 |
+| `parseUsageDateRange` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 334 |
+| `getGeneratedImageUsageByDayAllUsers` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 380 |
+| `getGeneratedImageUsageByModelByDay` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 417 |
+| `getAdminImageUsageOverview` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 509 |
 | `load` | Function | `src/routes/admin/image-generator-usage/+page.server.ts` | 7 |
-| `parseUsageDateRange` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 327 |
-| `getGeneratedImageUsageByDayAllUsers` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 373 |
-| `getGeneratedImageUsageByModelByDay` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 410 |
-| `getAdminImageUsageOverview` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 502 |
+| `GET` | Function | `src/routes/api/images/usage/+server.ts` | 5 |
 | `GET` | Function | `src/routes/api/admin/image-generator/usage-by-model/+server.ts` | 8 |
 | `GET` | Function | `src/routes/api/admin/image-generator/usage/+server.ts` | 8 |
+| `listGeneratedImagesHistoryForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 216 |
+| `listGeneratedImagePromptGroupsForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 243 |
+| `listGeneratedImageFilterOptionsForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 590 |
 | `load` | Function | `src/routes/image-generator/me/+page.server.ts` | 23 |
-| `listGeneratedImagesHistoryForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 209 |
-| `listGeneratedImagePromptGroupsForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 236 |
-| `listGeneratedImageFilterOptionsForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 583 |
 | `listBrandAssets` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 53 |
 | `attachBrandAssetAsReference` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 63 |
 | `fetchBrandGuidelines` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 74 |
 | `uploadReferences` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 90 |
 | `enhancePrompt` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 104 |
 | `submitGeneration` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 126 |
-| `fetchImagesSince` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 137 |
-| `kickoffPendingGenerations` | Function | `src/lib/services/image-generator/orchestrate.server.ts` | 162 |
 
 ## Execution Flows
 
@@ -82,14 +82,12 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Server | 5 calls |
-| Services | 4 calls |
+| Server | 9 calls |
+| Services | 3 calls |
 | Image-providers | 2 calls |
-| Aggregator-offers | 1 calls |
-| Brand-context | 1 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "load"})` — see callers and callees
+1. `gitnexus_context({name: "getGeneratedImageUsageByDayForUser"})` — see callers and callees
 2. `gitnexus_query({query: "image-generator"})` — find related execution flows
 3. Read key files listed above for implementation details

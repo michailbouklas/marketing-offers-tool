@@ -6,7 +6,7 @@ vi.mock("$lib/services/brand-context/brand-context.server", () => ({
 }));
 
 vi.mock("$lib/server/auth-guards", () => ({
-  requireApiAdminPermission: vi.fn(),
+  requireApiPermission: vi.fn(),
 }));
 
 const brandContextModule =
@@ -14,8 +14,8 @@ const brandContextModule =
 const authModule = await import("$lib/server/auth-guards");
 const { DELETE } = await import("./+server");
 
-const requireAdminMock =
-  authModule.requireApiAdminPermission as unknown as ReturnType<typeof vi.fn>;
+const requirePermissionMock =
+  authModule.requireApiPermission as unknown as ReturnType<typeof vi.fn>;
 const getMock = brandContextModule.getBrandAsset as unknown as ReturnType<
   typeof vi.fn
 >;
@@ -28,7 +28,10 @@ function makeEvent(params: { brandId?: string; assetId?: string }) {
 }
 
 beforeEach(() => {
-  requireAdminMock.mockResolvedValue({ session: {}, user: { id: "admin" } });
+  requirePermissionMock.mockResolvedValue({
+    session: {},
+    user: { id: "admin" },
+  });
 });
 
 afterEach(() => {
@@ -37,7 +40,7 @@ afterEach(() => {
 
 describe("DELETE /api/admin/brands/[brandId]/assets/[assetId]", () => {
   it("non-admin → 302", async () => {
-    requireAdminMock.mockImplementation(() => {
+    requirePermissionMock.mockImplementation(() => {
       throw { status: 302 };
     });
     await expect(

@@ -1,5 +1,5 @@
 import { error, redirect } from "@sveltejs/kit";
-import { isAdminRole } from "$lib/auth/roles";
+import { canAccessAdminSection, isAdminRole } from "$lib/auth/roles";
 import type { AppPermissions } from "$lib/auth/permissions";
 import { auth } from "$lib/server/auth";
 import { prisma } from "$lib/server/prisma";
@@ -33,6 +33,31 @@ export async function requireAdminUser(event: RequestEvent) {
   const role = await getAuthenticatedUserRole(event);
 
   if (!user || !isAdminRole(role)) {
+    redirect(302, "/");
+  }
+
+  return {
+    session,
+    user: {
+      ...user,
+      role,
+    },
+  };
+}
+
+/**
+ * Page guard for the `/admin` section landing page: redirects to home unless
+ * the user holds a role whose tools live under `/admin`. Each admin sub-page
+ * still enforces its own `requirePermission`, so this only governs reaching the
+ * index — a capability role (e.g. `brandManager`) sees only the cards it can
+ * open.
+ */
+export async function requireAdminSection(event: RequestEvent) {
+  const { user, session } = requireAuthenticatedUser(event);
+
+  const role = await getAuthenticatedUserRole(event);
+
+  if (!user || !canAccessAdminSection(role)) {
     redirect(302, "/");
   }
 

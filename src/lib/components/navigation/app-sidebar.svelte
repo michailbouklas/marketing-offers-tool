@@ -1,6 +1,10 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { hasAnyRole, isAdminRole, type UserRole } from "$lib/auth/roles";
+  import {
+    canAccessAdminSection,
+    hasAnyRole,
+    type UserRole,
+  } from "$lib/auth/roles";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import SignOutButton from "$lib/components/ui/sign-out-button/index.svelte";
   import HouseIcon from "@lucide/svelte/icons/house";
@@ -48,7 +52,7 @@
     ...allNavItems.filter(
       (item) => !item.roles || hasAnyRole(user?.role, item.roles),
     ),
-    ...(isAdminRole(user?.role)
+    ...(canAccessAdminSection(user?.role)
       ? [{ href: "/admin", label: "Admin", icon: ShieldIcon }]
       : []),
   ]);

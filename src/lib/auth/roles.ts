@@ -22,6 +22,23 @@ export const superUserRole: UserRole = "superUser";
  */
 export const adminRoles: UserRole[] = [adminUserRole, superUserRole];
 
+/**
+ * Roles whose tools live under the `/admin` section. Holding any of these lets
+ * a user enter `/admin` (the hooks gate + the index page); each sub-page still
+ * enforces its own fine-grained `requirePermission`, so a capability role only
+ * reaches the specific tool(s) it grants. `brandManager` is included so brand
+ * managers can manage guidelines and reference assets without being full
+ * admins.
+ */
+export const adminSectionRoles: UserRole[] = [
+  adminUserRole,
+  superUserRole,
+  "approver",
+  "usageViewer",
+  "userManager",
+  "brandManager",
+];
+
 export const roleLabels: Record<UserRole, string> = {
   user: "User",
   admin: "Admin",
@@ -66,4 +83,16 @@ export function hasAnyRole(
   allowed: readonly UserRole[],
 ): boolean {
   return parseRoles(role).some((parsed) => allowed.includes(parsed));
+}
+
+/**
+ * Whether the user may enter the `/admin` section at all. True for the marker
+ * admin roles and for any capability role whose tool lives under `/admin`.
+ * Used by the hooks gate, the admin index page, and the sidebar so a brand
+ * manager (or other capability holder) is not bounced to `/`.
+ */
+export function canAccessAdminSection(
+  role: string | null | undefined,
+): boolean {
+  return hasAnyRole(role, adminSectionRoles);
 }

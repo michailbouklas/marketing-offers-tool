@@ -16,7 +16,7 @@ vi.mock("$lib/services/brand-context/brand-context.server", () => ({
 }));
 
 vi.mock("$lib/server/auth-guards", () => ({
-  requireApiAdminPermission: vi.fn(),
+  requireApiPermission: vi.fn(),
 }));
 
 const envModule = await import("$lib/server/env");
@@ -29,8 +29,8 @@ const { GET, PUT } = await import("./+server");
 const mockEnv = envModule.getImageGeneratorEnv as unknown as ReturnType<
   typeof vi.fn
 >;
-const requireAdminMock =
-  authModule.requireApiAdminPermission as unknown as ReturnType<typeof vi.fn>;
+const requirePermissionMock =
+  authModule.requireApiPermission as unknown as ReturnType<typeof vi.fn>;
 const brandFindMock = (
   prismaModule.prisma as unknown as {
     brand: { findUnique: ReturnType<typeof vi.fn> };
@@ -47,7 +47,10 @@ function makeEvent(params: { brandId?: string }, request?: Request) {
 
 beforeEach(() => {
   mockEnv.mockReturnValue({ UPLOADS_DIR: "/tmp/uploads" });
-  requireAdminMock.mockResolvedValue({ session: {}, user: { id: "admin" } });
+  requirePermissionMock.mockResolvedValue({
+    session: {},
+    user: { id: "admin" },
+  });
 });
 
 afterEach(() => {
@@ -74,7 +77,7 @@ describe("GET /api/admin/brands/[brandId]/guidelines", () => {
 
 describe("PUT /api/admin/brands/[brandId]/guidelines", () => {
   it("non-admin → 302", async () => {
-    requireAdminMock.mockImplementation(() => {
+    requirePermissionMock.mockImplementation(() => {
       throw { status: 302 };
     });
     const req = new Request("http://test.local/", {

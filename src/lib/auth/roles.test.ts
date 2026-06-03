@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { hasAnyRole, isAdminRole, parseRoles } from "./roles";
+import {
+  canAccessAdminSection,
+  hasAnyRole,
+  isAdminRole,
+  parseRoles,
+} from "./roles";
 
 describe("parseRoles", () => {
   it("returns an empty list for nullish input", () => {
@@ -59,5 +64,32 @@ describe("hasAnyRole", () => {
   it("is false for nullish input", () => {
     expect(hasAnyRole(null, ["admin"])).toBe(false);
     expect(hasAnyRole(undefined, ["admin"])).toBe(false);
+  });
+});
+
+describe("canAccessAdminSection", () => {
+  it("is true for the marker admin roles", () => {
+    expect(canAccessAdminSection("admin")).toBe(true);
+    expect(canAccessAdminSection("superUser")).toBe(true);
+  });
+
+  it("is true for capability roles whose tools live under /admin", () => {
+    expect(canAccessAdminSection("brandManager")).toBe(true);
+    expect(canAccessAdminSection("approver")).toBe(true);
+    expect(canAccessAdminSection("usageViewer")).toBe(true);
+    expect(canAccessAdminSection("userManager")).toBe(true);
+  });
+
+  it("is true when an admin-section role appears within a multi-role string", () => {
+    expect(canAccessAdminSection("user,imageEditor,brandManager")).toBe(true);
+  });
+
+  it("is false for roles with no /admin tools and for nullish input", () => {
+    expect(canAccessAdminSection("user")).toBe(false);
+    expect(canAccessAdminSection("imageEditor")).toBe(false);
+    expect(canAccessAdminSection("offerEditor")).toBe(false);
+    expect(canAccessAdminSection("user,imageEditor")).toBe(false);
+    expect(canAccessAdminSection(null)).toBe(false);
+    expect(canAccessAdminSection(undefined)).toBe(false);
   });
 });

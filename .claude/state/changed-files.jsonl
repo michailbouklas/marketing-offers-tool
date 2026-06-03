@@ -263,3 +263,16 @@
 {"file":"src/lib/server/object-store.server.test.ts","action":"Write","timestamp":"2026-06-03T11:55:59Z","important":true}
 {"file":"README.md","action":"Edit","timestamp":"2026-06-03T11:58:15Z","important":false}
 {"file":"scripts/backfill-storage.ts","action":"Write","timestamp":"2026-06-03T11:58:45Z","important":false}
+{"file":"src/lib/auth/roles.ts","action":"Edit","timestamp":"2026-06-03T12:40:30Z","important":false}
+{"file":"src/hooks.server.ts","action":"Edit","timestamp":"2026-06-03T12:40:45Z","important":false}
+{"file":"src/lib/server/auth-guards.ts","action":"Edit","timestamp":"2026-06-03T12:41:03Z","important":false}
+{"file":"src/routes/admin/+page.server.ts","action":"Edit","timestamp":"2026-06-03T12:41:18Z","important":false}
+{"file":"src/lib/components/navigation/app-sidebar.svelte","action":"Edit","timestamp":"2026-06-03T12:41:25Z","important":false}
+{"file":"src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts","action":"Edit","timestamp":"2026-06-03T12:41:53Z","important":false}
+{"file":"src/routes/api/admin/brands/[brandId]/assets/server.test.ts","action":"Edit","timestamp":"2026-06-03T12:42:31Z","important":true}
+{"file":"src/routes/api/admin/brands/[brandId]/assets/[assetId]/server.test.ts","action":"Edit","timestamp":"2026-06-03T12:42:37Z","important":true}
+{"file":"src/lib/services/image-generator/image-generator.server.ts","action":"Edit","timestamp":"2026-06-03T12:42:52Z","important":false}
+{"file":"src/routes/+page.server.ts","action":"Edit","timestamp":"2026-06-03T12:43:10Z","important":false}
+{"file":"src/routes/+page.svelte","action":"Edit","timestamp":"2026-06-03T12:43:48Z","important":false}
+{"file":"src/lib/auth/roles.test.ts","action":"Edit","timestamp":"2026-06-03T12:44:27Z","important":true}
+{"file":"C:/Users/mbouklas/.claude/projects/C--work-marketing-offers-tool/memory/rbac-permission-system.md","action":"Edit","timestamp":"2026-06-03T12:45:51Z","important":false}

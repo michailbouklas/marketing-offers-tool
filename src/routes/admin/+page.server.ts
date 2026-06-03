@@ -1,8 +1,8 @@
-import { hasPermission, requireAdminUser } from "$lib/server/auth-guards";
+import { hasPermission, requireAdminSection } from "$lib/server/auth-guards";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
-  await requireAdminUser(event);
+  await requireAdminSection(event);
 
   const [pendingSubmissions, dimOffers, users, brands, imageUsage] =
     await Promise.all([
