@@ -1,11 +1,6 @@
 <script lang="ts">
+  import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
-  import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-  } from "$lib/components/ui/card/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
@@ -15,12 +10,16 @@
   } from "$lib/components/ui/native-select/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
-  import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
+  import ImageIcon from "@lucide/svelte/icons/image";
+  import Settings2Icon from "@lucide/svelte/icons/settings-2";
+  import XIcon from "@lucide/svelte/icons/x";
   import type { Snippet } from "svelte";
+  import ModelSelectorDialog from "./ModelSelectorDialog.svelte";
   import type {
     ImageGeneratorConfig,
     ImageProviderId,
   } from "$lib/services/image-providers/config";
+  import { modelLabel } from "$lib/services/image-providers/model-display";
   import {
     AUTO_SIZE,
     CUSTOM_SIZE,
@@ -78,7 +77,9 @@
   let prompt = $state("");
   let provider = $state<ImageProviderId>("imagerouter");
   let selectedModels = $state<string[]>([]);
-  let modelPickerOpen = $state(false);
+  let modelDialogOpen = $state(false);
+  let settingsOpen = $state(false);
+  let fileInput = $state<HTMLInputElement | null>(null);
   // `sizeChoice` is the dropdown value (a concrete "WxH", "auto", or "custom");
   // `customSize` holds the free-typed resolution when "custom" is picked.
   let sizeChoice = $state("1024x1024");
@@ -237,15 +238,6 @@
       selectedModels.length === providerModels.length,
   );
 
-  const modelSummary = $derived.by(() => {
-    if (providerModels.length === 0) return "No models configured";
-    if (selectedModels.length === 0) return "No models selected";
-    if (allProviderModelsSelected)
-      return `All models (${providerModels.length})`;
-    if (selectedModels.length === 1) return selectedModels[0]!;
-    return `${selectedModels.length} selected`;
-  });
-
   function isModelSelected(model: string): boolean {
     return selectedModels.includes(model);
   }
@@ -254,14 +246,6 @@
     selectedModels = isModelSelected(model)
       ? selectedModels.filter((m) => m !== model)
       : [...selectedModels, model];
-  }
-
-  function selectAllModels() {
-    selectedModels = [...providerModelIds];
-  }
-
-  function clearModelSelection() {
-    selectedModels = [];
   }
 
   const hasReferences = $derived(
@@ -353,370 +337,354 @@
   }
 </script>
 
-<Card>
-  <CardHeader>
-    <CardTitle>Compose a prompt</CardTitle>
-  </CardHeader>
-  <CardContent>
-    {#if config.providers.length === 0}
-      <p class="text-muted-foreground text-sm">
-        No image providers are configured. Set <code>IMAGE_ROUTER_API_KEY</code>
-        or <code>OPENAI_API_KEY</code> in your environment to enable generation.
-      </p>
-    {:else}
-      <form class="grid gap-4" onsubmit={handleSubmit}>
-        <div class="grid gap-2">
-          <Label for="prompt">Prompt</Label>
-          <Textarea
-            id="prompt"
-            placeholder="Describe the image you want…"
-            rows={4}
-            bind:value={prompt}
-          />
+{#if config.providers.length === 0}
+  <p class="text-muted-foreground rounded-xl border p-4 text-sm">
+    No image providers are configured. Set <code>IMAGE_ROUTER_API_KEY</code>
+    or <code>OPENAI_API_KEY</code> in your environment to enable generation.
+  </p>
+{:else}
+  <form class="grid gap-4" onsubmit={handleSubmit}>
+    {#if hasBrandGuidelines}
+      <div class="grid gap-2">
+        <div class="flex items-center justify-between">
+          <Label for="brandGuidelines">Brand guidelines</Label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onclick={() => (showGuidelines = !showGuidelines)}
+          >
+            {showGuidelines ? "Hide" : "Edit guidelines"}
+          </Button>
         </div>
+        {#if showGuidelines}
+          <Textarea id="brandGuidelines" rows={5} bind:value={guidelinesText} />
+          <p class="text-muted-foreground text-xs">
+            Prepended to the prompt for this brand. Edits apply to this
+            session's generations only and are not saved back to the brand.
+          </p>
+        {:else}
+          <p class="text-muted-foreground text-xs">
+            This brand's guidelines will be applied. Click "Edit guidelines" to
+            review or tweak them for this generation.
+          </p>
+        {/if}
+      </div>
+    {/if}
 
-        {@render afterPrompt?.()}
-
-        {#if hasBrandGuidelines}
-          <div class="grid gap-2">
-            <div class="flex items-center justify-between">
-              <Label for="brandGuidelines">Brand guidelines</Label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onclick={() => (showGuidelines = !showGuidelines)}
-              >
-                {showGuidelines ? "Hide" : "Edit guidelines"}
-              </Button>
-            </div>
-            {#if showGuidelines}
-              <Textarea
-                id="brandGuidelines"
-                rows={5}
-                bind:value={guidelinesText}
+    <!-- Rich prompt container -->
+    <div
+      class="bg-card focus-within:ring-ring/40 rounded-xl border p-3 shadow-sm transition focus-within:ring-2"
+    >
+      {#if preUploadedReferenceIds.length > 0}
+        <div class="mb-2 flex flex-wrap gap-2 pl-1">
+          {#each preUploadedReferenceIds as refId (refId)}
+            <div
+              class="border-input bg-muted relative size-14 overflow-hidden rounded-md border"
+            >
+              <img
+                src={`/api/images/references/${refId}`}
+                alt="Attached reference"
+                class="size-full object-cover"
+                loading="lazy"
               />
-              <p class="text-muted-foreground text-xs">
-                Prepended to the prompt for this brand. Edits apply to this
-                session's generations only and are not saved back to the brand.
-              </p>
-            {:else}
-              <p class="text-muted-foreground text-xs">
-                This brand's guidelines will be applied. Click "Edit guidelines"
-                to review or tweak them for this generation.
-              </p>
-            {/if}
-          </div>
+              <button
+                type="button"
+                aria-label="Remove reference"
+                title="Remove reference"
+                class="bg-background/90 text-foreground hover:bg-destructive hover:text-destructive-foreground absolute top-0.5 right-0.5 flex size-5 items-center justify-center rounded-full border text-xs leading-none shadow-sm"
+                onclick={() => removeReference(refId)}
+              >
+                ×
+              </button>
+            </div>
+          {/each}
+        </div>
+      {/if}
+
+      <div class="flex items-start gap-2">
+        <button
+          type="button"
+          title="Add reference image"
+          aria-label="Add reference image"
+          class="text-muted-foreground hover:text-foreground hover:bg-accent mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md transition-colors"
+          onclick={() => fileInput?.click()}
+        >
+          <ImageIcon class="size-5" />
+        </button>
+        <Textarea
+          id="prompt"
+          placeholder="Describe what you want to see"
+          rows={2}
+          bind:value={prompt}
+          class="min-h-10 flex-1 resize-none border-0 bg-transparent px-0 py-1.5 shadow-none focus-visible:ring-0 dark:bg-transparent"
+        />
+      </div>
+
+      {#if referenceFiles.length > 0}
+        <p class="text-muted-foreground mt-1 pl-10 text-xs">
+          {referenceFiles.length} file{referenceFiles.length === 1 ? "" : "s"} ready
+          to upload on generate.
+        </p>
+      {/if}
+
+      <!-- Toolbar -->
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={providerModels.length === 0}
+          onclick={() => (modelDialogOpen = true)}
+        >
+          Select models
+        </Button>
+
+        {#if providerModels.length === 0}
+          <span class="text-muted-foreground text-xs">No models configured</span
+          >
+        {:else if selectedModels.length === 0}
+          <span class="text-muted-foreground text-xs">No models selected</span>
+        {:else}
+          {#each selectedModels as modelId (modelId)}
+            <span
+              class="bg-secondary text-secondary-foreground inline-flex h-7 items-center gap-1 rounded-full py-0.5 pr-1 pl-3 text-xs font-medium"
+            >
+              {modelLabel(modelId)}
+              <button
+                type="button"
+                aria-label={`Remove ${modelLabel(modelId)}`}
+                title="Remove model"
+                class="hover:bg-background/60 flex size-5 items-center justify-center rounded-full transition-colors"
+                onclick={() => toggleModel(modelId)}
+              >
+                <XIcon class="size-3.5" />
+              </button>
+            </span>
+          {/each}
         {/if}
 
-        <div class="grid gap-3 sm:grid-cols-2">
-          <div class="grid gap-2">
-            <Label for="provider">Provider</Label>
-            <NativeSelect id="provider" bind:value={provider}>
-              {#each config.providers as p (p.id)}
-                <NativeSelectOption value={p.id}>{p.id}</NativeSelectOption>
-              {/each}
-            </NativeSelect>
-          </div>
+        <div class="ml-auto flex items-center gap-1">
+          <Popover.Root bind:open={settingsOpen}>
+            <Popover.Trigger
+              aria-label="Model settings"
+              title="Model settings"
+              class={buttonVariants({ variant: "ghost", size: "icon" })}
+            >
+              <Settings2Icon class="size-4" />
+            </Popover.Trigger>
 
-          <div class="grid gap-2">
-            <Label id="composer-model-label">Models</Label>
-            <Popover.Root bind:open={modelPickerOpen}>
-              <Popover.Trigger
-                aria-labelledby="composer-model-label"
-                disabled={providerModels.length === 0}
-                class={`${buttonVariants({ variant: "outline" })} w-full justify-between font-normal`}
-              >
-                <span class="truncate">{modelSummary}</span>
-                <ChevronsUpDownIcon class="size-4 shrink-0 opacity-60" />
-              </Popover.Trigger>
+            <Popover.Content
+              align="end"
+              collisionPadding={8}
+              class="max-h-(--bits-floating-available-height) w-[24rem] overflow-y-auto p-4"
+            >
+              <div class="grid gap-3">
+                <p
+                  class="text-muted-foreground text-xs font-semibold tracking-wide uppercase"
+                >
+                  Model settings
+                </p>
 
-              <Popover.Content align="start" class="w-[22rem] p-0">
-                <div class="flex flex-col">
-                  <div class="border-b px-4 py-3">
-                    <p class="text-sm font-medium">Pick models</p>
-                    <p class="text-muted-foreground mt-1 text-xs">
-                      Generate one batch per selected model. Pick at least one.
-                    </p>
-                  </div>
+                <div class="grid gap-3 sm:grid-cols-2">
+                  {#if availableRatios.length > 1}
+                    <div class="grid gap-1.5">
+                      <Label for="aspectFilter" class="text-xs">
+                        Aspect ratio
+                      </Label>
+                      <NativeSelect id="aspectFilter" bind:value={aspectFilter}>
+                        <NativeSelectOption value="all">
+                          All ratios
+                        </NativeSelectOption>
+                        {#each availableRatios as r (r)}
+                          <NativeSelectOption value={r}>
+                            {r}
+                          </NativeSelectOption>
+                        {/each}
+                      </NativeSelect>
+                    </div>
+                  {/if}
 
-                  <div
-                    class="flex items-center justify-between gap-2 border-b px-4 py-2"
-                  >
-                    <button
-                      type="button"
-                      class="text-sm font-medium underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={providerModels.length === 0 ||
-                        allProviderModelsSelected}
-                      onclick={selectAllModels}
-                    >
-                      Select all
-                    </button>
-                    <button
-                      type="button"
-                      class="text-muted-foreground hover:text-foreground text-sm font-medium underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={selectedModels.length === 0}
-                      onclick={clearModelSelection}
-                    >
-                      Clear
-                    </button>
-                  </div>
-
-                  <div class="max-h-72 overflow-y-auto px-2 py-2">
-                    {#if providerModels.length === 0}
+                  <div class="grid gap-1.5">
+                    <Label for="size" class="text-xs">Resolution</Label>
+                    {#if noOverlap}
                       <p
-                        class="text-muted-foreground px-3 py-4 text-center text-sm"
+                        class="border-input text-muted-foreground rounded-md border px-3 py-2 text-xs"
                       >
-                        No models configured for this provider.
+                        The selected models share no common resolution — using
+                        each model's default (auto).
                       </p>
                     {:else}
-                      {#each providerModels as providerModel (providerModel.id)}
-                        <button
-                          type="button"
-                          class="hover:bg-accent/50 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
-                          onclick={() => toggleModel(providerModel.id)}
-                        >
-                          <Checkbox
-                            checked={isModelSelected(providerModel.id)}
-                            class="pointer-events-none"
-                          />
-                          <span
-                            class="min-w-0 truncate text-sm leading-none font-medium"
-                          >
-                            {providerModel.id}
-                          </span>
-                        </button>
-                      {/each}
+                      <NativeSelect id="size" bind:value={sizeChoice}>
+                        {#each filteredSizes as s (s)}
+                          <NativeSelectOption value={s}>
+                            {sizeLabel(s)}
+                          </NativeSelectOption>
+                        {/each}
+                      </NativeSelect>
+                      {#if sizeChoice === CUSTOM_SIZE}
+                        <Input
+                          aria-label="Custom resolution (WxH)"
+                          placeholder="e.g. 1024x576"
+                          bind:value={customSize}
+                        />
+                        <p class="text-muted-foreground text-xs">
+                          Width × height in pixels (e.g. <code>1024x576</code>).
+                        </p>
+                      {/if}
                     {/if}
                   </div>
 
-                  <div
-                    class="flex items-center justify-between gap-2 border-t px-4 py-3"
-                  >
-                    <p class="text-muted-foreground text-xs">
-                      {selectedModels.length} selected
-                    </p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onclick={() => (modelPickerOpen = false)}
+                  <div class="grid gap-1.5">
+                    <Label for="style" class="text-xs">Style</Label>
+                    <NativeSelect id="style" bind:value={style}>
+                      {#each STYLES as s (s)}
+                        <NativeSelectOption value={s}>{s}</NativeSelectOption>
+                      {/each}
+                    </NativeSelect>
+                  </div>
+
+                  <div class="grid gap-1.5">
+                    <Label for="camera" class="text-xs">Camera</Label>
+                    <NativeSelect id="camera" bind:value={camera}>
+                      {#each CAMERAS as c (c)}
+                        <NativeSelectOption value={c}>{c}</NativeSelectOption>
+                      {/each}
+                    </NativeSelect>
+                  </div>
+
+                  <div class="grid gap-1.5">
+                    <Label for="outputFormat" class="text-xs"
+                      >Output format</Label
                     >
-                      Done
-                    </Button>
+                    <NativeSelect
+                      id="outputFormat"
+                      bind:value={outputFormat}
+                      disabled={background === "transparent"}
+                    >
+                      {#each OUTPUT_FORMATS as f (f)}
+                        <NativeSelectOption value={f}>
+                          {f.toUpperCase()}
+                        </NativeSelectOption>
+                      {/each}
+                    </NativeSelect>
+                    {#if background === "transparent"}
+                      <p class="text-muted-foreground text-xs">
+                        Forced to PNG for a transparent background.
+                      </p>
+                    {/if}
+                  </div>
+
+                  {#if anySupportsQuality}
+                    <div class="grid gap-1.5">
+                      <Label for="quality" class="text-xs">Quality</Label>
+                      <NativeSelect id="quality" bind:value={quality}>
+                        {#each QUALITY_OPTIONS as q (q.value)}
+                          <NativeSelectOption value={q.value}>
+                            {q.label}
+                          </NativeSelectOption>
+                        {/each}
+                      </NativeSelect>
+                    </div>
+                  {/if}
+
+                  <div class="grid gap-1.5">
+                    <Label for="background" class="text-xs">Background</Label>
+                    <NativeSelect id="background" bind:value={background}>
+                      {#each BACKGROUND_OPTIONS as b (b.value)}
+                        <NativeSelectOption value={b.value}>
+                          {b.label}
+                        </NativeSelectOption>
+                      {/each}
+                    </NativeSelect>
+                  </div>
+
+                  <div class="grid gap-1.5">
+                    <Label for="samplesPerModel" class="text-xs">
+                      Generations / model
+                    </Label>
+                    <Input
+                      id="samplesPerModel"
+                      type="number"
+                      min={1}
+                      max={samplesMax}
+                      step={1}
+                      bind:value={samplesPerModel}
+                    />
+                    <p class="text-muted-foreground text-xs">
+                      max {samplesMax}
+                    </p>
                   </div>
                 </div>
-              </Popover.Content>
-            </Popover.Root>
-          </div>
 
-          {#if availableRatios.length > 1}
-            <div class="grid gap-2">
-              <Label for="aspectFilter">Aspect ratio</Label>
-              <NativeSelect id="aspectFilter" bind:value={aspectFilter}>
-                <NativeSelectOption value="all">All ratios</NativeSelectOption>
-                {#each availableRatios as r (r)}
-                  <NativeSelectOption value={r}>{r}</NativeSelectOption>
-                {/each}
-              </NativeSelect>
-            </div>
-          {/if}
-
-          <div class="grid gap-2">
-            <Label for="size">Resolution</Label>
-            {#if noOverlap}
-              <p
-                class="border-input text-muted-foreground rounded-md border px-3 py-2 text-xs"
-              >
-                The selected models share no common resolution — using each
-                model's default (auto).
-              </p>
-            {:else}
-              <NativeSelect id="size" bind:value={sizeChoice}>
-                {#each filteredSizes as s (s)}
-                  <NativeSelectOption value={s}
-                    >{sizeLabel(s)}</NativeSelectOption
-                  >
-                {/each}
-              </NativeSelect>
-              {#if sizeChoice === CUSTOM_SIZE}
-                <Input
-                  aria-label="Custom resolution (WxH)"
-                  placeholder="e.g. 1024x576"
-                  bind:value={customSize}
-                />
-                <p class="text-muted-foreground text-xs">
-                  Width × height in pixels (e.g. <code>1024x576</code>).
-                </p>
-              {/if}
-            {/if}
-          </div>
-
-          <div class="grid gap-2">
-            <Label for="style">Style</Label>
-            <NativeSelect id="style" bind:value={style}>
-              {#each STYLES as s (s)}
-                <NativeSelectOption value={s}>{s}</NativeSelectOption>
-              {/each}
-            </NativeSelect>
-          </div>
-
-          <div class="grid gap-2">
-            <Label for="camera">Camera</Label>
-            <NativeSelect id="camera" bind:value={camera}>
-              {#each CAMERAS as c (c)}
-                <NativeSelectOption value={c}>{c}</NativeSelectOption>
-              {/each}
-            </NativeSelect>
-          </div>
-
-          <div class="grid gap-2">
-            <Label for="outputFormat">Output format</Label>
-            <NativeSelect
-              id="outputFormat"
-              bind:value={outputFormat}
-              disabled={background === "transparent"}
-            >
-              {#each OUTPUT_FORMATS as f (f)}
-                <NativeSelectOption value={f}
-                  >{f.toUpperCase()}</NativeSelectOption
-                >
-              {/each}
-            </NativeSelect>
-            {#if background === "transparent"}
-              <p class="text-muted-foreground text-xs">
-                Forced to PNG for a transparent background.
-              </p>
-            {/if}
-          </div>
-
-          {#if anySupportsQuality}
-            <div class="grid gap-2">
-              <Label for="quality">Quality</Label>
-              <NativeSelect id="quality" bind:value={quality}>
-                {#each QUALITY_OPTIONS as q (q.value)}
-                  <NativeSelectOption value={q.value}
-                    >{q.label}</NativeSelectOption
-                  >
-                {/each}
-              </NativeSelect>
-            </div>
-          {/if}
-
-          <div class="grid gap-2">
-            <Label for="background">Background</Label>
-            <NativeSelect id="background" bind:value={background}>
-              {#each BACKGROUND_OPTIONS as b (b.value)}
-                <NativeSelectOption value={b.value}
-                  >{b.label}</NativeSelectOption
-                >
-              {/each}
-            </NativeSelect>
-          </div>
-        </div>
-
-        <div class="grid gap-2">
-          <Label for="negativePrompt">Negative prompt (optional)</Label>
-          <Textarea
-            id="negativePrompt"
-            placeholder="Things to avoid, e.g. text, watermarks, extra limbs…"
-            rows={2}
-            bind:value={negativePrompt}
-          />
-          <p class="text-muted-foreground text-xs">
-            Steers the model away from unwanted content by adding an "avoid"
-            instruction to the prompt.
-          </p>
-        </div>
-
-        <div class="grid gap-2">
-          <div class="flex items-center justify-between gap-2">
-            <Label for="references">Reference images (optional)</Label>
-            {#if onViewBrandAssets}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={!canViewBrandAssets}
-                title={canViewBrandAssets
-                  ? "Browse this brand's assets to use as a reference"
-                  : "Select a brand rule above to browse its assets"}
-                onclick={() => onViewBrandAssets?.()}
-              >
-                View brand assets
-              </Button>
-            {/if}
-          </div>
-          <input
-            id="references"
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            multiple
-            class="text-sm"
-            onchange={handleFileSelect}
-          />
-          {#if preUploadedReferenceIds.length > 0}
-            <div class="flex flex-wrap gap-2">
-              {#each preUploadedReferenceIds as refId (refId)}
-                <div
-                  class="border-input bg-muted relative size-16 overflow-hidden rounded-md border"
-                >
-                  <img
-                    src={`/api/images/references/${refId}`}
-                    alt="Attached reference"
-                    class="size-full object-cover"
-                    loading="lazy"
+                <div class="grid gap-2 border-t pt-3">
+                  <Label for="negativePrompt" class="text-xs">
+                    Negative prompt (optional)
+                  </Label>
+                  <Textarea
+                    id="negativePrompt"
+                    placeholder="Things to avoid, e.g. text, watermarks…"
+                    rows={2}
+                    bind:value={negativePrompt}
                   />
-                  <button
-                    type="button"
-                    aria-label="Remove reference"
-                    title="Remove reference"
-                    class="bg-background/90 text-foreground hover:bg-destructive hover:text-destructive-foreground absolute top-0.5 right-0.5 flex size-5 items-center justify-center rounded-full border text-xs leading-none shadow-sm"
-                    onclick={() => removeReference(refId)}
-                  >
-                    ×
-                  </button>
                 </div>
-              {/each}
-            </div>
-          {/if}
-          {#if hasReferences && anySupportsReferences}
-            <label class="flex items-center gap-2 text-sm">
-              <Checkbox bind:checked={matchReferences} />
-              Match references closely
-              <span class="text-muted-foreground text-xs"
-                >(higher fidelity to attached images)</span
-              >
-            </label>
-          {/if}
-        </div>
 
-        <div class="flex flex-wrap items-center gap-6">
-          <label class="flex items-center gap-2 text-sm">
-            <Checkbox bind:checked={enhance} />
-            Enhance prompt
-          </label>
+                <div class="grid gap-2 border-t pt-3">
+                  <label class="flex items-center gap-2 text-sm">
+                    <Checkbox bind:checked={enhance} />
+                    Enhance prompt
+                  </label>
 
-          <div class="flex items-center gap-2">
-            <Label for="samplesPerModel" class="text-sm">Samples / model</Label>
-            <Input
-              id="samplesPerModel"
-              type="number"
-              min={1}
-              max={samplesMax}
-              step={1}
-              class="w-20"
-              bind:value={samplesPerModel}
-            />
-            <span class="text-muted-foreground text-xs">max {samplesMax}</span>
-          </div>
-        </div>
+                  {#if hasReferences && anySupportsReferences}
+                    <label class="flex items-center gap-2 text-sm">
+                      <Checkbox bind:checked={matchReferences} />
+                      Match references closely
+                    </label>
+                  {/if}
 
-        <div>
+                  {#if onViewBrandAssets}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      class="w-full"
+                      disabled={!canViewBrandAssets}
+                      title={canViewBrandAssets
+                        ? "Browse this brand's assets to use as a reference"
+                        : "Select a brand rule above to browse its assets"}
+                      onclick={() => onViewBrandAssets?.()}
+                    >
+                      View brand assets
+                    </Button>
+                  {/if}
+                </div>
+              </div>
+            </Popover.Content>
+          </Popover.Root>
+
           <Button type="submit" disabled={!canSubmit}>
             {busy ? "Working…" : "Generate"}
           </Button>
         </div>
-      </form>
-    {/if}
-  </CardContent>
-</Card>
+      </div>
+    </div>
+
+    {@render afterPrompt?.()}
+
+    <input
+      bind:this={fileInput}
+      type="file"
+      accept="image/png,image/jpeg,image/webp"
+      multiple
+      class="hidden"
+      onchange={handleFileSelect}
+    />
+  </form>
+
+  <ModelSelectorDialog
+    bind:open={modelDialogOpen}
+    {config}
+    bind:provider
+    bind:selectedModels
+  />
+{/if}

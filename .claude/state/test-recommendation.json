@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-06-03T08:08:05Z",
-  "changed_file": "src/lib/services/image-generator/generate.server.ts",
+  "timestamp": "2026-06-03T08:52:28Z",
+  "changed_file": "src/lib/services/image-providers/model-display.ts",
   "test_command": "npx vitest run --reporter=verbose",
-  "related_test": "C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-generator\\generate.server.test.ts",
+  "related_test": "",
   "recommendation": "テストの実行を推奨します"
 }

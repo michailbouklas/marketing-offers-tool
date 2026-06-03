@@ -224,3 +224,6 @@
 {"file":"src/lib/services/image-generator/generate.server.test.ts","action":"Edit","timestamp":"2026-06-03T08:05:54Z","important":true}
 {"file":"src/lib/services/image-providers/model-sizes.test.ts","action":"Write","timestamp":"2026-06-03T08:07:00Z","important":true}
 {"file":"src/lib/services/image-providers/imagerouter-models.server.test.ts","action":"Write","timestamp":"2026-06-03T08:07:17Z","important":true}
+{"file":"C:/Users/mbouklas/.claude/plans/the-ui-right-now-snazzy-emerson.md","action":"Write","timestamp":"2026-06-03T08:49:57Z","important":false}
+{"file":"src/lib/services/image-providers/model-display.ts","action":"Write","timestamp":"2026-06-03T08:52:28Z","important":false}
+{"file":"src/routes/image-generator/ModelSelectorDialog.svelte","action":"Write","timestamp":"2026-06-03T08:52:56Z","important":false}
