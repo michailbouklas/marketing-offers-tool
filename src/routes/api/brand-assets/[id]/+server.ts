@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
-import { readFile } from "node:fs/promises";
 import { requireAuthenticatedApiUser } from "$lib/server/auth-guards";
+import { getObjectStore } from "$lib/server/object-store.server";
 import { prisma } from "$lib/server/prisma";
 import type { RequestHandler } from "./$types";
 
@@ -29,10 +29,8 @@ export const GET: RequestHandler = async (event) => {
     error(403, "Forbidden");
   }
 
-  let bytes: Buffer;
-  try {
-    bytes = await readFile(asset.localPath);
-  } catch {
+  const bytes = await getObjectStore().tryGet(asset.localPath);
+  if (!bytes) {
     error(404, "Not found");
   }
 

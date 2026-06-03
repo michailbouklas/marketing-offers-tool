@@ -1,11 +1,11 @@
 ---
 name: scripts
-description: "Skill for the Scripts area of marketing-offers-tool. 11 symbols across 1 files."
+description: "Skill for the Scripts area of marketing-offers-tool. 13 symbols across 2 files."
 ---
 
 # Scripts
 
-11 symbols | 1 files | Cohesion: 100%
+13 symbols | 2 files | Cohesion: 100%
 
 ## When to Use
 
@@ -15,32 +15,35 @@ description: "Skill for the Scripts area of marketing-offers-tool. 11 symbols ac
 
 ## Key Files
 
-| File                                | Symbols                                                                            |
-| ----------------------------------- | ---------------------------------------------------------------------------------- |
+| File | Symbols |
+|------|---------|
 | `scripts/create-marketing-users.ts` | normalizeValue, addLookupEntry, buildBrandLookup, matchedBrands, resolveBrand (+6) |
+| `scripts/backfill-storage.ts` | contentTypeFor, main |
 
 ## Key Symbols
 
-| Symbol                        | Type     | File                                | Line |
-| ----------------------------- | -------- | ----------------------------------- | ---- |
-| `normalizeValue`              | Function | `scripts/create-marketing-users.ts` | 111  |
-| `addLookupEntry`              | Function | `scripts/create-marketing-users.ts` | 149  |
-| `buildBrandLookup`            | Function | `scripts/create-marketing-users.ts` | 166  |
-| `matchedBrands`               | Function | `scripts/create-marketing-users.ts` | 176  |
-| `resolveBrand`                | Function | `scripts/create-marketing-users.ts` | 198  |
-| `resolveBrandIds`             | Function | `scripts/create-marketing-users.ts` | 216  |
-| `formatFailure`               | Function | `scripts/create-marketing-users.ts` | 241  |
-| `replaceUserBrandAssignments` | Function | `scripts/create-marketing-users.ts` | 279  |
-| `main`                        | Function | `scripts/create-marketing-users.ts` | 310  |
-| `getRequiredEnv`              | Function | `scripts/create-marketing-users.ts` | 115  |
-| `buildAuth`                   | Function | `scripts/create-marketing-users.ts` | 125  |
+| Symbol | Type | File | Line |
+|--------|------|------|------|
+| `normalizeValue` | Function | `scripts/create-marketing-users.ts` | 111 |
+| `addLookupEntry` | Function | `scripts/create-marketing-users.ts` | 149 |
+| `buildBrandLookup` | Function | `scripts/create-marketing-users.ts` | 166 |
+| `matchedBrands` | Function | `scripts/create-marketing-users.ts` | 176 |
+| `resolveBrand` | Function | `scripts/create-marketing-users.ts` | 198 |
+| `resolveBrandIds` | Function | `scripts/create-marketing-users.ts` | 216 |
+| `formatFailure` | Function | `scripts/create-marketing-users.ts` | 241 |
+| `replaceUserBrandAssignments` | Function | `scripts/create-marketing-users.ts` | 279 |
+| `main` | Function | `scripts/create-marketing-users.ts` | 310 |
+| `getRequiredEnv` | Function | `scripts/create-marketing-users.ts` | 115 |
+| `buildAuth` | Function | `scripts/create-marketing-users.ts` | 125 |
+| `contentTypeFor` | Function | `scripts/backfill-storage.ts` | 30 |
+| `main` | Function | `scripts/backfill-storage.ts` | 53 |
 
 ## Execution Flows
 
-| Flow                    | Type            | Steps |
-| ----------------------- | --------------- | ----- |
-| `Main → AddLookupEntry` | intra_community | 4     |
-| `Main → NormalizeValue` | intra_community | 4     |
+| Flow | Type | Steps |
+|------|------|-------|
+| `Main → AddLookupEntry` | intra_community | 4 |
+| `Main → NormalizeValue` | intra_community | 4 |
 
 ## How to Explore
 

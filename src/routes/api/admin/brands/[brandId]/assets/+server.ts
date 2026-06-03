@@ -1,6 +1,5 @@
 import { error, json } from "@sveltejs/kit";
 import { requireApiAdminPermission } from "$lib/server/auth-guards";
-import { getImageGeneratorEnv } from "$lib/server/env";
 import { extensionForContentType } from "$lib/server/reference-storage";
 import {
   createBrandAsset,
@@ -84,7 +83,6 @@ export const POST: RequestHandler = async (event) => {
     }
   }
 
-  const env = getImageGeneratorEnv();
   const created: Array<{ id: string; name: string; contentType: string }> = [];
   for (const file of files) {
     const row = await createBrandAsset({
@@ -92,7 +90,6 @@ export const POST: RequestHandler = async (event) => {
       slug: brand.slug,
       file,
       name: file.name || "asset",
-      uploadsDir: env.UPLOADS_DIR,
     });
     created.push({
       id: row.id,

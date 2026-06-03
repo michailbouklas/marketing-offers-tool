@@ -130,10 +130,6 @@ describe("PUT /api/admin/brands/[brandId]/guidelines", () => {
     const res = await PUT(makeEvent({ brandId: "1" }, req));
     const body = (await res.json()) as { ok: boolean };
     expect(body.ok).toBe(true);
-    expect(setGuidelinesMock).toHaveBeenCalledWith(
-      "acme",
-      "# brand",
-      "/tmp/uploads",
-    );
+    expect(setGuidelinesMock).toHaveBeenCalledWith("acme", "# brand");
   });
 });

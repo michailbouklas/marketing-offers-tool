@@ -1,7 +1,7 @@
 import { error, json } from "@sveltejs/kit";
 import { randomUUID } from "node:crypto";
 import { requireAuthenticatedApiUser } from "$lib/server/auth-guards";
-import { getImageGeneratorEnv } from "$lib/server/env";
+import { getObjectStore } from "$lib/server/object-store.server";
 import { prisma } from "$lib/server/prisma";
 import {
   extensionForContentType,
@@ -39,12 +39,12 @@ export const POST: RequestHandler = async (event) => {
     }
   }
 
-  const env = getImageGeneratorEnv();
+  const store = getObjectStore();
   const results: Array<{ id: string; contentType: string }> = [];
 
   for (const file of files) {
     const id = randomUUID();
-    const written = await writeReferenceFile(env.UPLOADS_DIR, id, file);
+    const written = await writeReferenceFile(store, id, file);
     const row = await prisma.referenceImage.create({
       data: {
         id,

@@ -99,6 +99,6 @@ describe("GET /api/brand-guidelines?brandId=", () => {
     const res = await GET(makeEvent("?brandId=7"));
     const body = (await res.json()) as { markdown: string };
     expect(body.markdown).toBe("# rules");
-    expect(getGuidelinesMock).toHaveBeenCalledWith("acme", "/tmp/uploads");
+    expect(getGuidelinesMock).toHaveBeenCalledWith("acme");
   });
 });

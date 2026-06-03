@@ -1,6 +1,9 @@
-import { getImageGeneratorEnv } from "$lib/server/env";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { writeImageBytes } from "$lib/server/image-storage";
 import { resizeToRequested } from "$lib/server/image-size";
+import { getObjectStore } from "$lib/server/object-store.server";
 import { prisma } from "$lib/server/prisma";
 import { getImageProvider } from "$lib/services/image-providers/factory.server";
 import type {
@@ -48,8 +51,13 @@ export async function generateOneRow(
 ): Promise<void> {
   const start = Date.now();
 
+  const store = getObjectStore();
   let row: Awaited<ReturnType<typeof prisma.generatedImage.findUnique>> | null =
     null;
+  // Providers read reference images from local file paths, so when the active
+  // object store is remote (Supabase) we materialize each reference into a
+  // throwaway temp directory and hand the provider those paths.
+  let tempRefDir: string | null = null;
   try {
     row = await prisma.generatedImage.findUnique({ where: { id: rowId } });
     if (!row) {
@@ -67,9 +75,19 @@ export async function generateOneRow(
     if (referenceIds.length > 0) {
       const refs = await prisma.referenceImage.findMany({
         where: { id: { in: referenceIds }, userId: row.userId },
-        select: { localPath: true },
+        select: { id: true, localPath: true },
       });
-      references = refs.map((r) => r.localPath);
+      tempRefDir = await mkdtemp(join(tmpdir(), "img-refs-"));
+      references = [];
+      for (const ref of refs) {
+        const bytes = await store.get(ref.localPath);
+        // Preserve the extension from the key so the provider can infer the
+        // content type and filename correctly.
+        const ext = ref.localPath.split(".").pop() ?? "png";
+        const refPath = join(tempRefDir, `${ref.id}.${ext}`);
+        await writeFile(refPath, bytes);
+        references.push(refPath);
+      }
     }
 
     const provider = getImageProvider(row.provider);
@@ -99,9 +117,8 @@ export async function generateOneRow(
       format: outputFormat,
     });
 
-    const env = getImageGeneratorEnv();
     const localPath = await writeImageBytes(
-      env.UPLOADS_DIR,
+      store,
       row.id,
       normalized,
       outputFormat,
@@ -135,6 +152,10 @@ export async function generateOneRow(
         row.id,
         updateErr,
       );
+    }
+  } finally {
+    if (tempRefDir) {
+      await rm(tempRefDir, { recursive: true, force: true }).catch(() => {});
     }
   }
 }

@@ -1,5 +1,5 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { join, normalize, sep } from "node:path";
+import { normalize, sep } from "node:path";
+import type { ObjectStore, StorageKey } from "./object-store.server";
 
 const REFERENCES_SUBDIR = "references";
 
@@ -12,7 +12,8 @@ const CONTENT_TYPE_TO_EXTENSION: Record<string, string> = {
 
 export interface WriteReferenceResult {
   id: string;
-  localPath: string;
+  /** Portable storage key (persisted in the `localPath` column). */
+  localPath: StorageKey;
   contentType: string;
   extension: string;
 }
@@ -36,23 +37,13 @@ export function extensionForContentType(contentType: string): string | null {
   return CONTENT_TYPE_TO_EXTENSION[normalized] ?? null;
 }
 
-export function referenceFilePath(
-  uploadsDir: string,
-  id: string,
-  extension: string,
-): string {
-  const safeId = ensureSafeId(id);
-  return join(uploadsDir, REFERENCES_SUBDIR, `${safeId}.${extension}`);
-}
-
-async function ensureReferencesDir(uploadsDir: string): Promise<string> {
-  const dir = join(uploadsDir, REFERENCES_SUBDIR);
-  await mkdir(dir, { recursive: true, mode: 0o700 });
-  return dir;
+/** Portable storage key for a reference image, e.g. `references/<id>.png`. */
+export function referenceKey(id: string, extension: string): StorageKey {
+  return `${REFERENCES_SUBDIR}/${ensureSafeId(id)}.${extension}`;
 }
 
 export async function writeReferenceFile(
-  uploadsDir: string,
+  store: ObjectStore,
   id: string,
   file: File,
 ): Promise<WriteReferenceResult> {
@@ -65,14 +56,13 @@ export async function writeReferenceFile(
     );
   }
 
-  await ensureReferencesDir(uploadsDir);
-  const filePath = referenceFilePath(uploadsDir, safeId, extension);
+  const key = referenceKey(safeId, extension);
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(filePath, buffer, { mode: 0o600 });
+  await store.put(key, buffer, contentType);
 
   return {
     id: safeId,
-    localPath: filePath,
+    localPath: key,
     contentType,
     extension,
   };

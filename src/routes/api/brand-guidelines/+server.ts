@@ -1,6 +1,5 @@
 import { error, json } from "@sveltejs/kit";
 import { requireAuthenticatedApiUser } from "$lib/server/auth-guards";
-import { getImageGeneratorEnv } from "$lib/server/env";
 import { getBrandGuidelines } from "$lib/services/brand-context/brand-context.server";
 import { prisma } from "$lib/server/prisma";
 import type { RequestHandler } from "./$types";
@@ -33,7 +32,6 @@ export const GET: RequestHandler = async (event) => {
     return json({ markdown: "" });
   }
 
-  const env = getImageGeneratorEnv();
-  const markdown = await getBrandGuidelines(brand.slug, env.UPLOADS_DIR);
+  const markdown = await getBrandGuidelines(brand.slug);
   return json({ markdown: markdown ?? "" });
 };

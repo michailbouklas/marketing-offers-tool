@@ -14,7 +14,13 @@ vi.mock("$lib/server/prisma", () => ({
   },
 }));
 
+vi.mock("$lib/server/env", () => ({
+  getImageGeneratorEnv: vi.fn(),
+  getStorageEnv: vi.fn(() => ({})),
+}));
+
 const prismaModule = await import("$lib/server/prisma");
+const envModule = await import("$lib/server/env");
 const {
   createBrandAsset,
   deleteBrandAsset,
@@ -32,11 +38,15 @@ const createMock = prismaModule.prisma.brandAsset
   .create as unknown as ReturnType<typeof vi.fn>;
 const deleteMock = prismaModule.prisma.brandAsset
   .delete as unknown as ReturnType<typeof vi.fn>;
+const mockEnv = envModule.getImageGeneratorEnv as unknown as ReturnType<
+  typeof vi.fn
+>;
 
 let workdir: string;
 
 beforeEach(() => {
   workdir = mkdtempSync(join(tmpdir(), "brand-context-"));
+  mockEnv.mockReturnValue({ UPLOADS_DIR: workdir });
 });
 
 afterEach(() => {
@@ -89,7 +99,6 @@ describe("createBrandAsset", () => {
       slug: "acme",
       file: makeFile("image/png", Buffer.from([1, 2, 3, 4])),
       name: "logo.png",
-      uploadsDir: workdir,
     });
 
     expect(createMock).toHaveBeenCalledTimes(1);
@@ -112,10 +121,10 @@ describe("deleteBrandAsset", () => {
     expect(deleteMock).not.toHaveBeenCalled();
   });
 
-  it("deletes row then unlinks file; ignores ENOENT on unlink", async () => {
+  it("deletes row then removes the object; ignores a missing object", async () => {
     findUniqueMock.mockResolvedValue({
       id: "a",
-      localPath: join(workdir, "never-existed.png"),
+      localPath: "brands/acme/assets/never-existed.png",
     });
     deleteMock.mockResolvedValue(undefined);
     await deleteBrandAsset("a");
@@ -125,11 +134,11 @@ describe("deleteBrandAsset", () => {
 
 describe("getBrandGuidelines / setBrandGuidelines", () => {
   it("returns null when guidelines have not been written", async () => {
-    expect(await getBrandGuidelines("acme", workdir)).toBeNull();
+    expect(await getBrandGuidelines("acme")).toBeNull();
   });
 
   it("round-trips markdown", async () => {
-    await setBrandGuidelines("acme", "# brand\n\nrules", workdir);
-    expect(await getBrandGuidelines("acme", workdir)).toBe("# brand\n\nrules");
+    await setBrandGuidelines("acme", "# brand\n\nrules");
+    expect(await getBrandGuidelines("acme")).toBe("# brand\n\nrules");
   });
 });

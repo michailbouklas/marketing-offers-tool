@@ -47,6 +47,7 @@
     config: ImageGeneratorConfig;
     busy?: boolean;
     initial?: Partial<ComposerState> | null;
+    brandSelected?: boolean;
     brandGuidelines?: string | null;
     onSubmit: (state: SubmitPayload) => void;
     onUploadReferences?: (files: File[]) => Promise<string[]>;
@@ -59,6 +60,7 @@
     config,
     busy = false,
     initial = null,
+    brandSelected = false,
     brandGuidelines = null,
     onSubmit,
     onUploadReferences,
@@ -97,18 +99,44 @@
   let referenceFiles = $state<File[]>([]);
   let preUploadedReferenceIds = $state<string[]>([]);
   let guidelinesText = $state("");
+  let guidelinesEdited = $state(false);
   let showGuidelines = $state(false);
   let didInit = $state(false);
 
   // Keep the editable guidelines in sync with the selected brand. Editing the
   // textarea detaches from this until a different brand's guidelines arrive.
   let lastBrandGuidelines = $state<string | null>(null);
+  let lastBrandSelected = $state(false);
   $effect(() => {
-    if (brandGuidelines !== lastBrandGuidelines) {
-      lastBrandGuidelines = brandGuidelines;
-      guidelinesText = brandGuidelines ?? "";
-      if (!brandGuidelines) showGuidelines = false;
+    if (
+      brandGuidelines === lastBrandGuidelines &&
+      brandSelected === lastBrandSelected
+    )
+      return;
+
+    const previousBrandGuidelines = lastBrandGuidelines;
+    lastBrandGuidelines = brandGuidelines;
+    lastBrandSelected = brandSelected;
+
+    if (!brandSelected) {
+      guidelinesText = "";
+      guidelinesEdited = false;
+      showGuidelines = false;
+      return;
     }
+
+    if (brandGuidelines === null) {
+      guidelinesText = "";
+      guidelinesEdited = false;
+      showGuidelines = false;
+      return;
+    }
+
+    if (previousBrandGuidelines === null && guidelinesEdited) return;
+
+    guidelinesText = brandGuidelines;
+    guidelinesEdited = false;
+    showGuidelines = brandGuidelines === "";
   });
 
   const hasBrandGuidelines = $derived(
@@ -294,7 +322,10 @@
       samplesPerModel,
       referenceIds,
       referenceFiles,
-      brandGuidelines: hasBrandGuidelines ? guidelinesText : undefined,
+      brandGuidelines:
+        brandSelected && (brandGuidelines !== null || guidelinesEdited)
+          ? guidelinesText
+          : undefined,
     });
 
     referenceFiles = [];
@@ -344,7 +375,7 @@
   </p>
 {:else}
   <form class="grid gap-4" onsubmit={handleSubmit}>
-    {#if hasBrandGuidelines}
+    {#if brandSelected}
       <div class="grid gap-2">
         <div class="flex items-center justify-between">
           <Label for="brandGuidelines">Brand guidelines</Label>
@@ -354,19 +385,33 @@
             size="sm"
             onclick={() => (showGuidelines = !showGuidelines)}
           >
-            {showGuidelines ? "Hide" : "Edit guidelines"}
+            {showGuidelines
+              ? "Hide"
+              : hasBrandGuidelines
+                ? "Edit guidelines"
+                : "Add guidelines"}
           </Button>
         </div>
         {#if showGuidelines}
-          <Textarea id="brandGuidelines" rows={5} bind:value={guidelinesText} />
+          <Textarea
+            id="brandGuidelines"
+            rows={5}
+            bind:value={guidelinesText}
+            oninput={() => (guidelinesEdited = true)}
+          />
           <p class="text-muted-foreground text-xs">
-            Prepended to the prompt for this brand. Edits apply to this
+            Prepended to the prompt for this brand. Changes apply to this
             session's generations only and are not saved back to the brand.
           </p>
         {:else}
           <p class="text-muted-foreground text-xs">
-            This brand's guidelines will be applied. Click "Edit guidelines" to
-            review or tweak them for this generation.
+            {#if hasBrandGuidelines}
+              This brand's guidelines will be applied. Click "Edit guidelines"
+              to review or tweak them for this generation.
+            {:else}
+              Add guidelines to apply them to this session's generations for the
+              selected brand.
+            {/if}
           </p>
         {/if}
       </div>

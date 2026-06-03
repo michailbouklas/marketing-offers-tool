@@ -1,8 +1,8 @@
 import { error, json } from "@sveltejs/kit";
-import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { requireAuthenticatedApiUser } from "$lib/server/auth-guards";
 import { getImageGeneratorEnv } from "$lib/server/env";
+import { getObjectStore } from "$lib/server/object-store.server";
 import { prisma } from "$lib/server/prisma";
 import { PromptEnhancer } from "$lib/services/image-providers/enhance.server";
 import type { RequestHandler } from "./$types";
@@ -78,14 +78,19 @@ async function loadReferenceImages(
     select: { localPath: true, contentType: true },
   });
 
+  const store = getObjectStore();
   const dataUrls: string[] = [];
   for (const ref of refs) {
     try {
-      const bytes = await readFile(ref.localPath);
+      const bytes = await store.tryGet(ref.localPath);
+      if (!bytes) {
+        // Missing object — skip it and enhance with the rest.
+        continue;
+      }
       const contentType = ref.contentType || "image/png";
       dataUrls.push(`data:${contentType};base64,${bytes.toString("base64")}`);
     } catch {
-      // Missing/unreadable file — skip it and enhance with the rest.
+      // Unreadable object — skip it and enhance with the rest.
     }
   }
 

@@ -1,10 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 vi.mock("$lib/server/env", () => ({
   getImageGeneratorEnv: vi.fn(),
+  getStorageEnv: vi.fn(() => ({})),
 }));
 
 vi.mock("$lib/server/prisma", () => ({
@@ -46,7 +53,7 @@ const refCreateMock = (
 ).referenceImage.create;
 
 let workdir: string;
-let sourcePath: string;
+const ASSET_KEY = "brands/acme/assets/a.png";
 
 function makeEvent(body: unknown) {
   return {
@@ -58,8 +65,11 @@ function makeEvent(body: unknown) {
 
 beforeEach(() => {
   workdir = mkdtempSync(join(tmpdir(), "from-brand-asset-"));
-  sourcePath = join(workdir, "source.png");
-  writeFileSync(sourcePath, Buffer.from([1, 2, 3, 4]));
+  mkdirSync(join(workdir, "brands", "acme", "assets"), { recursive: true });
+  writeFileSync(
+    join(workdir, "brands", "acme", "assets", "a.png"),
+    Buffer.from([1, 2, 3, 4]),
+  );
   mockEnv.mockReturnValue({ UPLOADS_DIR: workdir });
   requireApiMock.mockReturnValue({
     session: {},
@@ -94,7 +104,7 @@ describe("POST /api/images/references/from-brand-asset", () => {
     brandAssetMock.mockResolvedValue({
       id: "a",
       brandId: 7,
-      localPath: sourcePath,
+      localPath: ASSET_KEY,
       contentType: "image/png",
     });
     userBrandMock.mockResolvedValue(null);
@@ -107,7 +117,7 @@ describe("POST /api/images/references/from-brand-asset", () => {
     brandAssetMock.mockResolvedValue({
       id: "a",
       brandId: 7,
-      localPath: sourcePath,
+      localPath: ASSET_KEY,
       contentType: "image/png",
     });
     userBrandMock.mockResolvedValue({ brandId: 7 });
@@ -122,12 +132,13 @@ describe("POST /api/images/references/from-brand-asset", () => {
     expect(created.userId).toBe("user-1");
     expect(created.contentType).toBe("image/png");
     expect(created.localPath.endsWith(".png")).toBe(true);
-    expect(created.localPath).toContain("references");
+    expect(created.localPath.startsWith("references/")).toBe(true);
 
-    // File copied with same contents.
-    expect(
-      readFileSync(created.localPath).equals(Buffer.from([1, 2, 3, 4])),
-    ).toBe(true);
+    // File copied with same contents (read via the local store layout).
+    const copiedPath = join(workdir, ...created.localPath.split("/"));
+    expect(readFileSync(copiedPath).equals(Buffer.from([1, 2, 3, 4]))).toBe(
+      true,
+    );
   });
 
   it("returns 400 when JSON body is invalid", async () => {

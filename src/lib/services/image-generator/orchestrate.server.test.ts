@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -17,6 +23,8 @@ vi.mock("$lib/server/prisma", () => ({
 
 vi.mock("$lib/server/env", () => ({
   getImageGeneratorEnv: vi.fn(),
+  // No Supabase config in tests → object store falls back to local fs.
+  getStorageEnv: vi.fn(() => ({})),
 }));
 
 vi.mock("$lib/server/image-size", () => ({
@@ -177,32 +185,43 @@ describe("generateOneRow — happy path", () => {
     expect(updateMock.mock.calls[0]![0].data.status).toBe("completed");
   });
 
-  it("resolves reference paths and forwards them to the provider", async () => {
+  it("materializes references from the store and forwards local paths to the provider", async () => {
+    // Seed two reference objects into the (local) object store under workdir.
+    const refDir = join(workdir, "references");
+    mkdirSync(refDir, { recursive: true });
+    writeFileSync(join(refDir, "ref-a.png"), Buffer.from("AAA"));
+    writeFileSync(join(refDir, "ref-b.png"), Buffer.from("BBB"));
+
     findUnique.mockResolvedValue(
       makePendingRow({ referenceIds: ["ref-a", "ref-b"] }),
     );
     findRefs.mockResolvedValue([
-      { localPath: "/uploads/references/ref-a.png" },
-      { localPath: "/uploads/references/ref-b.png" },
+      { id: "ref-a", localPath: "references/ref-a.png" },
+      { id: "ref-b", localPath: "references/ref-b.png" },
     ]);
 
-    const generateMock = vi.fn().mockResolvedValue({ bytes: PNG });
+    // Capture the reference paths + their bytes at call time, since the temp
+    // directory is cleaned up after generation completes.
+    const seen: Array<{ path: string; bytes: string }> = [];
+    const generateMock = vi.fn(async (input: { references?: string[] }) => {
+      for (const p of input.references ?? []) {
+        seen.push({ path: p, bytes: readFileSync(p).toString("utf8") });
+      }
+      return { bytes: PNG };
+    });
     getProvider.mockReturnValue({ generateImage: generateMock });
 
     await generateOneRow("row-1");
 
     expect(findRefs).toHaveBeenCalledWith({
       where: { id: { in: ["ref-a", "ref-b"] }, userId: "user-1" },
-      select: { localPath: true },
+      select: { id: true, localPath: true },
     });
-    expect(generateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        references: [
-          "/uploads/references/ref-a.png",
-          "/uploads/references/ref-b.png",
-        ],
-      }),
-    );
+    expect(seen).toHaveLength(2);
+    expect(seen[0]!.path.endsWith("ref-a.png")).toBe(true);
+    expect(seen[0]!.bytes).toBe("AAA");
+    expect(seen[1]!.path.endsWith("ref-b.png")).toBe(true);
+    expect(seen[1]!.bytes).toBe("BBB");
   });
 });
 

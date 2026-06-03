@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -14,12 +14,21 @@ vi.mock("$lib/server/auth-guards", () => ({
   requireAuthenticatedApiUser: vi.fn(),
 }));
 
+vi.mock("$lib/server/env", () => ({
+  getImageGeneratorEnv: vi.fn(),
+  getStorageEnv: vi.fn(() => ({})),
+}));
+
 const prismaModule = await import("$lib/server/prisma");
 const authModule = await import("$lib/server/auth-guards");
+const envModule = await import("$lib/server/env");
 const { GET } = await import("./+server");
 
 const requireApiMock =
   authModule.requireAuthenticatedApiUser as unknown as ReturnType<typeof vi.fn>;
+const mockEnv = envModule.getImageGeneratorEnv as unknown as ReturnType<
+  typeof vi.fn
+>;
 const brandAssetMock = (
   prismaModule.prisma as unknown as {
     brandAsset: { findUnique: ReturnType<typeof vi.fn> };
@@ -32,7 +41,7 @@ const userBrandMock = (
 ).user_brand.findUnique;
 
 let workdir: string;
-let sourcePath: string;
+const ASSET_KEY = "brands/acme/assets/a.png";
 
 function makeEvent(id: string) {
   return {
@@ -42,8 +51,12 @@ function makeEvent(id: string) {
 
 beforeEach(() => {
   workdir = mkdtempSync(join(tmpdir(), "brand-asset-stream-"));
-  sourcePath = join(workdir, "a.png");
-  writeFileSync(sourcePath, Buffer.from([1, 2, 3, 4, 5]));
+  mkdirSync(join(workdir, "brands", "acme", "assets"), { recursive: true });
+  writeFileSync(
+    join(workdir, "brands", "acme", "assets", "a.png"),
+    Buffer.from([1, 2, 3, 4, 5]),
+  );
+  mockEnv.mockReturnValue({ UPLOADS_DIR: workdir });
   requireApiMock.mockReturnValue({ session: {}, user: { id: "user-1" } });
 });
 
@@ -71,18 +84,18 @@ describe("GET /api/brand-assets/[id]", () => {
     brandAssetMock.mockResolvedValue({
       id: "a",
       brandId: 7,
-      localPath: sourcePath,
+      localPath: ASSET_KEY,
       contentType: "image/png",
     });
     userBrandMock.mockResolvedValue(null);
     await expect(GET(makeEvent("a"))).rejects.toMatchObject({ status: 403 });
   });
 
-  it("returns 404 when underlying file is missing", async () => {
+  it("returns 404 when the underlying object is missing", async () => {
     brandAssetMock.mockResolvedValue({
       id: "a",
       brandId: 7,
-      localPath: join(workdir, "never-existed.png"),
+      localPath: "brands/acme/assets/never-existed.png",
       contentType: "image/png",
     });
     userBrandMock.mockResolvedValue({ brandId: 7 });
@@ -93,7 +106,7 @@ describe("GET /api/brand-assets/[id]", () => {
     brandAssetMock.mockResolvedValue({
       id: "a",
       brandId: 7,
-      localPath: sourcePath,
+      localPath: ASSET_KEY,
       contentType: "image/png",
     });
     userBrandMock.mockResolvedValue({ brandId: 7 });

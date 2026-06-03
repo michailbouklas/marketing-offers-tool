@@ -213,7 +213,7 @@ export async function createPendingGenerations(
     brandGuidelines =
       args.body.brandGuidelines !== undefined
         ? args.body.brandGuidelines
-        : await getBrandGuidelines(brand.slug, env.UPLOADS_DIR);
+        : await getBrandGuidelines(brand.slug);
   }
 
   // Aspect ratio is enforced by the real `size` sent to the provider, so it is

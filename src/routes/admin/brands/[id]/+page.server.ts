@@ -1,6 +1,5 @@
 import { error } from "@sveltejs/kit";
 import { requirePermission } from "$lib/server/auth-guards";
-import { getImageGeneratorEnv } from "$lib/server/env";
 import { prisma } from "$lib/server/prisma";
 import {
   getBrandGuidelines,
@@ -24,12 +23,9 @@ export const load: PageServerLoad = async (event) => {
     error(404, "Brand not found");
   }
 
-  const env = getImageGeneratorEnv();
   const [assets, guidelines] = await Promise.all([
     listBrandAssets(brand.id),
-    brand.slug
-      ? getBrandGuidelines(brand.slug, env.UPLOADS_DIR)
-      : Promise.resolve(null),
+    brand.slug ? getBrandGuidelines(brand.slug) : Promise.resolve(null),
   ]);
 
   return {

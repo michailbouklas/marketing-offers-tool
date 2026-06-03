@@ -419,7 +419,7 @@ describe("createPendingGenerations", () => {
       },
     });
 
-    expect(getBrandGuidelinesMock).toHaveBeenCalledWith("acme", "./uploads");
+    expect(getBrandGuidelinesMock).toHaveBeenCalledWith("acme");
     expect(rows[0]!.finalPrompt.startsWith("Brand rules: pop colours.")).toBe(
       true,
     );

@@ -1,5 +1,5 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { join, normalize, sep } from "node:path";
+import { normalize, sep } from "node:path";
+import type { ObjectStore, StorageKey } from "./object-store.server";
 
 const IMAGES_SUBDIR = "images";
 
@@ -14,40 +14,32 @@ function ensureSafeId(id: string): string {
   return id;
 }
 
-export function imageFilePath(
-  uploadsDir: string,
+/** Portable storage key for a generated image, e.g. `images/<id>.png`. */
+export function imageKey(
   id: string,
   format: "png" | "jpg" = "png",
-): string {
+): StorageKey {
   const safeId = ensureSafeId(id);
   const ext = format === "jpg" ? "jpg" : "png";
-  return join(uploadsDir, IMAGES_SUBDIR, `${safeId}.${ext}`);
-}
-
-async function ensureImagesDir(uploadsDir: string): Promise<string> {
-  const dir = join(uploadsDir, IMAGES_SUBDIR);
-  await mkdir(dir, { recursive: true, mode: 0o700 });
-  return dir;
+  return `${IMAGES_SUBDIR}/${safeId}.${ext}`;
 }
 
 export async function writeImageBytes(
-  uploadsDir: string,
+  store: ObjectStore,
   id: string,
   bytes: Buffer,
   format: "png" | "jpg" = "png",
-): Promise<string> {
-  const safeId = ensureSafeId(id);
-  await ensureImagesDir(uploadsDir);
-  const ext = format === "jpg" ? "jpg" : "png";
-  const filePath = join(uploadsDir, IMAGES_SUBDIR, `${safeId}.${ext}`);
-  await writeFile(filePath, bytes, { mode: 0o600 });
-  return filePath;
+): Promise<StorageKey> {
+  const key = imageKey(id, format);
+  const contentType = format === "jpg" ? "image/jpeg" : "image/png";
+  await store.put(key, bytes, contentType);
+  return key;
 }
 
 export async function readImageBytes(
-  uploadsDir: string,
+  store: ObjectStore,
   id: string,
+  format: "png" | "jpg" = "png",
 ): Promise<Buffer> {
-  const filePath = imageFilePath(uploadsDir, id);
-  return readFile(filePath);
+  return store.get(imageKey(id, format));
 }

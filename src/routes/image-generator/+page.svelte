@@ -296,6 +296,7 @@
       selectedBrandGuidelines = null;
       return;
     }
+    selectedBrandGuidelines = null;
     void loadBrandGuidelines(next);
   }
 
@@ -479,6 +480,7 @@
     bind:this={composer}
     config={data.config}
     {busy}
+    brandSelected={selectedBrandId !== null}
     brandGuidelines={selectedBrandGuidelines}
     onSubmit={handleSubmit}
     onUploadReferences={handleUploadReferences}

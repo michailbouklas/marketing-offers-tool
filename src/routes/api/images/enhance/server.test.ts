@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { RequestEvent } from "@sveltejs/kit";
 
 vi.mock("$lib/server/env", () => ({
   getImageGeneratorEnv: vi.fn(),
+  getStorageEnv: vi.fn(() => ({})),
 }));
 
 vi.mock("$lib/server/prisma", () => ({
@@ -168,11 +169,15 @@ describe("POST /api/images/enhance", () => {
     MockEnhancer.mockImplementation(() => ({ enhance: fakeEnhance }));
 
     const workdir = mkdtempSync(join(tmpdir(), "enhance-ref-"));
-    const imgPath = join(workdir, "taco.png");
+    mkdirSync(join(workdir, "references"), { recursive: true });
     const bytes = Buffer.from([1, 2, 3, 4]);
-    writeFileSync(imgPath, bytes);
+    writeFileSync(join(workdir, "references", "taco.png"), bytes);
+    mockEnv.mockReturnValue({
+      OPENAI_API_KEY: "sk-test",
+      UPLOADS_DIR: workdir,
+    });
     findManyMock.mockResolvedValue([
-      { localPath: imgPath, contentType: "image/png" },
+      { localPath: "references/taco.png", contentType: "image/png" },
     ]);
 
     try {

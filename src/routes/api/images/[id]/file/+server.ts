@@ -1,8 +1,15 @@
 import { error } from "@sveltejs/kit";
-import { readFile } from "node:fs/promises";
 import { requireAuthenticatedApiUser } from "$lib/server/auth-guards";
+import { getObjectStore } from "$lib/server/object-store.server";
 import { prisma } from "$lib/server/prisma";
 import type { RequestHandler } from "./$types";
+
+function generatedImageKey(localPath: string): string {
+  const normalized = localPath.replaceAll("\\", "/");
+  return normalized.startsWith("uploads/")
+    ? normalized.slice("uploads/".length)
+    : normalized;
+}
 
 export const GET: RequestHandler = async (event) => {
   const { user } = requireAuthenticatedApiUser(event);
@@ -29,14 +36,13 @@ export const GET: RequestHandler = async (event) => {
     error(404, "Not ready");
   }
 
-  let bytes: Buffer;
-  try {
-    bytes = await readFile(row.localPath);
-  } catch {
+  const storageKey = generatedImageKey(row.localPath);
+  const bytes = await getObjectStore().tryGet(storageKey);
+  if (!bytes) {
     error(404, "Not found");
   }
 
-  const ext = row.localPath.split(".").pop()?.toLowerCase() ?? "png";
+  const ext = storageKey.split(".").pop()?.toLowerCase() ?? "png";
   const contentType =
     ext === "jpg" || ext === "jpeg" ? "image/jpeg" : "image/png";
 

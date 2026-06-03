@@ -31,16 +31,27 @@ bun run preview
 
 > Production deploys run the Node adapter output (`build/`). Set the env vars listed in `.env.example` on the host before starting.
 
-### Image-generator uploads (`UPLOADS_DIR`)
+### Image-generator object storage
 
-The Image Generator persists generated and reference images on the filesystem at `${UPLOADS_DIR}/images/` and `${UPLOADS_DIR}/references/`. In dev `UPLOADS_DIR` defaults to `./uploads` (gitignored), but **in production it must point at a persistent volume mount** — generated images are referenced by ID from the database, so the directory has to survive container/pod restarts and ideally back up alongside the DB.
+The Image Generator persists generated images, reference images, and brand assets through a single **object store** abstraction (`src/lib/server/object-store.server.ts`). The store resolves files by a portable, slash-separated **storage key** (e.g. `images/<id>.png`, `references/<id>.<ext>`, `brands/<slug>/assets/<id>.<ext>`) which is what the `localPath` columns now hold (the column name is historical — the value is a key, not a filesystem path). There are two drivers, selected at runtime:
+
+**Supabase Storage (preferred — required when the database is shared).** When `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_STORAGE_BUCKET` are all set, files live in a private Supabase bucket and are shared across every machine that talks to the same database. Use this whenever `DATABASE_URL` points at a shared/remote Postgres — otherwise a row created on one machine renders a broken (404) thumbnail on another, because the bytes only exist on the machine that generated them.
+
+| Variable                    | Purpose                                                        |
+| --------------------------- | -------------------------------------------------------------- |
+| `SUPABASE_URL`              | Project URL, e.g. `https://xxxx.supabase.co`                   |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key — **server-only**, never sent to the browser  |
+| `SUPABASE_STORAGE_BUCKET`   | Name of a **private** bucket (e.g. `marketing-offers-uploads`) |
+
+Files are served by proxying bytes through the existing API endpoints (`/api/images/[id]/file`, `/api/images/references/[id]`, `/api/brand-assets/[id]`), so per-user ownership checks are preserved and no public/signed URLs are exposed.
+
+**Local filesystem (fallback — dev + tests only).** When the Supabase vars are unset, files are stored under `${UPLOADS_DIR}` (default `./uploads`, gitignored) at the same key layout. The server creates subdirectories lazily with mode `0700`; the parent `UPLOADS_DIR` must already exist and be writable. Do **not** rely on local storage when the database is shared across machines.
 
 Operational notes:
 
-- The path is read at runtime via `$env/dynamic/private`, so it can be overridden per deploy without rebuilding.
-- The server creates `images/` and `references/` lazily with mode `0700`; the parent `UPLOADS_DIR` itself must already exist and be writable by the Node process user.
-- Reference images uploaded but never attached to a `GeneratedImage` are not garbage-collected in v1 — monitor disk usage and add a sweep job if it grows unbounded.
-- If you swap `UPLOADS_DIR` you must migrate the existing files; the DB stores the full path on `GeneratedImage.localPath` / `ReferenceImage.localPath`, so a path change requires either a backfill or keeping the old volume mounted at the old path.
+- All storage env is read at runtime via `$env/dynamic/private`, so it can be overridden per deploy without rebuilding.
+- Reference images uploaded but never attached to a `GeneratedImage` are not garbage-collected — monitor bucket/disk usage and add a sweep job if it grows unbounded.
+- Migrating existing local files into a bucket: run `bun scripts/backfill-storage.ts` (uploads everything under `UPLOADS_DIR` to the configured bucket using the original keys). Rows whose bytes never existed on the current host cannot be recovered.
 
 ## Database migrations
 

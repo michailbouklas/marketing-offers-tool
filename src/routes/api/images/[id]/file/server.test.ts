@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { RequestEvent } from "@sveltejs/kit";
@@ -12,20 +12,30 @@ vi.mock("$lib/server/prisma", () => ({
   },
 }));
 
+vi.mock("$lib/server/env", () => ({
+  getImageGeneratorEnv: vi.fn(),
+  getStorageEnv: vi.fn(() => ({})),
+}));
+
 const prismaModule = await import("$lib/server/prisma");
+const envModule = await import("$lib/server/env");
 const { GET } = await import("./+server");
 
 const findUniqueMock = prismaModule.prisma.generatedImage
   .findUnique as unknown as ReturnType<typeof vi.fn>;
+const mockEnv = envModule.getImageGeneratorEnv as unknown as ReturnType<
+  typeof vi.fn
+>;
 
 let workdir: string;
-let imagePath: string;
+const IMAGE_KEY = "images/img-1.png";
 const PNG_BYTES = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 beforeEach(() => {
   workdir = mkdtempSync(join(tmpdir(), "api-file-"));
-  imagePath = join(workdir, "img-1.png");
-  writeFileSync(imagePath, PNG_BYTES);
+  mkdirSync(join(workdir, "images"), { recursive: true });
+  writeFileSync(join(workdir, "images", "img-1.png"), PNG_BYTES);
+  mockEnv.mockReturnValue({ UPLOADS_DIR: workdir });
 });
 
 afterEach(() => {
@@ -74,7 +84,7 @@ describe("GET /api/images/[id]/file", () => {
       id: "img-1",
       userId: "user-2",
       status: "completed",
-      localPath: imagePath,
+      localPath: IMAGE_KEY,
     });
 
     const response = await (GET as (e: RequestEvent) => Promise<Response>)(
@@ -99,12 +109,12 @@ describe("GET /api/images/[id]/file", () => {
     expect(response.status).toBe(404);
   });
 
-  it("returns 404 when the file is missing from disk", async () => {
+  it("returns 404 when the object is missing from the store", async () => {
     findUniqueMock.mockResolvedValue({
       id: "img-1",
       userId: "user-1",
       status: "completed",
-      localPath: join(workdir, "does-not-exist.png"),
+      localPath: "images/does-not-exist.png",
     });
 
     const response = await (GET as (e: RequestEvent) => Promise<Response>)(
@@ -119,7 +129,7 @@ describe("GET /api/images/[id]/file", () => {
       id: "img-1",
       userId: "user-1",
       status: "completed",
-      localPath: imagePath,
+      localPath: IMAGE_KEY,
     });
 
     const response = await (GET as (e: RequestEvent) => Promise<Response>)(
@@ -131,6 +141,23 @@ describe("GET /api/images/[id]/file", () => {
     expect(response.headers.get("content-length")).toBe(
       String(PNG_BYTES.length),
     );
+    const buf = Buffer.from(await response.arrayBuffer());
+    expect(buf.equals(PNG_BYTES)).toBe(true);
+  });
+
+  it("streams legacy uploads paths with Windows separators", async () => {
+    findUniqueMock.mockResolvedValue({
+      id: "img-1",
+      userId: "user-1",
+      status: "completed",
+      localPath: "uploads\\images\\img-1.png",
+    });
+
+    const response = await (GET as (e: RequestEvent) => Promise<Response>)(
+      buildEvent("img-1"),
+    );
+
+    expect(response.status).toBe(200);
     const buf = Buffer.from(await response.arrayBuffer());
     expect(buf.equals(PNG_BYTES)).toBe(true);
   });

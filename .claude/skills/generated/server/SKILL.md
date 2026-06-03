@@ -1,94 +1,94 @@
 ---
 name: server
-description: "Skill for the Server area of marketing-offers-tool. 83 symbols across 24 files."
+description: "Skill for the Server area of marketing-offers-tool. 100 symbols across 23 files."
 ---
 
 # Server
 
-83 symbols | 24 files | Cohesion: 80%
+100 symbols | 23 files | Cohesion: 73%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how load, getImageGeneratorEnv, hasImageRouterProvider work
+- Understanding how assertSafeKey, deleteBrandAsset, readBrandGuidelines work
 - Modifying server-related functionality
 
 ## Key Files
 
-| File                                                          | Symbols                                                                                              |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `src/lib/server/brand-storage.ts`                             | ensureSafeSlug, brandDir, brandGuidelinesPath, ensureBrandDir, readBrandGuidelines (+7)              |
-| `src/lib/server/clickhouse.ts`                                | loadEnvFileValues, parseRequestTimeout, getRequiredEnv, getEnvValue, getClickHouseConfig (+5)        |
-| `src/lib/server/auth-guards.ts`                               | getAuthenticatedUserRole, isPublicPath, isApiPath, isAdminPath, requireAdminUser (+2)                |
-| `src/lib/server/env.ts`                                       | loadEnvFileValues, readEnv, loadImageGeneratorEnv, getImageGeneratorEnv, hasImageRouterProvider (+1) |
-| `src/lib/server/reference-storage.ts`                         | ensureSafeId, extensionForContentType, referenceFilePath, ensureReferencesDir, writeReferenceFile    |
-| `src/lib/server/image-storage.ts`                             | ensureSafeId, imageFilePath, ensureImagesDir, writeImageBytes, readImageBytes                        |
-| `src/lib/server/auth.ts`                                      | getRequiredEnv, getAuthConfig, getAuthConfigKey, createAuth, getAuth                                 |
-| `src/lib/services/image-generator/generate.server.ts`         | GenerateValidationError, buildFinalPrompt, createPendingGenerations, resolveModelSize                |
-| `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | parseBrandId, brandSlugOr404, GET, PUT                                                               |
-| `src/lib/server/image-size.ts`                                | toPositiveInt, parseRequestedSize, squaredAspectRatioDelta, mapToNearestSupportedSize                |
+| File | Symbols |
+|------|---------|
+| `src/lib/server/object-store.server.ts` | getText, assertSafeKey, toPath, getText, remove (+22) |
+| `src/lib/server/clickhouse.ts` | loadEnvFileValues, parseRequestTimeout, getRequiredEnv, getEnvValue, getClickHouseConfig (+5) |
+| `src/lib/server/brand-storage.ts` | deleteBrandAsset, readBrandGuidelines, ensureSafeSlug, ensureSafeAssetId, brandAssetKey (+3) |
+| `src/lib/server/env.ts` | loadEnvFileValues, readEnv, loadImageGeneratorEnv, getImageGeneratorEnv, hasImageRouterProvider (+3) |
+| `src/lib/server/auth-guards.ts` | requireAuthenticatedApiUser, isPublicPath, isApiPath, isAdminPath, requireAdminUser (+1) |
+| `src/lib/server/image-size.ts` | resizeToRequested, toPositiveInt, parseRequestedSize, squaredAspectRatioDelta, mapToNearestSupportedSize |
+| `src/lib/services/image-generator/orchestrate.server.ts` | withRetry, isImageQuality, isImageBackground, isInputFidelity, generateOneRow |
+| `src/lib/server/auth.ts` | getRequiredEnv, getAuthConfig, getAuthConfigKey, createAuth, getAuth |
+| `src/lib/server/image-storage.ts` | readImageBytes, ensureSafeId, imageKey, writeImageBytes |
+| `src/lib/server/reference-storage.ts` | ensureSafeId, extensionForContentType, referenceKey, writeReferenceFile |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`load`** (Function) — `src/routes/image-generator/+page.server.ts:5`
-- **`getImageGeneratorEnv`** (Function) — `src/lib/server/env.ts:166`
-- **`hasImageRouterProvider`** (Function) — `src/lib/server/env.ts:171`
-- **`hasOpenAIProvider`** (Function) — `src/lib/server/env.ts:175`
-- **`GET`** (Function) — `src/routes/api/brand-guidelines/+server.ts:7`
+- **`assertSafeKey`** (Function) — `src/lib/server/object-store.server.ts:35`
+- **`deleteBrandAsset`** (Function) — `src/lib/server/brand-storage.ts:85`
+- **`readBrandGuidelines`** (Function) — `src/lib/server/brand-storage.ts:94`
+- **`readImageBytes`** (Function) — `src/lib/server/image-storage.ts:38`
+- **`resizeToRequested`** (Function) — `src/lib/server/image-size.ts:89`
 
 ## Key Symbols
 
-| Symbol                      | Type     | File                                                            | Line |
-| --------------------------- | -------- | --------------------------------------------------------------- | ---- |
-| `GenerateValidationError`   | Class    | `src/lib/services/image-generator/generate.server.ts`           | 77   |
-| `load`                      | Function | `src/routes/image-generator/+page.server.ts`                    | 5    |
-| `getImageGeneratorEnv`      | Function | `src/lib/server/env.ts`                                         | 166  |
-| `hasImageRouterProvider`    | Function | `src/lib/server/env.ts`                                         | 171  |
-| `hasOpenAIProvider`         | Function | `src/lib/server/env.ts`                                         | 175  |
-| `GET`                       | Function | `src/routes/api/brand-guidelines/+server.ts`                    | 7    |
-| `GET`                       | Function | `src/routes/api/brand-assets/+server.ts`                        | 6    |
-| `buildFinalPrompt`          | Function | `src/lib/services/image-generator/generate.server.ts`           | 87   |
-| `createPendingGenerations`  | Function | `src/lib/services/image-generator/generate.server.ts`           | 122  |
-| `stringArray`               | Function | `src/lib/services/image-providers/imagerouter-models.server.ts` | 27   |
-| `toModelList`               | Function | `src/lib/services/image-providers/imagerouter-models.server.ts` | 35   |
-| `fetchImageRouterModelCaps` | Function | `src/lib/services/image-providers/imagerouter-models.server.ts` | 57   |
-| `buildImageGeneratorConfig` | Function | `src/lib/services/image-providers/config.server.ts`             | 66   |
-| `listBrandAssets`           | Function | `src/lib/services/brand-context/brand-context.server.ts`        | 19   |
-| `getBrandGuidelines`        | Function | `src/lib/services/brand-context/brand-context.server.ts`        | 87   |
-| `load`                      | Function | `src/routes/admin/brands/[id]/+page.server.ts`                  | 10   |
-| `GET`                       | Function | `src/routes/api/images/config/+server.ts`                       | 5    |
-| `GET`                       | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts`   | 45   |
-| `PUT`                       | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts`   | 55   |
-| `pingClickHouse`            | Function | `src/lib/server/clickhouse.ts`                                  | 176  |
+| Symbol | Type | File | Line |
+|--------|------|------|------|
+| `LocalObjectStore` | Class | `src/lib/server/object-store.server.ts` | 52 |
+| `SupabaseObjectStore` | Class | `src/lib/server/object-store.server.ts` | 122 |
+| `assertSafeKey` | Function | `src/lib/server/object-store.server.ts` | 35 |
+| `deleteBrandAsset` | Function | `src/lib/server/brand-storage.ts` | 85 |
+| `readBrandGuidelines` | Function | `src/lib/server/brand-storage.ts` | 94 |
+| `readImageBytes` | Function | `src/lib/server/image-storage.ts` | 38 |
+| `resizeToRequested` | Function | `src/lib/server/image-size.ts` | 89 |
+| `generateOneRow` | Function | `src/lib/services/image-generator/orchestrate.server.ts` | 47 |
+| `pingClickHouse` | Function | `src/lib/server/clickhouse.ts` | 176 |
+| `imageKey` | Function | `src/lib/server/image-storage.ts` | 17 |
+| `writeImageBytes` | Function | `src/lib/server/image-storage.ts` | 26 |
+| `brandAssetKey` | Function | `src/lib/server/brand-storage.ts` | 44 |
+| `writeBrandAsset` | Function | `src/lib/server/brand-storage.ts` | 56 |
+| `requireAuthenticatedApiUser` | Function | `src/lib/server/auth-guards.ts` | 18 |
+| `getGeneratedImageUsageByDayForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 301 |
+| `GET` | Function | `src/routes/api/images/usage/+server.ts` | 5 |
+| `GET` | Function | `src/routes/api/brand-assets/[id]/+server.ts` | 6 |
+| `GET` | Function | `src/routes/api/images/[id]/file/+server.ts` | 13 |
+| `GET` | Function | `src/routes/api/images/references/[id]/+server.ts` | 6 |
+| `getImageGeneratorEnv` | Function | `src/lib/server/env.ts` | 166 |
 
 ## Execution Flows
 
-| Flow                                           | Type            | Steps |
-| ---------------------------------------------- | --------------- | ----- |
-| `Load → EnsureSafeSlug`                        | cross_community | 6     |
-| `Load → LoadEnvFileValues`                     | intra_community | 6     |
-| `GET → EnsureSafeSlug`                         | cross_community | 6     |
-| `GET → LoadEnvFileValues`                      | intra_community | 6     |
-| `CreatePendingGenerations → LoadEnvFileValues` | intra_community | 6     |
-| `PingClickHouse → LoadEnvFileValues`           | intra_community | 6     |
-| `CreateBrandAsset → EnsureSafeSlug`            | cross_community | 6     |
-| `GET → LoadEnvFileValues`                      | intra_community | 5     |
-| `PUT → LoadEnvFileValues`                      | intra_community | 5     |
-| `POST → LoadEnvFileValues`                     | cross_community | 5     |
+| Flow | Type | Steps |
+|------|------|-------|
+| `POST → LoadEnvFileValues` | cross_community | 7 |
+| `POST → AssertSafeKey` | cross_community | 6 |
+| `GET → AssertSafeKey` | cross_community | 6 |
+| `PUT → AssertSafeKey` | cross_community | 6 |
+| `PUT → From` | cross_community | 6 |
+| `DELETE → LoadEnvFileValues` | cross_community | 6 |
+| `Load → LoadEnvFileValues` | cross_community | 6 |
+| `POST → AssertSafeKey` | cross_community | 6 |
+| `POST → From` | cross_community | 6 |
+| `Load → AssertSafeKey` | cross_community | 6 |
 
 ## Connected Areas
 
-| Area              | Connections |
-| ----------------- | ----------- |
-| Services          | 7 calls     |
-| [id]              | 6 calls     |
-| Image-providers   | 1 calls     |
-| Aggregator-offers | 1 calls     |
+| Area | Connections |
+|------|-------------|
+| Services | 4 calls |
+| Image-providers | 3 calls |
+| Brand-context | 1 calls |
+| Image-generator | 1 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "load"})` — see callers and callees
+1. `gitnexus_context({name: "assertSafeKey"})` — see callers and callees
 2. `gitnexus_query({query: "server"})` — find related execution flows
 3. Read key files listed above for implementation details

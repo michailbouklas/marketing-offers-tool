@@ -15,49 +15,50 @@ description: "Skill for the Assets area of marketing-offers-tool. 4 symbols acro
 
 ## Key Files
 
-| File                                                      | Symbols                 |
-| --------------------------------------------------------- | ----------------------- |
+| File | Symbols |
+|------|---------|
 | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | parseBrandId, GET, POST |
-| `src/lib/services/brand-context/brand-context.server.ts`  | createBrandAsset        |
+| `src/lib/services/brand-context/brand-context.server.ts` | createBrandAsset |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`createBrandAsset`** (Function) — `src/lib/services/brand-context/brand-context.server.ts:47`
-- **`GET`** (Function) — `src/routes/api/admin/brands/[brandId]/assets/+server.ts:22`
-- **`POST`** (Function) — `src/routes/api/admin/brands/[brandId]/assets/+server.ts:42`
+- **`createBrandAsset`** (Function) — `src/lib/services/brand-context/brand-context.server.ts:46`
+- **`GET`** (Function) — `src/routes/api/admin/brands/[brandId]/assets/+server.ts:21`
+- **`POST`** (Function) — `src/routes/api/admin/brands/[brandId]/assets/+server.ts:41`
 
 ## Key Symbols
 
-| Symbol             | Type     | File                                                      | Line |
-| ------------------ | -------- | --------------------------------------------------------- | ---- |
-| `createBrandAsset` | Function | `src/lib/services/brand-context/brand-context.server.ts`  | 47   |
-| `GET`              | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 22   |
-| `POST`             | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 42   |
-| `parseBrandId`     | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 11   |
+| Symbol | Type | File | Line |
+|--------|------|------|------|
+| `createBrandAsset` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 46 |
+| `GET` | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 21 |
+| `POST` | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 41 |
+| `parseBrandId` | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 10 |
 
 ## Execution Flows
 
-| Flow                                 | Type            | Steps |
-| ------------------------------------ | --------------- | ----- |
-| `CreateBrandAsset → EnsureSafeSlug`  | cross_community | 6     |
-| `POST → LoadEnvFileValues`           | cross_community | 5     |
-| `POST → ParseRoles`                  | cross_community | 4     |
-| `GET → ParseRoles`                   | cross_community | 4     |
-| `POST → RequireAuthenticatedApiUser` | cross_community | 3     |
-| `POST → GetAuthenticatedUserRole`    | cross_community | 3     |
-| `POST → HasPermission`               | cross_community | 3     |
-| `GET → RequireAuthenticatedApiUser`  | cross_community | 3     |
-| `GET → GetAuthenticatedUserRole`     | cross_community | 3     |
-| `GET → HasPermission`                | cross_community | 3     |
+| Flow | Type | Steps |
+|------|------|-------|
+| `POST → AssertSafeKey` | cross_community | 6 |
+| `POST → From` | cross_community | 5 |
+| `CreateBrandAsset → LoadEnvFileValues` | cross_community | 5 |
+| `POST → ParseRoles` | cross_community | 4 |
+| `POST → Put` | cross_community | 4 |
+| `POST → EnsureSafeSlug` | cross_community | 4 |
+| `POST → GetSupabaseClient` | cross_community | 4 |
+| `POST → SupabaseObjectStore` | cross_community | 4 |
+| `POST → LocalObjectStore` | cross_community | 4 |
+| `GET → ParseRoles` | cross_community | 4 |
 
 ## Connected Areas
 
-| Area     | Connections |
-| -------- | ----------- |
-| Server   | 4 calls     |
-| Services | 2 calls     |
+| Area | Connections |
+|------|-------------|
+| Server | 3 calls |
+| Services | 2 calls |
+| Brand-context | 1 calls |
 
 ## How to Explore
 

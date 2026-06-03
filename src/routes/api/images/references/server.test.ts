@@ -6,6 +6,7 @@ import type { RequestEvent } from "@sveltejs/kit";
 
 vi.mock("$lib/server/env", () => ({
   getImageGeneratorEnv: vi.fn(),
+  getStorageEnv: vi.fn(() => ({})),
 }));
 
 vi.mock("$lib/server/prisma", () => ({

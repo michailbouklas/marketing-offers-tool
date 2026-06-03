@@ -236,10 +236,9 @@ Before every new task, use the SymDex MCP server to reindex the project so the s
 - `src/lib/services/users.server.ts`: Server-only user management helpers for listing users and delegating create/update/password changes to Better Auth admin APIs.
 
 <!-- gitnexus:start -->
-
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **marketing-offers-tool** (2584 symbols, 4376 relationships, 201 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **marketing-offers-tool** (2694 symbols, 4730 relationships, 211 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -260,31 +259,32 @@ This project is indexed by GitNexus as **marketing-offers-tool** (2584 symbols, 
 
 ## Resources
 
-| Resource                                               | Use for                                  |
-| ------------------------------------------------------ | ---------------------------------------- |
-| `gitnexus://repo/marketing-offers-tool/context`        | Codebase overview, check index freshness |
-| `gitnexus://repo/marketing-offers-tool/clusters`       | All functional areas                     |
-| `gitnexus://repo/marketing-offers-tool/processes`      | All execution flows                      |
-| `gitnexus://repo/marketing-offers-tool/process/{name}` | Step-by-step execution trace             |
+| Resource | Use for |
+|----------|---------|
+| `gitnexus://repo/marketing-offers-tool/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/marketing-offers-tool/clusters` | All functional areas |
+| `gitnexus://repo/marketing-offers-tool/processes` | All execution flows |
+| `gitnexus://repo/marketing-offers-tool/process/{name}` | Step-by-step execution trace |
 
 ## CLI
 
-| Task                                            | Read this skill file                                        |
-| ----------------------------------------------- | ----------------------------------------------------------- |
-| Understand architecture / "How does X work?"    | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md`       |
-| Blast radius / "What breaks if I change X?"     | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?"                | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md`       |
-| Rename / extract / split / refactor             | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md`     |
-| Tools, resources, schema reference              | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md`           |
-| Index, status, clean, wiki CLI commands         | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md`             |
-| Work in the Services area (139 symbols)         | `.claude/skills/generated/services/SKILL.md`                |
-| Work in the Server area (83 symbols)            | `.claude/skills/generated/server/SKILL.md`                  |
-| Work in the Image-generator area (40 symbols)   | `.claude/skills/generated/image-generator/SKILL.md`         |
-| Work in the Image-providers area (34 symbols)   | `.claude/skills/generated/image-providers/SKILL.md`         |
-| Work in the Aggregator-offers area (11 symbols) | `.claude/skills/generated/aggregator-offers/SKILL.md`       |
-| Work in the Scripts area (11 symbols)           | `.claude/skills/generated/scripts/SKILL.md`                 |
-| Work in the [id] area (6 symbols)               | `.claude/skills/generated/id/SKILL.md`                      |
-| Work in the Brand-context area (4 symbols)      | `.claude/skills/generated/brand-context/SKILL.md`           |
-| Work in the Assets area (4 symbols)             | `.claude/skills/generated/assets/SKILL.md`                  |
+| Task | Read this skill file |
+|------|---------------------|
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
+| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
+| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+| Work in the Services area (141 symbols) | `.claude/skills/generated/services/SKILL.md` |
+| Work in the Server area (100 symbols) | `.claude/skills/generated/server/SKILL.md` |
+| Work in the Image-providers area (39 symbols) | `.claude/skills/generated/image-providers/SKILL.md` |
+| Work in the Image-generator area (35 symbols) | `.claude/skills/generated/image-generator/SKILL.md` |
+| Work in the Scripts area (13 symbols) | `.claude/skills/generated/scripts/SKILL.md` |
+| Work in the Aggregator-offers area (11 symbols) | `.claude/skills/generated/aggregator-offers/SKILL.md` |
+| Work in the Brand-context area (10 symbols) | `.claude/skills/generated/brand-context/SKILL.md` |
+| Work in the Guidelines area (5 symbols) | `.claude/skills/generated/guidelines/SKILL.md` |
+| Work in the Enhance area (4 symbols) | `.claude/skills/generated/enhance/SKILL.md` |
+| Work in the Assets area (4 symbols) | `.claude/skills/generated/assets/SKILL.md` |
 
 <!-- gitnexus:end -->

@@ -1,14 +1,12 @@
 import { error, json } from "@sveltejs/kit";
-import { copyFile, mkdir } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import { dirname } from "node:path";
 import { z } from "zod";
 import { requireAuthenticatedApiUser } from "$lib/server/auth-guards";
-import { getImageGeneratorEnv } from "$lib/server/env";
+import { getObjectStore } from "$lib/server/object-store.server";
 import { prisma } from "$lib/server/prisma";
 import {
   extensionForContentType,
-  referenceFilePath,
+  referenceKey,
 } from "$lib/server/reference-storage";
 import type { RequestHandler } from "./$types";
 
@@ -55,11 +53,9 @@ export const POST: RequestHandler = async (event) => {
     );
   }
 
-  const env = getImageGeneratorEnv();
   const newId = randomUUID();
-  const destination = referenceFilePath(env.UPLOADS_DIR, newId, extension);
-  await mkdir(dirname(destination), { recursive: true, mode: 0o700 });
-  await copyFile(asset.localPath, destination);
+  const destination = referenceKey(newId, extension);
+  await getObjectStore().copy(asset.localPath, destination);
 
   const row = await prisma.referenceImage.create({
     data: {

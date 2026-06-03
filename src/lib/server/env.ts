@@ -182,3 +182,33 @@ export function resetImageGeneratorEnvForTesting(): void {
   globalForEnv.imageGeneratorEnvFileValues = undefined;
   globalForEnv.imageGeneratorEnvWarned = undefined;
 }
+
+/**
+ * Supabase Storage configuration for the shared object store. When all three
+ * values are present the app stores image/reference/brand bytes in the
+ * Supabase bucket (shared across every machine that talks to the same
+ * database); when they are absent it falls back to local-filesystem storage
+ * under `UPLOADS_DIR` (dev + tests). See `object-store.server.ts`.
+ */
+export interface StorageEnv {
+  SUPABASE_URL?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
+  SUPABASE_STORAGE_BUCKET?: string;
+}
+
+export function getStorageEnv(): StorageEnv {
+  return {
+    SUPABASE_URL: readEnv("SUPABASE_URL"),
+    SUPABASE_SERVICE_ROLE_KEY: readEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    SUPABASE_STORAGE_BUCKET: readEnv("SUPABASE_STORAGE_BUCKET"),
+  };
+}
+
+export function hasSupabaseStorage(): boolean {
+  const env = getStorageEnv();
+  return Boolean(
+    env.SUPABASE_URL &&
+    env.SUPABASE_SERVICE_ROLE_KEY &&
+    env.SUPABASE_STORAGE_BUCKET,
+  );
+}

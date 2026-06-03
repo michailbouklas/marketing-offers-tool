@@ -1,5 +1,5 @@
-import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
-import { join, normalize, sep } from "node:path";
+import { normalize, sep } from "node:path";
+import type { ObjectStore, StorageKey } from "./object-store.server";
 import { extensionForContentType } from "./reference-storage";
 
 const BRANDS_SUBDIR = "brands";
@@ -8,7 +8,8 @@ const GUIDELINES_FILE = "guidelines.md";
 
 export interface WriteBrandAssetResult {
   id: string;
-  localPath: string;
+  /** Portable storage key (persisted in the `localPath` column). */
+  localPath: StorageKey;
   contentType: string;
   extension: string;
   sizeBytes: number;
@@ -41,50 +42,20 @@ function ensureSafeAssetId(id: string): string {
   return id;
 }
 
-export function brandDir(uploadsDir: string, slug: string): string {
-  return join(uploadsDir, BRANDS_SUBDIR, ensureSafeSlug(slug));
-}
-
-export function brandAssetsDir(uploadsDir: string, slug: string): string {
-  return join(brandDir(uploadsDir, slug), ASSETS_SUBDIR);
-}
-
-export function brandGuidelinesPath(uploadsDir: string, slug: string): string {
-  return join(brandDir(uploadsDir, slug), GUIDELINES_FILE);
-}
-
-export function brandAssetPath(
-  uploadsDir: string,
+export function brandAssetKey(
   slug: string,
   id: string,
   extension: string,
-): string {
-  return join(
-    brandAssetsDir(uploadsDir, slug),
-    `${ensureSafeAssetId(id)}.${extension}`,
-  );
+): StorageKey {
+  return `${BRANDS_SUBDIR}/${ensureSafeSlug(slug)}/${ASSETS_SUBDIR}/${ensureSafeAssetId(id)}.${extension}`;
 }
 
-async function ensureBrandAssetsDir(
-  uploadsDir: string,
-  slug: string,
-): Promise<string> {
-  const dir = brandAssetsDir(uploadsDir, slug);
-  await mkdir(dir, { recursive: true, mode: 0o700 });
-  return dir;
-}
-
-async function ensureBrandDir(
-  uploadsDir: string,
-  slug: string,
-): Promise<string> {
-  const dir = brandDir(uploadsDir, slug);
-  await mkdir(dir, { recursive: true, mode: 0o700 });
-  return dir;
+export function brandGuidelinesKey(slug: string): StorageKey {
+  return `${BRANDS_SUBDIR}/${ensureSafeSlug(slug)}/${GUIDELINES_FILE}`;
 }
 
 export async function writeBrandAsset(
-  uploadsDir: string,
+  store: ObjectStore,
   slug: string,
   id: string,
   file: File,
@@ -99,14 +70,13 @@ export async function writeBrandAsset(
     );
   }
 
-  await ensureBrandAssetsDir(uploadsDir, safeSlug);
-  const filePath = brandAssetPath(uploadsDir, safeSlug, safeId, extension);
+  const key = brandAssetKey(safeSlug, safeId, extension);
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(filePath, buffer, { mode: 0o600 });
+  await store.put(key, buffer, contentType);
 
   return {
     id: safeId,
-    localPath: filePath,
+    localPath: key,
     contentType,
     extension,
     sizeBytes: buffer.byteLength,
@@ -114,43 +84,25 @@ export async function writeBrandAsset(
 }
 
 export async function deleteBrandAsset(
-  uploadsDir: string,
+  store: ObjectStore,
   slug: string,
   id: string,
   extension: string,
 ): Promise<void> {
-  const filePath = brandAssetPath(uploadsDir, slug, id, extension);
-  try {
-    await unlink(filePath);
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
-      throw err;
-    }
-  }
+  await store.remove(brandAssetKey(slug, id, extension));
 }
 
 export async function readBrandGuidelines(
-  uploadsDir: string,
+  store: ObjectStore,
   slug: string,
 ): Promise<string | null> {
-  const path = brandGuidelinesPath(uploadsDir, slug);
-  try {
-    return await readFile(path, "utf8");
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-      return null;
-    }
-    throw err;
-  }
+  return store.getText(brandGuidelinesKey(slug));
 }
 
 export async function writeBrandGuidelines(
-  uploadsDir: string,
+  store: ObjectStore,
   slug: string,
   markdown: string,
 ): Promise<void> {
-  await ensureBrandDir(uploadsDir, slug);
-  await writeFile(brandGuidelinesPath(uploadsDir, slug), markdown, {
-    mode: 0o600,
-  });
+  await store.putText(brandGuidelinesKey(slug), markdown);
 }

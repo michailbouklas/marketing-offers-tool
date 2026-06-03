@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { unlink } from "node:fs/promises";
+import { getObjectStore } from "$lib/server/object-store.server";
 import { prisma } from "$lib/server/prisma";
 import {
   readBrandGuidelines,
@@ -42,7 +42,6 @@ export interface CreateBrandAssetArgs {
   slug: string;
   file: File;
   name: string;
-  uploadsDir: string;
 }
 
 export async function createBrandAsset(
@@ -50,7 +49,7 @@ export async function createBrandAsset(
 ): Promise<BrandAssetRow> {
   const id = randomUUID();
   const written = await writeBrandAsset(
-    args.uploadsDir,
+    getObjectStore(),
     args.slug,
     id,
     args.file,
@@ -76,26 +75,16 @@ export async function deleteBrandAsset(assetId: string): Promise<void> {
     return;
   }
   await prisma.brandAsset.delete({ where: { id: row.id } });
-  try {
-    await unlink(row.localPath);
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
-      throw err;
-    }
-  }
+  await getObjectStore().remove(row.localPath);
 }
 
-export async function getBrandGuidelines(
-  slug: string,
-  uploadsDir: string,
-): Promise<string | null> {
-  return readBrandGuidelines(uploadsDir, slug);
+export async function getBrandGuidelines(slug: string): Promise<string | null> {
+  return readBrandGuidelines(getObjectStore(), slug);
 }
 
 export async function setBrandGuidelines(
   slug: string,
   markdown: string,
-  uploadsDir: string,
 ): Promise<void> {
-  await writeBrandGuidelines(uploadsDir, slug, markdown);
+  await writeBrandGuidelines(getObjectStore(), slug, markdown);
 }

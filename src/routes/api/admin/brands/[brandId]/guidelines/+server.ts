@@ -1,7 +1,6 @@
 import { error, json } from "@sveltejs/kit";
 import { z } from "zod";
 import { requireApiAdminPermission } from "$lib/server/auth-guards";
-import { getImageGeneratorEnv } from "$lib/server/env";
 import {
   getBrandGuidelines,
   setBrandGuidelines,
@@ -48,8 +47,7 @@ export const GET: RequestHandler = async (event) => {
   const brandId = parseBrandId(event.params.brandId);
   const slug = await brandSlugOr404(brandId);
 
-  const env = getImageGeneratorEnv();
-  const markdown = await getBrandGuidelines(slug, env.UPLOADS_DIR);
+  const markdown = await getBrandGuidelines(slug);
   return json({ markdown: markdown ?? "" });
 };
 
@@ -69,7 +67,6 @@ export const PUT: RequestHandler = async (event) => {
     error(400, parsed.error.issues.map((i) => i.message).join("; "));
   }
 
-  const env = getImageGeneratorEnv();
-  await setBrandGuidelines(slug, parsed.data.markdown, env.UPLOADS_DIR);
+  await setBrandGuidelines(slug, parsed.data.markdown);
   return json({ ok: true });
 };
