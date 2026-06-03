@@ -1,15 +1,21 @@
 <script lang="ts">
-  import { Badge } from "$lib/components/ui/badge/index.js";
+  import { page } from "$app/state";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import MoonIcon from "@lucide/svelte/icons/moon";
   import SunIcon from "@lucide/svelte/icons/sun";
+  import UserIcon from "@lucide/svelte/icons/user";
   import { toggleMode } from "mode-watcher";
 
   // NOTE: The horizontal navigation menu was moved to a vertical left
   // sidebar (see app-sidebar.svelte) because the header ran out of space.
   // The previous header-based menu is preserved (commented out) below in
   // case we want to revert.
+
+  const user = $derived(
+    page.data.user as { name?: string; email?: string } | null | undefined,
+  );
+  const displayName = $derived(user?.name?.trim() || user?.email || "Profile");
 </script>
 
 <header
@@ -18,7 +24,10 @@
   <Sidebar.Trigger />
 
   <div class="ml-auto flex items-center gap-2">
-    <Badge variant="outline" class="hidden sm:inline-flex">Authenticated</Badge>
+    <Button href="/profile" variant="ghost" size="sm" class="max-w-[12rem]">
+      <UserIcon class="size-4" />
+      <span class="truncate">{displayName}</span>
+    </Button>
     <Button
       onclick={toggleMode}
       variant="outline"

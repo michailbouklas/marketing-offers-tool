@@ -6,4 +6,5 @@ export const authClient = createAuthClient({
   plugins: [adminClient({ ac, roles })],
 });
 
-export const { signIn, signOut, useSession } = authClient;
+export const { signIn, signOut, useSession, updateUser, changePassword } =
+  authClient;

@@ -15,11 +15,11 @@ description: "Skill for the Brand-context area of marketing-offers-tool. 5 symbo
 
 ## Key Files
 
-| File | Symbols |
-|------|---------|
-| `src/lib/services/brand-context/brand-context.server.ts` | getBrandAsset, deleteBrandAsset |
-| `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | parseBrandId, DELETE |
-| `src/lib/server/object-store.server.ts` | remove |
+| File                                                                | Symbols                         |
+| ------------------------------------------------------------------- | ------------------------------- |
+| `src/lib/services/brand-context/brand-context.server.ts`            | getBrandAsset, deleteBrandAsset |
+| `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | parseBrandId, DELETE            |
+| `src/lib/server/object-store.server.ts`                             | remove                          |
 
 ## Entry Points
 
@@ -32,32 +32,32 @@ Start here when exploring this area:
 
 ## Key Symbols
 
-| Symbol | Type | File | Line |
-|--------|------|------|------|
-| `getBrandAsset` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 28 |
-| `deleteBrandAsset` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 68 |
-| `DELETE` | Function | `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | 19 |
-| `remove` | Method | `src/lib/server/object-store.server.ts` | 26 |
-| `parseBrandId` | Function | `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | 8 |
+| Symbol             | Type     | File                                                                | Line |
+| ------------------ | -------- | ------------------------------------------------------------------- | ---- |
+| `getBrandAsset`    | Function | `src/lib/services/brand-context/brand-context.server.ts`            | 28   |
+| `deleteBrandAsset` | Function | `src/lib/services/brand-context/brand-context.server.ts`            | 68   |
+| `DELETE`           | Function | `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | 19   |
+| `remove`           | Method   | `src/lib/server/object-store.server.ts`                             | 26   |
+| `parseBrandId`     | Function | `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | 8    |
 
 ## Execution Flows
 
-| Flow | Type | Steps |
-|------|------|-------|
-| `DELETE → LoadEnvFileValues` | cross_community | 6 |
-| `DELETE → GetSupabaseClient` | cross_community | 4 |
-| `DELETE → SupabaseObjectStore` | cross_community | 4 |
-| `DELETE → LocalObjectStore` | cross_community | 4 |
-| `DELETE → RequireAuthenticatedApiUser` | cross_community | 3 |
-| `DELETE → HasPermission` | cross_community | 3 |
-| `DELETE → Remove` | intra_community | 3 |
+| Flow                                   | Type            | Steps |
+| -------------------------------------- | --------------- | ----- |
+| `DELETE → LoadEnvFileValues`           | cross_community | 6     |
+| `DELETE → GetSupabaseClient`           | cross_community | 4     |
+| `DELETE → SupabaseObjectStore`         | cross_community | 4     |
+| `DELETE → LocalObjectStore`            | cross_community | 4     |
+| `DELETE → RequireAuthenticatedApiUser` | cross_community | 3     |
+| `DELETE → HasPermission`               | cross_community | 3     |
+| `DELETE → Remove`                      | intra_community | 3     |
 
 ## Connected Areas
 
-| Area | Connections |
-|------|-------------|
-| Server | 1 calls |
-| Guidelines | 1 calls |
+| Area       | Connections |
+| ---------- | ----------- |
+| Server     | 1 calls     |
+| Guidelines | 1 calls     |
 
 ## How to Explore
 
