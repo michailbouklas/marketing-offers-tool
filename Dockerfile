@@ -3,10 +3,10 @@ WORKDIR /app
 
 FROM base AS install
 RUN mkdir -p /temp/dev /temp/prod
-COPY package.json /temp/dev/
-RUN cd /temp/dev && bun install --no-save
-COPY package.json /temp/prod/
-RUN cd /temp/prod && bun install --production --no-save
+COPY package.json bun.lock /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
+COPY package.json bun.lock /temp/prod/
+RUN cd /temp/prod && bun install --production --frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
