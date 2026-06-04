@@ -5,6 +5,7 @@
   import UsersIcon from "@lucide/svelte/icons/users";
   import StoreIcon from "@lucide/svelte/icons/store";
   import ImageIcon from "@lucide/svelte/icons/image";
+  import ActivityIcon from "@lucide/svelte/icons/activity";
   import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
   import type { Component } from "svelte";
   import type { PageData } from "./$types";
@@ -59,6 +60,14 @@
         "Track image-generation activity across all users over time, with totals, success rate, and the most active accounts.",
       icon: ImageIcon,
       accessKey: "imageUsage",
+    },
+    {
+      href: "/admin/metrics",
+      title: "User metrics",
+      description:
+        "See per-user activity such as last login, active sessions, and account age across every account.",
+      icon: ActivityIcon,
+      accessKey: "metrics",
     },
   ];
 

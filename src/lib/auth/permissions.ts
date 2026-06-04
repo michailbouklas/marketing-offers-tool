@@ -16,6 +16,7 @@ export const statement = {
   submission: ["approve", "reject"],
   brand: ["manage"],
   offer: ["edit"],
+  metrics: ["view"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -78,6 +79,7 @@ export const roles = {
     submission: ["approve", "reject"],
     brand: ["manage"],
     offer: ["edit"],
+    metrics: ["view"],
   }),
 } satisfies Record<UserRole, Role>;
 

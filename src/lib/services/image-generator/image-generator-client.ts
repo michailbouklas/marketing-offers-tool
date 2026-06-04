@@ -1,5 +1,14 @@
 import type { GeneratedImageDTO } from "./image-generator";
 import type { ImageGeneratorConfig } from "$lib/services/image-providers/config";
+import type {
+  ComposerPresetDTO,
+  ComposerTemplateDTO,
+  ComposerTemplateGroupsDTO,
+  PresetCreateInput,
+  PresetUpdateInput,
+  TemplateCreateInput,
+  TemplateUpdateInput,
+} from "./composer-library";
 
 export interface ReferenceUploadResult {
   id: string;
@@ -46,19 +55,31 @@ export interface BrandAssetDTO {
   id: string;
   brandId: number;
   name: string;
+  displayName: string | null;
   contentType: string;
   sizeBytes: number;
   createdAt: string;
 }
 
+export interface BrandAssetPage {
+  items: BrandAssetDTO[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export async function listBrandAssets(
   brandId: number,
-): Promise<BrandAssetDTO[]> {
+  opts?: { search?: string; page?: number },
+): Promise<BrandAssetPage> {
   const url = new URL("/api/brand-assets", window.location.origin);
   url.searchParams.set("brandId", String(brandId));
+  if (opts?.search) url.searchParams.set("search", opts.search);
+  if (opts?.page && opts.page > 1) {
+    url.searchParams.set("page", String(opts.page));
+  }
   const res = await fetch(url.toString());
-  const { items } = await jsonOrThrow<{ items: BrandAssetDTO[] }>(res);
-  return items;
+  return jsonOrThrow<BrandAssetPage>(res);
 }
 
 export async function attachBrandAssetAsReference(
@@ -143,4 +164,75 @@ export async function fetchImagesSince(
   url.searchParams.set("limit", "50");
   const res = await fetch(url.toString());
   return jsonOrThrow<{ items: GeneratedImageDTO[] }>(res);
+}
+
+export async function createPreset(
+  body: PresetCreateInput,
+): Promise<ComposerPresetDTO> {
+  const res = await fetch("/api/images/presets", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const { item } = await jsonOrThrow<{ item: ComposerPresetDTO }>(res);
+  return item;
+}
+
+export async function updatePreset(
+  id: string,
+  body: PresetUpdateInput,
+): Promise<ComposerPresetDTO> {
+  const res = await fetch(`/api/images/presets/${id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const { item } = await jsonOrThrow<{ item: ComposerPresetDTO }>(res);
+  return item;
+}
+
+export async function deletePreset(id: string): Promise<void> {
+  const res = await fetch(`/api/images/presets/${id}`, { method: "DELETE" });
+  if (!res.ok) await jsonOrThrow<never>(res);
+}
+
+export async function refreshPresets(): Promise<ComposerPresetDTO[]> {
+  const res = await fetch("/api/images/presets");
+  const { items } = await jsonOrThrow<{ items: ComposerPresetDTO[] }>(res);
+  return items;
+}
+
+export async function createTemplate(
+  body: TemplateCreateInput,
+): Promise<ComposerTemplateDTO> {
+  const res = await fetch("/api/images/templates", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const { item } = await jsonOrThrow<{ item: ComposerTemplateDTO }>(res);
+  return item;
+}
+
+export async function updateTemplate(
+  id: string,
+  body: TemplateUpdateInput,
+): Promise<ComposerTemplateDTO> {
+  const res = await fetch(`/api/images/templates/${id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const { item } = await jsonOrThrow<{ item: ComposerTemplateDTO }>(res);
+  return item;
+}
+
+export async function deleteTemplate(id: string): Promise<void> {
+  const res = await fetch(`/api/images/templates/${id}`, { method: "DELETE" });
+  if (!res.ok) await jsonOrThrow<never>(res);
+}
+
+export async function refreshTemplates(): Promise<ComposerTemplateGroupsDTO> {
+  const res = await fetch("/api/images/templates");
+  return jsonOrThrow<ComposerTemplateGroupsDTO>(res);
 }

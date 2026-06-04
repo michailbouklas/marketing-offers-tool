@@ -3,6 +3,9 @@
   import { toast } from "svelte-sonner";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
   import type { PageData } from "./$types";
 
@@ -13,6 +16,13 @@
   let uploadInput = $state<HTMLInputElement | undefined>();
   let uploading = $state(false);
   let deletingId = $state<string | null>(null);
+  let editingAsset = $state<{
+    id: string;
+    name: string;
+    displayName: string | null;
+  } | null>(null);
+  let editName = $state("");
+  let savingName = $state(false);
 
   $effect(() => {
     markdown = data.guidelines;
@@ -88,6 +98,42 @@
 
   function handleDragOver(event: DragEvent) {
     event.preventDefault();
+  }
+
+  function openEditDialog(asset: {
+    id: string;
+    name: string;
+    displayName: string | null;
+  }) {
+    editingAsset = asset;
+    editName = asset.displayName ?? "";
+  }
+
+  async function saveAssetName(event: SubmitEvent) {
+    event.preventDefault();
+    if (savingName || !editingAsset) return;
+    savingName = true;
+    try {
+      const res = await fetch(
+        `/api/admin/brands/${data.brand.id}/assets/${editingAsset.id}`,
+        {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ name: editName }),
+        },
+      );
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `Save failed: ${res.status}`);
+      }
+      toast.success("Asset name saved.");
+      editingAsset = null;
+      await invalidateAll();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      savingName = false;
+    }
   }
 
   async function deleteAsset(assetId: string) {
@@ -200,8 +246,11 @@
           {#each data.assets as asset (asset.id)}
             <Card.Root>
               <Card.Header class="p-3">
-                <Card.Title class="truncate text-sm" title={asset.name}>
-                  {asset.name}
+                <Card.Title
+                  class="truncate text-sm"
+                  title={asset.displayName ?? asset.name}
+                >
+                  {asset.displayName ?? asset.name}
                 </Card.Title>
                 <Card.Description class="text-xs">
                   {formatBytes(asset.sizeBytes)}
@@ -210,19 +259,29 @@
               <Card.Content class="space-y-2 p-3 pt-0">
                 <img
                   src={`/api/brand-assets/${asset.id}`}
-                  alt={asset.name}
+                  alt={asset.displayName ?? asset.name}
                   class="bg-muted h-32 w-full rounded object-contain"
                   loading="lazy"
                 />
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  class="w-full"
-                  disabled={deletingId !== null}
-                  onclick={() => deleteAsset(asset.id)}
-                >
-                  {deletingId === asset.id ? "Deleting…" : "Delete"}
-                </Button>
+                <div class="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    class="flex-1"
+                    onclick={() => openEditDialog(asset)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    class="flex-1"
+                    disabled={deletingId !== null}
+                    onclick={() => deleteAsset(asset.id)}
+                  >
+                    {deletingId === asset.id ? "Deleting…" : "Delete"}
+                  </Button>
+                </div>
               </Card.Content>
             </Card.Root>
           {/each}
@@ -231,3 +290,35 @@
     </Card.Content>
   </Card.Root>
 </main>
+
+<Dialog.Root
+  open={editingAsset !== null}
+  onOpenChange={(open) => {
+    if (!open) editingAsset = null;
+  }}
+>
+  <Dialog.Content class="sm:max-w-md">
+    <Dialog.Header>
+      <Dialog.Title>Edit asset name</Dialog.Title>
+      <Dialog.Description>
+        Leave empty to fall back to the file name.
+      </Dialog.Description>
+    </Dialog.Header>
+    <form class="space-y-4" onsubmit={saveAssetName}>
+      <div class="space-y-2">
+        <Label for="asset-name">Name</Label>
+        <Input
+          id="asset-name"
+          bind:value={editName}
+          maxlength={120}
+          placeholder={editingAsset?.name}
+        />
+      </div>
+      <Dialog.Footer>
+        <Button type="submit" disabled={savingName}>
+          {savingName ? "Saving…" : "Save"}
+        </Button>
+      </Dialog.Footer>
+    </form>
+  </Dialog.Content>
+</Dialog.Root>

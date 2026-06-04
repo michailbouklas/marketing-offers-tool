@@ -11,6 +11,7 @@ export interface BrandAssetRow {
   id: string;
   brandId: number;
   name: string;
+  displayName: string | null;
   localPath: string;
   contentType: string;
   sizeBytes: number;
@@ -24,6 +25,45 @@ export async function listBrandAssets(
     where: { brandId },
     orderBy: { createdAt: "desc" },
   });
+}
+
+export interface SearchBrandAssetsArgs {
+  brandId: number;
+  search?: string;
+  page: number;
+  pageSize: number;
+}
+
+export interface SearchBrandAssetsResult {
+  items: BrandAssetRow[];
+  total: number;
+}
+
+export async function searchBrandAssets(
+  args: SearchBrandAssetsArgs,
+): Promise<SearchBrandAssetsResult> {
+  const search = args.search?.trim();
+  const where = {
+    brandId: args.brandId,
+    ...(search
+      ? {
+          OR: [
+            { displayName: { contains: search, mode: "insensitive" as const } },
+            { name: { contains: search, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+  const [items, total] = await prisma.$transaction([
+    prisma.brandAsset.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (args.page - 1) * args.pageSize,
+      take: args.pageSize,
+    }),
+    prisma.brandAsset.count({ where }),
+  ]);
+  return { items, total };
 }
 
 export async function getBrandAsset(
@@ -63,6 +103,16 @@ export async function createBrandAsset(
       contentType: written.contentType,
       sizeBytes: written.sizeBytes,
     },
+  });
+}
+
+export async function updateBrandAssetName(
+  assetId: string,
+  displayName: string | null,
+): Promise<BrandAssetRow> {
+  return prisma.brandAsset.update({
+    where: { id: assetId },
+    data: { displayName },
   });
 }
 

@@ -75,6 +75,9 @@ export const ModelName = {
   GeneratedImage: "GeneratedImage",
   BrandAsset: "BrandAsset",
   ReferenceImage: "ReferenceImage",
+  ImageGeneratorPreset: "ImageGeneratorPreset",
+  ImageGeneratorTemplate: "ImageGeneratorTemplate",
+  ImageGeneratorTemplateBrand: "ImageGeneratorTemplateBrand",
   api_BOLT_header: "api_BOLT_header",
   api_BOLT_lines: "api_BOLT_lines",
   bolt_regex_patters: "bolt_regex_patters",
@@ -383,6 +386,7 @@ export const BrandAssetScalarFieldEnum = {
   id: "id",
   brandId: "brandId",
   name: "name",
+  displayName: "displayName",
   localPath: "localPath",
   contentType: "contentType",
   sizeBytes: "sizeBytes",
@@ -402,6 +406,40 @@ export const ReferenceImageScalarFieldEnum = {
 
 export type ReferenceImageScalarFieldEnum =
   (typeof ReferenceImageScalarFieldEnum)[keyof typeof ReferenceImageScalarFieldEnum];
+
+export const ImageGeneratorPresetScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  name: "name",
+  settings: "settings",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type ImageGeneratorPresetScalarFieldEnum =
+  (typeof ImageGeneratorPresetScalarFieldEnum)[keyof typeof ImageGeneratorPresetScalarFieldEnum];
+
+export const ImageGeneratorTemplateScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  name: "name",
+  prompt: "prompt",
+  settings: "settings",
+  visibility: "visibility",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type ImageGeneratorTemplateScalarFieldEnum =
+  (typeof ImageGeneratorTemplateScalarFieldEnum)[keyof typeof ImageGeneratorTemplateScalarFieldEnum];
+
+export const ImageGeneratorTemplateBrandScalarFieldEnum = {
+  templateId: "templateId",
+  brandId: "brandId",
+} as const;
+
+export type ImageGeneratorTemplateBrandScalarFieldEnum =
+  (typeof ImageGeneratorTemplateBrandScalarFieldEnum)[keyof typeof ImageGeneratorTemplateBrandScalarFieldEnum];
 
 export const Api_BOLT_headerScalarFieldEnum = {
   id: "id",

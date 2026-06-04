@@ -849,6 +849,41 @@ export type EnumGeneratedImageStatusWithAggregatesFilter<$PrismaModel = never> =
     _max?: Prisma.NestedEnumGeneratedImageStatusFilter<$PrismaModel>;
   };
 
+export type EnumImageGeneratorTemplateVisibilityFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ImageGeneratorTemplateVisibility
+    | Prisma.EnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ImageGeneratorTemplateVisibility[]
+    | Prisma.ListEnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ImageGeneratorTemplateVisibility[]
+    | Prisma.ListEnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumImageGeneratorTemplateVisibilityFilter<$PrismaModel>
+    | $Enums.ImageGeneratorTemplateVisibility;
+};
+
+export type EnumImageGeneratorTemplateVisibilityWithAggregatesFilter<
+  $PrismaModel = never,
+> = {
+  equals?:
+    | $Enums.ImageGeneratorTemplateVisibility
+    | Prisma.EnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ImageGeneratorTemplateVisibility[]
+    | Prisma.ListEnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ImageGeneratorTemplateVisibility[]
+    | Prisma.ListEnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumImageGeneratorTemplateVisibilityWithAggregatesFilter<$PrismaModel>
+    | $Enums.ImageGeneratorTemplateVisibility;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumImageGeneratorTemplateVisibilityFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumImageGeneratorTemplateVisibilityFilter<$PrismaModel>;
+};
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>;
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
@@ -1605,4 +1640,41 @@ export type NestedEnumGeneratedImageStatusWithAggregatesFilter<
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumGeneratedImageStatusFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumGeneratedImageStatusFilter<$PrismaModel>;
+};
+
+export type NestedEnumImageGeneratorTemplateVisibilityFilter<
+  $PrismaModel = never,
+> = {
+  equals?:
+    | $Enums.ImageGeneratorTemplateVisibility
+    | Prisma.EnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ImageGeneratorTemplateVisibility[]
+    | Prisma.ListEnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ImageGeneratorTemplateVisibility[]
+    | Prisma.ListEnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumImageGeneratorTemplateVisibilityFilter<$PrismaModel>
+    | $Enums.ImageGeneratorTemplateVisibility;
+};
+
+export type NestedEnumImageGeneratorTemplateVisibilityWithAggregatesFilter<
+  $PrismaModel = never,
+> = {
+  equals?:
+    | $Enums.ImageGeneratorTemplateVisibility
+    | Prisma.EnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ImageGeneratorTemplateVisibility[]
+    | Prisma.ListEnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ImageGeneratorTemplateVisibility[]
+    | Prisma.ListEnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumImageGeneratorTemplateVisibilityWithAggregatesFilter<$PrismaModel>
+    | $Enums.ImageGeneratorTemplateVisibility;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumImageGeneratorTemplateVisibilityFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumImageGeneratorTemplateVisibilityFilter<$PrismaModel>;
 };

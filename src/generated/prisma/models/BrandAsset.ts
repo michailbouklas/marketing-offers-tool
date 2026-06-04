@@ -40,6 +40,7 @@ export type BrandAssetMinAggregateOutputType = {
   id: string | null;
   brandId: number | null;
   name: string | null;
+  displayName: string | null;
   localPath: string | null;
   contentType: string | null;
   sizeBytes: number | null;
@@ -50,6 +51,7 @@ export type BrandAssetMaxAggregateOutputType = {
   id: string | null;
   brandId: number | null;
   name: string | null;
+  displayName: string | null;
   localPath: string | null;
   contentType: string | null;
   sizeBytes: number | null;
@@ -60,6 +62,7 @@ export type BrandAssetCountAggregateOutputType = {
   id: number;
   brandId: number;
   name: number;
+  displayName: number;
   localPath: number;
   contentType: number;
   sizeBytes: number;
@@ -81,6 +84,7 @@ export type BrandAssetMinAggregateInputType = {
   id?: true;
   brandId?: true;
   name?: true;
+  displayName?: true;
   localPath?: true;
   contentType?: true;
   sizeBytes?: true;
@@ -91,6 +95,7 @@ export type BrandAssetMaxAggregateInputType = {
   id?: true;
   brandId?: true;
   name?: true;
+  displayName?: true;
   localPath?: true;
   contentType?: true;
   sizeBytes?: true;
@@ -101,6 +106,7 @@ export type BrandAssetCountAggregateInputType = {
   id?: true;
   brandId?: true;
   name?: true;
+  displayName?: true;
   localPath?: true;
   contentType?: true;
   sizeBytes?: true;
@@ -205,6 +211,7 @@ export type BrandAssetGroupByOutputType = {
   id: string;
   brandId: number;
   name: string;
+  displayName: string | null;
   localPath: string;
   contentType: string;
   sizeBytes: number;
@@ -236,6 +243,7 @@ export type BrandAssetWhereInput = {
   id?: Prisma.StringFilter<"BrandAsset"> | string;
   brandId?: Prisma.IntFilter<"BrandAsset"> | number;
   name?: Prisma.StringFilter<"BrandAsset"> | string;
+  displayName?: Prisma.StringNullableFilter<"BrandAsset"> | string | null;
   localPath?: Prisma.StringFilter<"BrandAsset"> | string;
   contentType?: Prisma.StringFilter<"BrandAsset"> | string;
   sizeBytes?: Prisma.IntFilter<"BrandAsset"> | number;
@@ -247,6 +255,7 @@ export type BrandAssetOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
   brandId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
+  displayName?: Prisma.SortOrderInput | Prisma.SortOrder;
   localPath?: Prisma.SortOrder;
   contentType?: Prisma.SortOrder;
   sizeBytes?: Prisma.SortOrder;
@@ -262,6 +271,7 @@ export type BrandAssetWhereUniqueInput = Prisma.AtLeast<
     NOT?: Prisma.BrandAssetWhereInput | Prisma.BrandAssetWhereInput[];
     brandId?: Prisma.IntFilter<"BrandAsset"> | number;
     name?: Prisma.StringFilter<"BrandAsset"> | string;
+    displayName?: Prisma.StringNullableFilter<"BrandAsset"> | string | null;
     localPath?: Prisma.StringFilter<"BrandAsset"> | string;
     contentType?: Prisma.StringFilter<"BrandAsset"> | string;
     sizeBytes?: Prisma.IntFilter<"BrandAsset"> | number;
@@ -278,6 +288,7 @@ export type BrandAssetOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
   brandId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
+  displayName?: Prisma.SortOrderInput | Prisma.SortOrder;
   localPath?: Prisma.SortOrder;
   contentType?: Prisma.SortOrder;
   sizeBytes?: Prisma.SortOrder;
@@ -300,6 +311,10 @@ export type BrandAssetScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"BrandAsset"> | string;
   brandId?: Prisma.IntWithAggregatesFilter<"BrandAsset"> | number;
   name?: Prisma.StringWithAggregatesFilter<"BrandAsset"> | string;
+  displayName?:
+    | Prisma.StringNullableWithAggregatesFilter<"BrandAsset">
+    | string
+    | null;
   localPath?: Prisma.StringWithAggregatesFilter<"BrandAsset"> | string;
   contentType?: Prisma.StringWithAggregatesFilter<"BrandAsset"> | string;
   sizeBytes?: Prisma.IntWithAggregatesFilter<"BrandAsset"> | number;
@@ -309,6 +324,7 @@ export type BrandAssetScalarWhereWithAggregatesInput = {
 export type BrandAssetCreateInput = {
   id?: string;
   name: string;
+  displayName?: string | null;
   localPath: string;
   contentType: string;
   sizeBytes: number;
@@ -320,6 +336,7 @@ export type BrandAssetUncheckedCreateInput = {
   id?: string;
   brandId: number;
   name: string;
+  displayName?: string | null;
   localPath: string;
   contentType: string;
   sizeBytes: number;
@@ -329,6 +346,7 @@ export type BrandAssetUncheckedCreateInput = {
 export type BrandAssetUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   localPath?: Prisma.StringFieldUpdateOperationsInput | string;
   contentType?: Prisma.StringFieldUpdateOperationsInput | string;
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -340,6 +358,7 @@ export type BrandAssetUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   brandId?: Prisma.IntFieldUpdateOperationsInput | number;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   localPath?: Prisma.StringFieldUpdateOperationsInput | string;
   contentType?: Prisma.StringFieldUpdateOperationsInput | string;
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -350,6 +369,7 @@ export type BrandAssetCreateManyInput = {
   id?: string;
   brandId: number;
   name: string;
+  displayName?: string | null;
   localPath: string;
   contentType: string;
   sizeBytes: number;
@@ -359,6 +379,7 @@ export type BrandAssetCreateManyInput = {
 export type BrandAssetUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   localPath?: Prisma.StringFieldUpdateOperationsInput | string;
   contentType?: Prisma.StringFieldUpdateOperationsInput | string;
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -369,6 +390,7 @@ export type BrandAssetUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   brandId?: Prisma.IntFieldUpdateOperationsInput | number;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   localPath?: Prisma.StringFieldUpdateOperationsInput | string;
   contentType?: Prisma.StringFieldUpdateOperationsInput | string;
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -389,6 +411,7 @@ export type BrandAssetCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   brandId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
+  displayName?: Prisma.SortOrder;
   localPath?: Prisma.SortOrder;
   contentType?: Prisma.SortOrder;
   sizeBytes?: Prisma.SortOrder;
@@ -404,6 +427,7 @@ export type BrandAssetMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   brandId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
+  displayName?: Prisma.SortOrder;
   localPath?: Prisma.SortOrder;
   contentType?: Prisma.SortOrder;
   sizeBytes?: Prisma.SortOrder;
@@ -414,6 +438,7 @@ export type BrandAssetMinOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   brandId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
+  displayName?: Prisma.SortOrder;
   localPath?: Prisma.SortOrder;
   contentType?: Prisma.SortOrder;
   sizeBytes?: Prisma.SortOrder;
@@ -534,6 +559,7 @@ export type BrandAssetUncheckedUpdateManyWithoutBrandNestedInput = {
 export type BrandAssetCreateWithoutBrandInput = {
   id?: string;
   name: string;
+  displayName?: string | null;
   localPath: string;
   contentType: string;
   sizeBytes: number;
@@ -543,6 +569,7 @@ export type BrandAssetCreateWithoutBrandInput = {
 export type BrandAssetUncheckedCreateWithoutBrandInput = {
   id?: string;
   name: string;
+  displayName?: string | null;
   localPath: string;
   contentType: string;
   sizeBytes: number;
@@ -599,6 +626,7 @@ export type BrandAssetScalarWhereInput = {
   id?: Prisma.StringFilter<"BrandAsset"> | string;
   brandId?: Prisma.IntFilter<"BrandAsset"> | number;
   name?: Prisma.StringFilter<"BrandAsset"> | string;
+  displayName?: Prisma.StringNullableFilter<"BrandAsset"> | string | null;
   localPath?: Prisma.StringFilter<"BrandAsset"> | string;
   contentType?: Prisma.StringFilter<"BrandAsset"> | string;
   sizeBytes?: Prisma.IntFilter<"BrandAsset"> | number;
@@ -608,6 +636,7 @@ export type BrandAssetScalarWhereInput = {
 export type BrandAssetCreateManyBrandInput = {
   id?: string;
   name: string;
+  displayName?: string | null;
   localPath: string;
   contentType: string;
   sizeBytes: number;
@@ -617,6 +646,7 @@ export type BrandAssetCreateManyBrandInput = {
 export type BrandAssetUpdateWithoutBrandInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   localPath?: Prisma.StringFieldUpdateOperationsInput | string;
   contentType?: Prisma.StringFieldUpdateOperationsInput | string;
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -626,6 +656,7 @@ export type BrandAssetUpdateWithoutBrandInput = {
 export type BrandAssetUncheckedUpdateWithoutBrandInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   localPath?: Prisma.StringFieldUpdateOperationsInput | string;
   contentType?: Prisma.StringFieldUpdateOperationsInput | string;
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -635,6 +666,7 @@ export type BrandAssetUncheckedUpdateWithoutBrandInput = {
 export type BrandAssetUncheckedUpdateManyWithoutBrandInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   localPath?: Prisma.StringFieldUpdateOperationsInput | string;
   contentType?: Prisma.StringFieldUpdateOperationsInput | string;
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -649,6 +681,7 @@ export type BrandAssetSelect<
     id?: boolean;
     brandId?: boolean;
     name?: boolean;
+    displayName?: boolean;
     localPath?: boolean;
     contentType?: boolean;
     sizeBytes?: boolean;
@@ -666,6 +699,7 @@ export type BrandAssetSelectCreateManyAndReturn<
     id?: boolean;
     brandId?: boolean;
     name?: boolean;
+    displayName?: boolean;
     localPath?: boolean;
     contentType?: boolean;
     sizeBytes?: boolean;
@@ -683,6 +717,7 @@ export type BrandAssetSelectUpdateManyAndReturn<
     id?: boolean;
     brandId?: boolean;
     name?: boolean;
+    displayName?: boolean;
     localPath?: boolean;
     contentType?: boolean;
     sizeBytes?: boolean;
@@ -696,6 +731,7 @@ export type BrandAssetSelectScalar = {
   id?: boolean;
   brandId?: boolean;
   name?: boolean;
+  displayName?: boolean;
   localPath?: boolean;
   contentType?: boolean;
   sizeBytes?: boolean;
@@ -709,6 +745,7 @@ export type BrandAssetOmit<
   | "id"
   | "brandId"
   | "name"
+  | "displayName"
   | "localPath"
   | "contentType"
   | "sizeBytes"
@@ -747,6 +784,7 @@ export type $BrandAssetPayload<
       id: string;
       brandId: number;
       name: string;
+      displayName: string | null;
       localPath: string;
       contentType: string;
       sizeBytes: number;
@@ -1360,6 +1398,7 @@ export interface BrandAssetFieldRefs {
   readonly id: Prisma.FieldRef<"BrandAsset", "String">;
   readonly brandId: Prisma.FieldRef<"BrandAsset", "Int">;
   readonly name: Prisma.FieldRef<"BrandAsset", "String">;
+  readonly displayName: Prisma.FieldRef<"BrandAsset", "String">;
   readonly localPath: Prisma.FieldRef<"BrandAsset", "String">;
   readonly contentType: Prisma.FieldRef<"BrandAsset", "String">;
   readonly sizeBytes: Prisma.FieldRef<"BrandAsset", "Int">;

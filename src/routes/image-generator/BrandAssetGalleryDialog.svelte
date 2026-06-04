@@ -1,55 +1,101 @@
 <script lang="ts">
+  import { toast } from "svelte-sonner";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
   import { cn } from "$lib/utils.js";
   import CheckIcon from "@lucide/svelte/icons/check";
-  import type { BrandAssetDTO } from "$lib/services/image-generator/image-generator-client";
+  import {
+    listBrandAssets,
+    type BrandAssetDTO,
+  } from "$lib/services/image-generator/image-generator-client";
 
   interface Props {
     open: boolean;
+    brandId: number | null;
     brandName: string | null;
-    assets: BrandAssetDTO[] | null;
-    loading: boolean;
     onOpenChange: (open: boolean) => void;
     onUseAsReferences: (assets: BrandAssetDTO[]) => void | Promise<void>;
   }
 
-  let {
-    open,
-    brandName,
-    assets,
-    loading,
-    onOpenChange,
-    onUseAsReferences,
-  }: Props = $props();
+  let { open, brandId, brandName, onOpenChange, onUseAsReferences }: Props =
+    $props();
 
-  let selectedIds = $state<string[]>([]);
+  let assets = $state<BrandAssetDTO[] | null>(null);
+  let total = $state(0);
+  let page = $state(1);
+  let pageSize = $state(50);
+  let search = $state("");
+  let loading = $state(false);
+  // Selected assets are kept as full DTOs so selection survives page changes
+  // and search filtering.
+  let selected = $state<BrandAssetDTO[]>([]);
   let busy = $state(false);
 
-  // Each time the dialog closes, start the next session with a clean selection.
+  let requestToken = 0;
+  let searchTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const totalPages = $derived(Math.max(1, Math.ceil(total / pageSize)));
+
+  // Each time the dialog opens, start a fresh session and load the first page.
   $effect(() => {
-    if (!open) {
-      selectedIds = [];
+    if (open && brandId !== null) {
+      search = "";
+      page = 1;
+      selected = [];
       busy = false;
+      void loadAssets(1, "");
     }
+    return () => {
+      if (searchTimer) clearTimeout(searchTimer);
+    };
   });
 
-  function isSelected(id: string): boolean {
-    return selectedIds.includes(id);
+  async function loadAssets(targetPage: number, term: string) {
+    if (brandId === null) return;
+    const token = ++requestToken;
+    loading = true;
+    try {
+      const result = await listBrandAssets(brandId, {
+        search: term,
+        page: targetPage,
+      });
+      if (token !== requestToken) return;
+      assets = result.items;
+      total = result.total;
+      page = result.page;
+      pageSize = result.pageSize;
+    } catch (err) {
+      if (token !== requestToken) return;
+      toast.error(err instanceof Error ? err.message : String(err));
+      onOpenChange(false);
+    } finally {
+      if (token === requestToken) loading = false;
+    }
   }
 
-  function toggle(id: string) {
-    selectedIds = isSelected(id)
-      ? selectedIds.filter((x) => x !== id)
-      : [...selectedIds, id];
+  function handleSearchInput() {
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      void loadAssets(1, search);
+    }, 300);
+  }
+
+  function isSelected(id: string): boolean {
+    return selected.some((asset) => asset.id === id);
+  }
+
+  function toggle(asset: BrandAssetDTO) {
+    selected = isSelected(asset.id)
+      ? selected.filter((existing) => existing.id !== asset.id)
+      : [...selected, asset];
   }
 
   async function confirm() {
-    if (busy || selectedIds.length === 0 || !assets) return;
-    const chosen = assets.filter((a) => selectedIds.includes(a.id));
+    if (busy || selected.length === 0) return;
     busy = true;
     try {
-      await onUseAsReferences(chosen);
+      await onUseAsReferences(selected);
     } finally {
       busy = false;
     }
@@ -73,17 +119,29 @@
       </Dialog.Description>
     </Dialog.Header>
 
-    {#if loading}
+    <Input
+      type="search"
+      placeholder="Search assets by name…"
+      bind:value={search}
+      oninput={handleSearchInput}
+    />
+
+    {#if loading && assets === null}
       <p class="text-muted-foreground py-6 text-center text-sm">
         Loading assets…
       </p>
     {:else if !assets || assets.length === 0}
       <p class="text-muted-foreground py-6 text-center text-sm">
-        No brand assets available for this brand.
+        {search.trim()
+          ? "No assets match your search."
+          : "No brand assets available for this brand."}
       </p>
     {:else}
       <div
-        class="grid max-h-[70vh] gap-4 overflow-y-auto pr-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+        class={cn(
+          "grid max-h-[60vh] gap-4 overflow-y-auto pr-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
+          loading && "pointer-events-none opacity-60",
+        )}
       >
         {#each assets as asset (asset.id)}
           <button
@@ -95,7 +153,7 @@
                 ? "border-primary ring-primary/40 ring-2"
                 : "border-border hover:border-primary/50",
             )}
-            onclick={() => toggle(asset.id)}
+            onclick={() => toggle(asset)}
           >
             <span
               class={cn(
@@ -112,42 +170,71 @@
             </span>
             <img
               src={`/api/brand-assets/${asset.id}`}
-              alt={asset.name}
+              alt={asset.displayName ?? asset.name}
               class="bg-muted h-40 w-full rounded object-contain"
               loading="lazy"
             />
-            <p class="truncate text-sm font-medium" title={asset.name}>
-              {asset.name}
+            <p
+              class="truncate text-sm font-medium"
+              title={asset.displayName ?? asset.name}
+            >
+              {asset.displayName ?? asset.name}
             </p>
           </button>
         {/each}
       </div>
-
-      <Dialog.Footer>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={busy}
-          onclick={() => onOpenChange(false)}
-        >
-          Cancel
-        </Button>
-        <Button
-          type="button"
-          disabled={busy || selectedIds.length === 0}
-          onclick={confirm}
-        >
-          {#if busy}
-            Attaching…
-          {:else if selectedIds.length > 0}
-            Use {selectedIds.length} as reference{selectedIds.length === 1
-              ? ""
-              : "s"}
-          {:else}
-            Use as reference
-          {/if}
-        </Button>
-      </Dialog.Footer>
     {/if}
+
+    {#if totalPages > 1}
+      <div class="flex items-center justify-between">
+        <p class="text-muted-foreground text-xs">
+          Page {page} of {totalPages} — {total} asset{total === 1 ? "" : "s"}
+        </p>
+        <div class="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={loading || page <= 1}
+            onclick={() => loadAssets(page - 1, search)}
+          >
+            Previous
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={loading || page >= totalPages}
+            onclick={() => loadAssets(page + 1, search)}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    {/if}
+
+    <Dialog.Footer>
+      <Button
+        type="button"
+        variant="outline"
+        disabled={busy}
+        onclick={() => onOpenChange(false)}
+      >
+        Cancel
+      </Button>
+      <Button
+        type="button"
+        disabled={busy || selected.length === 0}
+        onclick={confirm}
+      >
+        {#if busy}
+          Attaching…
+        {:else if selected.length > 0}
+          Use {selected.length} as reference{selected.length === 1 ? "" : "s"}
+        {:else}
+          Use as reference
+        {/if}
+      </Button>
+    </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>

@@ -6,18 +6,30 @@
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
   import BrandAssetGalleryDialog from "./BrandAssetGalleryDialog.svelte";
+  import ComposerPresetPopover from "./ComposerPresetPopover.svelte";
+  import ComposerTemplatePopover from "./ComposerTemplatePopover.svelte";
   import ImageGrid from "./ImageGrid.svelte";
   import PromptComposer from "./PromptComposer.svelte";
   import { formatBrandLabel } from "$lib/services/brands";
   import type { ComposerState, SubmitPayload } from "./composer-types";
+  import type {
+    ComposerPresetDTO,
+    ComposerTemplateDTO,
+    SavedComposerSettings,
+  } from "$lib/services/image-generator/composer-library";
   import type { GeneratedImageDTO } from "$lib/services/image-generator/image-generator";
   import {
     attachBrandAssetAsReference,
+    createPreset as createPresetRequest,
+    createTemplate as createTemplateRequest,
+    deletePreset as deletePresetRequest,
+    deleteTemplate as deleteTemplateRequest,
     enhancePrompt,
     fetchBrandGuidelines,
     fetchImagesSince,
-    listBrandAssets,
     submitGeneration,
+    updatePreset as updatePresetRequest,
+    updateTemplate as updateTemplateRequest,
     uploadReferences,
     type BrandAssetDTO,
     type ClarifyingQuestion,
@@ -26,6 +38,9 @@
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
+  const getInitialPresets = () => data.presets;
+  const getInitialPrivateTemplates = () => data.templates.privateTemplates;
+  const getInitialPublicTemplates = () => data.templates.publicTemplates;
 
   let items = $state<GeneratedImageDTO[]>(data.images);
   let busy = $state(false);
@@ -34,17 +49,29 @@
   let pendingPayload = $state<SubmitPayload | null>(null);
   let pendingBrandGuidelines = $state<string | undefined>(undefined);
   let pendingAnswers = $state<string[]>([]);
-  let composer: { loadFrom: (s: Partial<ComposerState>) => void } | undefined =
-    $state();
+  let composer:
+    | {
+        loadFrom: (s: Partial<ComposerState>) => void;
+        getSettings: () => SavedComposerSettings;
+        getTemplateState: () => {
+          prompt: string;
+          settings: SavedComposerSettings;
+        };
+      }
+    | undefined = $state();
   let suppressEnhanceOnce = $state(false);
   let elapsedById = $state<Record<string, number>>({});
+  let presets = $state<ComposerPresetDTO[]>(getInitialPresets());
+  let privateTemplates = $state<ComposerTemplateDTO[]>(
+    getInitialPrivateTemplates(),
+  );
+  let publicTemplates = $state<ComposerTemplateDTO[]>(
+    getInitialPublicTemplates(),
+  );
 
   let selectedBrandId = $state<number | null>(null);
   let galleryOpen = $state(false);
-  let galleryLoading = $state(false);
-  let galleryAssets = $state<BrandAssetDTO[] | null>(null);
   let selectedBrandGuidelines = $state<string | null>(null);
-  const assetCache = new Map<number, BrandAssetDTO[]>();
   const guidelinesCache = new Map<number, string>();
 
   const selectedBrand = $derived(
@@ -291,6 +318,10 @@
 
   function selectBrand(brandId: number) {
     const next = selectedBrandId === brandId ? null : brandId;
+    setSelectedBrandId(next);
+  }
+
+  function setSelectedBrandId(next: number | null) {
     selectedBrandId = next;
     if (next === null) {
       selectedBrandGuidelines = null;
@@ -298,6 +329,126 @@
     }
     selectedBrandGuidelines = null;
     void loadBrandGuidelines(next);
+  }
+
+  function applySavedSettings(
+    settings: SavedComposerSettings,
+    prompt?: string,
+    applyBrand = true,
+  ) {
+    if (applyBrand && settings.brandId !== null) {
+      const availableBrand = data.brands.find(
+        (brand) => brand.id === settings.brandId,
+      );
+      if (availableBrand) {
+        setSelectedBrandId(settings.brandId);
+      } else {
+        setSelectedBrandId(null);
+        toast.warning(
+          "The saved brand is no longer available to your account.",
+        );
+      }
+    } else if (applyBrand) {
+      setSelectedBrandId(null);
+    }
+
+    composer?.loadFrom({
+      ...(prompt !== undefined ? { prompt } : {}),
+      provider: settings.provider,
+      models: settings.models,
+      size: settings.size,
+      style: settings.style as ComposerState["style"],
+      camera: settings.camera as ComposerState["camera"],
+      outputFormat: settings.outputFormat,
+      negativePrompt: settings.negativePrompt,
+      quality: settings.quality,
+      background: settings.background,
+      matchReferences: settings.matchReferences,
+      enhance: settings.enhance,
+      samplesPerModel: settings.samplesPerModel,
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function savePreset(name: string) {
+    const settings = composer?.getSettings();
+    if (!settings) throw new Error("Composer is not ready");
+    const item = await createPresetRequest({
+      name,
+      settings: { ...settings, brandId: null },
+    });
+    presets = [item, ...presets];
+    toast.success("Preset saved");
+  }
+
+  async function updatePreset(preset: ComposerPresetDTO) {
+    const settings = composer?.getSettings();
+    if (!settings) throw new Error("Composer is not ready");
+    const item = await updatePresetRequest(preset.id, {
+      name: preset.name,
+      settings: { ...settings, brandId: null },
+    });
+    presets = presets.map((existing) =>
+      existing.id === item.id ? item : existing,
+    );
+    toast.success("Preset updated");
+  }
+
+  async function deletePreset(preset: ComposerPresetDTO) {
+    await deletePresetRequest(preset.id);
+    presets = presets.filter((existing) => existing.id !== preset.id);
+    toast.success("Preset deleted");
+  }
+
+  async function saveTemplate(input: {
+    name: string;
+    visibility: "private" | "public";
+    brandIds: number[];
+  }) {
+    const state = composer?.getTemplateState();
+    if (!state) throw new Error("Composer is not ready");
+    if (state.prompt.length === 0) throw new Error("Prompt is required");
+
+    const item = await createTemplateRequest({
+      ...input,
+      prompt: state.prompt,
+      settings: state.settings,
+    });
+    if (item.visibility === "public") {
+      publicTemplates = [item, ...publicTemplates];
+    } else {
+      privateTemplates = [item, ...privateTemplates];
+    }
+    toast.success("Template saved");
+  }
+
+  async function updateTemplate(template: ComposerTemplateDTO) {
+    const state = composer?.getTemplateState();
+    if (!state) throw new Error("Composer is not ready");
+    if (state.prompt.length === 0) throw new Error("Prompt is required");
+
+    const item = await updateTemplateRequest(template.id, {
+      prompt: state.prompt,
+      settings: state.settings,
+    });
+    privateTemplates = privateTemplates.map((existing) =>
+      existing.id === item.id ? item : existing,
+    );
+    publicTemplates = publicTemplates.map((existing) =>
+      existing.id === item.id ? item : existing,
+    );
+    toast.success("Template updated");
+  }
+
+  async function deleteTemplate(template: ComposerTemplateDTO) {
+    await deleteTemplateRequest(template.id);
+    privateTemplates = privateTemplates.filter(
+      (existing) => existing.id !== template.id,
+    );
+    publicTemplates = publicTemplates.filter(
+      (existing) => existing.id !== template.id,
+    );
+    toast.success("Template deleted");
   }
 
   async function loadBrandGuidelines(brandId: number) {
@@ -317,39 +468,13 @@
     }
   }
 
-  async function openBrandGallery() {
+  function openBrandGallery() {
     if (selectedBrandId === null) return;
-    const brandId = selectedBrandId;
     galleryOpen = true;
-
-    const cached = assetCache.get(brandId);
-    if (cached) {
-      galleryAssets = cached;
-      galleryLoading = false;
-      return;
-    }
-
-    galleryLoading = true;
-    galleryAssets = null;
-    try {
-      const fetched = await listBrandAssets(brandId);
-      assetCache.set(brandId, fetched);
-      if (selectedBrandId === brandId && galleryOpen) {
-        galleryAssets = fetched;
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-      galleryOpen = false;
-    } finally {
-      galleryLoading = false;
-    }
   }
 
   function handleGalleryOpenChange(open: boolean) {
     galleryOpen = open;
-    if (!open) {
-      galleryAssets = null;
-    }
   }
 
   async function attachBrandAssets(assets: BrandAssetDTO[]) {
@@ -397,6 +522,26 @@
       <Button href="/image-generator/me" variant="outline" size="sm">
         My generated images
       </Button>
+    </div>
+    <div class="flex flex-wrap gap-2 pt-2">
+      <ComposerPresetPopover
+        {presets}
+        onSave={savePreset}
+        onUpdate={updatePreset}
+        onDelete={deletePreset}
+        onLoad={(preset) =>
+          applySavedSettings(preset.settings, undefined, false)}
+      />
+      <ComposerTemplatePopover
+        brands={data.brands}
+        {privateTemplates}
+        {publicTemplates}
+        onSave={saveTemplate}
+        onUpdate={updateTemplate}
+        onDelete={deleteTemplate}
+        onLoad={(template) =>
+          applySavedSettings(template.settings, template.prompt)}
+      />
     </div>
     <div class="space-y-2 pt-3">
       <p class="text-sm font-medium">Available brand rules</p>
@@ -480,6 +625,7 @@
     bind:this={composer}
     config={data.config}
     {busy}
+    currentBrandId={selectedBrandId}
     brandSelected={selectedBrandId !== null}
     brandGuidelines={selectedBrandGuidelines}
     onSubmit={handleSubmit}
@@ -498,9 +644,8 @@
 
   <BrandAssetGalleryDialog
     open={galleryOpen}
+    brandId={selectedBrandId}
     brandName={selectedBrand ? formatBrandLabel(selectedBrand) : null}
-    assets={galleryAssets}
-    loading={galleryLoading}
     onOpenChange={handleGalleryOpenChange}
     onUseAsReferences={attachBrandAssets}
   />

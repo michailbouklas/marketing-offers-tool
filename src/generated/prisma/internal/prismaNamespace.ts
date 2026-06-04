@@ -433,6 +433,9 @@ export const ModelName = {
   GeneratedImage: "GeneratedImage",
   BrandAsset: "BrandAsset",
   ReferenceImage: "ReferenceImage",
+  ImageGeneratorPreset: "ImageGeneratorPreset",
+  ImageGeneratorTemplate: "ImageGeneratorTemplate",
+  ImageGeneratorTemplateBrand: "ImageGeneratorTemplateBrand",
   api_BOLT_header: "api_BOLT_header",
   api_BOLT_lines: "api_BOLT_lines",
   bolt_regex_patters: "bolt_regex_patters",
@@ -479,6 +482,9 @@ export type TypeMap<
       | "generatedImage"
       | "brandAsset"
       | "referenceImage"
+      | "imageGeneratorPreset"
+      | "imageGeneratorTemplate"
+      | "imageGeneratorTemplateBrand"
       | "api_BOLT_header"
       | "api_BOLT_lines"
       | "bolt_regex_patters";
@@ -2081,6 +2087,234 @@ export type TypeMap<
         };
       };
     };
+    ImageGeneratorPreset: {
+      payload: Prisma.$ImageGeneratorPresetPayload<ExtArgs>;
+      fields: Prisma.ImageGeneratorPresetFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ImageGeneratorPresetFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorPresetPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ImageGeneratorPresetFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorPresetPayload>;
+        };
+        findFirst: {
+          args: Prisma.ImageGeneratorPresetFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorPresetPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ImageGeneratorPresetFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorPresetPayload>;
+        };
+        findMany: {
+          args: Prisma.ImageGeneratorPresetFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorPresetPayload>[];
+        };
+        create: {
+          args: Prisma.ImageGeneratorPresetCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorPresetPayload>;
+        };
+        createMany: {
+          args: Prisma.ImageGeneratorPresetCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ImageGeneratorPresetCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorPresetPayload>[];
+        };
+        delete: {
+          args: Prisma.ImageGeneratorPresetDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorPresetPayload>;
+        };
+        update: {
+          args: Prisma.ImageGeneratorPresetUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorPresetPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ImageGeneratorPresetDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ImageGeneratorPresetUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ImageGeneratorPresetUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorPresetPayload>[];
+        };
+        upsert: {
+          args: Prisma.ImageGeneratorPresetUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorPresetPayload>;
+        };
+        aggregate: {
+          args: Prisma.ImageGeneratorPresetAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImageGeneratorPreset>;
+        };
+        groupBy: {
+          args: Prisma.ImageGeneratorPresetGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ImageGeneratorPresetGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ImageGeneratorPresetCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ImageGeneratorPresetCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    ImageGeneratorTemplate: {
+      payload: Prisma.$ImageGeneratorTemplatePayload<ExtArgs>;
+      fields: Prisma.ImageGeneratorTemplateFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ImageGeneratorTemplateFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplatePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ImageGeneratorTemplateFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplatePayload>;
+        };
+        findFirst: {
+          args: Prisma.ImageGeneratorTemplateFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplatePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ImageGeneratorTemplateFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplatePayload>;
+        };
+        findMany: {
+          args: Prisma.ImageGeneratorTemplateFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplatePayload>[];
+        };
+        create: {
+          args: Prisma.ImageGeneratorTemplateCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplatePayload>;
+        };
+        createMany: {
+          args: Prisma.ImageGeneratorTemplateCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ImageGeneratorTemplateCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplatePayload>[];
+        };
+        delete: {
+          args: Prisma.ImageGeneratorTemplateDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplatePayload>;
+        };
+        update: {
+          args: Prisma.ImageGeneratorTemplateUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplatePayload>;
+        };
+        deleteMany: {
+          args: Prisma.ImageGeneratorTemplateDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ImageGeneratorTemplateUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ImageGeneratorTemplateUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplatePayload>[];
+        };
+        upsert: {
+          args: Prisma.ImageGeneratorTemplateUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplatePayload>;
+        };
+        aggregate: {
+          args: Prisma.ImageGeneratorTemplateAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImageGeneratorTemplate>;
+        };
+        groupBy: {
+          args: Prisma.ImageGeneratorTemplateGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ImageGeneratorTemplateGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ImageGeneratorTemplateCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ImageGeneratorTemplateCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    ImageGeneratorTemplateBrand: {
+      payload: Prisma.$ImageGeneratorTemplateBrandPayload<ExtArgs>;
+      fields: Prisma.ImageGeneratorTemplateBrandFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ImageGeneratorTemplateBrandFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplateBrandPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ImageGeneratorTemplateBrandFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplateBrandPayload>;
+        };
+        findFirst: {
+          args: Prisma.ImageGeneratorTemplateBrandFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplateBrandPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ImageGeneratorTemplateBrandFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplateBrandPayload>;
+        };
+        findMany: {
+          args: Prisma.ImageGeneratorTemplateBrandFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplateBrandPayload>[];
+        };
+        create: {
+          args: Prisma.ImageGeneratorTemplateBrandCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplateBrandPayload>;
+        };
+        createMany: {
+          args: Prisma.ImageGeneratorTemplateBrandCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ImageGeneratorTemplateBrandCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplateBrandPayload>[];
+        };
+        delete: {
+          args: Prisma.ImageGeneratorTemplateBrandDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplateBrandPayload>;
+        };
+        update: {
+          args: Prisma.ImageGeneratorTemplateBrandUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplateBrandPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ImageGeneratorTemplateBrandDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ImageGeneratorTemplateBrandUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ImageGeneratorTemplateBrandUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplateBrandPayload>[];
+        };
+        upsert: {
+          args: Prisma.ImageGeneratorTemplateBrandUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageGeneratorTemplateBrandPayload>;
+        };
+        aggregate: {
+          args: Prisma.ImageGeneratorTemplateBrandAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImageGeneratorTemplateBrand>;
+        };
+        groupBy: {
+          args: Prisma.ImageGeneratorTemplateBrandGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ImageGeneratorTemplateBrandGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ImageGeneratorTemplateBrandCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ImageGeneratorTemplateBrandCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     api_BOLT_header: {
       payload: Prisma.$api_BOLT_headerPayload<ExtArgs>;
       fields: Prisma.api_BOLT_headerFieldRefs;
@@ -2635,6 +2869,7 @@ export const BrandAssetScalarFieldEnum = {
   id: "id",
   brandId: "brandId",
   name: "name",
+  displayName: "displayName",
   localPath: "localPath",
   contentType: "contentType",
   sizeBytes: "sizeBytes",
@@ -2654,6 +2889,40 @@ export const ReferenceImageScalarFieldEnum = {
 
 export type ReferenceImageScalarFieldEnum =
   (typeof ReferenceImageScalarFieldEnum)[keyof typeof ReferenceImageScalarFieldEnum];
+
+export const ImageGeneratorPresetScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  name: "name",
+  settings: "settings",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type ImageGeneratorPresetScalarFieldEnum =
+  (typeof ImageGeneratorPresetScalarFieldEnum)[keyof typeof ImageGeneratorPresetScalarFieldEnum];
+
+export const ImageGeneratorTemplateScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  name: "name",
+  prompt: "prompt",
+  settings: "settings",
+  visibility: "visibility",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type ImageGeneratorTemplateScalarFieldEnum =
+  (typeof ImageGeneratorTemplateScalarFieldEnum)[keyof typeof ImageGeneratorTemplateScalarFieldEnum];
+
+export const ImageGeneratorTemplateBrandScalarFieldEnum = {
+  templateId: "templateId",
+  brandId: "brandId",
+} as const;
+
+export type ImageGeneratorTemplateBrandScalarFieldEnum =
+  (typeof ImageGeneratorTemplateBrandScalarFieldEnum)[keyof typeof ImageGeneratorTemplateBrandScalarFieldEnum];
 
 export const Api_BOLT_headerScalarFieldEnum = {
   id: "id",
@@ -2926,6 +3195,19 @@ export type ListEnumGeneratedImageStatusFieldRefInput<$PrismaModel> =
   FieldRefInputType<$PrismaModel, "GeneratedImageStatus[]">;
 
 /**
+ * Reference to a field of type 'ImageGeneratorTemplateVisibility'
+ */
+export type EnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "ImageGeneratorTemplateVisibility">;
+
+/**
+ * Reference to a field of type 'ImageGeneratorTemplateVisibility[]'
+ */
+export type ListEnumImageGeneratorTemplateVisibilityFieldRefInput<
+  $PrismaModel,
+> = FieldRefInputType<$PrismaModel, "ImageGeneratorTemplateVisibility[]">;
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -3065,6 +3347,9 @@ export type GlobalOmitConfig = {
   generatedImage?: Prisma.GeneratedImageOmit;
   brandAsset?: Prisma.BrandAssetOmit;
   referenceImage?: Prisma.ReferenceImageOmit;
+  imageGeneratorPreset?: Prisma.ImageGeneratorPresetOmit;
+  imageGeneratorTemplate?: Prisma.ImageGeneratorTemplateOmit;
+  imageGeneratorTemplateBrand?: Prisma.ImageGeneratorTemplateBrandOmit;
   api_BOLT_header?: Prisma.api_BOLT_headerOmit;
   api_BOLT_lines?: Prisma.api_BOLT_linesOmit;
   bolt_regex_patters?: Prisma.bolt_regex_pattersOmit;

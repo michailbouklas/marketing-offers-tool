@@ -33,6 +33,7 @@ export const load: PageServerLoad = async (event) => {
     assets: assets.map((asset) => ({
       id: asset.id,
       name: asset.name,
+      displayName: asset.displayName,
       contentType: asset.contentType,
       sizeBytes: asset.sizeBytes,
       createdAt:

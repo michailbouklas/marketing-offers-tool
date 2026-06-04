@@ -152,6 +152,22 @@ export type BrandAsset = Prisma.BrandAssetModel;
  */
 export type ReferenceImage = Prisma.ReferenceImageModel;
 /**
+ * Model ImageGeneratorPreset
+ *
+ */
+export type ImageGeneratorPreset = Prisma.ImageGeneratorPresetModel;
+/**
+ * Model ImageGeneratorTemplate
+ *
+ */
+export type ImageGeneratorTemplate = Prisma.ImageGeneratorTemplateModel;
+/**
+ * Model ImageGeneratorTemplateBrand
+ *
+ */
+export type ImageGeneratorTemplateBrand =
+  Prisma.ImageGeneratorTemplateBrandModel;
+/**
  * Model api_BOLT_header
  *
  */

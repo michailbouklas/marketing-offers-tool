@@ -15,6 +15,7 @@
   import XIcon from "@lucide/svelte/icons/x";
   import type { Snippet } from "svelte";
   import ModelSelectorDialog from "./ModelSelectorDialog.svelte";
+  import type { SavedComposerSettings } from "$lib/services/image-generator/composer-library";
   import type {
     ImageGeneratorConfig,
     ImageProviderId,
@@ -47,6 +48,7 @@
     config: ImageGeneratorConfig;
     busy?: boolean;
     initial?: Partial<ComposerState> | null;
+    currentBrandId?: number | null;
     brandSelected?: boolean;
     brandGuidelines?: string | null;
     onSubmit: (state: SubmitPayload) => void;
@@ -60,6 +62,7 @@
     config,
     busy = false,
     initial = null,
+    currentBrandId = null,
     brandSelected = false,
     brandGuidelines = null,
     onSubmit,
@@ -365,6 +368,34 @@
     if (state.samplesPerModel !== undefined)
       samplesPerModel = state.samplesPerModel;
     if (state.referenceIds) preUploadedReferenceIds = state.referenceIds;
+  }
+
+  export function getSettings(): SavedComposerSettings {
+    return {
+      provider: provider as SavedComposerSettings["provider"],
+      models: [...selectedModels],
+      size,
+      style,
+      camera,
+      outputFormat,
+      negativePrompt: negativePrompt.trim(),
+      quality,
+      background,
+      matchReferences,
+      enhance,
+      samplesPerModel,
+      brandId: currentBrandId,
+    };
+  }
+
+  export function getTemplateState(): {
+    prompt: string;
+    settings: SavedComposerSettings;
+  } {
+    return {
+      prompt: prompt.trim(),
+      settings: getSettings(),
+    };
   }
 </script>
 

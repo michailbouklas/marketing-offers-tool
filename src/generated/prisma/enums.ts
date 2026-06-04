@@ -57,3 +57,11 @@ export const GeneratedImageStatus = {
 
 export type GeneratedImageStatus =
   (typeof GeneratedImageStatus)[keyof typeof GeneratedImageStatus];
+
+export const ImageGeneratorTemplateVisibility = {
+  private: "private",
+  public: "public",
+} as const;
+
+export type ImageGeneratorTemplateVisibility =
+  (typeof ImageGeneratorTemplateVisibility)[keyof typeof ImageGeneratorTemplateVisibility];

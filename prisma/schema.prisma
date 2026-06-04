@@ -65,6 +65,7 @@ model brand {
   user_assignments  user_brand[]
   brand_assets      BrandAsset[]
   generated_images  GeneratedImage[]
+  image_templates   ImageGeneratorTemplateBrand[]
 }
 
 model user_brand {
@@ -120,6 +121,8 @@ model user {
   brand_assignments user_brand[]
   dim_offers_audits dim_offers_audit[] @relation("DimOffersAuditActor")
   generated_images  GeneratedImage[]
+  image_presets     ImageGeneratorPreset[]
+  image_templates   ImageGeneratorTemplate[]
   reference_images  ReferenceImage[]
 }
 
@@ -330,6 +333,7 @@ model BrandAsset {
   brandId     Int
   brand       brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
   name        String
+  displayName String?
   localPath   String
   contentType String
   sizeBytes   Int
@@ -349,10 +353,55 @@ model ReferenceImage {
   @@index([userId, createdAt])
 }
 
+model ImageGeneratorPreset {
+  id        String   @id @default(cuid())
+  userId    String
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  settings  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId, updatedAt])
+}
+
+model ImageGeneratorTemplate {
+  id         String                           @id @default(cuid())
+  userId     String
+  user       user                             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  prompt     String                           @db.Text
+  settings   Json
+  visibility ImageGeneratorTemplateVisibility @default(private)
+  brands     ImageGeneratorTemplateBrand[]
+  createdAt  DateTime                         @default(now())
+  updatedAt  DateTime                         @updatedAt
+
+  @@unique([userId, name])
+  @@index([visibility, updatedAt])
+  @@index([userId, updatedAt])
+}
+
+model ImageGeneratorTemplateBrand {
+  templateId String
+  brandId    Int
+  template   ImageGeneratorTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  brand      brand                  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@id([templateId, brandId])
+  @@index([brandId])
+}
+
 enum GeneratedImageStatus {
   pending
   completed
   failed
+}
+
+enum ImageGeneratorTemplateVisibility {
+  private
+  public
 }
 
 model api_BOLT_header {

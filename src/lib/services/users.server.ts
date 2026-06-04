@@ -125,7 +125,7 @@ export async function updateUser(
   return user;
 }
 
-function normalizeRoles(role: string | null): UserRole[] {
+export function normalizeRoles(role: string | null): UserRole[] {
   const roles = parseRoles(role);
   return roles.length > 0 ? roles : [defaultUserRole];
 }
