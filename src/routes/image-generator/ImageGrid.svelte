@@ -6,6 +6,7 @@
     CardContent,
     CardFooter,
   } from "$lib/components/ui/card/index.js";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
   import {
     Popover,
     PopoverContent,
@@ -26,6 +27,14 @@
     onReprompt,
     onEditWithReference,
   }: Props = $props();
+
+  let lightboxOpen = $state(false);
+  let lightboxItem = $state<GeneratedImageDTO | null>(null);
+
+  function openLightbox(item: GeneratedImageDTO) {
+    lightboxItem = item;
+    lightboxOpen = true;
+  }
 
   function downloadFilename(item: GeneratedImageDTO): string {
     const slug = item.prompt
@@ -62,12 +71,19 @@
       <Card>
         <CardContent>
           {#if item.status === "completed"}
-            <img
-              src={`/api/images/${item.id}/file`}
-              alt={item.prompt}
-              class="aspect-square w-full rounded-md object-cover"
-              loading="lazy"
-            />
+            <button
+              type="button"
+              class="focus-visible:ring-ring block w-full cursor-zoom-in rounded-md focus-visible:ring-2 focus-visible:outline-none"
+              onclick={() => openLightbox(item)}
+              aria-label="View image full screen"
+            >
+              <img
+                src={`/api/images/${item.id}/file`}
+                alt={item.prompt}
+                class="aspect-square w-full rounded-md object-cover"
+                loading="lazy"
+              />
+            </button>
           {:else if item.status === "failed"}
             <div
               class="bg-destructive/10 text-destructive flex aspect-square w-full items-center justify-center rounded-md p-3 text-center text-xs"
@@ -144,3 +160,31 @@
     {/each}
   </div>
 {/if}
+
+<Dialog.Root bind:open={lightboxOpen}>
+  <Dialog.Content
+    class="h-[94vh] w-[96vw] max-w-[96vw] grid-rows-1 overflow-hidden p-2 sm:max-w-[96vw]"
+  >
+    {#if lightboxItem}
+      <Dialog.Header class="sr-only">
+        <Dialog.Title>{lightboxItem.prompt}</Dialog.Title>
+        <Dialog.Description>
+          Full-screen image preview. Press Escape or use the close button to
+          dismiss.
+        </Dialog.Description>
+      </Dialog.Header>
+      <button
+        type="button"
+        class="min-h-0 cursor-zoom-out outline-none"
+        onclick={() => (lightboxOpen = false)}
+        aria-label="Close full-screen preview"
+      >
+        <img
+          src={`/api/images/${lightboxItem.id}/file`}
+          alt={lightboxItem.prompt}
+          class="h-full w-full rounded-lg object-contain"
+        />
+      </button>
+    {/if}
+  </Dialog.Content>
+</Dialog.Root>
