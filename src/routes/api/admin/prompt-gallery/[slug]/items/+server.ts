@@ -24,12 +24,15 @@ export const POST: RequestHandler = async (event) => {
     error(404, "Category not found");
   }
 
-  let form: FormData;
-  try {
-    form = await event.request.formData();
-  } catch {
+  if (
+    !event.request.headers.get("content-type")?.includes("multipart/form-data")
+  ) {
     error(400, "Expected multipart/form-data body");
   }
+
+  // Let formData() failures propagate with their real status — e.g. the
+  // adapter-node BODY_SIZE_LIMIT error is a 413, not a malformed body.
+  const form = await event.request.formData();
 
   const title = form.get("title");
   const prompt = form.get("prompt");

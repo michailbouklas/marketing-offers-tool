@@ -9,6 +9,9 @@ services:
       HOST: ${HOST:-0.0.0.0}
       PORT: ${PORT:-3000}
       NODE_ENV: production
+      # adapter-node defaults to 512K, which rejects image uploads
+      # (prompt-gallery items, brand assets) with a mid-read stream error.
+      BODY_SIZE_LIMIT: ${BODY_SIZE_LIMIT:-20M}
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
     restart: unless-stopped
