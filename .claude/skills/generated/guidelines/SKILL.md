@@ -57,9 +57,10 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Server | 2 calls |
 | [id] | 1 calls |
+| Services | 1 calls |
 | Brand-context | 1 calls |
+| Server | 1 calls |
 
 ## How to Explore
 

@@ -110,7 +110,8 @@
       <div class="space-y-1">
         <p class="text-sm font-medium">Prompt templates</p>
         <p class="text-muted-foreground text-xs">
-          Save prompt text with settings. References are excluded.
+          Save prompt text with settings. References and active brand selection
+          are excluded.
         </p>
       </div>
 

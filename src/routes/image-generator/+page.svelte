@@ -412,7 +412,7 @@
     const item = await createTemplateRequest({
       ...input,
       prompt: state.prompt,
-      settings: state.settings,
+      settings: { ...state.settings, brandId: null },
     });
     if (item.visibility === "public") {
       publicTemplates = [item, ...publicTemplates];
@@ -429,7 +429,7 @@
 
     const item = await updateTemplateRequest(template.id, {
       prompt: state.prompt,
-      settings: state.settings,
+      settings: { ...state.settings, brandId: null },
     });
     privateTemplates = privateTemplates.map((existing) =>
       existing.id === item.id ? item : existing,
@@ -540,7 +540,7 @@
         onUpdate={updateTemplate}
         onDelete={deleteTemplate}
         onLoad={(template) =>
-          applySavedSettings(template.settings, template.prompt)}
+          applySavedSettings(template.settings, template.prompt, false)}
       />
     </div>
     <div class="space-y-2 pt-3">

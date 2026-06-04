@@ -74,7 +74,7 @@ Start here when exploring this area:
 | Server | 3 calls |
 | Guidelines | 3 calls |
 | [id] | 1 calls |
-| Aggregator-offers | 1 calls |
+| Services | 1 calls |
 
 ## How to Explore
 

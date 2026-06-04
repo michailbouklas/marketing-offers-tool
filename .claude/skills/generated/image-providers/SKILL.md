@@ -1,11 +1,11 @@
 ---
 name: image-providers
-description: "Skill for the Image-providers area of marketing-offers-tool. 41 symbols across 13 files."
+description: "Skill for the Image-providers area of marketing-offers-tool. 43 symbols across 14 files."
 ---
 
 # Image-providers
 
-41 symbols | 13 files | Cohesion: 86%
+43 symbols | 14 files | Cohesion: 82%
 
 ## When to Use
 
@@ -18,8 +18,8 @@ description: "Skill for the Image-providers area of marketing-offers-tool. 41 sy
 | File | Symbols |
 |------|---------|
 | `src/lib/services/image-providers/openai.server.ts` | OpenAIProviderError, generateImage, postGenerations, postEdits, safeParseError (+3) |
+| `src/lib/services/image-providers/enhance.server.ts` | PromptEnhancerError, callChatCompletion, parseEnhanceContent, normalizeClarifyingQuestions, safeJson (+3) |
 | `src/lib/services/image-providers/model-sizes.ts` | greatestCommonDivisor, parseSize, ratioOf, sizeLabel, concreteSizes (+2) |
-| `src/lib/services/image-providers/enhance.server.ts` | PromptEnhancerError, enhance, enhanceWithClarifications, callChatCompletion, parseEnhanceContent (+2) |
 | `src/lib/services/image-providers/imagerouter.server.ts` | ImageRouterImageProvider, ImageRouterProviderError, generateImage, safeParseError, resolveImageBytes (+1) |
 | `src/lib/services/image-providers/imagerouter-models.server.ts` | stringArray, toModelList, fetchImageRouterModelCaps |
 | `src/lib/services/image-providers/types.ts` | ImageProvider, FakeProvider |
@@ -43,11 +43,12 @@ Start here when exploring this area:
 | Symbol | Type | File | Line |
 |--------|------|------|------|
 | `OpenAIProviderError` | Class | `src/lib/services/image-providers/openai.server.ts` | 14 |
-| `PromptEnhancerError` | Class | `src/lib/services/image-providers/enhance.server.ts` | 95 |
 | `FakeProvider` | Class | `src/lib/services/image-providers/types.ts` | 38 |
 | `OpenAIImageProvider` | Class | `src/lib/services/image-providers/openai.server.ts` | 41 |
 | `ImageRouterImageProvider` | Class | `src/lib/services/image-providers/imagerouter.server.ts` | 33 |
 | `ImageRouterProviderError` | Class | `src/lib/services/image-providers/imagerouter.server.ts` | 6 |
+| `PromptEnhancerError` | Class | `src/lib/services/image-providers/enhance.server.ts` | 95 |
+| `PromptEnhancer` | Class | `src/lib/services/image-providers/enhance.server.ts` | 106 |
 | `load` | Function | `src/routes/image-generator/+page.server.ts` | 9 |
 | `stringArray` | Function | `src/lib/services/image-providers/imagerouter-models.server.ts` | 27 |
 | `toModelList` | Function | `src/lib/services/image-providers/imagerouter-models.server.ts` | 35 |
@@ -61,7 +62,6 @@ Start here when exploring this area:
 | `sizeLabel` | Function | `src/lib/services/image-providers/model-sizes.ts` | 46 |
 | `intersectModelSizes` | Function | `src/lib/services/image-providers/model-sizes.ts` | 77 |
 | `withConcrete` | Function | `src/lib/services/image-providers/model-sizes.ts` | 82 |
-| `getImageProvider` | Function | `src/lib/services/image-providers/factory.server.ts` | 5 |
 
 ## Execution Flows
 
@@ -82,9 +82,9 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
+| Server | 4 calls |
+| [id] | 3 calls |
 | Services | 2 calls |
-| Server | 2 calls |
-| [id] | 2 calls |
 | Image-generator | 1 calls |
 
 ## How to Explore

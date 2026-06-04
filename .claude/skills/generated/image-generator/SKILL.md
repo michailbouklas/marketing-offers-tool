@@ -83,10 +83,9 @@ Start here when exploring this area:
 | Area | Connections |
 |------|-------------|
 | [id] | 8 calls |
-| Services | 4 calls |
+| Services | 5 calls |
 | Server | 3 calls |
 | Image-providers | 2 calls |
-| Aggregator-offers | 1 calls |
 | Brand-context | 1 calls |
 
 ## How to Explore

@@ -10,7 +10,7 @@ description: "Skill for the [id] area of marketing-offers-tool. 12 symbols acros
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how requireAuthenticatedApiUser, GET, deletePreset work
+- Understanding how requireAuthenticatedApiUser, GET, searchBrandAssets work
 - Modifying [id]-related functionality
 
 ## Key Files
@@ -24,9 +24,9 @@ description: "Skill for the [id] area of marketing-offers-tool. 12 symbols acros
 | `src/routes/api/brand-assets/+server.ts` | GET |
 | `src/lib/services/brand-context/brand-context.server.ts` | searchBrandAssets |
 | `src/routes/api/brand-assets/[id]/+server.ts` | GET |
-| `src/routes/api/images/templates/[id]/+server.ts` | DELETE |
 | `src/routes/api/images/references/[id]/+server.ts` | GET |
 | `src/routes/api/images/presets/[id]/+server.ts` | DELETE |
+| `src/routes/api/images/templates/[id]/+server.ts` | DELETE |
 
 ## Entry Points
 
@@ -34,9 +34,9 @@ Start here when exploring this area:
 
 - **`requireAuthenticatedApiUser`** (Function) — `src/lib/server/auth-guards.ts:18`
 - **`GET`** (Function) — `src/routes/api/brand-assets/+server.ts:8`
+- **`searchBrandAssets`** (Function) — `src/lib/services/brand-context/brand-context.server.ts:41`
 - **`deletePreset`** (Function) — `src/lib/services/image-generator/composer-library.server.ts:140`
 - **`deleteTemplate`** (Function) — `src/lib/services/image-generator/composer-library.server.ts:252`
-- **`searchBrandAssets`** (Function) — `src/lib/services/brand-context/brand-context.server.ts:41`
 
 ## Key Symbols
 
@@ -44,14 +44,14 @@ Start here when exploring this area:
 |--------|------|------|------|
 | `requireAuthenticatedApiUser` | Function | `src/lib/server/auth-guards.ts` | 18 |
 | `GET` | Function | `src/routes/api/brand-assets/+server.ts` | 8 |
+| `searchBrandAssets` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 41 |
 | `deletePreset` | Function | `src/lib/services/image-generator/composer-library.server.ts` | 140 |
 | `deleteTemplate` | Function | `src/lib/services/image-generator/composer-library.server.ts` | 252 |
-| `searchBrandAssets` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 41 |
 | `GET` | Function | `src/routes/api/brand-assets/[id]/+server.ts` | 6 |
 | `GET` | Function | `src/routes/api/images/[id]/file/+server.ts` | 13 |
-| `DELETE` | Function | `src/routes/api/images/templates/[id]/+server.ts` | 28 |
 | `GET` | Function | `src/routes/api/images/references/[id]/+server.ts` | 6 |
 | `DELETE` | Function | `src/routes/api/images/presets/[id]/+server.ts` | 28 |
+| `DELETE` | Function | `src/routes/api/images/templates/[id]/+server.ts` | 28 |
 | `tryGet` | Method | `src/lib/server/object-store.server.ts` | 20 |
 | `generatedImageKey` | Function | `src/routes/api/images/[id]/file/+server.ts` | 6 |
 
@@ -65,9 +65,9 @@ Start here when exploring this area:
 | `GET → GetSupabaseClient` | cross_community | 3 |
 | `GET → SupabaseObjectStore` | cross_community | 3 |
 | `GET → LocalObjectStore` | cross_community | 3 |
+| `POST → RequireAuthenticatedApiUser` | cross_community | 3 |
 | `GET → RequireAuthenticatedApiUser` | cross_community | 3 |
 | `PUT → RequireAuthenticatedApiUser` | cross_community | 3 |
-| `POST → RequireAuthenticatedApiUser` | cross_community | 3 |
 | `PATCH → RequireAuthenticatedApiUser` | cross_community | 3 |
 
 ## Connected Areas
