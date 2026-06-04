@@ -1,11 +1,11 @@
 ---
 name: image-generator
-description: "Skill for the Image-generator area of marketing-offers-tool. 59 symbols across 16 files."
+description: "Skill for the Image-generator area of marketing-offers-tool. 69 symbols across 20 files."
 ---
 
 # Image-generator
 
-59 symbols | 16 files | Cohesion: 84%
+69 symbols | 20 files | Cohesion: 81%
 
 ## When to Use
 
@@ -20,13 +20,13 @@ description: "Skill for the Image-generator area of marketing-offers-tool. 59 sy
 | `src/lib/services/image-generator/image-generator.server.ts` | toUtcDayKey, bucketUsageByDay, getGeneratedImageUsageByDayForUser, parseUsageDateRange, buildUsageWhere (+13) |
 | `src/lib/services/image-generator/image-generator-client.ts` | listBrandAssets, attachBrandAssetAsReference, fetchBrandGuidelines, jsonOrThrow, uploadReferences (+11) |
 | `src/lib/services/image-generator/composer-library.server.ts` | toTemplateDTO, assertAssignedBrands, listTemplatesForUser, createTemplate, updateTemplate (+4) |
+| `src/lib/services/image-generator/orchestrate.server.ts` | withRetry, isImageQuality, isImageBackground, isInputFidelity, generateOneRow (+1) |
 | `src/lib/services/image-generator/generate.server.ts` | GenerateValidationError, buildFinalPrompt, createPendingGenerations |
+| `src/lib/services/image-providers/types.ts` | generateImage, generateImage |
 | `src/routes/api/images/templates/+server.ts` | GET, POST |
 | `src/routes/admin/image-generator-usage/+page.server.ts` | load |
 | `src/routes/api/images/usage/+server.ts` | GET |
 | `src/routes/api/admin/image-generator/usage-by-model/+server.ts` | GET |
-| `src/routes/api/admin/image-generator/usage/+server.ts` | GET |
-| `src/routes/image-generator/me/+page.server.ts` | load |
 
 ## Entry Points
 
@@ -58,35 +58,33 @@ Start here when exploring this area:
 | `updateTemplate` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 216 |
 | `deleteTemplate` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 229 |
 | `refreshTemplates` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 234 |
-| `load` | Function | `src/routes/admin/image-generator-usage/+page.server.ts` | 7 |
 | `getGeneratedImageUsageByDayForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 308 |
 | `parseUsageDateRange` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 334 |
 | `getGeneratedImageUsageByDayAllUsers` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 380 |
+| `getGeneratedImageUsageByModelByDay` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 417 |
 
 ## Execution Flows
 
 | Flow | Type | Steps |
 |------|------|-------|
 | `POST → LoadEnvFileValues` | cross_community | 7 |
+| `GET → AssertSafeKey` | cross_community | 6 |
+| `GET → LoadEnvFileValues` | cross_community | 6 |
 | `POST → AssertSafeKey` | cross_community | 6 |
 | `POST → From` | cross_community | 6 |
-| `POST → ToModelList` | cross_community | 5 |
-| `POST → StringArray` | cross_community | 5 |
-| `Load → GetDateRange` | intra_community | 4 |
-| `POST → ParseSize` | cross_community | 4 |
-| `POST → GreatestCommonDivisor` | cross_community | 4 |
-| `POST → Get` | cross_community | 4 |
-| `POST → GenerateImage` | cross_community | 4 |
+| `Load → AssertSafeKey` | cross_community | 6 |
+| `Load → LoadEnvFileValues` | cross_community | 6 |
+| `GET → AssertSafeKey` | cross_community | 6 |
+| `GET → LoadEnvFileValues` | cross_community | 6 |
+| `GET → From` | cross_community | 5 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| [id] | 8 calls |
-| Services | 5 calls |
-| Server | 3 calls |
-| Image-providers | 2 calls |
-| Brand-context | 1 calls |
+| Server | 19 calls |
+| Image-providers | 5 calls |
+| Services | 4 calls |
 
 ## How to Explore
 

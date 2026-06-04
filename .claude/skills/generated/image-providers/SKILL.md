@@ -76,14 +76,13 @@ Start here when exploring this area:
 | `POST → NormalizeClarifyingQuestions` | cross_community | 5 |
 | `POST → ToModelList` | cross_community | 5 |
 | `POST → StringArray` | cross_community | 5 |
-| `GetImageProvider → LoadEnvFileValues` | cross_community | 5 |
+| `Load → ToModelList` | intra_community | 4 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| Server | 4 calls |
-| [id] | 3 calls |
+| Server | 7 calls |
 | Services | 2 calls |
 | Image-generator | 1 calls |
 

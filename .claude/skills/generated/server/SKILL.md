@@ -1,67 +1,67 @@
 ---
 name: server
-description: "Skill for the Server area of marketing-offers-tool. 98 symbols across 21 files."
+description: "Skill for the Server area of marketing-offers-tool. 138 symbols across 41 files."
 ---
 
 # Server
 
-98 symbols | 21 files | Cohesion: 73%
+138 symbols | 41 files | Cohesion: 74%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how readImageBytes, resizeToRequested, generateOneRow work
+- Understanding how assertSafeKey, brandGuidelinesKey, readBrandGuidelines work
 - Modifying server-related functionality
 
 ## Key Files
 
 | File | Symbols |
 |------|---------|
-| `src/lib/server/object-store.server.ts` | get, get, get, tryGet, put (+22) |
+| `src/lib/server/object-store.server.ts` | getText, putText, list, assertSafeKey, toPath (+24) |
+| `src/lib/server/inspiration/inspiration-storage.server.ts` | ensureSafeSlug, slugify, categoryDirPrefix, categoryMetaKey, ensureRoot (+10) |
 | `src/lib/server/clickhouse.ts` | loadEnvFileValues, parseRequestTimeout, getRequiredEnv, getEnvValue, getClickHouseConfig (+5) |
-| `src/lib/server/brand-storage.ts` | ensureSafeSlug, ensureSafeAssetId, brandAssetKey, writeBrandAsset, deleteBrandAsset (+3) |
 | `src/lib/server/env.ts` | loadEnvFileValues, readEnv, loadImageGeneratorEnv, getImageGeneratorEnv, hasImageRouterProvider (+3) |
-| `src/lib/server/image-size.ts` | resizeToRequested, toPositiveInt, parseRequestedSize, squaredAspectRatioDelta, mapToNearestSupportedSize |
-| `src/lib/services/image-generator/orchestrate.server.ts` | withRetry, isImageQuality, isImageBackground, isInputFidelity, generateOneRow |
-| `src/lib/server/auth-guards.ts` | requireAdminSection, getAuthenticatedUserRole, isPublicPath, isApiPath, isAdminPath |
+| `src/lib/server/brand-storage.ts` | brandGuidelinesKey, readBrandGuidelines, writeBrandGuidelines, ensureSafeSlug, ensureSafeAssetId (+2) |
+| `src/lib/server/auth-guards.ts` | requirePermission, requireAuthenticatedApiUser, requireAdminSection, getAuthenticatedUserRole, isPublicPath (+2) |
 | `src/lib/server/auth.ts` | getRequiredEnv, getAuthConfig, getAuthConfigKey, createAuth, getAuth |
-| `src/lib/server/image-storage.ts` | readImageBytes, ensureSafeId, imageKey, writeImageBytes |
 | `src/lib/server/reference-storage.ts` | ensureSafeId, extensionForContentType, referenceKey, writeReferenceFile |
+| `src/lib/server/image-storage.ts` | ensureSafeId, imageKey, readImageBytes, writeImageBytes |
+| `src/lib/server/image-size.ts` | toPositiveInt, parseRequestedSize, squaredAspectRatioDelta, mapToNearestSupportedSize |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`readImageBytes`** (Function) — `src/lib/server/image-storage.ts:38`
-- **`resizeToRequested`** (Function) — `src/lib/server/image-size.ts:89`
-- **`generateOneRow`** (Function) — `src/lib/services/image-generator/orchestrate.server.ts:47`
-- **`pingClickHouse`** (Function) — `src/lib/server/clickhouse.ts:176`
-- **`load`** (Function) — `src/routes/+layout.server.ts:3`
+- **`assertSafeKey`** (Function) — `src/lib/server/object-store.server.ts:53`
+- **`brandGuidelinesKey`** (Function) — `src/lib/server/brand-storage.ts:52`
+- **`readBrandGuidelines`** (Function) — `src/lib/server/brand-storage.ts:94`
+- **`writeBrandGuidelines`** (Function) — `src/lib/server/brand-storage.ts:101`
+- **`slugify`** (Function) — `src/lib/server/inspiration/inspiration-storage.server.ts:61`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `LocalObjectStore` | Class | `src/lib/server/object-store.server.ts` | 52 |
-| `SupabaseObjectStore` | Class | `src/lib/server/object-store.server.ts` | 122 |
-| `readImageBytes` | Function | `src/lib/server/image-storage.ts` | 38 |
-| `resizeToRequested` | Function | `src/lib/server/image-size.ts` | 89 |
-| `generateOneRow` | Function | `src/lib/services/image-generator/orchestrate.server.ts` | 47 |
-| `pingClickHouse` | Function | `src/lib/server/clickhouse.ts` | 176 |
-| `load` | Function | `src/routes/+layout.server.ts` | 3 |
-| `requireAdminSection` | Function | `src/lib/server/auth-guards.ts` | 54 |
-| `getAuthenticatedUserRole` | Function | `src/lib/server/auth-guards.ts` | 151 |
-| `isPublicPath` | Function | `src/lib/server/auth-guards.ts` | 178 |
-| `isApiPath` | Function | `src/lib/server/auth-guards.ts` | 182 |
-| `isAdminPath` | Function | `src/lib/server/auth-guards.ts` | 186 |
-| `hasAnyRole` | Function | `src/lib/auth/roles.ts` | 80 |
-| `canAccessAdminSection` | Function | `src/lib/auth/roles.ts` | 93 |
-| `imageKey` | Function | `src/lib/server/image-storage.ts` | 17 |
-| `writeImageBytes` | Function | `src/lib/server/image-storage.ts` | 26 |
-| `brandAssetKey` | Function | `src/lib/server/brand-storage.ts` | 44 |
-| `writeBrandAsset` | Function | `src/lib/server/brand-storage.ts` | 56 |
-| `assertSafeKey` | Function | `src/lib/server/object-store.server.ts` | 35 |
-| `deleteBrandAsset` | Function | `src/lib/server/brand-storage.ts` | 85 |
+| `LocalObjectStore` | Class | `src/lib/server/object-store.server.ts` | 70 |
+| `SupabaseObjectStore` | Class | `src/lib/server/object-store.server.ts` | 157 |
+| `assertSafeKey` | Function | `src/lib/server/object-store.server.ts` | 53 |
+| `brandGuidelinesKey` | Function | `src/lib/server/brand-storage.ts` | 52 |
+| `readBrandGuidelines` | Function | `src/lib/server/brand-storage.ts` | 94 |
+| `writeBrandGuidelines` | Function | `src/lib/server/brand-storage.ts` | 101 |
+| `slugify` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 61 |
+| `listCategories` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 120 |
+| `getCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 134 |
+| `createCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 161 |
+| `renameCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 180 |
+| `deleteCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 201 |
+| `listItems` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 229 |
+| `createItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 285 |
+| `serializeFrontmatter` | Function | `src/lib/server/inspiration/frontmatter.ts` | 17 |
+| `parseFrontmatter` | Function | `src/lib/server/inspiration/frontmatter.ts` | 32 |
+| `load` | Function | `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | 9 |
+| `POST` | Function | `src/routes/api/admin/prompt-gallery/[slug]/items/+server.ts` | 10 |
+| `getDefaultCreateUserFormData` | Function | `src/lib/services/user-editor-form.ts` | 100 |
+| `mapOfferEditorFormToCreateInput` | Function | `src/lib/services/offer-editor-form.ts` | 78 |
 
 ## Execution Flows
 
@@ -69,27 +69,25 @@ Start here when exploring this area:
 |------|------|-------|
 | `POST → LoadEnvFileValues` | cross_community | 7 |
 | `Load → LoadEnvFileValues` | cross_community | 6 |
-| `POST → AssertSafeKey` | cross_community | 6 |
-| `POST → LoadEnvFileValues` | cross_community | 6 |
 | `GET → AssertSafeKey` | cross_community | 6 |
 | `GET → LoadEnvFileValues` | cross_community | 6 |
 | `PUT → AssertSafeKey` | cross_community | 6 |
 | `PUT → From` | cross_community | 6 |
 | `PUT → LoadEnvFileValues` | cross_community | 6 |
+| `POST → AssertSafeKey` | cross_community | 6 |
+| `POST → LoadEnvFileValues` | cross_community | 6 |
 | `DELETE → LoadEnvFileValues` | cross_community | 6 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| Image-providers | 3 calls |
-| [id] | 3 calls |
-| Brand-context | 2 calls |
-| Services | 2 calls |
+| Services | 9 calls |
+| Inspiration | 7 calls |
 | Guidelines | 1 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "readImageBytes"})` — see callers and callees
+1. `gitnexus_context({name: "assertSafeKey"})` — see callers and callees
 2. `gitnexus_query({query: "server"})` — find related execution flows
 3. Read key files listed above for implementation details

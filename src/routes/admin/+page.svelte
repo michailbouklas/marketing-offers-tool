@@ -5,6 +5,7 @@
   import UsersIcon from "@lucide/svelte/icons/users";
   import StoreIcon from "@lucide/svelte/icons/store";
   import ImageIcon from "@lucide/svelte/icons/image";
+  import LightbulbIcon from "@lucide/svelte/icons/lightbulb";
   import ActivityIcon from "@lucide/svelte/icons/activity";
   import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
   import type { Component } from "svelte";
@@ -60,6 +61,14 @@
         "Track image-generation activity across all users over time, with totals, success rate, and the most active accounts.",
       icon: ImageIcon,
       accessKey: "imageUsage",
+    },
+    {
+      href: "/admin/prompt-gallery",
+      title: "Prompt gallery",
+      description:
+        "Curate the inspiration categories and prompts users browse in the image generator.",
+      icon: LightbulbIcon,
+      accessKey: "promptGallery",
     },
     {
       href: "/admin/metrics",

@@ -11,6 +11,7 @@
   import StoreIcon from "@lucide/svelte/icons/store";
   import ShieldCheckIcon from "@lucide/svelte/icons/shield-check";
   import ImageIcon from "@lucide/svelte/icons/image";
+  import LightbulbIcon from "@lucide/svelte/icons/lightbulb";
   import ShieldIcon from "@lucide/svelte/icons/shield";
   import type { Component } from "svelte";
 
@@ -46,6 +47,12 @@
       icon: ImageIcon,
       roles: ["admin", "superUser", "brandManager", "imageEditor"],
     },
+    {
+      href: "/image-generator/inspiration",
+      label: "Inspiration",
+      icon: LightbulbIcon,
+      roles: ["admin", "superUser", "brandManager", "imageEditor"],
+    },
   ];
 
   const navigationItems = $derived<NavItem[]>([
@@ -57,7 +64,7 @@
       : []),
   ]);
 
-  function isActive(href: string) {
+  function matchesPath(href: string) {
     if (href === "/") {
       return page.url.pathname === href;
     }
@@ -65,6 +72,20 @@
     return (
       page.url.pathname === href || page.url.pathname.startsWith(`${href}/`)
     );
+  }
+
+  // The longest matching href wins so nested items (e.g. Inspiration under
+  // /image-generator) don't highlight their parent too.
+  const activeHref = $derived(
+    navigationItems
+      .filter((item) => matchesPath(item.href))
+      .reduce<
+        string | null
+      >((longest, item) => (longest === null || item.href.length > longest.length ? item.href : longest), null),
+  );
+
+  function isActive(href: string) {
+    return href === activeHref;
   }
 </script>
 

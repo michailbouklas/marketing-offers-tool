@@ -17,6 +17,7 @@ export const statement = {
   brand: ["manage"],
   offer: ["edit"],
   metrics: ["view"],
+  promptGallery: ["manage"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -33,7 +34,8 @@ export const ac = createAccessControl(statement);
  * - `usageViewer` — view cross-user image-generation usage analytics.
  * - `userManager` — manage users (Better Auth's full user/session statements,
  *   which its admin endpoints check internally).
- * - `brandManager` — manage brand guidelines and reference assets.
+ * - `brandManager` — manage brand guidelines, reference assets, and the
+ *   inspiration prompt gallery.
  * - `offerEditor` — create and edit aggregator offers in the registry.
  * - `imageEditor` — generate images in the image generator.
  * - `superUser` — admin-equivalent that holds every resource permission.
@@ -66,6 +68,7 @@ export const roles = {
   }),
   brandManager: ac.newRole({
     brand: ["manage"],
+    promptGallery: ["manage"],
   }),
   offerEditor: ac.newRole({
     offer: ["edit"],
@@ -80,6 +83,7 @@ export const roles = {
     brand: ["manage"],
     offer: ["edit"],
     metrics: ["view"],
+    promptGallery: ["manage"],
   }),
 } satisfies Record<UserRole, Role>;
 

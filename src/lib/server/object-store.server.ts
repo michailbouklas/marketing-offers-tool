@@ -1,5 +1,12 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { copyFile, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  readdir,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { getImageGeneratorEnv, getStorageEnv } from "./env";
 
@@ -11,6 +18,12 @@ import { getImageGeneratorEnv, getStorageEnv } from "./env";
  * to either a Supabase Storage object or a file under `UPLOADS_DIR`.
  */
 export type StorageKey = string;
+
+/** One entry returned by {@link ObjectStore.list} — a file or an implicit folder. */
+export interface ObjectStoreEntry {
+  name: string;
+  isFolder: boolean;
+}
 
 export interface ObjectStore {
   /** Upload bytes under `key`, overwriting any existing object. */
@@ -27,6 +40,11 @@ export interface ObjectStore {
   remove(key: StorageKey): Promise<void>;
   /** Server-side copy from one key to another. */
   copy(srcKey: StorageKey, destKey: StorageKey): Promise<void>;
+  /**
+   * List the immediate children of a folder prefix (non-recursive). Resolves
+   * to `[]` if the prefix does not exist.
+   */
+  list(prefix: StorageKey): Promise<ObjectStoreEntry[]>;
 }
 
 /**
@@ -114,6 +132,23 @@ export class LocalObjectStore implements ObjectStore {
     await mkdir(dirname(dest), { recursive: true, mode: 0o700 });
     await copyFile(this.toPath(srcKey), dest);
   }
+
+  async list(prefix: StorageKey): Promise<ObjectStoreEntry[]> {
+    try {
+      const entries = await readdir(this.toPath(prefix), {
+        withFileTypes: true,
+      });
+      return entries.map((entry) => ({
+        name: entry.name,
+        isFolder: entry.isDirectory(),
+      }));
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+        return [];
+      }
+      throw err;
+    }
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -193,6 +228,23 @@ export class SupabaseObjectStore implements ObjectStore {
         `Supabase copy failed (${srcKey} -> ${destKey}): ${error.message}`,
       );
     }
+  }
+
+  async list(prefix: StorageKey): Promise<ObjectStoreEntry[]> {
+    const { data, error } = await this.from().list(assertSafeKey(prefix), {
+      limit: 1000,
+      sortBy: { column: "name", order: "asc" },
+    });
+    if (error) {
+      throw new Error(`Supabase list failed for ${prefix}: ${error.message}`);
+    }
+    return (data ?? [])
+      .filter((entry) => entry.name !== ".emptyFolderPlaceholder")
+      .map((entry) => ({
+        name: entry.name,
+        // Supabase returns implicit folders as entries with a null id.
+        isFolder: entry.id == null,
+      }));
   }
 }
 

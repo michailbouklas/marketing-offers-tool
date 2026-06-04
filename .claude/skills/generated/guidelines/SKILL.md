@@ -1,16 +1,16 @@
 ---
 name: guidelines
-description: "Skill for the Guidelines area of marketing-offers-tool. 5 symbols across 2 files."
+description: "Skill for the Guidelines area of marketing-offers-tool. 6 symbols across 3 files."
 ---
 
 # Guidelines
 
-5 symbols | 2 files | Cohesion: 60%
+6 symbols | 3 files | Cohesion: 56%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how requireApiPermission, GET, PUT work
+- Understanding how requireApiPermission, setBrandGuidelines, GET work
 - Modifying guidelines-related functionality
 
 ## Key Files
@@ -19,12 +19,14 @@ description: "Skill for the Guidelines area of marketing-offers-tool. 5 symbols 
 |------|---------|
 | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | parseBrandId, brandSlugOr404, GET, PUT |
 | `src/lib/server/auth-guards.ts` | requireApiPermission |
+| `src/lib/services/brand-context/brand-context.server.ts` | setBrandGuidelines |
 
 ## Entry Points
 
 Start here when exploring this area:
 
 - **`requireApiPermission`** (Function) — `src/lib/server/auth-guards.ts:118`
+- **`setBrandGuidelines`** (Function) — `src/lib/services/brand-context/brand-context.server.ts:134`
 - **`GET`** (Function) — `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts:44`
 - **`PUT`** (Function) — `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts:53`
 
@@ -33,6 +35,7 @@ Start here when exploring this area:
 | Symbol | Type | File | Line |
 |--------|------|------|------|
 | `requireApiPermission` | Function | `src/lib/server/auth-guards.ts` | 118 |
+| `setBrandGuidelines` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 134 |
 | `GET` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 44 |
 | `PUT` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 53 |
 | `parseBrandId` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 16 |
@@ -57,10 +60,9 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| [id] | 1 calls |
+| Server | 3 calls |
 | Services | 1 calls |
-| Brand-context | 1 calls |
-| Server | 1 calls |
+| Image-generator | 1 calls |
 
 ## How to Explore
 

@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-04T08:01:53Z",
-  "changed_file": "src/routes/api/brand-assets/server.test.ts",
+  "timestamp": "2026-06-04T09:55:26Z",
+  "changed_file": "src/lib/server/object-store.server.test.ts",
   "test_command": "npx vitest run --reporter=verbose",
   "related_test": "",
   "recommendation": "テストの実行を推奨します"

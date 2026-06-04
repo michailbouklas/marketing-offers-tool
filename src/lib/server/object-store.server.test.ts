@@ -77,6 +77,36 @@ describe("LocalObjectStore", () => {
     await store.copy("brands/acme/assets/src.png", "references/dest.png");
     expect((await store.get("references/dest.png")).equals(bytes)).toBe(true);
   });
+
+  it("lists files and folders under a prefix", async () => {
+    await store.putText("inspiration/.keep", "");
+    await store.putText("inspiration/character-design/_category.md", "---");
+    await store.put(
+      "inspiration/character-design/hero.png",
+      Buffer.from([1]),
+      "image/png",
+    );
+
+    const root = await store.list("inspiration");
+    expect(root).toEqual(
+      expect.arrayContaining([
+        { name: ".keep", isFolder: false },
+        { name: "character-design", isFolder: true },
+      ]),
+    );
+
+    const category = await store.list("inspiration/character-design");
+    expect(category).toEqual(
+      expect.arrayContaining([
+        { name: "_category.md", isFolder: false },
+        { name: "hero.png", isFolder: false },
+      ]),
+    );
+  });
+
+  it("list returns [] for a missing prefix", async () => {
+    expect(await store.list("inspiration/none")).toEqual([]);
+  });
 });
 
 describe("SupabaseObjectStore", () => {
@@ -86,6 +116,7 @@ describe("SupabaseObjectStore", () => {
       download: vi.fn(),
       remove: vi.fn().mockResolvedValue({ error: null }),
       copy: vi.fn().mockResolvedValue({ error: null }),
+      list: vi.fn().mockResolvedValue({ data: [], error: null }),
       ...overrides,
     };
     const client = {
@@ -127,5 +158,38 @@ describe("SupabaseObjectStore", () => {
     const store = new SupabaseObjectStore(client, "bucket");
     expect((await store.tryGet("images/a.png"))?.equals(bytes)).toBe(true);
     expect(await store.tryGet("images/missing.png")).toBeNull();
+  });
+
+  it("list maps null-id entries to folders and drops the placeholder", async () => {
+    const { client, bucketApi } = makeClient({
+      list: vi.fn().mockResolvedValue({
+        data: [
+          { id: null, name: "character-design" },
+          { id: "abc", name: ".keep" },
+          { id: "def", name: ".emptyFolderPlaceholder" },
+        ],
+        error: null,
+      }),
+    });
+    const store = new SupabaseObjectStore(client, "bucket");
+    expect(await store.list("inspiration")).toEqual([
+      { name: "character-design", isFolder: true },
+      { name: ".keep", isFolder: false },
+    ]);
+    expect(bucketApi.list).toHaveBeenCalledWith("inspiration", {
+      limit: 1000,
+      sortBy: { column: "name", order: "asc" },
+    });
+  });
+
+  it("list throws when Supabase reports an error", async () => {
+    const { client } = makeClient({
+      list: vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: "boom" },
+      }),
+    });
+    const store = new SupabaseObjectStore(client, "bucket");
+    await expect(store.list("inspiration")).rejects.toThrow(/boom/);
   });
 });
