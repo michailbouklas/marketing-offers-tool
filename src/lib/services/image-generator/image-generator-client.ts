@@ -9,6 +9,7 @@ import type {
   TemplateCreateInput,
   TemplateUpdateInput,
 } from "./composer-library";
+import type { StructuredPromptSuggestion } from "./structured-prompt";
 
 export interface ReferenceUploadResult {
   id: string;
@@ -143,6 +144,18 @@ export async function enhancePrompt(
     }),
   });
   return jsonOrThrow<EnhanceResult>(res);
+}
+
+export async function suggestStructuredPrompt(
+  description: string,
+  brandGuidelines?: string,
+): Promise<StructuredPromptSuggestion> {
+  const res = await fetch("/api/images/structured-prompt", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ description, brandGuidelines }),
+  });
+  return jsonOrThrow<StructuredPromptSuggestion>(res);
 }
 
 export async function submitGeneration(

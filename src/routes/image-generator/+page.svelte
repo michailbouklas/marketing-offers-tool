@@ -10,6 +10,7 @@
   import ComposerTemplatePopover from "./ComposerTemplatePopover.svelte";
   import ImageGrid from "./ImageGrid.svelte";
   import PromptComposer from "./PromptComposer.svelte";
+  import StructuredPromptBuilderDialog from "./StructuredPromptBuilderDialog.svelte";
   import { formatBrandLabel } from "$lib/services/brands";
   import type { ComposerState, SubmitPayload } from "./composer-types";
   import type {
@@ -71,6 +72,7 @@
 
   let selectedBrandId = $state<number | null>(null);
   let galleryOpen = $state(false);
+  let builderOpen = $state(false);
   let selectedBrandGuidelines = $state<string | null>(null);
   const guidelinesCache = new Map<number, string>();
 
@@ -370,6 +372,14 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // Inserts a structured (commented-JSON) prompt from the builder dialog.
+  // Enhance is turned off because the rewrite pass would mangle the JSON
+  // block — the user can re-enable it manually if they really want it.
+  function handleUseStructuredPrompt(promptText: string) {
+    composer?.loadFrom({ prompt: promptText, enhance: false });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   async function savePreset(name: string) {
     const settings = composer?.getSettings();
     if (!settings) throw new Error("Composer is not ready");
@@ -542,6 +552,14 @@
         onLoad={(template) =>
           applySavedSettings(template.settings, template.prompt, false)}
       />
+      <Button
+        variant="outline"
+        size="sm"
+        type="button"
+        onclick={() => (builderOpen = true)}
+      >
+        Prompt builder
+      </Button>
     </div>
     <div class="space-y-2 pt-3">
       <p class="text-sm font-medium">Available brand rules</p>
@@ -648,5 +666,11 @@
     brandName={selectedBrand ? formatBrandLabel(selectedBrand) : null}
     onOpenChange={handleGalleryOpenChange}
     onUseAsReferences={attachBrandAssets}
+  />
+
+  <StructuredPromptBuilderDialog
+    bind:open={builderOpen}
+    brandGuidelines={selectedBrandGuidelines}
+    onUsePrompt={handleUseStructuredPrompt}
   />
 </main>
