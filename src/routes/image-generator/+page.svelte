@@ -53,6 +53,7 @@
   let composer:
     | {
         loadFrom: (s: Partial<ComposerState>) => void;
+        getEffectiveBrandGuidelines: () => string | null;
         getSettings: () => SavedComposerSettings;
         getTemplateState: () => {
           prompt: string;
@@ -73,6 +74,7 @@
   let selectedBrandId = $state<number | null>(null);
   let galleryOpen = $state(false);
   let builderOpen = $state(false);
+  let builderBrandGuidelines = $state<string | null>(null);
   let selectedBrandGuidelines = $state<string | null>(null);
   const guidelinesCache = new Map<number, string>();
 
@@ -380,6 +382,14 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // Snapshot the guidelines the composer would actually send (including any
+  // local edits) so the builder's AI suggestions match what generation uses.
+  function openPromptBuilder() {
+    builderBrandGuidelines =
+      composer?.getEffectiveBrandGuidelines() ?? selectedBrandGuidelines;
+    builderOpen = true;
+  }
+
   async function savePreset(name: string) {
     const settings = composer?.getSettings();
     if (!settings) throw new Error("Composer is not ready");
@@ -556,7 +566,7 @@
         variant="outline"
         size="sm"
         type="button"
-        onclick={() => (builderOpen = true)}
+        onclick={openPromptBuilder}
       >
         Prompt builder
       </Button>
@@ -670,7 +680,8 @@
 
   <StructuredPromptBuilderDialog
     bind:open={builderOpen}
-    brandGuidelines={selectedBrandGuidelines}
+    brandGuidelines={builderBrandGuidelines}
+    brandName={selectedBrand ? formatBrandLabel(selectedBrand) : null}
     onUsePrompt={handleUseStructuredPrompt}
   />
 </main>

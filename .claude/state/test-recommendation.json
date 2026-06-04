@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-04T11:41:53Z",
-  "changed_file": "src/lib/services/image-generator/structured-prompt.test.ts",
+  "timestamp": "2026-06-04T12:00:59Z",
+  "changed_file": "src/lib/services/image-providers/structured-prompt.server.test.ts",
   "test_command": "npx vitest run --reporter=verbose",
   "related_test": "",
   "recommendation": "テストの実行を推奨します"

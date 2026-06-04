@@ -34,14 +34,20 @@
   interface Props {
     open: boolean;
     brandGuidelines?: string | null;
+    brandName?: string | null;
     onUsePrompt: (prompt: string) => void;
   }
 
   let {
     open = $bindable(),
     brandGuidelines = null,
+    brandName = null,
     onUsePrompt,
   }: Props = $props();
+
+  const hasGuidelines = $derived(
+    typeof brandGuidelines === "string" && brandGuidelines.trim() !== "",
+  );
 
   // Builder state intentionally survives close/reopen so designers can
   // iterate on a scene; "Reset" returns to the food-photography defaults.
@@ -143,8 +149,14 @@
             </Button>
           </div>
           <p class="text-muted-foreground text-xs">
-            Every field below stays editable — AI suggestions are just a
-            starting point.
+            {#if hasGuidelines}
+              Suggestions follow the {brandName ?? "selected brand"} guidelines. Every
+              field below stays editable.
+            {:else}
+              Every field below stays editable — AI suggestions are just a
+              starting point. Select a brand on the page to get brand-aware
+              suggestions.
+            {/if}
           </p>
         </div>
 

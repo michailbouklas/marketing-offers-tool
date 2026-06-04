@@ -335,3 +335,5 @@
 {"file":"src/routes/api/images/structured-prompt/+server.ts","action":"Write","timestamp":"2026-06-04T11:39:27Z","important":false}
 {"file":"src/lib/services/image-generator/image-generator-client.ts","action":"Edit","timestamp":"2026-06-04T11:39:30Z","important":false}
 {"file":"src/lib/services/image-generator/structured-prompt.test.ts","action":"Write","timestamp":"2026-06-04T11:41:53Z","important":true}
+{"file":"src/routes/image-generator/PromptComposer.svelte","action":"Edit","timestamp":"2026-06-04T11:59:56Z","important":false}
+{"file":"src/lib/services/image-providers/structured-prompt.server.test.ts","action":"Write","timestamp":"2026-06-04T12:00:59Z","important":true}

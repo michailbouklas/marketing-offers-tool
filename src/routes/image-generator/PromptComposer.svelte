@@ -370,6 +370,15 @@
     if (state.referenceIds) preUploadedReferenceIds = state.referenceIds;
   }
 
+  // The guidelines text that would actually be sent with a generation —
+  // including any local edits the user made for this session. Mirrors the
+  // brandGuidelines logic in handleSubmit.
+  export function getEffectiveBrandGuidelines(): string | null {
+    return brandSelected && (brandGuidelines !== null || guidelinesEdited)
+      ? guidelinesText
+      : null;
+  }
+
   export function getSettings(): SavedComposerSettings {
     return {
       provider: provider as SavedComposerSettings["provider"],
