@@ -11,6 +11,7 @@
   import StoreIcon from "@lucide/svelte/icons/store";
   import ShieldCheckIcon from "@lucide/svelte/icons/shield-check";
   import ImageIcon from "@lucide/svelte/icons/image";
+  import PenLineIcon from "@lucide/svelte/icons/pen-line";
   import LightbulbIcon from "@lucide/svelte/icons/lightbulb";
   import ShieldIcon from "@lucide/svelte/icons/shield";
   import type { Component } from "svelte";
@@ -52,6 +53,12 @@
       label: "Inspiration",
       icon: LightbulbIcon,
       roles: ["admin", "superUser", "brandManager", "imageEditor"],
+    },
+    {
+      href: "/copywriter",
+      label: "Copywriter",
+      icon: PenLineIcon,
+      roles: ["superUser", "copywriter"],
     },
   ];
 

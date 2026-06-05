@@ -409,6 +409,8 @@ export const ModelName = {
   ImageGeneratorPreset: 'ImageGeneratorPreset',
   ImageGeneratorTemplate: 'ImageGeneratorTemplate',
   ImageGeneratorTemplateBrand: 'ImageGeneratorTemplateBrand',
+  GeneratedCopy: 'GeneratedCopy',
+  CopyGenerationFailureLog: 'CopyGenerationFailureLog',
   api_BOLT_header: 'api_BOLT_header',
   api_BOLT_lines: 'api_BOLT_lines',
   bolt_regex_patters: 'bolt_regex_patters'
@@ -427,7 +429,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "user_brand" | "regex_patterns_by_category" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "categories" | "channels" | "dq_missing_offers_pricing" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters"
+    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "user_brand" | "regex_patterns_by_category" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "categories" | "channels" | "dq_missing_offers_pricing" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2281,6 +2283,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    GeneratedCopy: {
+      payload: Prisma.$GeneratedCopyPayload<ExtArgs>
+      fields: Prisma.GeneratedCopyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GeneratedCopyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedCopyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GeneratedCopyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedCopyPayload>
+        }
+        findFirst: {
+          args: Prisma.GeneratedCopyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedCopyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GeneratedCopyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedCopyPayload>
+        }
+        findMany: {
+          args: Prisma.GeneratedCopyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedCopyPayload>[]
+        }
+        create: {
+          args: Prisma.GeneratedCopyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedCopyPayload>
+        }
+        createMany: {
+          args: Prisma.GeneratedCopyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GeneratedCopyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedCopyPayload>[]
+        }
+        delete: {
+          args: Prisma.GeneratedCopyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedCopyPayload>
+        }
+        update: {
+          args: Prisma.GeneratedCopyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedCopyPayload>
+        }
+        deleteMany: {
+          args: Prisma.GeneratedCopyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GeneratedCopyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GeneratedCopyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedCopyPayload>[]
+        }
+        upsert: {
+          args: Prisma.GeneratedCopyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GeneratedCopyPayload>
+        }
+        aggregate: {
+          args: Prisma.GeneratedCopyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGeneratedCopy>
+        }
+        groupBy: {
+          args: Prisma.GeneratedCopyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GeneratedCopyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GeneratedCopyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GeneratedCopyCountAggregateOutputType> | number
+        }
+      }
+    }
+    CopyGenerationFailureLog: {
+      payload: Prisma.$CopyGenerationFailureLogPayload<ExtArgs>
+      fields: Prisma.CopyGenerationFailureLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CopyGenerationFailureLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CopyGenerationFailureLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CopyGenerationFailureLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CopyGenerationFailureLogPayload>
+        }
+        findFirst: {
+          args: Prisma.CopyGenerationFailureLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CopyGenerationFailureLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CopyGenerationFailureLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CopyGenerationFailureLogPayload>
+        }
+        findMany: {
+          args: Prisma.CopyGenerationFailureLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CopyGenerationFailureLogPayload>[]
+        }
+        create: {
+          args: Prisma.CopyGenerationFailureLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CopyGenerationFailureLogPayload>
+        }
+        createMany: {
+          args: Prisma.CopyGenerationFailureLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CopyGenerationFailureLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CopyGenerationFailureLogPayload>[]
+        }
+        delete: {
+          args: Prisma.CopyGenerationFailureLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CopyGenerationFailureLogPayload>
+        }
+        update: {
+          args: Prisma.CopyGenerationFailureLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CopyGenerationFailureLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.CopyGenerationFailureLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CopyGenerationFailureLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CopyGenerationFailureLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CopyGenerationFailureLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.CopyGenerationFailureLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CopyGenerationFailureLogPayload>
+        }
+        aggregate: {
+          args: Prisma.CopyGenerationFailureLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCopyGenerationFailureLog>
+        }
+        groupBy: {
+          args: Prisma.CopyGenerationFailureLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CopyGenerationFailureLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CopyGenerationFailureLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CopyGenerationFailureLogCountAggregateOutputType> | number
+        }
+      }
+    }
     api_BOLT_header: {
       payload: Prisma.$api_BOLT_headerPayload<ExtArgs>
       fields: Prisma.api_BOLT_headerFieldRefs
@@ -2902,6 +3052,46 @@ export const ImageGeneratorTemplateBrandScalarFieldEnum = {
 export type ImageGeneratorTemplateBrandScalarFieldEnum = (typeof ImageGeneratorTemplateBrandScalarFieldEnum)[keyof typeof ImageGeneratorTemplateBrandScalarFieldEnum]
 
 
+export const GeneratedCopyScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  brandId: 'brandId',
+  offerId: 'offerId',
+  copyType: 'copyType',
+  channel: 'channel',
+  brief: 'brief',
+  tone: 'tone',
+  finalPrompt: 'finalPrompt',
+  provider: 'provider',
+  model: 'model',
+  variants: 'variants',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  durationMs: 'durationMs',
+  createdAt: 'createdAt'
+} as const
+
+export type GeneratedCopyScalarFieldEnum = (typeof GeneratedCopyScalarFieldEnum)[keyof typeof GeneratedCopyScalarFieldEnum]
+
+
+export const CopyGenerationFailureLogScalarFieldEnum = {
+  id: 'id',
+  generatedCopyId: 'generatedCopyId',
+  provider: 'provider',
+  model: 'model',
+  attempt: 'attempt',
+  errorName: 'errorName',
+  errorMessage: 'errorMessage',
+  responseStatus: 'responseStatus',
+  responseBody: 'responseBody',
+  requestSnapshot: 'requestSnapshot',
+  durationMs: 'durationMs',
+  createdAt: 'createdAt'
+} as const
+
+export type CopyGenerationFailureLogScalarFieldEnum = (typeof CopyGenerationFailureLogScalarFieldEnum)[keyof typeof CopyGenerationFailureLogScalarFieldEnum]
+
+
 export const Api_BOLT_headerScalarFieldEnum = {
   id: 'id',
   documentid: 'documentid',
@@ -3185,6 +3375,34 @@ export type ListEnumImageGeneratorTemplateVisibilityFieldRefInput<$PrismaModel> 
 
 
 /**
+ * Reference to a field of type 'CopyType'
+ */
+export type EnumCopyTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CopyType'>
+    
+
+
+/**
+ * Reference to a field of type 'CopyType[]'
+ */
+export type ListEnumCopyTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CopyType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'GeneratedCopyStatus'
+ */
+export type EnumGeneratedCopyStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GeneratedCopyStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'GeneratedCopyStatus[]'
+ */
+export type ListEnumGeneratedCopyStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GeneratedCopyStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -3317,6 +3535,8 @@ export type GlobalOmitConfig = {
   imageGeneratorPreset?: Prisma.ImageGeneratorPresetOmit
   imageGeneratorTemplate?: Prisma.ImageGeneratorTemplateOmit
   imageGeneratorTemplateBrand?: Prisma.ImageGeneratorTemplateBrandOmit
+  generatedCopy?: Prisma.GeneratedCopyOmit
+  copyGenerationFailureLog?: Prisma.CopyGenerationFailureLogOmit
   api_BOLT_header?: Prisma.api_BOLT_headerOmit
   api_BOLT_lines?: Prisma.api_BOLT_linesOmit
   bolt_regex_patters?: Prisma.bolt_regex_pattersOmit

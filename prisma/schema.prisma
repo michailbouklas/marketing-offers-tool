@@ -65,6 +65,7 @@ model brand {
   user_assignments  user_brand[]
   brand_assets      BrandAsset[]
   generated_images  GeneratedImage[]
+  generated_copies  GeneratedCopy[]
   image_templates   ImageGeneratorTemplateBrand[]
 }
 
@@ -121,6 +122,7 @@ model user {
   brand_assignments user_brand[]
   dim_offers_audits dim_offers_audit[] @relation("DimOffersAuditActor")
   generated_images  GeneratedImage[]
+  generated_copies  GeneratedCopy[]
   image_presets     ImageGeneratorPreset[]
   image_templates   ImageGeneratorTemplate[]
   reference_images  ReferenceImage[]
@@ -415,6 +417,70 @@ model ImageGeneratorTemplateBrand {
 
   @@id([templateId, brandId])
   @@index([brandId])
+}
+
+// One row per copywriting generation request. `variants` holds the bilingual
+// (el/en) variant array whose shape depends on `copyType` — see
+// src/lib/services/copywriter/types.ts for the contract.
+model GeneratedCopy {
+  id           String              @id @default(cuid())
+  userId       String
+  user         user                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brandId      Int?
+  brand        brand?              @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  // Offer the brief was pre-filled from, kept as a plain column (no FK) so
+  // history survives offer deletion.
+  offerId      Int?
+  copyType     CopyType
+  channel      String
+  brief        String              @db.Text
+  tone         String?
+  finalPrompt  String              @db.Text
+  provider     String
+  model        String?
+  variants     Json
+  status       GeneratedCopyStatus
+  errorMessage String?             @db.Text
+  durationMs   Int?
+  createdAt    DateTime            @default(now())
+
+  @@index([userId, createdAt])
+  @@index([brandId, createdAt])
+
+  failureLogs CopyGenerationFailureLog[]
+}
+
+// One row per failed copy provider attempt (including attempts that later
+// succeed on retry). Mirrors GenerationFailureLog for images.
+model CopyGenerationFailureLog {
+  id              String        @id @default(cuid())
+  generatedCopyId String
+  generatedCopy   GeneratedCopy @relation(fields: [generatedCopyId], references: [id], onDelete: Cascade)
+  provider        String
+  model           String?
+  attempt         Int
+  errorName       String
+  errorMessage    String        @db.Text
+  responseStatus  Int?
+  responseBody    Json?
+  requestSnapshot Json?
+  durationMs      Int?
+  createdAt       DateTime      @default(now())
+
+  @@index([createdAt])
+  @@index([generatedCopyId])
+}
+
+enum CopyType {
+  aggregator_offer
+  social_caption
+  push_sms
+  banner_headline
+}
+
+enum GeneratedCopyStatus {
+  completed
+  failed
 }
 
 enum GeneratedImageStatus {

@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-06-05T07:41:10Z",
-  "changed_file": "src/lib/services/image-generator/image-generator.server.ts",
+  "timestamp": "2026-06-05T08:20:32Z",
+  "changed_file": "src/lib/services/text-providers/openai.server.test.ts",
   "test_command": "npx vitest run --reporter=verbose",
-  "related_test": "C:\\work\\marketing-offers-tool\\src\\lib\\services\\image-generator\\image-generator.server.test.ts",
+  "related_test": "",
   "recommendation": "テストの実行を推奨します"
 }

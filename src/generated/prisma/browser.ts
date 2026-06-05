@@ -143,6 +143,16 @@ export type ImageGeneratorTemplate = Prisma.ImageGeneratorTemplateModel
  */
 export type ImageGeneratorTemplateBrand = Prisma.ImageGeneratorTemplateBrandModel
 /**
+ * Model GeneratedCopy
+ * 
+ */
+export type GeneratedCopy = Prisma.GeneratedCopyModel
+/**
+ * Model CopyGenerationFailureLog
+ * 
+ */
+export type CopyGenerationFailureLog = Prisma.CopyGenerationFailureLogModel
+/**
  * Model api_BOLT_header
  * 
  */

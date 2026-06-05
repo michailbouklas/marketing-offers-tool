@@ -1,88 +1,93 @@
 ---
 name: inspiration
-description: "Skill for the Inspiration area of marketing-offers-tool. 19 symbols across 7 files."
+description: "Skill for the Inspiration area of marketing-offers-tool. 52 symbols across 10 files."
 ---
 
 # Inspiration
 
-19 symbols | 7 files | Cohesion: 69%
+52 symbols | 10 files | Cohesion: 86%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how deleteBrandAsset, deleteCategory, getItem work
+- Understanding how brandGuidelinesKey, deleteBrandAsset, readBrandGuidelines work
 - Modifying inspiration-related functionality
 
 ## Key Files
 
-| File                                                                 | Symbols                                                                                              |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `src/lib/server/inspiration/inspiration-storage.server.ts`           | ensureSafeSlug, categoryDirPrefix, itemMdKey, itemImageStorageKey, deleteCategory (+3)               |
-| `src/lib/server/object-store.server.ts`                              | remove, remove, remove                                                                               |
-| `src/lib/services/inspiration/category-form.ts`                      | getDefaultCreateCategoryFormData, getDefaultRenameCategoryFormData, getDefaultDeleteCategoryFormData |
-| `src/lib/server/inspiration/frontmatter.ts`                          | sanitizeValue, lines                                                                                 |
-| `src/lib/server/brand-storage.ts`                                    | deleteBrandAsset                                                                                     |
-| `src/routes/api/admin/prompt-gallery/[slug]/items/[item]/+server.ts` | PUT                                                                                                  |
-| `src/routes/admin/prompt-gallery/+page.server.ts`                    | load                                                                                                 |
+| File | Symbols |
+|------|---------|
+| `src/lib/server/inspiration/inspiration-storage.server.ts` | ensureSafeSlug, slugify, categoryDirPrefix, categoryMetaKey, itemMdKey (+15) |
+| `src/lib/server/object-store.server.ts` | getText, putText, remove, list, toPath (+10) |
+| `src/lib/server/brand-storage.ts` | brandGuidelinesKey, deleteBrandAsset, readBrandGuidelines, writeBrandGuidelines |
+| `src/lib/services/inspiration/category-form.ts` | getDefaultDeleteItemFormData, getDefaultCreateCategoryFormData, getDefaultRenameCategoryFormData, getDefaultDeleteCategoryFormData |
+| `src/lib/server/inspiration/frontmatter.ts` | serializeFrontmatter, parseFrontmatter, sanitizeValue, lines |
+| `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | load |
+| `src/routes/admin/prompt-gallery/[slug]/+page.server.ts` | load |
+| `src/routes/api/admin/prompt-gallery/[slug]/items/+server.ts` | POST |
+| `src/routes/api/admin/prompt-gallery/[slug]/items/[item]/+server.ts` | PUT |
+| `src/routes/admin/prompt-gallery/+page.server.ts` | load |
 
 ## Entry Points
 
 Start here when exploring this area:
 
+- **`brandGuidelinesKey`** (Function) — `src/lib/server/brand-storage.ts:52`
 - **`deleteBrandAsset`** (Function) — `src/lib/server/brand-storage.ts:85`
-- **`deleteCategory`** (Function) — `src/lib/server/inspiration/inspiration-storage.server.ts:201`
-- **`getItem`** (Function) — `src/lib/server/inspiration/inspiration-storage.server.ts:256`
-- **`updateItem`** (Function) — `src/lib/server/inspiration/inspiration-storage.server.ts:306`
-- **`deleteItem`** (Function) — `src/lib/server/inspiration/inspiration-storage.server.ts:344`
+- **`readBrandGuidelines`** (Function) — `src/lib/server/brand-storage.ts:94`
+- **`writeBrandGuidelines`** (Function) — `src/lib/server/brand-storage.ts:101`
+- **`getDefaultDeleteItemFormData`** (Function) — `src/lib/services/inspiration/category-form.ts:54`
 
 ## Key Symbols
 
-| Symbol                             | Type     | File                                                                 | Line |
-| ---------------------------------- | -------- | -------------------------------------------------------------------- | ---- |
-| `deleteBrandAsset`                 | Function | `src/lib/server/brand-storage.ts`                                    | 85   |
-| `deleteCategory`                   | Function | `src/lib/server/inspiration/inspiration-storage.server.ts`           | 201  |
-| `getItem`                          | Function | `src/lib/server/inspiration/inspiration-storage.server.ts`           | 256  |
-| `updateItem`                       | Function | `src/lib/server/inspiration/inspiration-storage.server.ts`           | 306  |
-| `deleteItem`                       | Function | `src/lib/server/inspiration/inspiration-storage.server.ts`           | 344  |
-| `PUT`                              | Function | `src/routes/api/admin/prompt-gallery/[slug]/items/[item]/+server.ts` | 10   |
-| `load`                             | Function | `src/routes/admin/prompt-gallery/+page.server.ts`                    | 22   |
-| `getDefaultCreateCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts`                      | 42   |
-| `getDefaultRenameCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts`                      | 46   |
-| `getDefaultDeleteCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts`                      | 50   |
-| `lines`                            | Function | `src/lib/server/inspiration/frontmatter.ts`                          | 21   |
-| `remove`                           | Method   | `src/lib/server/object-store.server.ts`                              | 39   |
-| `remove`                           | Method   | `src/lib/server/object-store.server.ts`                              | 119  |
-| `remove`                           | Method   | `src/lib/server/object-store.server.ts`                              | 213  |
-| `ensureSafeSlug`                   | Function | `src/lib/server/inspiration/inspiration-storage.server.ts`           | 44   |
-| `categoryDirPrefix`                | Function | `src/lib/server/inspiration/inspiration-storage.server.ts`           | 72   |
-| `itemMdKey`                        | Function | `src/lib/server/inspiration/inspiration-storage.server.ts`           | 80   |
-| `itemImageStorageKey`              | Function | `src/lib/server/inspiration/inspiration-storage.server.ts`           | 84   |
-| `sanitizeValue`                    | Function | `src/lib/server/inspiration/frontmatter.ts`                          | 13   |
+| Symbol | Type | File | Line |
+|--------|------|------|------|
+| `brandGuidelinesKey` | Function | `src/lib/server/brand-storage.ts` | 52 |
+| `deleteBrandAsset` | Function | `src/lib/server/brand-storage.ts` | 85 |
+| `readBrandGuidelines` | Function | `src/lib/server/brand-storage.ts` | 94 |
+| `writeBrandGuidelines` | Function | `src/lib/server/brand-storage.ts` | 101 |
+| `getDefaultDeleteItemFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 54 |
+| `slugify` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 61 |
+| `listCategories` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 120 |
+| `getCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 134 |
+| `createCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 161 |
+| `renameCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 180 |
+| `deleteCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 201 |
+| `listItems` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 229 |
+| `getItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 256 |
+| `createItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 285 |
+| `updateItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 306 |
+| `deleteItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 344 |
+| `serializeFrontmatter` | Function | `src/lib/server/inspiration/frontmatter.ts` | 17 |
+| `parseFrontmatter` | Function | `src/lib/server/inspiration/frontmatter.ts` | 32 |
+| `load` | Function | `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | 9 |
+| `load` | Function | `src/routes/admin/prompt-gallery/[slug]/+page.server.ts` | 17 |
 
 ## Execution Flows
 
-| Flow                             | Type            | Steps |
-| -------------------------------- | --------------- | ----- |
-| `Load → AssertSafeKey`           | cross_community | 5     |
-| `Load → From`                    | cross_community | 5     |
-| `PUT → LoadEnvFileValues`        | cross_community | 5     |
-| `PUT → AssertSafeKey`            | cross_community | 5     |
-| `Load → GetText`                 | cross_community | 4     |
-| `Load → List`                    | cross_community | 4     |
-| `PUT → From`                     | cross_community | 4     |
-| `DeleteItem → AssertSafeKey`     | cross_community | 4     |
-| `UpdateItem → AssertSafeKey`     | cross_community | 4     |
-| `DeleteCategory → AssertSafeKey` | cross_community | 4     |
+| Flow | Type | Steps |
+|------|------|-------|
+| `GET → AssertSafeKey` | cross_community | 6 |
+| `PUT → AssertSafeKey` | cross_community | 6 |
+| `PUT → From` | cross_community | 6 |
+| `POST → AssertSafeKey` | cross_community | 6 |
+| `Load → AssertSafeKey` | cross_community | 6 |
+| `POST → AssertSafeKey` | cross_community | 6 |
+| `GET → AssertSafeKey` | cross_community | 6 |
+| `Load → AssertSafeKey` | cross_community | 5 |
+| `Load → From` | cross_community | 5 |
+| `POST → LoadEnvFileValues` | cross_community | 5 |
 
 ## Connected Areas
 
-| Area       | Connections |
-| ---------- | ----------- |
-| Server     | 21 calls    |
-| Guidelines | 1 calls     |
+| Area | Connections |
+|------|-------------|
+| Server | 21 calls |
+| Services | 3 calls |
+| Guidelines | 2 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "deleteBrandAsset"})` — see callers and callees
+1. `gitnexus_context({name: "brandGuidelinesKey"})` — see callers and callees
 2. `gitnexus_query({query: "inspiration"})` — find related execution flows
 3. Read key files listed above for implementation details

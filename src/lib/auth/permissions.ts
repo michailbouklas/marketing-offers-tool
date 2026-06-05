@@ -13,6 +13,7 @@ import type { UserRole } from "$lib/auth/roles";
 export const statement = {
   ...defaultStatements,
   imageGenerator: ["generate", "view-usage"],
+  copywriter: ["generate"],
   submission: ["approve", "reject"],
   brand: ["manage"],
   offer: ["edit"],
@@ -38,6 +39,7 @@ export const ac = createAccessControl(statement);
  *   inspiration prompt gallery.
  * - `offerEditor` — create and edit aggregator offers in the registry.
  * - `imageEditor` — generate images in the image generator.
+ * - `copywriter` — generate marketing copy in the copywriter studio.
  * - `superUser` — admin-equivalent that holds every resource permission.
  *
  * Explicit empty action arrays (rather than `{}`) keep a role's resource keys
@@ -76,9 +78,13 @@ export const roles = {
   imageEditor: ac.newRole({
     imageGenerator: ["generate"],
   }),
+  copywriter: ac.newRole({
+    copywriter: ["generate"],
+  }),
   superUser: ac.newRole({
     ...adminAc.statements,
     imageGenerator: ["generate", "view-usage"],
+    copywriter: ["generate"],
     submission: ["approve", "reject"],
     brand: ["manage"],
     offer: ["edit"],

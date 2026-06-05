@@ -52,6 +52,24 @@ export const DimOffersAuditSource = {
 export type DimOffersAuditSource = (typeof DimOffersAuditSource)[keyof typeof DimOffersAuditSource]
 
 
+export const CopyType = {
+  aggregator_offer: 'aggregator_offer',
+  social_caption: 'social_caption',
+  push_sms: 'push_sms',
+  banner_headline: 'banner_headline'
+} as const
+
+export type CopyType = (typeof CopyType)[keyof typeof CopyType]
+
+
+export const GeneratedCopyStatus = {
+  completed: 'completed',
+  failed: 'failed'
+} as const
+
+export type GeneratedCopyStatus = (typeof GeneratedCopyStatus)[keyof typeof GeneratedCopyStatus]
+
+
 export const GeneratedImageStatus = {
   pending: 'pending',
   completed: 'completed',

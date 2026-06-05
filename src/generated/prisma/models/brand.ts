@@ -252,6 +252,7 @@ export type brandWhereInput = {
   user_assignments?: Prisma.User_brandListRelationFilter
   brand_assets?: Prisma.BrandAssetListRelationFilter
   generated_images?: Prisma.GeneratedImageListRelationFilter
+  generated_copies?: Prisma.GeneratedCopyListRelationFilter
   image_templates?: Prisma.ImageGeneratorTemplateBrandListRelationFilter
 }
 
@@ -269,6 +270,7 @@ export type brandOrderByWithRelationInput = {
   user_assignments?: Prisma.user_brandOrderByRelationAggregateInput
   brand_assets?: Prisma.BrandAssetOrderByRelationAggregateInput
   generated_images?: Prisma.GeneratedImageOrderByRelationAggregateInput
+  generated_copies?: Prisma.GeneratedCopyOrderByRelationAggregateInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandOrderByRelationAggregateInput
 }
 
@@ -289,6 +291,7 @@ export type brandWhereUniqueInput = Prisma.AtLeast<{
   user_assignments?: Prisma.User_brandListRelationFilter
   brand_assets?: Prisma.BrandAssetListRelationFilter
   generated_images?: Prisma.GeneratedImageListRelationFilter
+  generated_copies?: Prisma.GeneratedCopyListRelationFilter
   image_templates?: Prisma.ImageGeneratorTemplateBrandListRelationFilter
 }, "id">
 
@@ -337,6 +340,7 @@ export type brandCreateInput = {
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput
 }
 
@@ -354,6 +358,7 @@ export type brandUncheckedCreateInput = {
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput
 }
 
@@ -370,6 +375,7 @@ export type brandUpdateInput = {
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput
 }
 
@@ -387,6 +393,7 @@ export type brandUncheckedUpdateInput = {
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput
 }
 
@@ -555,6 +562,22 @@ export type brandUpdateOneRequiredWithoutImage_templatesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.brandUpdateToOneWithWhereWithoutImage_templatesInput, Prisma.brandUpdateWithoutImage_templatesInput>, Prisma.brandUncheckedUpdateWithoutImage_templatesInput>
 }
 
+export type brandCreateNestedOneWithoutGenerated_copiesInput = {
+  create?: Prisma.XOR<Prisma.brandCreateWithoutGenerated_copiesInput, Prisma.brandUncheckedCreateWithoutGenerated_copiesInput>
+  connectOrCreate?: Prisma.brandCreateOrConnectWithoutGenerated_copiesInput
+  connect?: Prisma.brandWhereUniqueInput
+}
+
+export type brandUpdateOneWithoutGenerated_copiesNestedInput = {
+  create?: Prisma.XOR<Prisma.brandCreateWithoutGenerated_copiesInput, Prisma.brandUncheckedCreateWithoutGenerated_copiesInput>
+  connectOrCreate?: Prisma.brandCreateOrConnectWithoutGenerated_copiesInput
+  upsert?: Prisma.brandUpsertWithoutGenerated_copiesInput
+  disconnect?: Prisma.brandWhereInput | boolean
+  delete?: Prisma.brandWhereInput | boolean
+  connect?: Prisma.brandWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.brandUpdateToOneWithWhereWithoutGenerated_copiesInput, Prisma.brandUpdateWithoutGenerated_copiesInput>, Prisma.brandUncheckedUpdateWithoutGenerated_copiesInput>
+}
+
 export type brandCreateWithoutUser_assignmentsInput = {
   name: string
   alias?: string
@@ -567,6 +590,7 @@ export type brandCreateWithoutUser_assignmentsInput = {
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput
 }
 
@@ -583,6 +607,7 @@ export type brandUncheckedCreateWithoutUser_assignmentsInput = {
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput
 }
 
@@ -614,6 +639,7 @@ export type brandUpdateWithoutUser_assignmentsInput = {
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput
 }
 
@@ -630,6 +656,7 @@ export type brandUncheckedUpdateWithoutUser_assignmentsInput = {
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput
 }
 
@@ -645,6 +672,7 @@ export type brandCreateWithoutAggregator_offersInput = {
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput
 }
 
@@ -661,6 +689,7 @@ export type brandUncheckedCreateWithoutAggregator_offersInput = {
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput
 }
 
@@ -692,6 +721,7 @@ export type brandUpdateWithoutAggregator_offersInput = {
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput
 }
 
@@ -708,6 +738,7 @@ export type brandUncheckedUpdateWithoutAggregator_offersInput = {
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput
 }
 
@@ -723,6 +754,7 @@ export type brandCreateWithoutGenerated_imagesInput = {
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput
 }
 
@@ -739,6 +771,7 @@ export type brandUncheckedCreateWithoutGenerated_imagesInput = {
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput
 }
 
@@ -770,6 +803,7 @@ export type brandUpdateWithoutGenerated_imagesInput = {
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput
 }
 
@@ -786,6 +820,7 @@ export type brandUncheckedUpdateWithoutGenerated_imagesInput = {
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput
 }
 
@@ -801,6 +836,7 @@ export type brandCreateWithoutBrand_assetsInput = {
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput
 }
 
@@ -817,6 +853,7 @@ export type brandUncheckedCreateWithoutBrand_assetsInput = {
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput
 }
 
@@ -848,6 +885,7 @@ export type brandUpdateWithoutBrand_assetsInput = {
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput
 }
 
@@ -864,6 +902,7 @@ export type brandUncheckedUpdateWithoutBrand_assetsInput = {
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput
 }
 
@@ -880,6 +919,7 @@ export type brandCreateWithoutImage_templatesInput = {
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput
 }
 
 export type brandUncheckedCreateWithoutImage_templatesInput = {
@@ -896,6 +936,7 @@ export type brandUncheckedCreateWithoutImage_templatesInput = {
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput
 }
 
 export type brandCreateOrConnectWithoutImage_templatesInput = {
@@ -927,6 +968,7 @@ export type brandUpdateWithoutImage_templatesInput = {
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput
 }
 
 export type brandUncheckedUpdateWithoutImage_templatesInput = {
@@ -943,6 +985,89 @@ export type brandUncheckedUpdateWithoutImage_templatesInput = {
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput
+}
+
+export type brandCreateWithoutGenerated_copiesInput = {
+  name: string
+  alias?: string
+  logo?: string
+  slug?: string
+  created_at?: Date | string
+  updated_at: Date | string
+  description?: string | null
+  active?: boolean
+  aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
+  user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
+  brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput
+  image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput
+}
+
+export type brandUncheckedCreateWithoutGenerated_copiesInput = {
+  id?: number
+  name: string
+  alias?: string
+  logo?: string
+  slug?: string
+  created_at?: Date | string
+  updated_at: Date | string
+  description?: string | null
+  active?: boolean
+  aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
+  user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
+  brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput
+  image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput
+}
+
+export type brandCreateOrConnectWithoutGenerated_copiesInput = {
+  where: Prisma.brandWhereUniqueInput
+  create: Prisma.XOR<Prisma.brandCreateWithoutGenerated_copiesInput, Prisma.brandUncheckedCreateWithoutGenerated_copiesInput>
+}
+
+export type brandUpsertWithoutGenerated_copiesInput = {
+  update: Prisma.XOR<Prisma.brandUpdateWithoutGenerated_copiesInput, Prisma.brandUncheckedUpdateWithoutGenerated_copiesInput>
+  create: Prisma.XOR<Prisma.brandCreateWithoutGenerated_copiesInput, Prisma.brandUncheckedCreateWithoutGenerated_copiesInput>
+  where?: Prisma.brandWhereInput
+}
+
+export type brandUpdateToOneWithWhereWithoutGenerated_copiesInput = {
+  where?: Prisma.brandWhereInput
+  data: Prisma.XOR<Prisma.brandUpdateWithoutGenerated_copiesInput, Prisma.brandUncheckedUpdateWithoutGenerated_copiesInput>
+}
+
+export type brandUpdateWithoutGenerated_copiesInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  alias?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
+  user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
+  brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput
+}
+
+export type brandUncheckedUpdateWithoutGenerated_copiesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  alias?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
+  user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
+  brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput
 }
 
 
@@ -955,6 +1080,7 @@ export type BrandCountOutputType = {
   user_assignments: number
   brand_assets: number
   generated_images: number
+  generated_copies: number
   image_templates: number
 }
 
@@ -963,6 +1089,7 @@ export type BrandCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   user_assignments?: boolean | BrandCountOutputTypeCountUser_assignmentsArgs
   brand_assets?: boolean | BrandCountOutputTypeCountBrand_assetsArgs
   generated_images?: boolean | BrandCountOutputTypeCountGenerated_imagesArgs
+  generated_copies?: boolean | BrandCountOutputTypeCountGenerated_copiesArgs
   image_templates?: boolean | BrandCountOutputTypeCountImage_templatesArgs
 }
 
@@ -1007,6 +1134,13 @@ export type BrandCountOutputTypeCountGenerated_imagesArgs<ExtArgs extends runtim
 /**
  * BrandCountOutputType without action
  */
+export type BrandCountOutputTypeCountGenerated_copiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GeneratedCopyWhereInput
+}
+
+/**
+ * BrandCountOutputType without action
+ */
 export type BrandCountOutputTypeCountImage_templatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ImageGeneratorTemplateBrandWhereInput
 }
@@ -1026,6 +1160,7 @@ export type brandSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   user_assignments?: boolean | Prisma.brand$user_assignmentsArgs<ExtArgs>
   brand_assets?: boolean | Prisma.brand$brand_assetsArgs<ExtArgs>
   generated_images?: boolean | Prisma.brand$generated_imagesArgs<ExtArgs>
+  generated_copies?: boolean | Prisma.brand$generated_copiesArgs<ExtArgs>
   image_templates?: boolean | Prisma.brand$image_templatesArgs<ExtArgs>
   _count?: boolean | Prisma.BrandCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["brand"]>
@@ -1072,6 +1207,7 @@ export type brandInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   user_assignments?: boolean | Prisma.brand$user_assignmentsArgs<ExtArgs>
   brand_assets?: boolean | Prisma.brand$brand_assetsArgs<ExtArgs>
   generated_images?: boolean | Prisma.brand$generated_imagesArgs<ExtArgs>
+  generated_copies?: boolean | Prisma.brand$generated_copiesArgs<ExtArgs>
   image_templates?: boolean | Prisma.brand$image_templatesArgs<ExtArgs>
   _count?: boolean | Prisma.BrandCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1085,6 +1221,7 @@ export type $brandPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     user_assignments: Prisma.$user_brandPayload<ExtArgs>[]
     brand_assets: Prisma.$BrandAssetPayload<ExtArgs>[]
     generated_images: Prisma.$GeneratedImagePayload<ExtArgs>[]
+    generated_copies: Prisma.$GeneratedCopyPayload<ExtArgs>[]
     image_templates: Prisma.$ImageGeneratorTemplateBrandPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1495,6 +1632,7 @@ export interface Prisma__brandClient<T, Null = never, ExtArgs extends runtime.Ty
   user_assignments<T extends Prisma.brand$user_assignmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.brand$user_assignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$user_brandPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   brand_assets<T extends Prisma.brand$brand_assetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.brand$brand_assetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BrandAssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   generated_images<T extends Prisma.brand$generated_imagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.brand$generated_imagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GeneratedImagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  generated_copies<T extends Prisma.brand$generated_copiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.brand$generated_copiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GeneratedCopyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   image_templates<T extends Prisma.brand$image_templatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.brand$image_templatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImageGeneratorTemplateBrandPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2015,6 +2153,30 @@ export type brand$generated_imagesArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.GeneratedImageScalarFieldEnum | Prisma.GeneratedImageScalarFieldEnum[]
+}
+
+/**
+ * brand.generated_copies
+ */
+export type brand$generated_copiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GeneratedCopy
+   */
+  select?: Prisma.GeneratedCopySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GeneratedCopy
+   */
+  omit?: Prisma.GeneratedCopyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GeneratedCopyInclude<ExtArgs> | null
+  where?: Prisma.GeneratedCopyWhereInput
+  orderBy?: Prisma.GeneratedCopyOrderByWithRelationInput | Prisma.GeneratedCopyOrderByWithRelationInput[]
+  cursor?: Prisma.GeneratedCopyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GeneratedCopyScalarFieldEnum | Prisma.GeneratedCopyScalarFieldEnum[]
 }
 
 /**

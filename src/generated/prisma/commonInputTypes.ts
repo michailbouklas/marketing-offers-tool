@@ -490,6 +490,40 @@ export type EnumImageGeneratorTemplateVisibilityWithAggregatesFilter<$PrismaMode
   _max?: Prisma.NestedEnumImageGeneratorTemplateVisibilityFilter<$PrismaModel>
 }
 
+export type EnumCopyTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CopyType | Prisma.EnumCopyTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CopyType[] | Prisma.ListEnumCopyTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CopyType[] | Prisma.ListEnumCopyTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCopyTypeFilter<$PrismaModel> | $Enums.CopyType
+}
+
+export type EnumGeneratedCopyStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.GeneratedCopyStatus | Prisma.EnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GeneratedCopyStatus[] | Prisma.ListEnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GeneratedCopyStatus[] | Prisma.ListEnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGeneratedCopyStatusFilter<$PrismaModel> | $Enums.GeneratedCopyStatus
+}
+
+export type EnumCopyTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CopyType | Prisma.EnumCopyTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CopyType[] | Prisma.ListEnumCopyTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CopyType[] | Prisma.ListEnumCopyTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCopyTypeWithAggregatesFilter<$PrismaModel> | $Enums.CopyType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCopyTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCopyTypeFilter<$PrismaModel>
+}
+
+export type EnumGeneratedCopyStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GeneratedCopyStatus | Prisma.EnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GeneratedCopyStatus[] | Prisma.ListEnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GeneratedCopyStatus[] | Prisma.ListEnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGeneratedCopyStatusWithAggregatesFilter<$PrismaModel> | $Enums.GeneratedCopyStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGeneratedCopyStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGeneratedCopyStatusFilter<$PrismaModel>
+}
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -923,6 +957,40 @@ export type NestedEnumImageGeneratorTemplateVisibilityWithAggregatesFilter<$Pris
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumImageGeneratorTemplateVisibilityFilter<$PrismaModel>
   _max?: Prisma.NestedEnumImageGeneratorTemplateVisibilityFilter<$PrismaModel>
+}
+
+export type NestedEnumCopyTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CopyType | Prisma.EnumCopyTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CopyType[] | Prisma.ListEnumCopyTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CopyType[] | Prisma.ListEnumCopyTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCopyTypeFilter<$PrismaModel> | $Enums.CopyType
+}
+
+export type NestedEnumGeneratedCopyStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.GeneratedCopyStatus | Prisma.EnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GeneratedCopyStatus[] | Prisma.ListEnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GeneratedCopyStatus[] | Prisma.ListEnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGeneratedCopyStatusFilter<$PrismaModel> | $Enums.GeneratedCopyStatus
+}
+
+export type NestedEnumCopyTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CopyType | Prisma.EnumCopyTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CopyType[] | Prisma.ListEnumCopyTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CopyType[] | Prisma.ListEnumCopyTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCopyTypeWithAggregatesFilter<$PrismaModel> | $Enums.CopyType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCopyTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCopyTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumGeneratedCopyStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GeneratedCopyStatus | Prisma.EnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GeneratedCopyStatus[] | Prisma.ListEnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GeneratedCopyStatus[] | Prisma.ListEnumGeneratedCopyStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGeneratedCopyStatusWithAggregatesFilter<$PrismaModel> | $Enums.GeneratedCopyStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGeneratedCopyStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGeneratedCopyStatusFilter<$PrismaModel>
 }
 
 

@@ -6,6 +6,7 @@ import {
   countGeneratedImagesForUser,
   getAdminImageUsageOverview,
 } from "$lib/services/image-generator/image-generator.server";
+import { countGeneratedCopiesForUser } from "$lib/services/copywriter/copywriter.server";
 import {
   getAuthenticatedUserRole,
   hasPermission,
@@ -26,6 +27,7 @@ export const load: PageServerLoad = async (event) => {
     canViewUsage,
     canGenerateImages,
     canManageBrands,
+    canGenerateCopy,
   ] = await Promise.all([
     getAuthenticatedUserRole(event),
     hasPermission(event, { offer: ["edit"] }),
@@ -34,18 +36,28 @@ export const load: PageServerLoad = async (event) => {
     hasPermission(event, { imageGenerator: ["view-usage"] }),
     hasPermission(event, { imageGenerator: ["generate"] }),
     hasPermission(event, { brand: ["manage"] }),
+    hasPermission(event, { copywriter: ["generate"] }),
   ]);
 
-  const [offers, pendingCount, userCount, usageOverview, generatedImageCount] =
-    await Promise.all([
-      canEditOffers ? getHomeOfferWidgets() : Promise.resolve(null),
-      canApprove ? getPendingGapSubmissionCount() : Promise.resolve(null),
-      canManageUsers ? countUsers() : Promise.resolve(null),
-      canViewUsage ? getAdminImageUsageOverview() : Promise.resolve(null),
-      canGenerateImages && user
-        ? countGeneratedImagesForUser(user.id)
-        : Promise.resolve(null),
-    ]);
+  const [
+    offers,
+    pendingCount,
+    userCount,
+    usageOverview,
+    generatedImageCount,
+    generatedCopyCount,
+  ] = await Promise.all([
+    canEditOffers ? getHomeOfferWidgets() : Promise.resolve(null),
+    canApprove ? getPendingGapSubmissionCount() : Promise.resolve(null),
+    canManageUsers ? countUsers() : Promise.resolve(null),
+    canViewUsage ? getAdminImageUsageOverview() : Promise.resolve(null),
+    canGenerateImages && user
+      ? countGeneratedImagesForUser(user.id)
+      : Promise.resolve(null),
+    canGenerateCopy && user
+      ? countGeneratedCopiesForUser(user.id)
+      : Promise.resolve(null),
+  ]);
 
   return {
     userRole,
@@ -65,5 +77,6 @@ export const load: PageServerLoad = async (event) => {
       canGenerateImages || canManageBrands
         ? { generatedImageCount, canGenerateImages, canManageBrands }
         : null,
+    copywriting: canGenerateCopy ? { generatedCopyCount } : null,
   };
 };

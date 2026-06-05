@@ -76,6 +76,8 @@ export const ModelName = {
   ImageGeneratorPreset: 'ImageGeneratorPreset',
   ImageGeneratorTemplate: 'ImageGeneratorTemplate',
   ImageGeneratorTemplateBrand: 'ImageGeneratorTemplateBrand',
+  GeneratedCopy: 'GeneratedCopy',
+  CopyGenerationFailureLog: 'CopyGenerationFailureLog',
   api_BOLT_header: 'api_BOLT_header',
   api_BOLT_lines: 'api_BOLT_lines',
   bolt_regex_patters: 'bolt_regex_patters'
@@ -455,6 +457,46 @@ export const ImageGeneratorTemplateBrandScalarFieldEnum = {
 } as const
 
 export type ImageGeneratorTemplateBrandScalarFieldEnum = (typeof ImageGeneratorTemplateBrandScalarFieldEnum)[keyof typeof ImageGeneratorTemplateBrandScalarFieldEnum]
+
+
+export const GeneratedCopyScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  brandId: 'brandId',
+  offerId: 'offerId',
+  copyType: 'copyType',
+  channel: 'channel',
+  brief: 'brief',
+  tone: 'tone',
+  finalPrompt: 'finalPrompt',
+  provider: 'provider',
+  model: 'model',
+  variants: 'variants',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  durationMs: 'durationMs',
+  createdAt: 'createdAt'
+} as const
+
+export type GeneratedCopyScalarFieldEnum = (typeof GeneratedCopyScalarFieldEnum)[keyof typeof GeneratedCopyScalarFieldEnum]
+
+
+export const CopyGenerationFailureLogScalarFieldEnum = {
+  id: 'id',
+  generatedCopyId: 'generatedCopyId',
+  provider: 'provider',
+  model: 'model',
+  attempt: 'attempt',
+  errorName: 'errorName',
+  errorMessage: 'errorMessage',
+  responseStatus: 'responseStatus',
+  responseBody: 'responseBody',
+  requestSnapshot: 'requestSnapshot',
+  durationMs: 'durationMs',
+  createdAt: 'createdAt'
+} as const
+
+export type CopyGenerationFailureLogScalarFieldEnum = (typeof CopyGenerationFailureLogScalarFieldEnum)[keyof typeof CopyGenerationFailureLogScalarFieldEnum]
 
 
 export const Api_BOLT_headerScalarFieldEnum = {

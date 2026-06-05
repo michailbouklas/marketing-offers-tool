@@ -194,6 +194,32 @@
       </section>
     {/if}
 
+    {#if data.copywriting}
+      <section class="space-y-4">
+        <div class="space-y-1">
+          <p
+            class="text-sm font-semibold tracking-[0.18em] text-zinc-500 uppercase"
+          >
+            Copywriting
+          </p>
+          <h2 class="text-2xl font-semibold tracking-[-0.03em]">
+            Write on-brand marketing copy
+          </h2>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <MetricLinkCard
+            eyebrow="Copywriter"
+            title="Your generated copy"
+            metric={data.copywriting.generatedCopyCount ?? 0}
+            metricLabel="briefs written so far"
+            description="Generate bilingual offer copy, social captions, push notifications, and banner headlines that follow your brand guidelines."
+            href="/copywriter"
+            cta="Open copywriter"
+          />
+        </div>
+      </section>
+    {/if}
+
     {#if data.approvals || data.users}
       <section class="space-y-4">
         <div class="space-y-1">

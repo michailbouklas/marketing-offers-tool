@@ -7,6 +7,7 @@ export const userRoles = [
   "brandManager",
   "offerEditor",
   "imageEditor",
+  "copywriter",
   "superUser",
 ] as const;
 
@@ -48,6 +49,7 @@ export const roleLabels: Record<UserRole, string> = {
   brandManager: "Brand Manager",
   offerEditor: "Offer Editor",
   imageEditor: "Image Editor",
+  copywriter: "Copywriter",
   superUser: "Super User",
 };
 
