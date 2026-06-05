@@ -1,5 +1,8 @@
 import { error } from "@sveltejs/kit";
-import { requireAuthenticatedApiUser } from "$lib/server/auth-guards";
+import {
+  hasSuperUserRole,
+  requireAuthenticatedApiUser,
+} from "$lib/server/auth-guards";
 import { getObjectStore } from "$lib/server/object-store.server";
 import { prisma } from "$lib/server/prisma";
 import type { RequestHandler } from "./$types";
@@ -28,7 +31,9 @@ export const GET: RequestHandler = async (event) => {
     error(404, "Not found");
   }
 
-  if (row.userId !== user.id) {
+  // Owners always see their own images; super users may view any user's
+  // generations (the admin drill-down page).
+  if (row.userId !== user.id && !(await hasSuperUserRole(event))) {
     error(403, "Forbidden");
   }
 

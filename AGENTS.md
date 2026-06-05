@@ -240,7 +240,7 @@ Before every new task, use the SymDex MCP server to reindex the project so the s
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **marketing-offers-tool** (3144 symbols, 5751 relationships, 248 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **marketing-offers-tool** (3161 symbols, 5796 relationships, 249 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -279,10 +279,10 @@ This project is indexed by GitNexus as **marketing-offers-tool** (3144 symbols, 
 | Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 | Work in the Services area (144 symbols) | `.claude/skills/generated/services/SKILL.md` |
-| Work in the Server area (140 symbols) | `.claude/skills/generated/server/SKILL.md` |
-| Work in the Image-generator area (74 symbols) | `.claude/skills/generated/image-generator/SKILL.md` |
+| Work in the Server area (141 symbols) | `.claude/skills/generated/server/SKILL.md` |
+| Work in the Image-generator area (76 symbols) | `.claude/skills/generated/image-generator/SKILL.md` |
 | Work in the Image-providers area (50 symbols) | `.claude/skills/generated/image-providers/SKILL.md` |
-| Work in the Inspiration area (17 symbols) | `.claude/skills/generated/inspiration/SKILL.md` |
+| Work in the Inspiration area (19 symbols) | `.claude/skills/generated/inspiration/SKILL.md` |
 | Work in the Scripts area (13 symbols) | `.claude/skills/generated/scripts/SKILL.md` |
 | Work in the Guidelines area (6 symbols) | `.claude/skills/generated/guidelines/SKILL.md` |
 | Work in the Assets area (6 symbols) | `.claude/skills/generated/assets/SKILL.md` |

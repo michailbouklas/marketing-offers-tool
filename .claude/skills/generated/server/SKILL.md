@@ -1,11 +1,11 @@
 ---
 name: server
-description: "Skill for the Server area of marketing-offers-tool. 140 symbols across 43 files."
+description: "Skill for the Server area of marketing-offers-tool. 141 symbols across 44 files."
 ---
 
 # Server
 
-140 symbols | 43 files | Cohesion: 73%
+141 symbols | 44 files | Cohesion: 70%
 
 ## When to Use
 
@@ -18,14 +18,14 @@ description: "Skill for the Server area of marketing-offers-tool. 140 symbols ac
 | File | Symbols |
 |------|---------|
 | `src/lib/server/object-store.server.ts` | getText, putText, list, assertSafeKey, toPath (+24) |
-| `src/lib/server/inspiration/inspiration-storage.server.ts` | ensureSafeSlug, slugify, categoryDirPrefix, categoryMetaKey, ensureRoot (+10) |
+| `src/lib/server/inspiration/inspiration-storage.server.ts` | slugify, categoryMetaKey, ensureRoot, nextFreeSlug, listCategories (+8) |
 | `src/lib/server/clickhouse.ts` | loadEnvFileValues, parseRequestTimeout, getRequiredEnv, getEnvValue, getClickHouseConfig (+5) |
+| `src/lib/server/auth-guards.ts` | requirePermission, requireAuthenticatedApiUser, isPublicPath, isApiPath, isAdminPath (+4) |
 | `src/lib/server/env.ts` | loadEnvFileValues, readEnv, loadImageGeneratorEnv, getStorageEnv, hasSupabaseStorage (+3) |
 | `src/lib/server/brand-storage.ts` | brandGuidelinesKey, readBrandGuidelines, writeBrandGuidelines, ensureSafeSlug, ensureSafeAssetId (+2) |
-| `src/lib/server/auth-guards.ts` | requirePermission, requireAuthenticatedApiUser, requireAdminSection, getAuthenticatedUserRole, isPublicPath (+2) |
 | `src/lib/server/auth.ts` | getRequiredEnv, getAuthConfig, getAuthConfigKey, createAuth, getAuth |
 | `src/lib/server/reference-storage.ts` | ensureSafeId, extensionForContentType, referenceKey, writeReferenceFile |
-| `src/lib/server/image-storage.ts` | ensureSafeId, imageKey, writeImageBytes, readImageBytes |
+| `src/lib/server/image-storage.ts` | ensureSafeId, imageKey, readImageBytes, writeImageBytes |
 | `src/lib/server/image-size.ts` | toPositiveInt, parseRequestedSize, squaredAspectRatioDelta, mapToNearestSupportedSize |
 
 ## Entry Points
@@ -54,14 +54,14 @@ Start here when exploring this area:
 | `getCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 134 |
 | `createCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 161 |
 | `renameCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 180 |
-| `deleteCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 201 |
 | `listItems` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 229 |
 | `createItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 285 |
 | `serializeFrontmatter` | Function | `src/lib/server/inspiration/frontmatter.ts` | 17 |
 | `parseFrontmatter` | Function | `src/lib/server/inspiration/frontmatter.ts` | 32 |
 | `load` | Function | `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | 9 |
 | `POST` | Function | `src/routes/api/admin/prompt-gallery/[slug]/items/+server.ts` | 10 |
-| `getDefaultCreateUserFormData` | Function | `src/lib/services/user-editor-form.ts` | 100 |
+| `createOffer` | Function | `src/routes/aggregator-offers/+page.server.ts` | 68 |
+| `updateOffer` | Function | `src/routes/aggregator-offers/+page.server.ts` | 92 |
 
 ## Execution Flows
 
@@ -82,9 +82,10 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Services | 9 calls |
-| Inspiration | 7 calls |
+| Services | 10 calls |
+| Inspiration | 10 calls |
 | Image-providers | 1 calls |
+| Image-generator | 1 calls |
 | Guidelines | 1 calls |
 
 ## How to Explore

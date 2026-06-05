@@ -1,4 +1,4 @@
-import { requirePermission } from "$lib/server/auth-guards";
+import { hasSuperUserRole, requirePermission } from "$lib/server/auth-guards";
 import {
   getAdminImageUsageOverview,
   parseUsageDateRange,
@@ -15,10 +15,16 @@ export const load: PageServerLoad = async (event) => {
     event.url.searchParams.get("to"),
   );
 
-  const overview = await getAdminImageUsageOverview(range);
+  const [overview, canViewUserGenerations] = await Promise.all([
+    getAdminImageUsageOverview(range),
+    // Only super users may drill into a specific user's generation history,
+    // so the "Most active users" rows link out only for them.
+    hasSuperUserRole(event),
+  ]);
 
   return {
     overview,
     range: { from: range?.from ?? null, to: range?.to ?? null },
+    canViewUserGenerations,
   };
 };

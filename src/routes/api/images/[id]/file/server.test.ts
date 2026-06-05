@@ -50,7 +50,9 @@ function buildEvent(
   return {
     locals: {
       session: { id: "session-1", userId: "user-1" },
-      user: { id: "user-1", email: "x@example.com" },
+      // `role` is set so the cross-user branch resolves the role from locals
+      // instead of falling back to a raw DB query.
+      user: { id: "user-1", email: "x@example.com", role: "user" },
       ...overrides,
     },
     url: new URL(`http://localhost/api/images/${id}/file`),
@@ -92,6 +94,25 @@ describe("GET /api/images/[id]/file", () => {
     ).catch((thrown: Response) => thrown);
 
     expect(response.status).toBe(403);
+  });
+
+  it("streams another user's image when the viewer is a super user", async () => {
+    findUniqueMock.mockResolvedValue({
+      id: "img-1",
+      userId: "user-2",
+      status: "completed",
+      localPath: IMAGE_KEY,
+    });
+
+    const response = await (GET as (e: RequestEvent) => Promise<Response>)(
+      buildEvent("img-1", {
+        user: { id: "user-1", email: "x@example.com", role: "superUser" },
+      } as Partial<RequestEvent["locals"]>),
+    );
+
+    expect(response.status).toBe(200);
+    const buf = Buffer.from(await response.arrayBuffer());
+    expect(buf.equals(PNG_BYTES)).toBe(true);
   });
 
   it("returns 404 when the row is still pending", async () => {

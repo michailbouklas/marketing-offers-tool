@@ -1,5 +1,10 @@
 import { error, redirect } from "@sveltejs/kit";
-import { canAccessAdminSection, isAdminRole } from "$lib/auth/roles";
+import {
+  canAccessAdminSection,
+  hasAnyRole,
+  isAdminRole,
+  superUserRole,
+} from "$lib/auth/roles";
 import type { AppPermissions } from "$lib/auth/permissions";
 import { auth } from "$lib/server/auth";
 import { prisma } from "$lib/server/prisma";
@@ -58,6 +63,36 @@ export async function requireAdminSection(event: RequestEvent) {
   const role = await getAuthenticatedUserRole(event);
 
   if (!user || !canAccessAdminSection(role)) {
+    redirect(302, "/");
+  }
+
+  return {
+    session,
+    user: {
+      ...user,
+      role,
+    },
+  };
+}
+
+/**
+ * Returns whether the current user holds the `superUser` role. Coarse,
+ * role-based check (not a permission check) for features reserved for
+ * super users, e.g. drilling into another user's generation history.
+ */
+export async function hasSuperUserRole(event: RequestEvent) {
+  return hasAnyRole(await getAuthenticatedUserRole(event), [superUserRole]);
+}
+
+/**
+ * Page guard: redirects to home unless the user holds the `superUser` role.
+ */
+export async function requireSuperUser(event: RequestEvent) {
+  const { user, session } = requireAuthenticatedUser(event);
+
+  const role = await getAuthenticatedUserRole(event);
+
+  if (!user || !hasAnyRole(role, [superUserRole])) {
     redirect(302, "/");
   }
 

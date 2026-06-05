@@ -339,3 +339,16 @@
 {"file":"src/lib/services/image-providers/structured-prompt.server.test.ts","action":"Write","timestamp":"2026-06-04T12:00:59Z","important":true}
 {"file":"C:/work/servers/nginx-1.27.3/conf/marketing-tools.conf","action":"Edit","timestamp":"2026-06-04T12:19:21Z","important":false}
 {"file":"src/routes/image-generator/ImageGrid.svelte","action":"Edit","timestamp":"2026-06-04T13:06:17Z","important":false}
+{"file":"src/lib/server/auth-guards.ts","action":"Edit","timestamp":"2026-06-04T13:41:59Z","important":false}
+{"file":"src/lib/services/users.server.ts","action":"Edit","timestamp":"2026-06-04T13:42:21Z","important":false}
+{"file":"src/lib/components/image-generator/generations-history.svelte","action":"Write","timestamp":"2026-06-04T13:43:53Z","important":false}
+{"file":"src/routes/image-generator/me/+page.svelte","action":"Write","timestamp":"2026-06-04T13:44:06Z","important":false}
+{"file":"src/lib/server/generations-history.ts","action":"Write","timestamp":"2026-06-04T13:44:35Z","important":false}
+{"file":"src/routes/image-generator/me/+page.server.ts","action":"Write","timestamp":"2026-06-04T13:44:43Z","important":false}
+{"file":"src/routes/image-generator/[userId]/+page.server.ts","action":"Write","timestamp":"2026-06-04T13:44:46Z","important":false}
+{"file":"src/routes/image-generator/[userId]/+page.svelte","action":"Write","timestamp":"2026-06-04T13:45:02Z","important":false}
+{"file":"src/routes/api/images/usage/+server.ts","action":"Write","timestamp":"2026-06-04T13:45:12Z","important":false}
+{"file":"src/routes/api/images/[id]/file/+server.ts","action":"Edit","timestamp":"2026-06-04T13:45:22Z","important":false}
+{"file":"src/routes/api/images/[id]/file/server.test.ts","action":"Edit","timestamp":"2026-06-04T13:45:38Z","important":true}
+{"file":"src/routes/admin/image-generator-usage/+page.server.ts","action":"Edit","timestamp":"2026-06-04T13:45:53Z","important":false}
+{"file":"src/routes/admin/image-generator-usage/+page.svelte","action":"Edit","timestamp":"2026-06-04T13:46:05Z","important":false}

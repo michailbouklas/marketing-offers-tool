@@ -25,7 +25,7 @@ description: "Skill for the Guidelines area of marketing-offers-tool. 6 symbols 
 
 Start here when exploring this area:
 
-- **`requireApiPermission`** (Function) — `src/lib/server/auth-guards.ts:118`
+- **`requireApiPermission`** (Function) — `src/lib/server/auth-guards.ts:153`
 - **`setBrandGuidelines`** (Function) — `src/lib/services/brand-context/brand-context.server.ts:134`
 - **`GET`** (Function) — `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts:44`
 - **`PUT`** (Function) — `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts:53`
@@ -34,7 +34,7 @@ Start here when exploring this area:
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `requireApiPermission` | Function | `src/lib/server/auth-guards.ts` | 118 |
+| `requireApiPermission` | Function | `src/lib/server/auth-guards.ts` | 153 |
 | `setBrandGuidelines` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 134 |
 | `GET` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 44 |
 | `PUT` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 53 |
@@ -60,8 +60,7 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Server | 3 calls |
-| Services | 1 calls |
+| Server | 4 calls |
 | Image-generator | 1 calls |
 
 ## How to Explore

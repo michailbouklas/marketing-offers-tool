@@ -18,6 +18,7 @@
   const models = $derived(data.overview.models);
   const topUsers = $derived(data.overview.topUsers);
   const range = $derived(data.range);
+  const canViewUserGenerations = $derived(data.canViewUserGenerations);
 
   // Append the active range to a chart endpoint so the async charts match the
   // SSR figures on the page.
@@ -230,6 +231,9 @@
           </Card.Title>
           <Card.Description>
             Top accounts by number of images generated.
+            {#if canViewUserGenerations}
+              Click a user to view all of their generations.
+            {/if}
           </Card.Description>
         </Card.Header>
         <Card.Content>
@@ -251,12 +255,29 @@
                       {index + 1}
                     </Table.Cell>
                     <Table.Cell>
-                      <div class="flex flex-col">
-                        <span class="font-medium">{user.name}</span>
-                        <span class="text-muted-foreground text-xs">
-                          {user.email}
-                        </span>
-                      </div>
+                      {#if canViewUserGenerations}
+                        <!-- Only super users may open a user's full generation history. -->
+                        <a
+                          href={`/image-generator/${user.userId}`}
+                          class="group flex flex-col"
+                        >
+                          <span
+                            class="font-medium underline-offset-4 group-hover:underline"
+                          >
+                            {user.name}
+                          </span>
+                          <span class="text-muted-foreground text-xs">
+                            {user.email}
+                          </span>
+                        </a>
+                      {:else}
+                        <div class="flex flex-col">
+                          <span class="font-medium">{user.name}</span>
+                          <span class="text-muted-foreground text-xs">
+                            {user.email}
+                          </span>
+                        </div>
+                      {/if}
                     </Table.Cell>
                     <Table.Cell class="text-right">
                       <Badge variant="secondary">

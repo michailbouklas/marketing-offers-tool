@@ -12,6 +12,19 @@ export async function countUsers(): Promise<number> {
   return prisma.user.count();
 }
 
+/**
+ * Minimal identity record for a single user, e.g. for page headers that show
+ * whose data is being viewed. Returns `null` when the user does not exist.
+ */
+export async function getUserSummaryById(
+  id: string,
+): Promise<{ id: string; name: string; email: string } | null> {
+  return prisma.user.findUnique({
+    where: { id },
+    select: { id: true, name: true, email: true },
+  });
+}
+
 export async function listUsers(): Promise<UserRecord[]> {
   const users = await prisma.user.findMany({
     select: {

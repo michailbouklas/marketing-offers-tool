@@ -1,11 +1,11 @@
 ---
 name: image-generator
-description: "Skill for the Image-generator area of marketing-offers-tool. 74 symbols across 21 files."
+description: "Skill for the Image-generator area of marketing-offers-tool. 76 symbols across 23 files."
 ---
 
 # Image-generator
 
-74 symbols | 21 files | Cohesion: 82%
+76 symbols | 23 files | Cohesion: 81%
 
 ## When to Use
 
@@ -25,8 +25,8 @@ description: "Skill for the Image-generator area of marketing-offers-tool. 74 sy
 | `src/lib/services/image-generator/generate.server.ts` | GenerateValidationError, buildFinalPrompt, createPendingGenerations |
 | `src/lib/services/image-providers/types.ts` | generateImage, generateImage |
 | `src/routes/api/images/templates/+server.ts` | GET, POST |
+| `src/lib/server/auth-guards.ts` | hasSuperUserRole |
 | `src/routes/admin/image-generator-usage/+page.server.ts` | load |
-| `src/routes/api/images/usage/+server.ts` | GET |
 
 ## Entry Points
 
@@ -59,9 +59,9 @@ Start here when exploring this area:
 | `updateTemplate` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 229 |
 | `deleteTemplate` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 242 |
 | `refreshTemplates` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 247 |
+| `hasSuperUserRole` | Function | `src/lib/server/auth-guards.ts` | 82 |
+| `load` | Function | `src/routes/admin/image-generator-usage/+page.server.ts` | 7 |
 | `getGeneratedImageUsageByDayForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 308 |
-| `parseUsageDateRange` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 334 |
-| `getGeneratedImageUsageByDayAllUsers` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 380 |
 
 ## Execution Flows
 
@@ -70,10 +70,10 @@ Start here when exploring this area:
 | `POST → LoadEnvFileValues` | cross_community | 7 |
 | `GET → AssertSafeKey` | cross_community | 6 |
 | `GET → LoadEnvFileValues` | cross_community | 6 |
-| `Load → AssertSafeKey` | cross_community | 6 |
-| `Load → LoadEnvFileValues` | cross_community | 6 |
 | `POST → AssertSafeKey` | cross_community | 6 |
 | `POST → From` | cross_community | 6 |
+| `Load → AssertSafeKey` | cross_community | 6 |
+| `Load → LoadEnvFileValues` | cross_community | 6 |
 | `GET → AssertSafeKey` | cross_community | 6 |
 | `GET → LoadEnvFileValues` | cross_community | 6 |
 | `GET → From` | cross_community | 5 |
@@ -82,9 +82,9 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Server | 19 calls |
+| Server | 20 calls |
 | Image-providers | 5 calls |
-| Services | 4 calls |
+| Services | 5 calls |
 
 ## How to Explore
 

@@ -2,16 +2,19 @@
   import GenerationsHistory from "$lib/components/image-generator/generations-history.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
+  import ArrowLeftIcon from "@lucide/svelte/icons/arrow-left";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
+
+  const targetUser = $derived(data.targetUser);
 </script>
 
 <svelte:head>
-  <title>My Image Generations | Aggregator Offers Tool</title>
+  <title>{targetUser.name}'s Image Generations | Aggregator Offers Tool</title>
   <meta
     name="description"
-    content="Review your generated images, prompts, models, and generation metadata."
+    content="Review a user's generated images, prompts, models, and generation metadata."
   />
 </svelte:head>
 
@@ -28,13 +31,17 @@
     >
       <div class="space-y-2">
         <h1 class="text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
-          My generations
+          {targetUser.name}'s generations
         </h1>
         <p class="text-muted-foreground max-w-3xl text-base leading-7">
-          Browse every image you generated, ordered from newest to oldest.
+          Browse every image {targetUser.name} ({targetUser.email}) generated,
+          ordered from newest to oldest.
         </p>
       </div>
-      <Button href="/image-generator" variant="outline">Generate more</Button>
+      <Button href="/admin/image-generator-usage" variant="outline">
+        <ArrowLeftIcon class="size-4" />
+        Back to usage
+      </Button>
     </div>
   </section>
 
@@ -44,6 +51,9 @@
     filterOptions={data.filterOptions}
     filters={data.filters}
     brands={data.brands}
-    basePath="/image-generator/me"
+    basePath={`/image-generator/${targetUser.id}`}
+    usageEndpoint={`/api/images/usage?userId=${encodeURIComponent(targetUser.id)}`}
+    chartDescription="Images this user generated, by day."
+    emptyMessage="This user has not generated any images yet."
   />
 </main>
