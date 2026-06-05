@@ -8,6 +8,7 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import ArrowLeftIcon from "@lucide/svelte/icons/arrow-left";
+  import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
   import DateRangeFilter from "./date-range-filter.svelte";
   import type { PageData } from "./$types";
 
@@ -17,8 +18,36 @@
   const providers = $derived(data.overview.providers);
   const models = $derived(data.overview.models);
   const topUsers = $derived(data.overview.topUsers);
+  const failures = $derived(data.failures);
   const range = $derived(data.range);
   const canViewUserGenerations = $derived(data.canViewUserGenerations);
+
+  // Failure rows the admin has expanded to inspect the stored provider
+  // request/response payloads.
+  let expandedFailureIds = $state<Set<string>>(new Set());
+
+  function toggleFailure(id: string) {
+    const next = new Set(expandedFailureIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    expandedFailureIds = next;
+  }
+
+  function formatJson(value: unknown): string {
+    return JSON.stringify(value, null, 2) ?? "null";
+  }
+
+  const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "medium",
+  });
+
+  function formatTimestamp(iso: string): string {
+    return dateTimeFormatter.format(new Date(iso));
+  }
 
   // Append the active range to a chart endpoint so the async charts match the
   // SSR figures on the page.
@@ -285,6 +314,143 @@
                       </Badge>
                     </Table.Cell>
                   </Table.Row>
+                {/each}
+              </Table.Body>
+            </Table.Root>
+          {/if}
+        </Card.Content>
+      </Card.Root>
+    </section>
+
+    <section>
+      <Card.Root class="border-border/70 bg-background/90 backdrop-blur">
+        <Card.Header>
+          <Card.Title class="text-xl tracking-[-0.02em]">
+            Failed provider requests
+          </Card.Title>
+          <Card.Description>
+            Every failed provider attempt in the selected range — including
+            attempts that later succeeded on retry. Expand a row to inspect the
+            exact request and the provider's raw response.
+          </Card.Description>
+        </Card.Header>
+        <Card.Content>
+          {#if failures.length === 0}
+            <p class="text-muted-foreground text-sm">
+              No failed requests in this range.
+            </p>
+          {:else}
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.Head>When</Table.Head>
+                  <Table.Head>User</Table.Head>
+                  <Table.Head>Provider / model</Table.Head>
+                  <Table.Head>Error</Table.Head>
+                  <Table.Head class="text-right">Outcome</Table.Head>
+                  <Table.Head class="w-10" />
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {#each failures as failure (failure.id)}
+                  <Table.Row>
+                    <Table.Cell class="text-muted-foreground whitespace-nowrap">
+                      {formatTimestamp(failure.createdAt)}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div class="flex flex-col">
+                        <span class="font-medium">{failure.user.name}</span>
+                        <span class="text-muted-foreground text-xs">
+                          {failure.user.email}
+                        </span>
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div class="flex flex-col">
+                        <span class="font-medium">{failure.provider}</span>
+                        <span class="text-muted-foreground text-xs">
+                          {failure.model ?? "Default model"}
+                        </span>
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell class="max-w-80">
+                      <span
+                        class="line-clamp-2 text-sm"
+                        title={failure.errorMessage}
+                      >
+                        {failure.errorMessage}
+                      </span>
+                      <span class="text-muted-foreground text-xs">
+                        {failure.errorName}
+                        {#if failure.responseStatus !== null && failure.responseStatus > 0}
+                          · HTTP {failure.responseStatus}
+                        {/if}
+                        · attempt {failure.attempt}
+                      </span>
+                    </Table.Cell>
+                    <Table.Cell class="text-right">
+                      <!-- "completed" here means a retry eventually succeeded. -->
+                      <Badge
+                        variant={failure.generationStatus === "failed"
+                          ? "destructive"
+                          : "secondary"}
+                      >
+                        {failure.generationStatus === "failed"
+                          ? "Failed"
+                          : "Recovered"}
+                      </Badge>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Toggle failure details"
+                        aria-expanded={expandedFailureIds.has(failure.id)}
+                        onclick={() => toggleFailure(failure.id)}
+                      >
+                        <ChevronDownIcon
+                          class={`size-4 transition-transform ${
+                            expandedFailureIds.has(failure.id)
+                              ? "rotate-180"
+                              : ""
+                          }`}
+                        />
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                  {#if expandedFailureIds.has(failure.id)}
+                    <Table.Row class="hover:bg-transparent">
+                      <Table.Cell colspan={6}>
+                        <div class="grid gap-4 py-2 lg:grid-cols-2">
+                          <div class="space-y-1.5">
+                            <p class="text-sm font-medium">Prompt</p>
+                            <p class="text-muted-foreground text-sm">
+                              {failure.prompt}
+                            </p>
+                            <p class="text-sm font-medium">Request sent</p>
+                            <pre
+                              class="bg-muted max-h-80 overflow-auto rounded-md p-3 text-xs">{formatJson(
+                                failure.requestSnapshot,
+                              )}</pre>
+                          </div>
+                          <div class="space-y-1.5">
+                            <p class="text-sm font-medium">Provider response</p>
+                            <pre
+                              class="bg-muted max-h-80 overflow-auto rounded-md p-3 text-xs">{formatJson(
+                                failure.responseBody,
+                              )}</pre>
+                            <p class="text-muted-foreground text-xs">
+                              Generation {failure.generatedImageId}
+                              {#if failure.durationMs !== null}
+                                · attempt took {failure.durationMs} ms
+                              {/if}
+                            </p>
+                          </div>
+                        </div>
+                      </Table.Cell>
+                    </Table.Row>
+                  {/if}
                 {/each}
               </Table.Body>
             </Table.Root>

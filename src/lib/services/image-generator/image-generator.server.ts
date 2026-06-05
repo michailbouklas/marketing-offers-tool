@@ -347,14 +347,15 @@ export function parseUsageDateRange(
 }
 
 /**
- * Translates an inclusive `YYYY-MM-DD` day range into a Prisma `createdAt`
- * filter. The `to` day is made inclusive by querying up to the start of the
- * following day. Returns an empty object when no usable bounds are given.
+ * Translates an inclusive `YYYY-MM-DD` day range into `gte`/`lt` bounds usable
+ * in any model's `createdAt` filter. The `to` day is made inclusive by
+ * querying up to the start of the following day. Returns `undefined` when no
+ * usable bounds are given.
  */
-function buildUsageWhere(
+function buildCreatedAtRange(
   range: UsageDateRange | undefined,
-): Prisma.GeneratedImageWhereInput {
-  const createdAt: Prisma.DateTimeFilter = {};
+): { gte?: Date; lt?: Date } | undefined {
+  const createdAt: { gte?: Date; lt?: Date } = {};
 
   if (range?.from) {
     const start = new Date(`${range.from}T00:00:00.000Z`);
@@ -371,7 +372,14 @@ function buildUsageWhere(
     }
   }
 
-  return createdAt.gte || createdAt.lt ? { createdAt } : {};
+  return createdAt.gte || createdAt.lt ? createdAt : undefined;
+}
+
+function buildUsageWhere(
+  range: UsageDateRange | undefined,
+): Prisma.GeneratedImageWhereInput {
+  const createdAt = buildCreatedAtRange(range);
+  return createdAt ? { createdAt } : {};
 }
 
 /**
@@ -586,6 +594,74 @@ export async function getAdminImageUsageOverview(
       };
     }),
   };
+}
+
+export interface GenerationFailureDTO {
+  id: string;
+  generatedImageId: string;
+  attempt: number;
+  provider: string;
+  model: string | null;
+  errorName: string;
+  errorMessage: string;
+  responseStatus: number | null;
+  /** Raw provider response body (JSON), when one was received. */
+  responseBody: unknown;
+  /** Snapshot of the exact provider request (fields + reference metadata). */
+  requestSnapshot: unknown;
+  durationMs: number | null;
+  createdAt: string;
+  /** Terminal status of the generation row — a retry may have succeeded. */
+  generationStatus: GeneratedImageStatus;
+  prompt: string;
+  user: { id: string; name: string; email: string };
+}
+
+const DEFAULT_FAILURE_LIMIT = 50;
+
+/**
+ * Recent failed provider attempts for the admin usage dashboard, newest first.
+ * Includes attempts whose generation later succeeded on retry, so transient
+ * provider issues remain visible.
+ */
+export async function getAdminGenerationFailures(
+  range?: UsageDateRange,
+  limit = DEFAULT_FAILURE_LIMIT,
+): Promise<GenerationFailureDTO[]> {
+  const createdAt = buildCreatedAtRange(range);
+
+  const rows = await prisma.generationFailureLog.findMany({
+    where: createdAt ? { createdAt } : {},
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: {
+      generatedImage: {
+        select: {
+          status: true,
+          prompt: true,
+          user: { select: { id: true, name: true, email: true } },
+        },
+      },
+    },
+  });
+
+  return rows.map((row) => ({
+    id: row.id,
+    generatedImageId: row.generatedImageId,
+    attempt: row.attempt,
+    provider: row.provider,
+    model: row.model,
+    errorName: row.errorName,
+    errorMessage: row.errorMessage,
+    responseStatus: row.responseStatus,
+    responseBody: row.responseBody ?? null,
+    requestSnapshot: row.requestSnapshot ?? null,
+    durationMs: row.durationMs,
+    createdAt: row.createdAt.toISOString(),
+    generationStatus: row.generatedImage.status as GeneratedImageStatus,
+    prompt: row.generatedImage.prompt,
+    user: row.generatedImage.user,
+  }));
 }
 
 export async function listGeneratedImageFilterOptionsForUser(userId: string) {

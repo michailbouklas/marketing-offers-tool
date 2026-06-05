@@ -142,6 +142,11 @@ export type aggregator_offers = Prisma.aggregator_offersModel;
  */
 export type GeneratedImage = Prisma.GeneratedImageModel;
 /**
+ * Model GenerationFailureLog
+ *
+ */
+export type GenerationFailureLog = Prisma.GenerationFailureLogModel;
+/**
  * Model BrandAsset
  *
  */

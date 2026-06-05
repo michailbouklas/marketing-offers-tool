@@ -73,6 +73,7 @@ export const ModelName = {
   subcategories: "subcategories",
   aggregator_offers: "aggregator_offers",
   GeneratedImage: "GeneratedImage",
+  GenerationFailureLog: "GenerationFailureLog",
   BrandAsset: "BrandAsset",
   ReferenceImage: "ReferenceImage",
   ImageGeneratorPreset: "ImageGeneratorPreset",
@@ -381,6 +382,24 @@ export const GeneratedImageScalarFieldEnum = {
 
 export type GeneratedImageScalarFieldEnum =
   (typeof GeneratedImageScalarFieldEnum)[keyof typeof GeneratedImageScalarFieldEnum];
+
+export const GenerationFailureLogScalarFieldEnum = {
+  id: "id",
+  generatedImageId: "generatedImageId",
+  provider: "provider",
+  model: "model",
+  attempt: "attempt",
+  errorName: "errorName",
+  errorMessage: "errorMessage",
+  responseStatus: "responseStatus",
+  responseBody: "responseBody",
+  requestSnapshot: "requestSnapshot",
+  durationMs: "durationMs",
+  createdAt: "createdAt",
+} as const;
+
+export type GenerationFailureLogScalarFieldEnum =
+  (typeof GenerationFailureLogScalarFieldEnum)[keyof typeof GenerationFailureLogScalarFieldEnum];
 
 export const BrandAssetScalarFieldEnum = {
   id: "id",

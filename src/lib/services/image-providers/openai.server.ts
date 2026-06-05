@@ -7,16 +7,19 @@ import type {
   ImageProvider,
   ImageQuality,
   InputFidelity,
+  ProviderRequestError,
+  ProviderRequestSnapshot,
 } from "./types";
 
 const OPENAI_BASE_URL = "https://api.openai.com";
 const DEFAULT_MODEL = "gpt-image-1";
 
-export class OpenAIProviderError extends Error {
+export class OpenAIProviderError extends Error implements ProviderRequestError {
   constructor(
     message: string,
     readonly status: number,
     readonly body: unknown,
+    readonly requestSnapshot?: ProviderRequestSnapshot,
   ) {
     super(message);
     this.name = "OpenAIProviderError";
@@ -52,7 +55,7 @@ export class OpenAIImageProvider implements ImageProvider {
     const model = input.model ?? DEFAULT_MODEL;
     const size = `${input.width}x${input.height}`;
 
-    const response = input.references?.length
+    const { response, snapshot } = input.references?.length
       ? await this.postEdits({
           model,
           prompt: input.prompt,
@@ -75,7 +78,7 @@ export class OpenAIImageProvider implements ImageProvider {
       const message =
         body?.error?.message ??
         `OpenAI image request failed: ${response.status} ${response.statusText}`;
-      throw new OpenAIProviderError(message, response.status, body);
+      throw new OpenAIProviderError(message, response.status, body, snapshot);
     }
 
     const json = (await response.json()) as OpenAIImageResponse;
@@ -85,14 +88,38 @@ export class OpenAIImageProvider implements ImageProvider {
         "OpenAI image response did not include any data",
         response.status,
         json,
+        snapshot,
       );
     }
 
-    const bytes = await resolveImageBytes(data, this.fetchFn);
+    const bytes = await resolveImageBytes(data, this.fetchFn, snapshot);
     return {
       bytes,
       providerMetadata: { provider: "openai", model, raw: json },
     };
+  }
+
+  /**
+   * Runs fetch and converts network-level failures (no HTTP response at all)
+   * into OpenAIProviderError so the request snapshot survives into the
+   * failure log.
+   */
+  private async send(
+    url: string,
+    init: RequestInit,
+    snapshot: ProviderRequestSnapshot,
+  ): Promise<{ response: Response; snapshot: ProviderRequestSnapshot }> {
+    try {
+      return { response: await this.fetchFn(url, init), snapshot };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new OpenAIProviderError(
+        `OpenAI image request failed before a response was received: ${message}`,
+        0,
+        null,
+        snapshot,
+      );
+    }
   }
 
   private async postGenerations(args: {
@@ -101,7 +128,7 @@ export class OpenAIImageProvider implements ImageProvider {
     size: string;
     quality?: ImageQuality;
     background?: ImageBackground;
-  }): Promise<Response> {
+  }): Promise<{ response: Response; snapshot: ProviderRequestSnapshot }> {
     const body: Record<string, unknown> = {
       model: args.model,
       prompt: args.prompt,
@@ -113,14 +140,28 @@ export class OpenAIImageProvider implements ImageProvider {
     // Transparency requires a format that carries an alpha channel.
     if (args.background === "transparent") body.output_format = "png";
 
-    return this.fetchFn(`${this.baseUrl}/v1/images/generations`, {
+    const url = `${this.baseUrl}/v1/images/generations`;
+    const snapshot: ProviderRequestSnapshot = {
+      url,
       method: "POST",
-      headers: {
-        authorization: `Bearer ${this.options.apiKey}`,
-        "content-type": "application/json",
+      fields: Object.fromEntries(
+        Object.entries(body).map(([k, v]) => [k, String(v)]),
+      ),
+      references: [],
+    };
+
+    return this.send(
+      url,
+      {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${this.options.apiKey}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+      snapshot,
+    );
   }
 
   private async postEdits(args: {
@@ -131,7 +172,7 @@ export class OpenAIImageProvider implements ImageProvider {
     quality?: ImageQuality;
     background?: ImageBackground;
     inputFidelity?: InputFidelity;
-  }): Promise<Response> {
+  }): Promise<{ response: Response; snapshot: ProviderRequestSnapshot }> {
     const form = new FormData();
     form.set("model", args.model);
     form.set("prompt", args.prompt);
@@ -143,21 +184,37 @@ export class OpenAIImageProvider implements ImageProvider {
     // input_fidelity only applies to image-edit (reference) requests.
     if (args.inputFidelity) form.set("input_fidelity", args.inputFidelity);
 
-    for (const refPath of args.references) {
-      const bytes = await readFile(refPath);
-      const blob = new Blob([new Uint8Array(bytes)], {
-        type: contentTypeFromPath(refPath),
-      });
-      form.append("image[]", blob, basename(refPath));
+    const url = `${this.baseUrl}/v1/images/edits`;
+    const snapshot: ProviderRequestSnapshot = {
+      url,
+      method: "POST",
+      fields: {},
+      references: [],
+    };
+    for (const [key, value] of form.entries()) {
+      if (typeof value === "string") snapshot.fields[key] = value;
     }
 
-    return this.fetchFn(`${this.baseUrl}/v1/images/edits`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${this.options.apiKey}`,
+    for (const refPath of args.references) {
+      const bytes = await readFile(refPath);
+      const contentType = contentTypeFromPath(refPath);
+      const blob = new Blob([new Uint8Array(bytes)], { type: contentType });
+      const name = basename(refPath);
+      form.append("image[]", blob, name);
+      snapshot.references.push({ name, contentType, sizeBytes: bytes.length });
+    }
+
+    return this.send(
+      url,
+      {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${this.options.apiKey}`,
+        },
+        body: form,
       },
-      body: form,
-    });
+      snapshot,
+    );
   }
 }
 
@@ -174,6 +231,7 @@ async function safeParseError(
 async function resolveImageBytes(
   data: OpenAIImageData,
   fetchFn: typeof fetch,
+  snapshot?: ProviderRequestSnapshot,
 ): Promise<Buffer> {
   if (data.b64_json) {
     return Buffer.from(data.b64_json, "base64");
@@ -185,6 +243,7 @@ async function resolveImageBytes(
         `Failed to download OpenAI image URL: ${res.status}`,
         res.status,
         null,
+        snapshot,
       );
     }
     const arrayBuffer = await res.arrayBuffer();
@@ -194,6 +253,7 @@ async function resolveImageBytes(
     "OpenAI image response is missing both b64_json and url",
     200,
     data,
+    snapshot,
   );
 }
 

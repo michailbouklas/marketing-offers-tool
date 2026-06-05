@@ -29,3 +29,7 @@
 ## 2026-06-04T07:49:28Z [4b9be8e1-9b3]
 
 📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ
+
+## 2026-06-05T07:30:14Z [6bd31b6d-b70]
+
+📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ

@@ -5,24 +5,98 @@ import { writeImageBytes } from "$lib/server/image-storage";
 import { resizeToRequested } from "$lib/server/image-size";
 import { getObjectStore } from "$lib/server/object-store.server";
 import { prisma } from "$lib/server/prisma";
+import type { GeneratedImage, Prisma } from "../../../generated/prisma/client";
 import { getImageProvider } from "$lib/services/image-providers/factory.server";
-import type {
-  ImageBackground,
-  ImageQuality,
-  InputFidelity,
+import {
+  isProviderRequestError,
+  type GenerateInput,
+  type GenerateOutput,
+  type ImageBackground,
+  type ImageProvider,
+  type ImageQuality,
+  type InputFidelity,
 } from "$lib/services/image-providers/types";
 
 export type OutputFormat = "png" | "jpg";
 
 // One retry before giving up: providers occasionally return transient 5xx /
 // network errors, and re-marking the whole row as failed wastes a generation.
-async function withRetry<T>(fn: () => Promise<T>, attempts = 2): Promise<T> {
+const PROVIDER_ATTEMPTS = 2;
+
+/** Provider bodies/snapshots come from JSON responses, but guard anyway. */
+function toJsonValue(value: unknown): Prisma.InputJsonValue | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Persists one failed provider attempt for later investigation. Best-effort:
+ * a logging failure must never mask the original provider error.
+ */
+async function recordFailureLog(args: {
+  row: GeneratedImage;
+  attempt: number;
+  err: unknown;
+  durationMs: number;
+}): Promise<void> {
+  const { row, attempt, err, durationMs } = args;
+  const details = isProviderRequestError(err)
+    ? {
+        responseStatus: err.status,
+        responseBody: toJsonValue(err.body),
+        requestSnapshot: toJsonValue(err.requestSnapshot),
+      }
+    : {};
+  try {
+    await prisma.generationFailureLog.create({
+      data: {
+        generatedImageId: row.id,
+        provider: row.provider,
+        model: row.model,
+        attempt,
+        errorName: err instanceof Error ? err.name : "UnknownError",
+        errorMessage: err instanceof Error ? err.message : String(err),
+        durationMs,
+        ...details,
+      },
+    });
+  } catch (logErr) {
+    console.error(
+      "[image-generator] Failed to record generation failure log",
+      row.id,
+      logErr,
+    );
+  }
+}
+
+/**
+ * Runs the provider with retries, persisting a failure log row for every
+ * failed attempt — including attempts that later succeed on retry.
+ */
+async function generateWithFailureLogging(
+  provider: ImageProvider,
+  input: GenerateInput,
+  row: GeneratedImage,
+): Promise<GenerateOutput> {
   let lastError: unknown;
-  for (let i = 0; i < attempts; i++) {
+  for (let attempt = 1; attempt <= PROVIDER_ATTEMPTS; attempt++) {
+    const attemptStart = Date.now();
     try {
-      return await fn();
+      return await provider.generateImage(input);
     } catch (err) {
       lastError = err;
+      await recordFailureLog({
+        row,
+        attempt,
+        err,
+        durationMs: Date.now() - attemptStart,
+      });
     }
   }
   throw lastError;
@@ -98,17 +172,19 @@ export async function generateOneRow(
     const inputFidelity = isInputFidelity(row.inputFidelity)
       ? row.inputFidelity
       : undefined;
-    const output = await withRetry(() =>
-      provider.generateImage({
-        prompt: row!.finalPrompt,
-        width: row!.generationWidth,
-        height: row!.generationHeight,
-        model: row!.model ?? undefined,
+    const output = await generateWithFailureLogging(
+      provider,
+      {
+        prompt: row.finalPrompt,
+        width: row.generationWidth,
+        height: row.generationHeight,
+        model: row.model ?? undefined,
         references: references.length > 0 ? references : undefined,
         quality,
         background,
         inputFidelity,
-      }),
+      },
+      row,
     );
 
     const normalized = await resizeToRequested(output.bytes, {

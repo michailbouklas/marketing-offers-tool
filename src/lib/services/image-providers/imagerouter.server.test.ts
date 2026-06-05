@@ -196,6 +196,72 @@ describe("ImageRouterImageProvider — text-to-image (no references)", () => {
       provider.generateImage({ prompt: "p", width: 1024, height: 1024 }),
     ).rejects.toBeInstanceOf(ImageRouterProviderError);
   });
+
+  it("attaches the request snapshot to provider errors", async () => {
+    const refA = join(workdir, "a.png");
+    writeFileSync(refA, Buffer.from("AAAA"));
+    const provider = new ImageRouterImageProvider({
+      apiKey: "ir-test",
+      baseUrl: "https://api.imagerouter.io",
+      // The exact production failure: 200 OK but an empty data array.
+      fetch: recorderFetch([], () => jsonResponse({ data: [] })),
+    });
+
+    const error = await provider
+      .generateImage({
+        prompt: "p",
+        width: 1024,
+        height: 1024,
+        model: "google/nano-banana-2",
+        references: [refA],
+      })
+      .then(
+        () => null,
+        (err: unknown) => err as ImageRouterProviderError,
+      );
+
+    expect(error).toBeInstanceOf(ImageRouterProviderError);
+    expect(error!.message).toBe(
+      "ImageRouter response did not include any data",
+    );
+    expect(error!.body).toEqual({ data: [] });
+    expect(error!.requestSnapshot).toEqual({
+      url: "https://api.imagerouter.io/v1/openai/images/edits",
+      method: "POST",
+      fields: {
+        model: "google/nano-banana-2",
+        prompt: "p",
+        size: "1024x1024",
+        response_format: "b64_json",
+        output_format: "png",
+      },
+      references: [{ name: "a.png", contentType: "image/png", sizeBytes: 4 }],
+    });
+  });
+
+  it("wraps network-level fetch failures with the request snapshot", async () => {
+    const provider = new ImageRouterImageProvider({
+      apiKey: "ir-test",
+      baseUrl: "https://api.imagerouter.io",
+      fetch: (async () => {
+        throw new TypeError("fetch failed");
+      }) as unknown as typeof fetch,
+    });
+
+    const error = await provider
+      .generateImage({ prompt: "p", width: 1024, height: 1024 })
+      .then(
+        () => null,
+        (err: unknown) => err as ImageRouterProviderError,
+      );
+
+    expect(error).toBeInstanceOf(ImageRouterProviderError);
+    expect(error!.status).toBe(0);
+    expect(error!.message).toContain("fetch failed");
+    expect(error!.requestSnapshot?.url).toBe(
+      "https://api.imagerouter.io/v1/openai/images/edits",
+    );
+  });
 });
 
 describe("ImageRouterImageProvider — with references", () => {

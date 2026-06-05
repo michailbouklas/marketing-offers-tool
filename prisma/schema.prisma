@@ -326,6 +326,30 @@ model GeneratedImage {
 
   @@index([userId, createdAt])
   @@index([brandId, createdAt])
+
+  failureLogs GenerationFailureLog[]
+}
+
+// One row per failed provider attempt (including attempts that later succeed
+// on retry). Keeps the full provider request snapshot and raw response so
+// production failures can be investigated after the fact.
+model GenerationFailureLog {
+  id               String         @id @default(cuid())
+  generatedImageId String
+  generatedImage   GeneratedImage @relation(fields: [generatedImageId], references: [id], onDelete: Cascade)
+  provider         String
+  model            String?
+  attempt          Int
+  errorName        String
+  errorMessage     String         @db.Text
+  responseStatus   Int?
+  responseBody     Json?
+  requestSnapshot  Json?
+  durationMs       Int?
+  createdAt        DateTime       @default(now())
+
+  @@index([createdAt])
+  @@index([generatedImageId])
 }
 
 model BrandAsset {

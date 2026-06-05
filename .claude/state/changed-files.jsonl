@@ -352,3 +352,16 @@
 {"file":"src/routes/api/images/[id]/file/server.test.ts","action":"Edit","timestamp":"2026-06-04T13:45:38Z","important":true}
 {"file":"src/routes/admin/image-generator-usage/+page.server.ts","action":"Edit","timestamp":"2026-06-04T13:45:53Z","important":false}
 {"file":"src/routes/admin/image-generator-usage/+page.svelte","action":"Edit","timestamp":"2026-06-04T13:46:05Z","important":false}
+{"file":"scripts/debug-reference-check.ts","action":"Write","timestamp":"2026-06-05T07:13:08Z","important":false}
+{"file":"scripts/debug-provider-request.ts","action":"Write","timestamp":"2026-06-05T07:16:48Z","important":false}
+{"file":"prisma/schema.prisma","action":"Edit","timestamp":"2026-06-05T07:30:14Z","important":false}
+{"file":"src/lib/services/image-providers/types.ts","action":"Edit","timestamp":"2026-06-05T07:31:04Z","important":false}
+{"file":"src/lib/services/image-providers/imagerouter.server.ts","action":"Edit","timestamp":"2026-06-05T07:31:14Z","important":false}
+{"file":"src/lib/services/image-providers/openai.server.ts","action":"Edit","timestamp":"2026-06-05T07:32:04Z","important":false}
+{"file":"src/lib/services/image-generator/orchestrate.server.ts","action":"Edit","timestamp":"2026-06-05T07:33:19Z","important":false}
+{"file":"src/lib/services/image-generator/image-generator.server.ts","action":"Edit","timestamp":"2026-06-05T07:35:23Z","important":false}
+{"file":"src/routes/admin/image-generator-usage/+page.server.ts","action":"Edit","timestamp":"2026-06-05T07:35:40Z","important":false}
+{"file":"src/routes/admin/image-generator-usage/+page.svelte","action":"Edit","timestamp":"2026-06-05T07:36:03Z","important":false}
+{"file":"src/lib/services/image-generator/orchestrate.server.test.ts","action":"Edit","timestamp":"2026-06-05T07:37:11Z","important":true}
+{"file":"src/lib/services/image-providers/imagerouter.server.test.ts","action":"Edit","timestamp":"2026-06-05T07:38:37Z","important":true}
+{"file":"src/lib/services/image-providers/openai.server.test.ts","action":"Edit","timestamp":"2026-06-05T07:39:23Z","important":true}

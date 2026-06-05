@@ -431,6 +431,7 @@ export const ModelName = {
   subcategories: "subcategories",
   aggregator_offers: "aggregator_offers",
   GeneratedImage: "GeneratedImage",
+  GenerationFailureLog: "GenerationFailureLog",
   BrandAsset: "BrandAsset",
   ReferenceImage: "ReferenceImage",
   ImageGeneratorPreset: "ImageGeneratorPreset",
@@ -480,6 +481,7 @@ export type TypeMap<
       | "subcategories"
       | "aggregator_offers"
       | "generatedImage"
+      | "generationFailureLog"
       | "brandAsset"
       | "referenceImage"
       | "imageGeneratorPreset"
@@ -1935,6 +1937,82 @@ export type TypeMap<
         };
       };
     };
+    GenerationFailureLog: {
+      payload: Prisma.$GenerationFailureLogPayload<ExtArgs>;
+      fields: Prisma.GenerationFailureLogFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.GenerationFailureLogFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GenerationFailureLogPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.GenerationFailureLogFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GenerationFailureLogPayload>;
+        };
+        findFirst: {
+          args: Prisma.GenerationFailureLogFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GenerationFailureLogPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.GenerationFailureLogFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GenerationFailureLogPayload>;
+        };
+        findMany: {
+          args: Prisma.GenerationFailureLogFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GenerationFailureLogPayload>[];
+        };
+        create: {
+          args: Prisma.GenerationFailureLogCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GenerationFailureLogPayload>;
+        };
+        createMany: {
+          args: Prisma.GenerationFailureLogCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.GenerationFailureLogCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GenerationFailureLogPayload>[];
+        };
+        delete: {
+          args: Prisma.GenerationFailureLogDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GenerationFailureLogPayload>;
+        };
+        update: {
+          args: Prisma.GenerationFailureLogUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GenerationFailureLogPayload>;
+        };
+        deleteMany: {
+          args: Prisma.GenerationFailureLogDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.GenerationFailureLogUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.GenerationFailureLogUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GenerationFailureLogPayload>[];
+        };
+        upsert: {
+          args: Prisma.GenerationFailureLogUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GenerationFailureLogPayload>;
+        };
+        aggregate: {
+          args: Prisma.GenerationFailureLogAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGenerationFailureLog>;
+        };
+        groupBy: {
+          args: Prisma.GenerationFailureLogGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.GenerationFailureLogGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.GenerationFailureLogCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.GenerationFailureLogCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     BrandAsset: {
       payload: Prisma.$BrandAssetPayload<ExtArgs>;
       fields: Prisma.BrandAssetFieldRefs;
@@ -2865,6 +2943,24 @@ export const GeneratedImageScalarFieldEnum = {
 export type GeneratedImageScalarFieldEnum =
   (typeof GeneratedImageScalarFieldEnum)[keyof typeof GeneratedImageScalarFieldEnum];
 
+export const GenerationFailureLogScalarFieldEnum = {
+  id: "id",
+  generatedImageId: "generatedImageId",
+  provider: "provider",
+  model: "model",
+  attempt: "attempt",
+  errorName: "errorName",
+  errorMessage: "errorMessage",
+  responseStatus: "responseStatus",
+  responseBody: "responseBody",
+  requestSnapshot: "requestSnapshot",
+  durationMs: "durationMs",
+  createdAt: "createdAt",
+} as const;
+
+export type GenerationFailureLogScalarFieldEnum =
+  (typeof GenerationFailureLogScalarFieldEnum)[keyof typeof GenerationFailureLogScalarFieldEnum];
+
 export const BrandAssetScalarFieldEnum = {
   id: "id",
   brandId: "brandId",
@@ -3345,6 +3441,7 @@ export type GlobalOmitConfig = {
   subcategories?: Prisma.subcategoriesOmit;
   aggregator_offers?: Prisma.aggregator_offersOmit;
   generatedImage?: Prisma.GeneratedImageOmit;
+  generationFailureLog?: Prisma.GenerationFailureLogOmit;
   brandAsset?: Prisma.BrandAssetOmit;
   referenceImage?: Prisma.ReferenceImageOmit;
   imageGeneratorPreset?: Prisma.ImageGeneratorPresetOmit;

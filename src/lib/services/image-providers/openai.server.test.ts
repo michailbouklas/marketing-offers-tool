@@ -186,6 +186,60 @@ describe("OpenAIImageProvider — text-to-image (no references)", () => {
       provider.generateImage({ prompt: "p", width: 1024, height: 1024 }),
     ).rejects.toBeInstanceOf(OpenAIProviderError);
   });
+
+  it("attaches the request snapshot to provider errors", async () => {
+    const provider = new OpenAIImageProvider({
+      apiKey: "sk-test",
+      fetch: recorderFetch([], () =>
+        jsonResponse({ error: { message: "bad prompt" } }, 400),
+      ),
+    });
+
+    const error = await provider
+      .generateImage({ prompt: "p", width: 1024, height: 1024 })
+      .then(
+        () => null,
+        (err: unknown) => err as OpenAIProviderError,
+      );
+
+    expect(error).toBeInstanceOf(OpenAIProviderError);
+    expect(error!.status).toBe(400);
+    expect(error!.body).toEqual({ error: { message: "bad prompt" } });
+    expect(error!.requestSnapshot).toEqual({
+      url: "https://api.openai.com/v1/images/generations",
+      method: "POST",
+      fields: {
+        model: "gpt-image-1",
+        prompt: "p",
+        size: "1024x1024",
+        n: "1",
+      },
+      references: [],
+    });
+  });
+
+  it("wraps network-level fetch failures with the request snapshot", async () => {
+    const provider = new OpenAIImageProvider({
+      apiKey: "sk-test",
+      fetch: (async () => {
+        throw new TypeError("fetch failed");
+      }) as unknown as typeof fetch,
+    });
+
+    const error = await provider
+      .generateImage({ prompt: "p", width: 1024, height: 1024 })
+      .then(
+        () => null,
+        (err: unknown) => err as OpenAIProviderError,
+      );
+
+    expect(error).toBeInstanceOf(OpenAIProviderError);
+    expect(error!.status).toBe(0);
+    expect(error!.message).toContain("fetch failed");
+    expect(error!.requestSnapshot?.url).toBe(
+      "https://api.openai.com/v1/images/generations",
+    );
+  });
 });
 
 describe("OpenAIImageProvider — with references", () => {

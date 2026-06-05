@@ -8,12 +8,16 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { ImageRouterProviderError } from "$lib/services/image-providers/imagerouter.server";
 
 vi.mock("$lib/server/prisma", () => ({
   prisma: {
     generatedImage: {
       findUnique: vi.fn(),
       update: vi.fn(),
+    },
+    generationFailureLog: {
+      create: vi.fn(),
     },
     referenceImage: {
       findMany: vi.fn(),
@@ -48,6 +52,8 @@ const updateMock = prismaModule.prisma.generatedImage
   .update as unknown as ReturnType<typeof vi.fn>;
 const findRefs = prismaModule.prisma.referenceImage
   .findMany as unknown as ReturnType<typeof vi.fn>;
+const createFailureLog = prismaModule.prisma.generationFailureLog
+  .create as unknown as ReturnType<typeof vi.fn>;
 const mockEnv = envModule.getImageGeneratorEnv as unknown as ReturnType<
   typeof vi.fn
 >;
@@ -183,6 +189,13 @@ describe("generateOneRow — happy path", () => {
     expect(generateMock).toHaveBeenCalledTimes(2);
     expect(updateMock).toHaveBeenCalledTimes(1);
     expect(updateMock.mock.calls[0]![0].data.status).toBe("completed");
+
+    // The failed first attempt is still recorded for investigation.
+    expect(createFailureLog).toHaveBeenCalledTimes(1);
+    const logArgs = createFailureLog.mock.calls[0]![0];
+    expect(logArgs.data.generatedImageId).toBe("row-1");
+    expect(logArgs.data.attempt).toBe(1);
+    expect(logArgs.data.errorMessage).toBe("transient 503");
   });
 
   it("materializes references from the store and forwards local paths to the provider", async () => {
@@ -239,6 +252,64 @@ describe("generateOneRow — failure paths", () => {
     expect(args.data.status).toBe("failed");
     expect(args.data.errorMessage).toBe("provider exploded");
     expect(args.data.durationMs).toBeGreaterThanOrEqual(0);
+
+    // Both attempts failed, so both are logged.
+    expect(createFailureLog).toHaveBeenCalledTimes(2);
+    expect(createFailureLog.mock.calls[0]![0].data.attempt).toBe(1);
+    expect(createFailureLog.mock.calls[1]![0].data.attempt).toBe(2);
+  });
+
+  it("persists provider status, response body, and request snapshot in the failure log", async () => {
+    findUnique.mockResolvedValue(makePendingRow());
+    const snapshot = {
+      url: "https://api.imagerouter.io/v1/openai/images/edits",
+      method: "POST" as const,
+      fields: { model: "gpt-image-1", prompt: "fp" },
+      references: [
+        { name: "ref-a.png", contentType: "image/png", sizeBytes: 3 },
+      ],
+    };
+    getProvider.mockReturnValue({
+      generateImage: vi
+        .fn()
+        .mockRejectedValue(
+          new ImageRouterProviderError(
+            "ImageRouter response did not include any data",
+            200,
+            { data: [] },
+            snapshot,
+          ),
+        ),
+    });
+
+    await generateOneRow("row-1");
+
+    expect(createFailureLog).toHaveBeenCalledTimes(2);
+    const logArgs = createFailureLog.mock.calls[0]![0];
+    expect(logArgs.data.errorName).toBe("ImageRouterProviderError");
+    expect(logArgs.data.responseStatus).toBe(200);
+    expect(logArgs.data.responseBody).toEqual({ data: [] });
+    expect(logArgs.data.requestSnapshot).toEqual(snapshot);
+  });
+
+  it("a failure-log write error does not mask the provider failure", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    findUnique.mockResolvedValue(makePendingRow());
+    createFailureLog.mockRejectedValue(new Error("log table unavailable"));
+    getProvider.mockReturnValue({
+      generateImage: vi.fn().mockRejectedValue(new Error("provider exploded")),
+    });
+
+    await generateOneRow("row-1");
+
+    expect(updateMock).toHaveBeenCalledTimes(1);
+    expect(updateMock.mock.calls[0]![0].data.status).toBe("failed");
+    expect(updateMock.mock.calls[0]![0].data.errorMessage).toBe(
+      "provider exploded",
+    );
+    consoleError.mockRestore();
   });
 
   it("marks the row failed when the provider factory throws (e.g. missing key)", async () => {
