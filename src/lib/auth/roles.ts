@@ -8,6 +8,7 @@ export const userRoles = [
   "offerEditor",
   "imageEditor",
   "copywriter",
+  "analyticsViewer",
   "superUser",
 ] as const;
 
@@ -40,6 +41,13 @@ export const adminSectionRoles: UserRole[] = [
   "brandManager",
 ];
 
+/**
+ * Roles that may access the `/competition` section (competitive analytics
+ * sourced from the competition-scraper ClickHouse replica). `superUser` is
+ * included as the admin-equivalent that holds every resource permission.
+ */
+export const competitionRoles: UserRole[] = ["analyticsViewer", superUserRole];
+
 export const roleLabels: Record<UserRole, string> = {
   user: "User",
   admin: "Admin",
@@ -50,6 +58,7 @@ export const roleLabels: Record<UserRole, string> = {
   offerEditor: "Offer Editor",
   imageEditor: "Image Editor",
   copywriter: "Copywriter",
+  analyticsViewer: "Analytics Viewer",
   superUser: "Super User",
 };
 

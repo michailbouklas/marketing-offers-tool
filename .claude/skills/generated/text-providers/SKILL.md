@@ -45,8 +45,8 @@ Start here when exploring this area:
 | `ProviderRequestError` | Interface | `src/lib/services/image-providers/types.ts` | 50 |
 | `generateText` | Method | `src/lib/services/text-providers/openai.server.ts` | 52 |
 | `safeJson` | Function | `src/lib/services/text-providers/openai.server.ts` | 161 |
-| `jsonResponse` | Function | `src/lib/services/text-providers/openai.server.test.ts` | 20 |
-| `fetchMock` | Function | `src/lib/services/text-providers/openai.server.test.ts` | 29 |
+| `jsonResponse` | Function | `src/lib/services/text-providers/openai.server.test.ts` | 22 |
+| `fetchMock` | Function | `src/lib/services/text-providers/openai.server.test.ts` | 31 |
 
 ## Execution Flows
 

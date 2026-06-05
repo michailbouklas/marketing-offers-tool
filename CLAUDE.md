@@ -41,7 +41,7 @@ See `Plans.md` for current task backlog and status.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **marketing-offers-tool** (3426 symbols, 6301 relationships, 271 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **marketing-offers-tool** (3631 symbols, 6650 relationships, 288 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -79,16 +79,18 @@ This project is indexed by GitNexus as **marketing-offers-tool** (3426 symbols, 
 | Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
 | Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
-| Work in the Services area (162 symbols) | `.claude/skills/generated/services/SKILL.md` |
-| Work in the Server area (94 symbols) | `.claude/skills/generated/server/SKILL.md` |
+| Work in the Services area (160 symbols) | `.claude/skills/generated/services/SKILL.md` |
+| Work in the Server area (101 symbols) | `.claude/skills/generated/server/SKILL.md` |
 | Work in the Image-generator area (79 symbols) | `.claude/skills/generated/image-generator/SKILL.md` |
 | Work in the Image-providers area (53 symbols) | `.claude/skills/generated/image-providers/SKILL.md` |
-| Work in the Inspiration area (52 symbols) | `.claude/skills/generated/inspiration/SKILL.md` |
+| Work in the Competition area (33 symbols) | `.claude/skills/generated/competition/SKILL.md` |
+| Work in the Inspiration area (31 symbols) | `.claude/skills/generated/inspiration/SKILL.md` |
+| Work in the [id] area (16 symbols) | `.claude/skills/generated/id/SKILL.md` |
 | Work in the Copywriter area (16 symbols) | `.claude/skills/generated/copywriter/SKILL.md` |
 | Work in the Scripts area (13 symbols) | `.claude/skills/generated/scripts/SKILL.md` |
-| Work in the Guidelines area (10 symbols) | `.claude/skills/generated/guidelines/SKILL.md` |
+| Work in the Brand-context area (10 symbols) | `.claude/skills/generated/brand-context/SKILL.md` |
 | Work in the Text-providers area (10 symbols) | `.claude/skills/generated/text-providers/SKILL.md` |
-| Work in the Assets area (6 symbols) | `.claude/skills/generated/assets/SKILL.md` |
-| Work in the Brand-context area (6 symbols) | `.claude/skills/generated/brand-context/SKILL.md` |
+| Work in the Assets area (9 symbols) | `.claude/skills/generated/assets/SKILL.md` |
+| Work in the Guidelines area (5 symbols) | `.claude/skills/generated/guidelines/SKILL.md` |
 
 <!-- gitnexus:end -->

@@ -5,7 +5,7 @@ description: "Skill for the Image-generator area of marketing-offers-tool. 79 sy
 
 # Image-generator
 
-79 symbols | 20 files | Cohesion: 78%
+79 symbols | 20 files | Cohesion: 79%
 
 ## When to Use
 
@@ -82,9 +82,11 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Server | 16 calls |
+| Server | 8 calls |
+| [id] | 7 calls |
 | Image-providers | 5 calls |
 | Services | 5 calls |
+| Brand-context | 1 calls |
 
 ## How to Explore
 

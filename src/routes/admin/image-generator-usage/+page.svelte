@@ -9,7 +9,7 @@
   import * as Table from "$lib/components/ui/table/index.js";
   import ArrowLeftIcon from "@lucide/svelte/icons/arrow-left";
   import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
-  import DateRangeFilter from "./date-range-filter.svelte";
+  import DateRangeFilter from "$lib/components/date-range-filter.svelte";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();

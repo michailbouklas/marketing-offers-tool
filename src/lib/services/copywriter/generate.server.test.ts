@@ -29,9 +29,8 @@ vi.mock("$lib/services/text-providers/factory.server", () => ({
 }));
 
 const prismaModule = await import("$lib/server/prisma");
-const factoryModule = await import(
-  "$lib/services/text-providers/factory.server"
-);
+const factoryModule =
+  await import("$lib/services/text-providers/factory.server");
 const { FakeTextProvider } = await import("$lib/services/text-providers/types");
 const {
   buildCopyJsonSchema,

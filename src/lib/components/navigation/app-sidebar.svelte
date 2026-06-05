@@ -2,6 +2,7 @@
   import { page } from "$app/state";
   import {
     canAccessAdminSection,
+    competitionRoles,
     hasAnyRole,
     type UserRole,
   } from "$lib/auth/roles";
@@ -14,17 +15,34 @@
   import PenLineIcon from "@lucide/svelte/icons/pen-line";
   import LightbulbIcon from "@lucide/svelte/icons/lightbulb";
   import ShieldIcon from "@lucide/svelte/icons/shield";
+  import TrendingUpIcon from "@lucide/svelte/icons/trending-up";
   import type { Component } from "svelte";
 
   // `roles` lists the role(s) that may see the item. Omit it for items visible
   // to everyone. `superUser` is included on capability-gated items since it is
   // the admin-equivalent that holds every resource permission.
-  type NavItem = {
+  type NavLeaf = {
     href: string;
     label: string;
     icon: Component;
     roles?: UserRole[];
   };
+
+  // A group renders as a parent entry with indented sub-items (always
+  // expanded). The parent link points at the group's landing page.
+  type NavGroup = {
+    href: string;
+    label: string;
+    icon: Component;
+    roles?: UserRole[];
+    children: { href: string; label: string }[];
+  };
+
+  type NavItem = NavLeaf | NavGroup;
+
+  function isGroup(item: NavItem): item is NavGroup {
+    return "children" in item;
+  }
 
   const user = $derived(page.data.user as { role?: string } | null | undefined);
 
@@ -60,6 +78,17 @@
       icon: PenLineIcon,
       roles: ["superUser", "copywriter"],
     },
+    {
+      href: "/competition",
+      label: "Competition",
+      icon: TrendingUpIcon,
+      roles: competitionRoles,
+      children: [
+        { href: "/competition", label: "Dashboard" },
+        { href: "/competition/offers", label: "Active Offers" },
+        { href: "/competition/restaurants", label: "Restaurants" },
+      ],
+    },
   ];
 
   const navigationItems = $derived<NavItem[]>([
@@ -82,17 +111,27 @@
   }
 
   // The longest matching href wins so nested items (e.g. Inspiration under
-  // /image-generator) don't highlight their parent too.
+  // /image-generator, or Restaurants under /competition) don't highlight
+  // their parent too. Group children participate alongside top-level hrefs.
   const activeHref = $derived(
     navigationItems
-      .filter((item) => matchesPath(item.href))
-      .reduce<
-        string | null
-      >((longest, item) => (longest === null || item.href.length > longest.length ? item.href : longest), null),
+      .flatMap((item) =>
+        isGroup(item) ? item.children.map((child) => child.href) : [item.href],
+      )
+      .filter((href) => matchesPath(href))
+      .reduce<string | null>(
+        (longest, href) =>
+          longest === null || href.length > longest.length ? href : longest,
+        null,
+      ),
   );
 
   function isActive(href: string) {
     return href === activeHref;
+  }
+
+  function isGroupActive(group: NavGroup) {
+    return group.children.some((child) => isActive(child.href));
   }
 </script>
 
@@ -130,17 +169,44 @@
         <Sidebar.Menu>
           {#each navigationItems as item (item.href)}
             <Sidebar.MenuItem>
-              <Sidebar.MenuButton
-                isActive={isActive(item.href)}
-                tooltipContent={item.label}
-              >
-                {#snippet child({ props })}
-                  <a href={item.href} {...props}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </a>
-                {/snippet}
-              </Sidebar.MenuButton>
+              {#if isGroup(item)}
+                <Sidebar.MenuButton
+                  isActive={isGroupActive(item)}
+                  tooltipContent={item.label}
+                >
+                  {#snippet child({ props })}
+                    <a href={item.href} {...props}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </a>
+                  {/snippet}
+                </Sidebar.MenuButton>
+                <Sidebar.MenuSub>
+                  {#each item.children as subItem (subItem.href)}
+                    <Sidebar.MenuSubItem>
+                      <Sidebar.MenuSubButton isActive={isActive(subItem.href)}>
+                        {#snippet child({ props })}
+                          <a href={subItem.href} {...props}>
+                            <span>{subItem.label}</span>
+                          </a>
+                        {/snippet}
+                      </Sidebar.MenuSubButton>
+                    </Sidebar.MenuSubItem>
+                  {/each}
+                </Sidebar.MenuSub>
+              {:else}
+                <Sidebar.MenuButton
+                  isActive={isActive(item.href)}
+                  tooltipContent={item.label}
+                >
+                  {#snippet child({ props })}
+                    <a href={item.href} {...props}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </a>
+                  {/snippet}
+                </Sidebar.MenuButton>
+              {/if}
             </Sidebar.MenuItem>
           {/each}
         </Sidebar.Menu>

@@ -8,7 +8,9 @@ const SCHEMA = {
   properties: { variants: { type: "array" } },
 };
 
-function makeInput(overrides: Partial<Parameters<OpenAITextProvider["generateText"]>[0]> = {}) {
+function makeInput(
+  overrides: Partial<Parameters<OpenAITextProvider["generateText"]>[0]> = {},
+) {
   return {
     systemPrompt: "You write copy.",
     userPrompt: "Brief: promo",

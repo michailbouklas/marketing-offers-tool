@@ -19,6 +19,7 @@ export const statement = {
   offer: ["edit"],
   metrics: ["view"],
   promptGallery: ["manage"],
+  competition: ["view"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -40,6 +41,7 @@ export const ac = createAccessControl(statement);
  * - `offerEditor` — create and edit aggregator offers in the registry.
  * - `imageEditor` — generate images in the image generator.
  * - `copywriter` — generate marketing copy in the copywriter studio.
+ * - `analyticsViewer` — view the `/competition` analytics section.
  * - `superUser` — admin-equivalent that holds every resource permission.
  *
  * Explicit empty action arrays (rather than `{}`) keep a role's resource keys
@@ -81,6 +83,9 @@ export const roles = {
   copywriter: ac.newRole({
     copywriter: ["generate"],
   }),
+  analyticsViewer: ac.newRole({
+    competition: ["view"],
+  }),
   superUser: ac.newRole({
     ...adminAc.statements,
     imageGenerator: ["generate", "view-usage"],
@@ -90,6 +95,7 @@ export const roles = {
     offer: ["edit"],
     metrics: ["view"],
     promptGallery: ["manage"],
+    competition: ["view"],
   }),
 } satisfies Record<UserRole, Role>;
 

@@ -1,30 +1,29 @@
 ---
 name: inspiration
-description: "Skill for the Inspiration area of marketing-offers-tool. 52 symbols across 10 files."
+description: "Skill for the Inspiration area of marketing-offers-tool. 31 symbols across 9 files."
 ---
 
 # Inspiration
 
-52 symbols | 10 files | Cohesion: 86%
+31 symbols | 9 files | Cohesion: 65%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how brandGuidelinesKey, deleteBrandAsset, readBrandGuidelines work
+- Understanding how getDefaultDeleteItemFormData, listCategories, getCategory work
 - Modifying inspiration-related functionality
 
 ## Key Files
 
 | File | Symbols |
 |------|---------|
-| `src/lib/server/inspiration/inspiration-storage.server.ts` | ensureSafeSlug, slugify, categoryDirPrefix, categoryMetaKey, itemMdKey (+15) |
-| `src/lib/server/object-store.server.ts` | getText, putText, remove, list, toPath (+10) |
-| `src/lib/server/brand-storage.ts` | brandGuidelinesKey, deleteBrandAsset, readBrandGuidelines, writeBrandGuidelines |
+| `src/lib/server/inspiration/inspiration-storage.server.ts` | categoryDirPrefix, categoryMetaKey, listCategories, getCategory, deleteCategory (+8) |
+| `src/lib/server/object-store.server.ts` | list, list, list, remove, remove (+1) |
 | `src/lib/services/inspiration/category-form.ts` | getDefaultDeleteItemFormData, getDefaultCreateCategoryFormData, getDefaultRenameCategoryFormData, getDefaultDeleteCategoryFormData |
-| `src/lib/server/inspiration/frontmatter.ts` | serializeFrontmatter, parseFrontmatter, sanitizeValue, lines |
-| `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | load |
+| `src/lib/server/inspiration/frontmatter.ts` | parseFrontmatter, sanitizeValue, lines |
 | `src/routes/admin/prompt-gallery/[slug]/+page.server.ts` | load |
-| `src/routes/api/admin/prompt-gallery/[slug]/items/+server.ts` | POST |
+| `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | load |
+| `src/lib/server/brand-storage.ts` | deleteBrandAsset |
 | `src/routes/api/admin/prompt-gallery/[slug]/items/[item]/+server.ts` | PUT |
 | `src/routes/admin/prompt-gallery/+page.server.ts` | load |
 
@@ -32,62 +31,62 @@ description: "Skill for the Inspiration area of marketing-offers-tool. 52 symbol
 
 Start here when exploring this area:
 
-- **`brandGuidelinesKey`** (Function) — `src/lib/server/brand-storage.ts:52`
-- **`deleteBrandAsset`** (Function) — `src/lib/server/brand-storage.ts:85`
-- **`readBrandGuidelines`** (Function) — `src/lib/server/brand-storage.ts:94`
-- **`writeBrandGuidelines`** (Function) — `src/lib/server/brand-storage.ts:101`
 - **`getDefaultDeleteItemFormData`** (Function) — `src/lib/services/inspiration/category-form.ts:54`
+- **`listCategories`** (Function) — `src/lib/server/inspiration/inspiration-storage.server.ts:120`
+- **`getCategory`** (Function) — `src/lib/server/inspiration/inspiration-storage.server.ts:134`
+- **`deleteCategory`** (Function) — `src/lib/server/inspiration/inspiration-storage.server.ts:201`
+- **`listItems`** (Function) — `src/lib/server/inspiration/inspiration-storage.server.ts:229`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `brandGuidelinesKey` | Function | `src/lib/server/brand-storage.ts` | 52 |
-| `deleteBrandAsset` | Function | `src/lib/server/brand-storage.ts` | 85 |
-| `readBrandGuidelines` | Function | `src/lib/server/brand-storage.ts` | 94 |
-| `writeBrandGuidelines` | Function | `src/lib/server/brand-storage.ts` | 101 |
 | `getDefaultDeleteItemFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 54 |
-| `slugify` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 61 |
 | `listCategories` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 120 |
 | `getCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 134 |
-| `createCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 161 |
-| `renameCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 180 |
 | `deleteCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 201 |
 | `listItems` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 229 |
+| `parseFrontmatter` | Function | `src/lib/server/inspiration/frontmatter.ts` | 32 |
+| `load` | Function | `src/routes/admin/prompt-gallery/[slug]/+page.server.ts` | 17 |
+| `load` | Function | `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | 9 |
+| `deleteBrandAsset` | Function | `src/lib/server/brand-storage.ts` | 85 |
 | `getItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 256 |
-| `createItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 285 |
 | `updateItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 306 |
 | `deleteItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 344 |
-| `serializeFrontmatter` | Function | `src/lib/server/inspiration/frontmatter.ts` | 17 |
-| `parseFrontmatter` | Function | `src/lib/server/inspiration/frontmatter.ts` | 32 |
-| `load` | Function | `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | 9 |
-| `load` | Function | `src/routes/admin/prompt-gallery/[slug]/+page.server.ts` | 17 |
+| `PUT` | Function | `src/routes/api/admin/prompt-gallery/[slug]/items/[item]/+server.ts` | 10 |
+| `load` | Function | `src/routes/admin/prompt-gallery/+page.server.ts` | 22 |
+| `getDefaultCreateCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 42 |
+| `getDefaultRenameCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 46 |
+| `getDefaultDeleteCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 50 |
+| `lines` | Function | `src/lib/server/inspiration/frontmatter.ts` | 21 |
+| `list` | Method | `src/lib/server/object-store.server.ts` | 46 |
+| `list` | Method | `src/lib/server/object-store.server.ts` | 135 |
 
 ## Execution Flows
 
 | Flow | Type | Steps |
 |------|------|-------|
-| `GET → AssertSafeKey` | cross_community | 6 |
-| `PUT → AssertSafeKey` | cross_community | 6 |
-| `PUT → From` | cross_community | 6 |
-| `POST → AssertSafeKey` | cross_community | 6 |
-| `Load → AssertSafeKey` | cross_community | 6 |
-| `POST → AssertSafeKey` | cross_community | 6 |
-| `GET → AssertSafeKey` | cross_community | 6 |
 | `Load → AssertSafeKey` | cross_community | 5 |
 | `Load → From` | cross_community | 5 |
-| `POST → LoadEnvFileValues` | cross_community | 5 |
+| `POST → AssertSafeKey` | cross_community | 5 |
+| `PUT → LoadEnvFileValues` | cross_community | 5 |
+| `PUT → AssertSafeKey` | cross_community | 5 |
+| `Load → LoadEnvFileValues` | cross_community | 5 |
+| `Load → AssertSafeKey` | cross_community | 5 |
+| `Load → From` | cross_community | 5 |
+| `RenameCategory → AssertSafeKey` | cross_community | 5 |
+| `ListCategories → AssertSafeKey` | cross_community | 5 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| Server | 21 calls |
+| Server | 26 calls |
 | Services | 3 calls |
-| Guidelines | 2 calls |
+| Assets | 1 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "brandGuidelinesKey"})` — see callers and callees
+1. `gitnexus_context({name: "getDefaultDeleteItemFormData"})` — see callers and callees
 2. `gitnexus_query({query: "inspiration"})` — find related execution flows
 3. Read key files listed above for implementation details

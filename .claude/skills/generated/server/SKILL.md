@@ -1,42 +1,42 @@
 ---
 name: server
-description: "Skill for the Server area of marketing-offers-tool. 94 symbols across 32 files."
+description: "Skill for the Server area of marketing-offers-tool. 101 symbols across 25 files."
 ---
 
 # Server
 
-94 symbols | 32 files | Cohesion: 69%
+101 symbols | 25 files | Cohesion: 69%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how getObjectStore, requireAuthenticatedApiUser, GET work
+- Understanding how brandGuidelinesKey, readBrandGuidelines, writeBrandGuidelines work
 - Modifying server-related functionality
 
 ## Key Files
 
 | File | Symbols |
 |------|---------|
-| `src/lib/server/object-store.server.ts` | ObjectStore, tryGet, LocalObjectStore, tryGet, SupabaseObjectStore (+12) |
+| `src/lib/server/object-store.server.ts` | getText, putText, toPath, getText, putText (+19) |
 | `src/lib/server/clickhouse.ts` | loadEnvFileValues, parseRequestTimeout, getRequiredEnv, getEnvValue, getClickHouseConfig (+5) |
-| `src/lib/server/auth-guards.ts` | requireAuthenticatedApiUser, requireAdminSection, hasSuperUserRole, requireSuperUser, getAuthenticatedUserRole (+3) |
 | `src/lib/server/env.ts` | loadEnvFileValues, readEnv, loadImageGeneratorEnv, getStorageEnv, hasSupabaseStorage (+3) |
+| `src/lib/server/brand-storage.ts` | brandGuidelinesKey, readBrandGuidelines, writeBrandGuidelines, ensureSafeSlug, ensureSafeAssetId (+2) |
+| `src/lib/server/inspiration/inspiration-storage.server.ts` | slugify, ensureRoot, nextFreeSlug, createCategory, renameCategory (+2) |
+| `src/lib/server/auth-guards.ts` | requireAdminSection, hasSuperUserRole, requireSuperUser, getAuthenticatedUserRole, isPublicPath (+2) |
 | `src/lib/server/auth.ts` | getRequiredEnv, getAuthConfig, getAuthConfigKey, createAuth, getAuth |
 | `src/lib/server/reference-storage.ts` | ensureSafeId, extensionForContentType, referenceKey, writeReferenceFile |
+| `src/lib/server/image-storage.ts` | ensureSafeId, imageKey, readImageBytes, writeImageBytes |
 | `src/lib/server/image-size.ts` | toPositiveInt, parseRequestedSize, squaredAspectRatioDelta, mapToNearestSupportedSize |
-| `src/lib/server/prisma.ts` | getDatabaseUrl, createPrismaClient, hasDataQualityDelegates, getPrismaClient |
-| `src/lib/server/image-storage.ts` | ensureSafeId, imageKey, writeImageBytes, readImageBytes |
-| `src/lib/server/brand-storage.ts` | ensureSafeSlug, ensureSafeAssetId, brandAssetKey, writeBrandAsset |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`getObjectStore`** (Function) — `src/lib/server/object-store.server.ts:278`
-- **`requireAuthenticatedApiUser`** (Function) — `src/lib/server/auth-guards.ts:23`
-- **`GET`** (Function) — `src/routes/api/brand-assets/+server.ts:8`
-- **`GET`** (Function) — `src/routes/api/brand-guidelines/+server.ts:6`
-- **`deletePreset`** (Function) — `src/lib/services/image-generator/composer-library.server.ts:140`
+- **`brandGuidelinesKey`** (Function) — `src/lib/server/brand-storage.ts:52`
+- **`readBrandGuidelines`** (Function) — `src/lib/server/brand-storage.ts:94`
+- **`writeBrandGuidelines`** (Function) — `src/lib/server/brand-storage.ts:101`
+- **`slugify`** (Function) — `src/lib/server/inspiration/inspiration-storage.server.ts:61`
+- **`createCategory`** (Function) — `src/lib/server/inspiration/inspiration-storage.server.ts:161`
 
 ## Key Symbols
 
@@ -44,24 +44,24 @@ Start here when exploring this area:
 |--------|------|------|------|
 | `LocalObjectStore` | Class | `src/lib/server/object-store.server.ts` | 70 |
 | `SupabaseObjectStore` | Class | `src/lib/server/object-store.server.ts` | 157 |
-| `getObjectStore` | Function | `src/lib/server/object-store.server.ts` | 278 |
-| `requireAuthenticatedApiUser` | Function | `src/lib/server/auth-guards.ts` | 23 |
-| `GET` | Function | `src/routes/api/brand-assets/+server.ts` | 8 |
-| `GET` | Function | `src/routes/api/brand-guidelines/+server.ts` | 6 |
-| `deletePreset` | Function | `src/lib/services/image-generator/composer-library.server.ts` | 140 |
-| `deleteTemplate` | Function | `src/lib/services/image-generator/composer-library.server.ts` | 252 |
-| `searchBrandAssets` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 41 |
-| `getBrandGuidelines` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 130 |
-| `inspirationImageKey` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 88 |
-| `GET` | Function | `src/routes/api/brand-assets/[id]/+server.ts` | 6 |
-| `GET` | Function | `src/routes/api/images/[id]/file/+server.ts` | 16 |
-| `GET` | Function | `src/routes/api/images/references/[id]/+server.ts` | 6 |
-| `DELETE` | Function | `src/routes/api/images/templates/[id]/+server.ts` | 28 |
-| `DELETE` | Function | `src/routes/api/images/presets/[id]/+server.ts` | 28 |
-| `GET` | Function | `src/routes/api/image-generator/inspiration/[slug]/[item]/image/+server.ts` | 16 |
+| `brandGuidelinesKey` | Function | `src/lib/server/brand-storage.ts` | 52 |
+| `readBrandGuidelines` | Function | `src/lib/server/brand-storage.ts` | 94 |
+| `writeBrandGuidelines` | Function | `src/lib/server/brand-storage.ts` | 101 |
+| `slugify` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 61 |
+| `createCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 161 |
+| `renameCategory` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 180 |
+| `createItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 285 |
+| `serializeFrontmatter` | Function | `src/lib/server/inspiration/frontmatter.ts` | 17 |
 | `load` | Function | `src/routes/+layout.server.ts` | 3 |
 | `getUserSummaryById` | Function | `src/lib/services/users.server.ts` | 18 |
 | `requireAdminSection` | Function | `src/lib/server/auth-guards.ts` | 59 |
+| `hasSuperUserRole` | Function | `src/lib/server/auth-guards.ts` | 82 |
+| `requireSuperUser` | Function | `src/lib/server/auth-guards.ts` | 89 |
+| `getAuthenticatedUserRole` | Function | `src/lib/server/auth-guards.ts` | 186 |
+| `isPublicPath` | Function | `src/lib/server/auth-guards.ts` | 213 |
+| `isApiPath` | Function | `src/lib/server/auth-guards.ts` | 217 |
+| `isAdminPath` | Function | `src/lib/server/auth-guards.ts` | 221 |
+| `hasAnyRole` | Function | `src/lib/auth/roles.ts` | 91 |
 
 ## Execution Flows
 
@@ -82,12 +82,14 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
+| Services | 9 calls |
 | Inspiration | 8 calls |
-| Services | 5 calls |
+| [id] | 3 calls |
 | Image-generator | 2 calls |
+| Assets | 1 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "getObjectStore"})` — see callers and callees
+1. `gitnexus_context({name: "brandGuidelinesKey"})` — see callers and callees
 2. `gitnexus_query({query: "server"})` — find related execution flows
 3. Read key files listed above for implementation details

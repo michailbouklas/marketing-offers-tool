@@ -1,16 +1,16 @@
 ---
 name: assets
-description: "Skill for the Assets area of marketing-offers-tool. 6 symbols across 3 files."
+description: "Skill for the Assets area of marketing-offers-tool. 9 symbols across 7 files."
 ---
 
 # Assets
 
-6 symbols | 3 files | Cohesion: 59%
+9 symbols | 7 files | Cohesion: 55%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how listBrandAssets, createBrandAsset, load work
+- Understanding how requireApiPermission, load, GET work
 - Modifying assets-related functionality
 
 ## Key Files
@@ -18,26 +18,33 @@ description: "Skill for the Assets area of marketing-offers-tool. 6 symbols acro
 | File | Symbols |
 |------|---------|
 | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | parseBrandId, GET, POST |
-| `src/lib/services/brand-context/brand-context.server.ts` | listBrandAssets, createBrandAsset |
-| `src/routes/admin/brands/[id]/+page.server.ts` | load |
+| `src/lib/server/auth-guards.ts` | requireApiPermission |
+| `src/routes/copywriter/me/+page.server.ts` | load |
+| `src/routes/api/copy/+server.ts` | GET |
+| `src/lib/services/copywriter/copywriter.server.ts` | listGeneratedCopies |
+| `src/lib/services/brand-context/brand-context.server.ts` | createBrandAsset |
+| `src/routes/api/copy/generate/+server.ts` | POST |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`listBrandAssets`** (Function) — `src/lib/services/brand-context/brand-context.server.ts:20`
+- **`requireApiPermission`** (Function) — `src/lib/server/auth-guards.ts:153`
+- **`load`** (Function) — `src/routes/copywriter/me/+page.server.ts:4`
+- **`GET`** (Function) — `src/routes/api/copy/+server.ts:5`
+- **`listGeneratedCopies`** (Function) — `src/lib/services/copywriter/copywriter.server.ts:23`
 - **`createBrandAsset`** (Function) — `src/lib/services/brand-context/brand-context.server.ts:86`
-- **`load`** (Function) — `src/routes/admin/brands/[id]/+page.server.ts:9`
-- **`GET`** (Function) — `src/routes/api/admin/brands/[brandId]/assets/+server.ts:21`
-- **`POST`** (Function) — `src/routes/api/admin/brands/[brandId]/assets/+server.ts:41`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `listBrandAssets` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 20 |
+| `requireApiPermission` | Function | `src/lib/server/auth-guards.ts` | 153 |
+| `load` | Function | `src/routes/copywriter/me/+page.server.ts` | 4 |
+| `GET` | Function | `src/routes/api/copy/+server.ts` | 5 |
+| `listGeneratedCopies` | Function | `src/lib/services/copywriter/copywriter.server.ts` | 23 |
 | `createBrandAsset` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 86 |
-| `load` | Function | `src/routes/admin/brands/[id]/+page.server.ts` | 9 |
+| `POST` | Function | `src/routes/api/copy/generate/+server.ts` | 9 |
 | `GET` | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 21 |
 | `POST` | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 41 |
 | `parseBrandId` | Function | `src/routes/api/admin/brands/[brandId]/assets/+server.ts` | 10 |
@@ -48,25 +55,27 @@ Start here when exploring this area:
 |------|------|-------|
 | `POST → AssertSafeKey` | cross_community | 6 |
 | `POST → LoadEnvFileValues` | cross_community | 6 |
-| `Load → AssertSafeKey` | cross_community | 6 |
-| `Load → LoadEnvFileValues` | cross_community | 6 |
 | `POST → From` | cross_community | 5 |
-| `Load → From` | cross_community | 5 |
-| `Load → EnsureSafeSlug` | cross_community | 5 |
 | `POST → Put` | cross_community | 4 |
 | `POST → EnsureSafeSlug` | cross_community | 4 |
 | `POST → GetSupabaseClient` | cross_community | 4 |
+| `POST → SupabaseObjectStore` | cross_community | 4 |
+| `POST → LocalObjectStore` | cross_community | 4 |
+| `POST → FetchFn` | cross_community | 4 |
+| `POST → OpenAITextProviderError` | cross_community | 4 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| Server | 4 calls |
-| Guidelines | 2 calls |
-| Services | 1 calls |
+| Server | 3 calls |
+| Services | 2 calls |
+| [id] | 1 calls |
+| Copywriter | 1 calls |
+| Brand-context | 1 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "listBrandAssets"})` — see callers and callees
+1. `gitnexus_context({name: "requireApiPermission"})` — see callers and callees
 2. `gitnexus_query({query: "assets"})` — find related execution flows
 3. Read key files listed above for implementation details

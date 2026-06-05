@@ -1,0 +1,11 @@
+import { requirePermission } from "$lib/server/auth-guards";
+import { getDashboardStats } from "$lib/services/competition/dashboard.server";
+import type { PageServerLoad } from "./$types";
+
+export const load: PageServerLoad = async (event) => {
+  await requirePermission(event, { competition: ["view"] });
+
+  return {
+    stats: await getDashboardStats(),
+  };
+};

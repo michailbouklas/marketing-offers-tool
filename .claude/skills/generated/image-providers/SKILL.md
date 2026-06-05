@@ -82,7 +82,8 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Server | 9 calls |
+| [id] | 5 calls |
+| Server | 4 calls |
 | Services | 2 calls |
 | Image-generator | 1 calls |
 

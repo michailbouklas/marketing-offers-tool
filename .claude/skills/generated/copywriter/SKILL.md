@@ -68,9 +68,9 @@ Start here when exploring this area:
 | Area | Connections |
 |------|-------------|
 | Text-providers | 2 calls |
-| Server | 1 calls |
+| Brand-context | 1 calls |
 | Image-generator | 1 calls |
-| Guidelines | 1 calls |
+| Assets | 1 calls |
 
 ## How to Explore
 

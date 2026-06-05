@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canAccessAdminSection,
+  competitionRoles,
   hasAnyRole,
   isAdminRole,
   parseRoles,
@@ -91,5 +92,20 @@ describe("canAccessAdminSection", () => {
     expect(canAccessAdminSection("user,imageEditor")).toBe(false);
     expect(canAccessAdminSection(null)).toBe(false);
     expect(canAccessAdminSection(undefined)).toBe(false);
+  });
+
+  it("is false for analyticsViewer (competition is not under /admin)", () => {
+    expect(canAccessAdminSection("analyticsViewer")).toBe(false);
+  });
+});
+
+describe("competitionRoles", () => {
+  it("grants the competition section to analyticsViewer and superUser only", () => {
+    expect(hasAnyRole("analyticsViewer", competitionRoles)).toBe(true);
+    expect(hasAnyRole("superUser", competitionRoles)).toBe(true);
+    expect(hasAnyRole("user,analyticsViewer", competitionRoles)).toBe(true);
+    expect(hasAnyRole("admin", competitionRoles)).toBe(false);
+    expect(hasAnyRole("user", competitionRoles)).toBe(false);
+    expect(hasAnyRole(null, competitionRoles)).toBe(false);
   });
 });

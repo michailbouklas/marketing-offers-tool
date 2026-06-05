@@ -1,16 +1,16 @@
 ---
 name: guidelines
-description: "Skill for the Guidelines area of marketing-offers-tool. 10 symbols across 7 files."
+description: "Skill for the Guidelines area of marketing-offers-tool. 5 symbols across 2 files."
 ---
 
 # Guidelines
 
-10 symbols | 7 files | Cohesion: 61%
+5 symbols | 2 files | Cohesion: 67%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how requireApiPermission, load, GET work
+- Understanding how setBrandGuidelines, GET, PUT work
 - Modifying guidelines-related functionality
 
 ## Key Files
@@ -18,33 +18,21 @@ description: "Skill for the Guidelines area of marketing-offers-tool. 10 symbols
 | File | Symbols |
 |------|---------|
 | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | parseBrandId, brandSlugOr404, GET, PUT |
-| `src/lib/server/auth-guards.ts` | requireApiPermission |
-| `src/routes/copywriter/me/+page.server.ts` | load |
-| `src/routes/api/copy/+server.ts` | GET |
 | `src/lib/services/brand-context/brand-context.server.ts` | setBrandGuidelines |
-| `src/lib/services/copywriter/copywriter.server.ts` | listGeneratedCopies |
-| `src/routes/api/copy/generate/+server.ts` | POST |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`requireApiPermission`** (Function) — `src/lib/server/auth-guards.ts:153`
-- **`load`** (Function) — `src/routes/copywriter/me/+page.server.ts:4`
-- **`GET`** (Function) — `src/routes/api/copy/+server.ts:5`
 - **`setBrandGuidelines`** (Function) — `src/lib/services/brand-context/brand-context.server.ts:134`
-- **`listGeneratedCopies`** (Function) — `src/lib/services/copywriter/copywriter.server.ts:23`
+- **`GET`** (Function) — `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts:44`
+- **`PUT`** (Function) — `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts:53`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `requireApiPermission` | Function | `src/lib/server/auth-guards.ts` | 153 |
-| `load` | Function | `src/routes/copywriter/me/+page.server.ts` | 4 |
-| `GET` | Function | `src/routes/api/copy/+server.ts` | 5 |
 | `setBrandGuidelines` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 134 |
-| `listGeneratedCopies` | Function | `src/lib/services/copywriter/copywriter.server.ts` | 23 |
-| `POST` | Function | `src/routes/api/copy/generate/+server.ts` | 9 |
 | `GET` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 44 |
 | `PUT` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 53 |
 | `parseBrandId` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 16 |
@@ -69,13 +57,12 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Server | 3 calls |
-| Services | 2 calls |
-| Inspiration | 1 calls |
-| Copywriter | 1 calls |
+| Server | 2 calls |
+| Assets | 2 calls |
+| Brand-context | 1 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "requireApiPermission"})` — see callers and callees
+1. `gitnexus_context({name: "setBrandGuidelines"})` — see callers and callees
 2. `gitnexus_query({query: "guidelines"})` — find related execution flows
 3. Read key files listed above for implementation details

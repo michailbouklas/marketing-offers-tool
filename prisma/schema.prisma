@@ -126,6 +126,8 @@ model user {
   image_presets     ImageGeneratorPreset[]
   image_templates   ImageGeneratorTemplate[]
   reference_images  ReferenceImage[]
+  competition_restaurant_prefs competition_user_restaurant_pref[]
+  competition_dashboard_widgets competition_dashboard_widget[]
 }
 
 model session {
@@ -552,4 +554,45 @@ model bolt_regex_patters {
   category    String
   accountcode Int?
   vatcode     String?
+}
+
+// --- Competition analytics (data lives in the competition-scraper ClickHouse
+// replica; these tables only hold per-user state on top of it). Restaurants
+// are referenced by the ClickHouse composite (processorId, restaurantId) —
+// `restaurants.id` is the scraper's dedup key and what every child table FKs
+// to, while `external_id` is only unique within a processor.
+
+enum CompetitionTrackState {
+  tracked
+  ignored
+}
+
+model competition_user_restaurant_pref {
+  id           String                @id @default(cuid())
+  userId       String
+  user         user                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  processorId  Int // ClickHouse processors.id
+  restaurantId Int // ClickHouse restaurants.id
+  state        CompetitionTrackState @default(tracked)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  @@unique([userId, processorId, restaurantId])
+  @@index([userId, state])
+}
+
+// Per-user dashboard layout for /competition. `widgetType` is a plain string
+// (registry key validated in code) so adding phase-2 widgets needs no
+// migration; `settings` holds widget-specific configuration.
+model competition_dashboard_widget {
+  id         String   @id @default(cuid())
+  userId     String
+  user       user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  widgetType String
+  position   Int
+  settings   Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, position])
 }
