@@ -41,7 +41,7 @@ See `Plans.md` for current task backlog and status.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **marketing-offers-tool** (3878 symbols, 7035 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **marketing-offers-tool** (3849 symbols, 7014 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -79,18 +79,17 @@ This project is indexed by GitNexus as **marketing-offers-tool** (3878 symbols, 
 | Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
 | Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
-| Work in the Services area (161 symbols) | `.claude/skills/generated/services/SKILL.md` |
-| Work in the Server area (118 symbols) | `.claude/skills/generated/server/SKILL.md` |
-| Work in the Image-generator area (80 symbols) | `.claude/skills/generated/image-generator/SKILL.md` |
-| Work in the Image-providers area (53 symbols) | `.claude/skills/generated/image-providers/SKILL.md` |
+| Work in the Services area (165 symbols) | `.claude/skills/generated/services/SKILL.md` |
+| Work in the Server area (120 symbols) | `.claude/skills/generated/server/SKILL.md` |
+| Work in the Image-generator area (72 symbols) | `.claude/skills/generated/image-generator/SKILL.md` |
+| Work in the Image-providers area (61 symbols) | `.claude/skills/generated/image-providers/SKILL.md` |
 | Work in the Inspiration area (32 symbols) | `.claude/skills/generated/inspiration/SKILL.md` |
-| Work in the Competition area (29 symbols) | `.claude/skills/generated/competition/SKILL.md` |
-| Work in the Google-reviews area (27 symbols) | `.claude/skills/generated/google-reviews/SKILL.md` |
+| Work in the Competition area (32 symbols) | `.claude/skills/generated/competition/SKILL.md` |
+| Work in the Google-reviews area (26 symbols) | `.claude/skills/generated/google-reviews/SKILL.md` |
 | Work in the Copywriter area (17 symbols) | `.claude/skills/generated/copywriter/SKILL.md` |
 | Work in the Scripts area (13 symbols) | `.claude/skills/generated/scripts/SKILL.md` |
 | Work in the Text-providers area (10 symbols) | `.claude/skills/generated/text-providers/SKILL.md` |
 | Work in the Guidelines area (9 symbols) | `.claude/skills/generated/guidelines/SKILL.md` |
-| Work in the Offers area (6 symbols) | `.claude/skills/generated/offers/SKILL.md` |
 | Work in the Assets area (6 symbols) | `.claude/skills/generated/assets/SKILL.md` |
 | Work in the Brand-context area (6 symbols) | `.claude/skills/generated/brand-context/SKILL.md` |
 

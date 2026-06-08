@@ -1,4 +1,5 @@
 <script lang="ts">
+  import MonitorToggleButton from "$lib/components/competition/monitor-toggle-button.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
@@ -327,13 +328,14 @@
                   </Table.Head>
                 {/each}
                 <Table.Head>Sentiment</Table.Head>
+                <Table.Head class="w-12"></Table.Head>
               </Table.Row>
             </Table.Header>
             <Table.Body>
               {#if rows.length === 0}
                 <Table.Row>
                   <Table.Cell
-                    colspan={sortableColumns.length + 1}
+                    colspan={sortableColumns.length + 2}
                     class="text-muted-foreground py-8 text-center"
                   >
                     No businesses match the current filters.
@@ -397,6 +399,12 @@
                           >Not analyzed</span
                         >
                       {/if}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <MonitorToggleButton
+                        entityId={row.cid}
+                        isMonitored={row.isMonitored === true}
+                      />
                     </Table.Cell>
                   </Table.Row>
                 {/each}

@@ -5,8 +5,14 @@ import {
   googleReviewsSortDirections,
   sentimentValues,
 } from "$lib/services/google-reviews/google-reviews";
+import {
+  addMonitor,
+  getMonitoredEntityIds,
+  removeMonitor,
+} from "$lib/services/user-monitor.server";
+import { fail, redirect } from "@sveltejs/kit";
 import { z } from "zod";
-import type { PageServerLoad } from "./$types";
+import type { Actions, PageServerLoad } from "./$types";
 
 const PAGE_SIZE = 50;
 
@@ -47,8 +53,16 @@ const searchParamsSchema = z.object({
   sortDir: z.enum(googleReviewsSortDirections).default("desc").catch("desc"),
 });
 
+const monitorSchema = z.object({
+  entityId: z.string().trim().min(1),
+});
+
 export const load: PageServerLoad = async (event) => {
-  await requirePermission(event, { googleReviews: ["view"] });
+  const { user } = await requirePermission(event, { googleReviews: ["view"] });
+
+  if (!user) {
+    redirect(302, "/login");
+  }
 
   const parseResult = searchParamsSchema.safeParse({
     page: event.url.searchParams.get("page") ?? 1,
@@ -68,13 +82,8 @@ export const load: PageServerLoad = async (event) => {
   const sortBy = parseResult.success ? parseResult.data.sortBy : "review_count";
   const sortDir = parseResult.success ? parseResult.data.sortDir : "desc";
 
-  return {
-    query,
-    stars,
-    sentiment,
-    sortBy,
-    sortDir,
-    businessesPage: await listBusinessesPage({
+  const [businessesPage, monitoredIds] = await Promise.all([
+    listBusinessesPage({
       page,
       pageSize: PAGE_SIZE,
       query,
@@ -83,5 +92,68 @@ export const load: PageServerLoad = async (event) => {
       sortBy,
       sortDir,
     }),
+    getMonitoredEntityIds(user.id, "competition"),
+  ]);
+
+  businessesPage.items = businessesPage.items.map((business) => ({
+    ...business,
+    isMonitored: monitoredIds.has(business.cid),
+  }));
+
+  return {
+    query,
+    stars,
+    sentiment,
+    sortBy,
+    sortDir,
+    businessesPage,
   };
+};
+
+export const actions: Actions = {
+  addMonitor: async (event) => {
+    const { user } = await requirePermission(event, {
+      googleReviews: ["view"],
+    });
+
+    if (!user) {
+      redirect(302, "/login");
+    }
+
+    const formData = await event.request.formData();
+    const parseResult = monitorSchema.safeParse({
+      entityId: formData.get("entityId"),
+    });
+
+    if (!parseResult.success) {
+      return fail(400, { message: "Invalid monitor request." });
+    }
+
+    await addMonitor(user.id, "competition", parseResult.data.entityId);
+
+    return { success: true };
+  },
+
+  removeMonitor: async (event) => {
+    const { user } = await requirePermission(event, {
+      googleReviews: ["view"],
+    });
+
+    if (!user) {
+      redirect(302, "/login");
+    }
+
+    const formData = await event.request.formData();
+    const parseResult = monitorSchema.safeParse({
+      entityId: formData.get("entityId"),
+    });
+
+    if (!parseResult.success) {
+      return fail(400, { message: "Invalid monitor request." });
+    }
+
+    await removeMonitor(user.id, "competition", parseResult.data.entityId);
+
+    return { success: true };
+  },
 };

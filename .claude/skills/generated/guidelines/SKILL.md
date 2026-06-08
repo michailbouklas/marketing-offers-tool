@@ -10,7 +10,7 @@ description: "Skill for the Guidelines area of marketing-offers-tool. 9 symbols 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how requireApiPermission, load, GET work
+- Understanding how requireApiPermission, setBrandGuidelines, listGeneratedCopies work
 - Modifying guidelines-related functionality
 
 ## Key Files
@@ -19,30 +19,30 @@ description: "Skill for the Guidelines area of marketing-offers-tool. 9 symbols 
 |------|---------|
 | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | parseBrandId, brandSlugOr404, GET, PUT |
 | `src/lib/server/auth-guards.ts` | requireApiPermission |
-| `src/routes/copywriter/me/+page.server.ts` | load |
-| `src/routes/api/copy/+server.ts` | GET |
-| `src/lib/services/copywriter/copywriter.server.ts` | listGeneratedCopies |
 | `src/lib/services/brand-context/brand-context.server.ts` | setBrandGuidelines |
+| `src/lib/services/copywriter/copywriter.server.ts` | listGeneratedCopies |
+| `src/routes/api/copy/+server.ts` | GET |
+| `src/routes/copywriter/me/+page.server.ts` | load |
 
 ## Entry Points
 
 Start here when exploring this area:
 
 - **`requireApiPermission`** (Function) — `src/lib/server/auth-guards.ts:153`
-- **`load`** (Function) — `src/routes/copywriter/me/+page.server.ts:4`
-- **`GET`** (Function) — `src/routes/api/copy/+server.ts:5`
-- **`listGeneratedCopies`** (Function) — `src/lib/services/copywriter/copywriter.server.ts:23`
 - **`setBrandGuidelines`** (Function) — `src/lib/services/brand-context/brand-context.server.ts:134`
+- **`listGeneratedCopies`** (Function) — `src/lib/services/copywriter/copywriter.server.ts:23`
+- **`GET`** (Function) — `src/routes/api/copy/+server.ts:5`
+- **`load`** (Function) — `src/routes/copywriter/me/+page.server.ts:4`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
 | `requireApiPermission` | Function | `src/lib/server/auth-guards.ts` | 153 |
-| `load` | Function | `src/routes/copywriter/me/+page.server.ts` | 4 |
-| `GET` | Function | `src/routes/api/copy/+server.ts` | 5 |
-| `listGeneratedCopies` | Function | `src/lib/services/copywriter/copywriter.server.ts` | 23 |
 | `setBrandGuidelines` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 134 |
+| `listGeneratedCopies` | Function | `src/lib/services/copywriter/copywriter.server.ts` | 23 |
+| `GET` | Function | `src/routes/api/copy/+server.ts` | 5 |
+| `load` | Function | `src/routes/copywriter/me/+page.server.ts` | 4 |
 | `GET` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 44 |
 | `PUT` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 53 |
 | `parseBrandId` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 16 |
@@ -67,8 +67,8 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Server | 4 calls |
-| Services | 1 calls |
+| Server | 3 calls |
+| Services | 2 calls |
 | Image-generator | 1 calls |
 
 ## How to Explore

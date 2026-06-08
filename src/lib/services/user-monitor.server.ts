@@ -4,7 +4,8 @@ import { prisma } from "$lib/server/prisma";
  * Cross-section per-user monitor list ("favorites"). `section` scopes an entry
  * to a feature area and `entityId` is that section's stable identifier as a
  * string: for `competition` it is the ClickHouse composite
- * `"${processorId}:${restaurantId}"`; for `googleReviews` it is `businesses.cid`.
+ * `"${processorId}:${restaurantId}"` or, on Google Reviews businesses,
+ * `businesses.cid`.
  */
 export type MonitorSectionValue = "competition" | "googleReviews";
 

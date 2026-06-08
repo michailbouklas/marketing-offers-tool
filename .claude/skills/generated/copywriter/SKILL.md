@@ -70,8 +70,9 @@ Start here when exploring this area:
 | Area | Connections |
 |------|-------------|
 | Text-providers | 2 calls |
-| Image-generator | 2 calls |
 | Guidelines | 2 calls |
+| Image-generator | 1 calls |
+| Image-providers | 1 calls |
 
 ## How to Explore
 

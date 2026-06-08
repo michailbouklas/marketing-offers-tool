@@ -21,8 +21,8 @@ description: "Skill for the Inspiration area of marketing-offers-tool. 32 symbol
 | `src/lib/server/object-store.server.ts` | list, list, list, remove, remove (+1) |
 | `src/lib/services/inspiration/category-form.ts` | getDefaultDeleteItemFormData, getDefaultCreateCategoryFormData, getDefaultRenameCategoryFormData, getDefaultDeleteCategoryFormData |
 | `src/lib/server/inspiration/frontmatter.ts` | parseFrontmatter, sanitizeValue, lines |
-| `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | load |
 | `src/routes/admin/prompt-gallery/[slug]/+page.server.ts` | load |
+| `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | load |
 | `src/lib/server/brand-storage.ts` | deleteBrandAsset |
 | `src/routes/api/admin/prompt-gallery/[slug]/items/[item]/+server.ts` | PUT |
 | `src/routes/admin/prompt-gallery/+page.server.ts` | load |
@@ -47,18 +47,18 @@ Start here when exploring this area:
 | `listItems` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 229 |
 | `parseFrontmatter` | Function | `src/lib/server/inspiration/frontmatter.ts` | 32 |
 | `getDefaultDeleteItemFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 54 |
-| `load` | Function | `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | 9 |
 | `load` | Function | `src/routes/admin/prompt-gallery/[slug]/+page.server.ts` | 17 |
+| `load` | Function | `src/routes/image-generator/inspiration/[slug]/+page.server.ts` | 9 |
 | `deleteBrandAsset` | Function | `src/lib/server/brand-storage.ts` | 85 |
 | `inspirationImageKey` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 88 |
 | `getItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 256 |
 | `updateItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 306 |
 | `deleteItem` | Function | `src/lib/server/inspiration/inspiration-storage.server.ts` | 344 |
 | `PUT` | Function | `src/routes/api/admin/prompt-gallery/[slug]/items/[item]/+server.ts` | 10 |
-| `load` | Function | `src/routes/admin/prompt-gallery/+page.server.ts` | 22 |
 | `getDefaultCreateCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 42 |
 | `getDefaultRenameCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 46 |
 | `getDefaultDeleteCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 50 |
+| `load` | Function | `src/routes/admin/prompt-gallery/+page.server.ts` | 22 |
 | `lines` | Function | `src/lib/server/inspiration/frontmatter.ts` | 21 |
 | `list` | Method | `src/lib/server/object-store.server.ts` | 46 |
 

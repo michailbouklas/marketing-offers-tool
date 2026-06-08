@@ -1,16 +1,16 @@
 ---
 name: image-providers
-description: "Skill for the Image-providers area of marketing-offers-tool. 53 symbols across 16 files."
+description: "Skill for the Image-providers area of marketing-offers-tool. 61 symbols across 18 files."
 ---
 
 # Image-providers
 
-53 symbols | 16 files | Cohesion: 82%
+61 symbols | 18 files | Cohesion: 82%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how POST, load, listPresetsForUser work
+- Understanding how POST, load, stringArray work
 - Modifying image-providers-related functionality
 
 ## Key Files
@@ -22,11 +22,11 @@ description: "Skill for the Image-providers area of marketing-offers-tool. 53 sy
 | `src/lib/services/image-providers/enhance.server.ts` | PromptEnhancerError, callChatCompletion, parseEnhanceContent, normalizeClarifyingQuestions, safeJson (+3) |
 | `src/lib/services/image-providers/model-sizes.ts` | greatestCommonDivisor, parseSize, ratioOf, sizeLabel, concreteSizes (+2) |
 | `src/lib/services/image-providers/imagerouter.server.ts` | ImageRouterImageProvider, ImageRouterProviderError, generateImage, safeParseError, resolveImageBytes (+1) |
+| `src/lib/services/image-providers/types.ts` | isProviderRequestError, generateImage, generateImage, ImageProvider, FakeProvider |
 | `src/lib/services/image-providers/imagerouter-models.server.ts` | stringArray, toModelList, fetchImageRouterModelCaps |
-| `src/lib/services/image-providers/types.ts` | ImageProvider, FakeProvider |
+| `src/lib/services/image-generator/orchestrate.server.ts` | toJsonValue, recordFailureLog, generateWithFailureLogging |
+| `src/lib/services/copywriter/generate.server.ts` | toJsonValue, recordFailureLogs |
 | `src/lib/services/image-providers/model-display.ts` | splitModelId, modelLabel |
-| `src/routes/api/images/structured-prompt/+server.ts` | POST |
-| `src/routes/image-generator/+page.server.ts` | load |
 
 ## Entry Points
 
@@ -34,9 +34,9 @@ Start here when exploring this area:
 
 - **`POST`** (Function) — `src/routes/api/images/structured-prompt/+server.ts:12`
 - **`load`** (Function) — `src/routes/image-generator/+page.server.ts:9`
-- **`listPresetsForUser`** (Function) — `src/lib/services/image-generator/composer-library.server.ts:84`
 - **`stringArray`** (Function) — `src/lib/services/image-providers/imagerouter-models.server.ts:27`
 - **`toModelList`** (Function) — `src/lib/services/image-providers/imagerouter-models.server.ts:35`
+- **`fetchImageRouterModelCaps`** (Function) — `src/lib/services/image-providers/imagerouter-models.server.ts:57`
 
 ## Key Symbols
 
@@ -53,15 +53,15 @@ Start here when exploring this area:
 | `PromptEnhancer` | Class | `src/lib/services/image-providers/enhance.server.ts` | 106 |
 | `POST` | Function | `src/routes/api/images/structured-prompt/+server.ts` | 12 |
 | `load` | Function | `src/routes/image-generator/+page.server.ts` | 9 |
-| `listPresetsForUser` | Function | `src/lib/services/image-generator/composer-library.server.ts` | 84 |
 | `stringArray` | Function | `src/lib/services/image-providers/imagerouter-models.server.ts` | 27 |
 | `toModelList` | Function | `src/lib/services/image-providers/imagerouter-models.server.ts` | 35 |
 | `fetchImageRouterModelCaps` | Function | `src/lib/services/image-providers/imagerouter-models.server.ts` | 57 |
 | `buildImageGeneratorConfig` | Function | `src/lib/services/image-providers/config.server.ts` | 66 |
-| `GET` | Function | `src/routes/api/images/presets/+server.ts` | 9 |
+| `listPresetsForUser` | Function | `src/lib/services/image-generator/composer-library.server.ts` | 84 |
 | `GET` | Function | `src/routes/api/images/config/+server.ts` | 5 |
+| `GET` | Function | `src/routes/api/images/presets/+server.ts` | 9 |
+| `isProviderRequestError` | Function | `src/lib/services/image-providers/types.ts` | 56 |
 | `parseSize` | Function | `src/lib/services/image-providers/model-sizes.ts` | 17 |
-| `ratioOf` | Function | `src/lib/services/image-providers/model-sizes.ts` | 36 |
 
 ## Execution Flows
 

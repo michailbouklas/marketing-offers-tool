@@ -76,6 +76,7 @@ export type GoogleBusinessRow = {
   positiveCount: number;
   neutralCount: number;
   negativeCount: number;
+  isMonitored?: boolean;
 };
 
 // --- Business detail ---

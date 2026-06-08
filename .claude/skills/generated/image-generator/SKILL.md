@@ -1,11 +1,11 @@
 ---
 name: image-generator
-description: "Skill for the Image-generator area of marketing-offers-tool. 80 symbols across 22 files."
+description: "Skill for the Image-generator area of marketing-offers-tool. 72 symbols across 20 files."
 ---
 
 # Image-generator
 
-80 symbols | 22 files | Cohesion: 79%
+72 symbols | 20 files | Cohesion: 79%
 
 ## When to Use
 
@@ -20,13 +20,13 @@ description: "Skill for the Image-generator area of marketing-offers-tool. 80 sy
 | `src/lib/services/image-generator/image-generator.server.ts` | clampPage, clampPageSize, getDateRange, buildHistoryWhere, listGeneratedImagesHistoryForUser (+14) |
 | `src/lib/services/image-generator/image-generator-client.ts` | listBrandAssets, attachBrandAssetAsReference, fetchBrandGuidelines, jsonOrThrow, uploadReferences (+12) |
 | `src/lib/services/image-generator/composer-library.server.ts` | toTemplateDTO, assertAssignedBrands, listTemplatesForUser, createTemplate, updateTemplate (+4) |
-| `src/lib/services/image-generator/orchestrate.server.ts` | toJsonValue, recordFailureLog, generateWithFailureLogging, isImageQuality, isImageBackground (+3) |
+| `src/lib/services/image-generator/orchestrate.server.ts` | isImageQuality, isImageBackground, isInputFidelity, generateOneRow, kickoffPendingGenerations |
 | `src/lib/services/image-generator/structured-prompt.ts` | cleanList, serializeStructuredPrompt, set, mergeSuggestionIntoState |
-| `src/lib/services/image-providers/types.ts` | isProviderRequestError, generateImage, generateImage |
 | `src/lib/services/image-generator/generate.server.ts` | GenerateValidationError, buildFinalPrompt, createPendingGenerations |
-| `src/lib/services/copywriter/generate.server.ts` | toJsonValue, recordFailureLogs |
 | `src/routes/api/images/templates/+server.ts` | GET, POST |
 | `src/lib/server/generations-history.ts` | loadGenerationsHistory |
+| `src/routes/image-generator/me/+page.server.ts` | load |
+| `src/routes/api/images/templates/[id]/+server.ts` | PATCH |
 
 ## Entry Points
 
@@ -60,8 +60,8 @@ Start here when exploring this area:
 | `deleteTemplate` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 242 |
 | `refreshTemplates` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 247 |
 | `loadGenerationsHistory` | Function | `src/lib/server/generations-history.ts` | 28 |
-| `load` | Function | `src/routes/image-generator/me/+page.server.ts` | 4 |
 | `listGeneratedImagesHistoryForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 216 |
+| `listGeneratedImagePromptGroupsForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 243 |
 
 ## Execution Flows
 
@@ -83,8 +83,8 @@ Start here when exploring this area:
 | Area | Connections |
 |------|-------------|
 | Server | 18 calls |
-| Image-providers | 5 calls |
 | Services | 5 calls |
+| Image-providers | 4 calls |
 
 ## How to Explore
 
