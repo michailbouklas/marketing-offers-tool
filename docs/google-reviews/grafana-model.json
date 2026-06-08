@@ -1,0 +1,966 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 21,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT COUNT(*)::bigint AS total_businesses FROM businesses WHERE category ~* '$category' AND cid ~* '$business'",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Businesses",
+      "type": "stat"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT COALESCE(SUM(rs.review_count),0)::bigint AS total_reviews FROM review_summaries rs JOIN businesses b ON b.cid = rs.business_cid WHERE b.category ~* '$category' AND b.cid ~* '$business'",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Reviews",
+      "type": "stat"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "format": "time_series",
+          "rawSql": "SELECT $__timeGroupAlias(brt.day, '1d', 0), COALESCE(SUM(brt.max_review_count),0) AS reviews FROM business_review_trends brt JOIN business_overview bo ON bo.cid = brt.business_cid WHERE $__timeFilter(brt.day) AND bo.category ~* '$category' AND bo.cid ~* '$business' GROUP BY time ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Reviews per Day",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 5,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "format": "time_series",
+          "rawSql": "SELECT $__timeGroupAlias(brt.day, '1d'), AVG(brt.avg_rating) AS avg_rating FROM business_review_trends brt JOIN business_overview bo ON bo.cid = brt.business_cid WHERE $__timeFilter(brt.day) AND bo.category ~* '$category' AND bo.cid ~* '$business' GROUP BY time ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Average Review Rating per Day",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 6,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT stars, count FROM ( SELECT '1 Star' AS stars, COALESCE(SUM(rs.rating_1_count),0) AS count FROM review_summaries rs JOIN businesses b ON b.cid = rs.business_cid WHERE b.category ~* '$category' AND b.cid ~* '$business' UNION ALL SELECT '2 Star', COALESCE(SUM(rs.rating_2_count),0) FROM review_summaries rs JOIN businesses b ON b.cid = rs.business_cid WHERE b.category ~* '$category' AND b.cid ~* '$business' UNION ALL SELECT '3 Star', COALESCE(SUM(rs.rating_3_count),0) FROM review_summaries rs JOIN businesses b ON b.cid = rs.business_cid WHERE b.category ~* '$category' AND b.cid ~* '$business' UNION ALL SELECT '4 Star', COALESCE(SUM(rs.rating_4_count),0) FROM review_summaries rs JOIN businesses b ON b.cid = rs.business_cid WHERE b.category ~* '$category' AND b.cid ~* '$business' UNION ALL SELECT '5 Star', COALESCE(SUM(rs.rating_5_count),0) FROM review_summaries rs JOIN businesses b ON b.cid = rs.business_cid WHERE b.category ~* '$category' AND b.cid ~* '$business' ) s ORDER BY stars",
+          "refId": "A"
+        }
+      ],
+      "title": "Star Rating Distribution",
+      "type": "barchart"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT bo.title AS \"Business\", COALESCE(bo.average_rating,0) AS \"Avg Rating\", COALESCE(bo.review_count,0) AS \"Reviews\" FROM business_overview bo WHERE bo.category ~* '$category' AND bo.cid ~* '$business' ORDER BY \"Avg Rating\" DESC NULLS LAST, \"Reviews\" DESC LIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Businesses by Rating",
+      "type": "table"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 7,
+      "options": {
+        "controls": {
+          "mouseWheelZoom": true,
+          "showAttribution": true,
+          "showDebug": false,
+          "showMeasure": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "opacity": 0.4,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "fixed": 5,
+                  "max": 15,
+                  "min": 2
+                },
+                "symbol": {
+                  "fixed": "build/img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "symbolAlign": {
+                  "horizontal": "center",
+                  "vertical": "center"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "location": {
+              "mode": "auto"
+            },
+            "name": "Layer 1",
+            "tooltip": true,
+            "type": "markers"
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "allLayers": true,
+          "id": "zero",
+          "lat": 0,
+          "lon": 0,
+          "noRepeat": false,
+          "zoom": 1
+        }
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT bo.longitude AS longitude, bo.latitude AS latitude, bo.title AS name, COALESCE(bo.average_rating,0) AS rating, COALESCE(bo.review_count,0) AS reviews, bo.category FROM business_overview bo WHERE bo.category ~* '$category' AND bo.cid ~* '$business' AND bo.latitude IS NOT NULL AND bo.longitude IS NOT NULL",
+          "refId": "A"
+        }
+      ],
+      "title": "Businesses Map",
+      "type": "geomap"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "% Adoption"
+            },
+            "properties": []
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "id": 14,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      },
+      "pluginVersion": "12.2.0",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT fa.feature_category AS \"Category\", fa.feature_name AS \"Feature\", fa.total_businesses AS \"Total Businesses\", fa.businesses_with_feature AS \"With Feature\", fa.feature_percentage AS \"% Adoption\" FROM feature_analysis fa ORDER BY fa.feature_category, fa.feature_percentage DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Feature Adoption (Across Businesses)",
+      "type": "table"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 26
+      },
+      "id": 15,
+      "options": {},
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT os.operating_pattern AS \"Operating Pattern\", COUNT(*) AS \"Businesses\" FROM operating_summary os JOIN businesses b ON b.cid = os.cid WHERE b.category ~* '$category' AND b.cid ~* '$business' GROUP BY 1 ORDER BY 2 DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Operating Pattern Distribution",
+      "type": "barchart"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              },
+              {
+                "color": "orange",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Popularity"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
+      "id": 9,
+      "options": {},
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT bo.title AS \"Business\", pth.day_of_week AS \"Day\", pth.hour_of_day AS \"Hour\", pth.popularity_score AS \"Popularity\", pth.busy_level AS \"Busy Level\" FROM popular_times_heatmap pth JOIN business_overview bo ON bo.cid = pth.business_cid WHERE bo.category ~* '$category' AND bo.cid ~* '$business' AND pth.day_of_week ~* '$day' ORDER BY 1,2,3",
+          "refId": "A"
+        }
+      ],
+      "title": "Popular Times (Table)",
+      "type": "table"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
+      "id": 10,
+      "options": {},
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT b.title AS \"Business\", oh.day_of_week AS \"Day\", oh.hours AS \"Hours (JSON)\" FROM operating_hours oh JOIN businesses b ON b.cid = oh.business_cid WHERE b.cid ~* '$business' ORDER BY 1,2",
+          "refId": "A"
+        }
+      ],
+      "title": "Operating Hours (Selected Businesses)",
+      "type": "table"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 42
+      },
+      "id": 16,
+      "options": {},
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT COALESCE(bo.price_range,'Unknown') AS \"Price Range\", COUNT(*) AS \"Businesses\" FROM business_overview bo WHERE bo.category ~* '$category' AND bo.cid ~* '$business' GROUP BY 1 ORDER BY 2 DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Price Range Distribution",
+      "type": "barchart"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      },
+      "id": 11,
+      "options": {},
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT bf.feature_category AS \"Category\", bf.feature_name AS \"Feature\", SUM(CASE WHEN bf.is_enabled THEN 1 ELSE 0 END) AS \"Enabled Count\" FROM business_features bf JOIN businesses b ON b.cid = bf.business_cid WHERE b.category ~* '$category' AND b.cid ~* '$business' GROUP BY 1,2 ORDER BY 3 DESC LIMIT 50",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Features Enabled",
+      "type": "table"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Δ Rating"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Δ Reviews"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 62
+      },
+      "id": 12,
+      "options": {},
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT b.title AS \"Business\", lbm.review_rating AS \"Rating\", lbm.review_count AS \"Reviews\", lbm.rating_change AS \"Δ Rating\", lbm.count_change AS \"Δ Reviews\", lbm.recorded_at AS \"Recorded At\" FROM latest_business_review_metrics lbm JOIN businesses b ON b.cid = lbm.business_cid WHERE b.category ~* '$category' AND b.cid ~* '$business' ORDER BY lbm.recorded_at DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Latest Business Metrics",
+      "type": "table"
+    },
+    {
+      "datasource": "google-maps-scraper",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Rating Trend"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Review Count Trend"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 72
+      },
+      "id": 13,
+      "options": {},
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT b.title AS \"Business\", brc.recorded_at AS \"Recorded At\", brc.review_rating AS \"Rating\", brc.review_count AS \"Reviews\", brc.rating_change AS \"Δ Rating\", brc.count_change AS \"Δ Reviews\", brc.rating_trend AS \"Rating Trend\", brc.review_count_trend AS \"Review Count Trend\" FROM business_review_changes brc JOIN businesses b ON b.cid = brc.business_cid WHERE b.category ~* '$category' AND b.cid ~* '$business' AND $__timeFilter(brc.recorded_at) ORDER BY brc.recorded_at DESC LIMIT 200",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Review Changes",
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "5m",
+  "schemaVersion": 42,
+  "tags": ["google-maps", "overview", "businesses", "reviews"],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": ["$__all"]
+        },
+        "datasource": "google-maps-scraper",
+        "includeAll": true,
+        "label": "Category",
+        "multi": true,
+        "name": "category",
+        "options": [],
+        "query": "SELECT DISTINCT category FROM businesses WHERE category IS NOT NULL ORDER BY 1",
+        "refresh": 1,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": ["$__all"]
+        },
+        "datasource": "google-maps-scraper",
+        "includeAll": true,
+        "label": "Business",
+        "multi": true,
+        "name": "business",
+        "options": [],
+        "query": "SELECT title AS __text, cid AS __value FROM businesses WHERE category ~* '$category' ORDER BY title",
+        "refresh": 1,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": ["$__all"]
+        },
+        "datasource": "google-maps-scraper",
+        "includeAll": true,
+        "label": "Day of Week",
+        "multi": true,
+        "name": "day",
+        "options": [],
+        "query": "SELECT DISTINCT day_of_week FROM popular_times ORDER BY 1",
+        "refresh": 1,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6M",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Google Maps Scraper - Overview",
+  "uid": "f3710749-1f1f-47f3-a48e-a5fc7bf7537a",
+  "version": 2
+}
