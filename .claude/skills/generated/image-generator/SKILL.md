@@ -1,11 +1,11 @@
 ---
 name: image-generator
-description: "Skill for the Image-generator area of marketing-offers-tool. 79 symbols across 20 files."
+description: "Skill for the Image-generator area of marketing-offers-tool. 80 symbols across 22 files."
 ---
 
 # Image-generator
 
-79 symbols | 20 files | Cohesion: 79%
+80 symbols | 22 files | Cohesion: 79%
 
 ## When to Use
 
@@ -17,7 +17,7 @@ description: "Skill for the Image-generator area of marketing-offers-tool. 79 sy
 
 | File | Symbols |
 |------|---------|
-| `src/lib/services/image-generator/image-generator.server.ts` | clampPage, clampPageSize, getDateRange, buildHistoryWhere, listGeneratedImagesHistoryForUser (+15) |
+| `src/lib/services/image-generator/image-generator.server.ts` | clampPage, clampPageSize, getDateRange, buildHistoryWhere, listGeneratedImagesHistoryForUser (+14) |
 | `src/lib/services/image-generator/image-generator-client.ts` | listBrandAssets, attachBrandAssetAsReference, fetchBrandGuidelines, jsonOrThrow, uploadReferences (+12) |
 | `src/lib/services/image-generator/composer-library.server.ts` | toTemplateDTO, assertAssignedBrands, listTemplatesForUser, createTemplate, updateTemplate (+4) |
 | `src/lib/services/image-generator/orchestrate.server.ts` | toJsonValue, recordFailureLog, generateWithFailureLogging, isImageQuality, isImageBackground (+3) |
@@ -67,26 +67,24 @@ Start here when exploring this area:
 
 | Flow | Type | Steps |
 |------|------|-------|
+| `GET → AssertSafeKey` | cross_community | 6 |
+| `GET → LoadEnvFileValues` | cross_community | 6 |
 | `POST → LoadEnvFileValues` | cross_community | 6 |
 | `POST → AssertSafeKey` | cross_community | 6 |
 | `POST → From` | cross_community | 6 |
+| `Load → AssertSafeKey` | cross_community | 6 |
+| `Load → LoadEnvFileValues` | cross_community | 6 |
+| `GET → AssertSafeKey` | cross_community | 6 |
+| `GET → LoadEnvFileValues` | cross_community | 6 |
 | `CreatePendingGenerations → LoadEnvFileValues` | cross_community | 6 |
-| `Load → GetDateRange` | cross_community | 5 |
-| `POST → ToModelList` | cross_community | 5 |
-| `POST → StringArray` | cross_community | 5 |
-| `POST → GetSupabaseClient` | cross_community | 5 |
-| `POST → SupabaseObjectStore` | cross_community | 5 |
-| `POST → LocalObjectStore` | cross_community | 5 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| Server | 8 calls |
-| [id] | 7 calls |
+| Server | 18 calls |
 | Image-providers | 5 calls |
 | Services | 5 calls |
-| Brand-context | 1 calls |
 
 ## How to Explore
 

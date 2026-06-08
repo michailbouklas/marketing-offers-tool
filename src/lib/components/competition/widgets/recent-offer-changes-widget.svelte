@@ -61,7 +61,7 @@
                 >
               </Table.Cell>
               <Table.Cell class="text-right tabular-nums">
-                {formatCompetitionMoney(change.resultingPrice, null)}
+                {formatCompetitionMoney(change.price, change.currency)}
               </Table.Cell>
             </Table.Row>
           {/each}

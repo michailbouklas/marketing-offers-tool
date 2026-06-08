@@ -9,22 +9,15 @@
 
   let { history }: { history: OfferHistory } = $props();
 
-  // Prefer the resulting price; fall back to the discount value when the
-  // scraper never captured a price for this offer.
-  const usesPrice = $derived(
-    history.points.some((point) => point.resultingPrice !== null),
-  );
   const chartData = $derived(
     history.points
       .map((point) => ({
         date: new Date(point.effectiveAt),
-        value: usesPrice ? point.resultingPrice : point.discountValue,
+        value: point.price,
       }))
       .filter((point): point is PricePoint => point.value !== null),
   );
-  const seriesLabel = $derived(
-    usesPrice ? "Resulting price" : "Discount value",
-  );
+  const seriesLabel = "Price";
 
   const chartConfig = $derived({
     value: { label: seriesLabel, color: "var(--chart-1)" },

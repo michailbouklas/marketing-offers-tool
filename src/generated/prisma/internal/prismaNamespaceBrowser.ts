@@ -86,6 +86,9 @@ export const ModelName = {
   bolt_regex_patters: "bolt_regex_patters",
   competition_user_restaurant_pref: "competition_user_restaurant_pref",
   competition_dashboard_widget: "competition_dashboard_widget",
+  google_reviews_user_business_pref: "google_reviews_user_business_pref",
+  google_reviews_dashboard_widget: "google_reviews_dashboard_widget",
+  user_monitor: "user_monitor",
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -582,6 +585,42 @@ export const Competition_dashboard_widgetScalarFieldEnum = {
 
 export type Competition_dashboard_widgetScalarFieldEnum =
   (typeof Competition_dashboard_widgetScalarFieldEnum)[keyof typeof Competition_dashboard_widgetScalarFieldEnum];
+
+export const Google_reviews_user_business_prefScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  businessCid: "businessCid",
+  state: "state",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type Google_reviews_user_business_prefScalarFieldEnum =
+  (typeof Google_reviews_user_business_prefScalarFieldEnum)[keyof typeof Google_reviews_user_business_prefScalarFieldEnum];
+
+export const Google_reviews_dashboard_widgetScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  widgetType: "widgetType",
+  position: "position",
+  settings: "settings",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type Google_reviews_dashboard_widgetScalarFieldEnum =
+  (typeof Google_reviews_dashboard_widgetScalarFieldEnum)[keyof typeof Google_reviews_dashboard_widgetScalarFieldEnum];
+
+export const User_monitorScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  section: "section",
+  entityId: "entityId",
+  createdAt: "createdAt",
+} as const;
+
+export type User_monitorScalarFieldEnum =
+  (typeof User_monitorScalarFieldEnum)[keyof typeof User_monitorScalarFieldEnum];
 
 export const SortOrder = {
   asc: "asc",

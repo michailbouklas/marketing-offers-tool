@@ -1,11 +1,11 @@
 ---
 name: copywriter
-description: "Skill for the Copywriter area of marketing-offers-tool. 16 symbols across 6 files."
+description: "Skill for the Copywriter area of marketing-offers-tool. 17 symbols across 7 files."
 ---
 
 # Copywriter
 
-16 symbols | 6 files | Cohesion: 79%
+17 symbols | 7 files | Cohesion: 80%
 
 ## When to Use
 
@@ -22,6 +22,7 @@ description: "Skill for the Copywriter area of marketing-offers-tool. 16 symbols
 | `src/lib/services/text-providers/types.ts` | generateText, generateText |
 | `src/lib/services/copywriter/copywriter.server.ts` | CopyFeedbackError, updateVariantFeedback |
 | `src/lib/services/copywriter/types.ts` | getChannelConstraints |
+| `src/routes/api/copy/generate/+server.ts` | POST |
 | `src/routes/api/copy/[id]/+server.ts` | PATCH |
 
 ## Entry Points
@@ -45,6 +46,7 @@ Start here when exploring this area:
 | `buildCopyJsonSchema` | Function | `src/lib/services/copywriter/generate.server.ts` | 139 |
 | `parseVariants` | Function | `src/lib/services/copywriter/generate.server.ts` | 184 |
 | `generateCopy` | Function | `src/lib/services/copywriter/generate.server.ts` | 334 |
+| `POST` | Function | `src/routes/api/copy/generate/+server.ts` | 9 |
 | `toGeneratedCopyDTO` | Function | `src/lib/services/copywriter/generate.server.ts` | 285 |
 | `updateVariantFeedback` | Function | `src/lib/services/copywriter/copywriter.server.ts` | 78 |
 | `PATCH` | Function | `src/routes/api/copy/[id]/+server.ts` | 15 |
@@ -68,9 +70,8 @@ Start here when exploring this area:
 | Area | Connections |
 |------|-------------|
 | Text-providers | 2 calls |
-| Brand-context | 1 calls |
-| Image-generator | 1 calls |
-| Assets | 1 calls |
+| Image-generator | 2 calls |
+| Guidelines | 2 calls |
 
 ## How to Explore
 

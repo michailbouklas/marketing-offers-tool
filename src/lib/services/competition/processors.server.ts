@@ -11,8 +11,8 @@ type ProcessorRow = {
 export async function listProcessors(): Promise<Processor[]> {
   const result = await clickhouse.query({
     query: `
-      SELECT id, name
-      FROM ${competitionTable("processors")} FINAL
+      SELECT id, coalesce(nullIf(display_name, ''), name) AS name
+      FROM ${competitionTable("aggregator")} FINAL
       ORDER BY name ASC
     `,
     format: "JSONEachRow",

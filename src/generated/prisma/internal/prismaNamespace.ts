@@ -444,6 +444,9 @@ export const ModelName = {
   bolt_regex_patters: "bolt_regex_patters",
   competition_user_restaurant_pref: "competition_user_restaurant_pref",
   competition_dashboard_widget: "competition_dashboard_widget",
+  google_reviews_user_business_pref: "google_reviews_user_business_pref",
+  google_reviews_dashboard_widget: "google_reviews_dashboard_widget",
+  user_monitor: "user_monitor",
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -497,7 +500,10 @@ export type TypeMap<
       | "api_BOLT_lines"
       | "bolt_regex_patters"
       | "competition_user_restaurant_pref"
-      | "competition_dashboard_widget";
+      | "competition_dashboard_widget"
+      | "google_reviews_user_business_pref"
+      | "google_reviews_dashboard_widget"
+      | "user_monitor";
     txIsolationLevel: TransactionIsolationLevel;
   };
   model: {
@@ -2933,6 +2939,234 @@ export type TypeMap<
         };
       };
     };
+    google_reviews_user_business_pref: {
+      payload: Prisma.$google_reviews_user_business_prefPayload<ExtArgs>;
+      fields: Prisma.google_reviews_user_business_prefFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.google_reviews_user_business_prefFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_user_business_prefPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.google_reviews_user_business_prefFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_user_business_prefPayload>;
+        };
+        findFirst: {
+          args: Prisma.google_reviews_user_business_prefFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_user_business_prefPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.google_reviews_user_business_prefFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_user_business_prefPayload>;
+        };
+        findMany: {
+          args: Prisma.google_reviews_user_business_prefFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_user_business_prefPayload>[];
+        };
+        create: {
+          args: Prisma.google_reviews_user_business_prefCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_user_business_prefPayload>;
+        };
+        createMany: {
+          args: Prisma.google_reviews_user_business_prefCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.google_reviews_user_business_prefCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_user_business_prefPayload>[];
+        };
+        delete: {
+          args: Prisma.google_reviews_user_business_prefDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_user_business_prefPayload>;
+        };
+        update: {
+          args: Prisma.google_reviews_user_business_prefUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_user_business_prefPayload>;
+        };
+        deleteMany: {
+          args: Prisma.google_reviews_user_business_prefDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.google_reviews_user_business_prefUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.google_reviews_user_business_prefUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_user_business_prefPayload>[];
+        };
+        upsert: {
+          args: Prisma.google_reviews_user_business_prefUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_user_business_prefPayload>;
+        };
+        aggregate: {
+          args: Prisma.Google_reviews_user_business_prefAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGoogle_reviews_user_business_pref>;
+        };
+        groupBy: {
+          args: Prisma.google_reviews_user_business_prefGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Google_reviews_user_business_prefGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.google_reviews_user_business_prefCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Google_reviews_user_business_prefCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    google_reviews_dashboard_widget: {
+      payload: Prisma.$google_reviews_dashboard_widgetPayload<ExtArgs>;
+      fields: Prisma.google_reviews_dashboard_widgetFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.google_reviews_dashboard_widgetFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_dashboard_widgetPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.google_reviews_dashboard_widgetFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_dashboard_widgetPayload>;
+        };
+        findFirst: {
+          args: Prisma.google_reviews_dashboard_widgetFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_dashboard_widgetPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.google_reviews_dashboard_widgetFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_dashboard_widgetPayload>;
+        };
+        findMany: {
+          args: Prisma.google_reviews_dashboard_widgetFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_dashboard_widgetPayload>[];
+        };
+        create: {
+          args: Prisma.google_reviews_dashboard_widgetCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_dashboard_widgetPayload>;
+        };
+        createMany: {
+          args: Prisma.google_reviews_dashboard_widgetCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.google_reviews_dashboard_widgetCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_dashboard_widgetPayload>[];
+        };
+        delete: {
+          args: Prisma.google_reviews_dashboard_widgetDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_dashboard_widgetPayload>;
+        };
+        update: {
+          args: Prisma.google_reviews_dashboard_widgetUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_dashboard_widgetPayload>;
+        };
+        deleteMany: {
+          args: Prisma.google_reviews_dashboard_widgetDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.google_reviews_dashboard_widgetUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.google_reviews_dashboard_widgetUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_dashboard_widgetPayload>[];
+        };
+        upsert: {
+          args: Prisma.google_reviews_dashboard_widgetUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$google_reviews_dashboard_widgetPayload>;
+        };
+        aggregate: {
+          args: Prisma.Google_reviews_dashboard_widgetAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGoogle_reviews_dashboard_widget>;
+        };
+        groupBy: {
+          args: Prisma.google_reviews_dashboard_widgetGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Google_reviews_dashboard_widgetGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.google_reviews_dashboard_widgetCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Google_reviews_dashboard_widgetCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    user_monitor: {
+      payload: Prisma.$user_monitorPayload<ExtArgs>;
+      fields: Prisma.user_monitorFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.user_monitorFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_monitorPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.user_monitorFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_monitorPayload>;
+        };
+        findFirst: {
+          args: Prisma.user_monitorFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_monitorPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.user_monitorFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_monitorPayload>;
+        };
+        findMany: {
+          args: Prisma.user_monitorFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_monitorPayload>[];
+        };
+        create: {
+          args: Prisma.user_monitorCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_monitorPayload>;
+        };
+        createMany: {
+          args: Prisma.user_monitorCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.user_monitorCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_monitorPayload>[];
+        };
+        delete: {
+          args: Prisma.user_monitorDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_monitorPayload>;
+        };
+        update: {
+          args: Prisma.user_monitorUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_monitorPayload>;
+        };
+        deleteMany: {
+          args: Prisma.user_monitorDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.user_monitorUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.user_monitorUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_monitorPayload>[];
+        };
+        upsert: {
+          args: Prisma.user_monitorUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_monitorPayload>;
+        };
+        aggregate: {
+          args: Prisma.User_monitorAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUser_monitor>;
+        };
+        groupBy: {
+          args: Prisma.user_monitorGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.User_monitorGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.user_monitorCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.User_monitorCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
   };
 } & {
   other: {
@@ -3451,6 +3685,42 @@ export const Competition_dashboard_widgetScalarFieldEnum = {
 export type Competition_dashboard_widgetScalarFieldEnum =
   (typeof Competition_dashboard_widgetScalarFieldEnum)[keyof typeof Competition_dashboard_widgetScalarFieldEnum];
 
+export const Google_reviews_user_business_prefScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  businessCid: "businessCid",
+  state: "state",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type Google_reviews_user_business_prefScalarFieldEnum =
+  (typeof Google_reviews_user_business_prefScalarFieldEnum)[keyof typeof Google_reviews_user_business_prefScalarFieldEnum];
+
+export const Google_reviews_dashboard_widgetScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  widgetType: "widgetType",
+  position: "position",
+  settings: "settings",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type Google_reviews_dashboard_widgetScalarFieldEnum =
+  (typeof Google_reviews_dashboard_widgetScalarFieldEnum)[keyof typeof Google_reviews_dashboard_widgetScalarFieldEnum];
+
+export const User_monitorScalarFieldEnum = {
+  id: "id",
+  userId: "userId",
+  section: "section",
+  entityId: "entityId",
+  createdAt: "createdAt",
+} as const;
+
+export type User_monitorScalarFieldEnum =
+  (typeof User_monitorScalarFieldEnum)[keyof typeof User_monitorScalarFieldEnum];
+
 export const SortOrder = {
   asc: "asc",
   desc: "desc",
@@ -3722,6 +3992,32 @@ export type ListEnumCompetitionTrackStateFieldRefInput<$PrismaModel> =
   FieldRefInputType<$PrismaModel, "CompetitionTrackState[]">;
 
 /**
+ * Reference to a field of type 'GoogleReviewsPrefState'
+ */
+export type EnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "GoogleReviewsPrefState">;
+
+/**
+ * Reference to a field of type 'GoogleReviewsPrefState[]'
+ */
+export type ListEnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "GoogleReviewsPrefState[]">;
+
+/**
+ * Reference to a field of type 'MonitorSection'
+ */
+export type EnumMonitorSectionFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  "MonitorSection"
+>;
+
+/**
+ * Reference to a field of type 'MonitorSection[]'
+ */
+export type ListEnumMonitorSectionFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "MonitorSection[]">;
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -3872,6 +4168,9 @@ export type GlobalOmitConfig = {
   bolt_regex_patters?: Prisma.bolt_regex_pattersOmit;
   competition_user_restaurant_pref?: Prisma.competition_user_restaurant_prefOmit;
   competition_dashboard_widget?: Prisma.competition_dashboard_widgetOmit;
+  google_reviews_user_business_pref?: Prisma.google_reviews_user_business_prefOmit;
+  google_reviews_dashboard_widget?: Prisma.google_reviews_dashboard_widgetOmit;
+  user_monitor?: Prisma.user_monitorOmit;
 };
 
 /* Types for Logging */

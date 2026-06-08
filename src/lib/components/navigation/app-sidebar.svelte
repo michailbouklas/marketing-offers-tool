@@ -3,6 +3,7 @@
   import {
     canAccessAdminSection,
     competitionRoles,
+    googleReviewsRoles,
     hasAnyRole,
     type UserRole,
   } from "$lib/auth/roles";
@@ -16,6 +17,7 @@
   import LightbulbIcon from "@lucide/svelte/icons/lightbulb";
   import ShieldIcon from "@lucide/svelte/icons/shield";
   import TrendingUpIcon from "@lucide/svelte/icons/trending-up";
+  import StarIcon from "@lucide/svelte/icons/star";
   import type { Component } from "svelte";
 
   // `roles` lists the role(s) that may see the item. Omit it for items visible
@@ -87,6 +89,17 @@
         { href: "/competition", label: "Dashboard" },
         { href: "/competition/offers", label: "Active Offers" },
         { href: "/competition/restaurants", label: "Restaurants" },
+      ],
+    },
+    {
+      href: "/google-reviews",
+      label: "Google Reviews",
+      icon: StarIcon,
+      roles: googleReviewsRoles,
+      children: [
+        { href: "/google-reviews", label: "Dashboard" },
+        { href: "/google-reviews/reviews", label: "Reviews" },
+        { href: "/google-reviews/businesses", label: "Businesses" },
       ],
     },
   ];

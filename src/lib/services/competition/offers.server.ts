@@ -2,6 +2,8 @@ import { clickhouse } from "$lib/server/clickhouse";
 import {
   buildWhereClause,
   competitionTable,
+  getCompetitionCurrency,
+  latestProductPriceSubquery,
   parseCount,
   parseNullableNumber,
   utcIsoExpression,
@@ -17,13 +19,10 @@ type OfferQueryRow = {
   id: number;
   name: string;
   description?: string | null;
-  discount_type: string;
-  discount_value?: string | number | null;
-  resulting_price?: string | number | null;
-  currency: string;
-  created_at_iso?: string | null;
-  starts_at_iso?: string | null;
-  ends_at_iso?: string | null;
+  product_id?: number | null;
+  is_active?: number | null;
+  first_seen_iso?: string | null;
+  last_seen_iso?: string | null;
   restaurant_id: number;
   restaurant_name?: string | null;
   processor_id: number;
@@ -34,6 +33,11 @@ type CountRow = {
   total: string | number;
 };
 
+type PriceRow = {
+  product_id: number;
+  price?: string | number | null;
+};
+
 export type ListActiveOffersOptions = {
   page: number;
   pageSize: number;
@@ -42,9 +46,8 @@ export type ListActiveOffersOptions = {
   /** Case-insensitive substring match on the restaurant name. */
   restaurantQuery?: string | null;
   /**
-   * UTC ISO bounds on `created_at` (when the scraper first saw the offer) —
-   * the aggregator `starts_at` / `ends_at` columns are always NULL in the
-   * replica. `from` is inclusive, `to` exclusive.
+   * UTC ISO bounds on `first_seen_at` (when the scraper first saw the offer).
+   * `from` is inclusive, `to` exclusive.
    */
   from?: string | null;
   to?: string | null;
@@ -52,29 +55,29 @@ export type ListActiveOffersOptions = {
   sortDir: CompetitionSortDirection;
 };
 
+// "price" is resolved from the product_price time-series after the page is
+// fetched, so it is sorted client-side (see below); the query falls back to
+// the offer title for a stable order.
 function getSortExpression(sortBy: OfferSortField) {
   switch (sortBy) {
     case "name":
-      return "o.name";
+      return "o.title";
     case "restaurant_name":
       return "ifNull(r.name, '')";
     case "processor_name":
-      return "ifNull(p.name, '')";
-    case "discount_value":
-      return "ifNull(o.discount_value, -1)";
-    case "resulting_price":
-      return "ifNull(o.resulting_price, -1)";
-    case "created_at":
-      return "ifNull(o.created_at, toDateTime64(0, 6))";
+      return "ifNull(a.display_name, ifNull(a.name, ''))";
+    case "first_seen":
+      return "ifNull(o.first_seen_at, toDateTime64(0, 6))";
+    case "price":
+      return "o.title";
   }
 }
 
 function buildFilterClauses(options: ListActiveOffersOptions) {
   return [
-    "o.active = 1",
-    "o.cancelled_at IS NULL",
+    "o.is_active = 1",
     ...(options.processorId != null
-      ? ["o.processor_id = {processor_id:Int32}"]
+      ? ["r.aggregator_id = {processor_id:Int32}"]
       : []),
     ...(options.restaurantId != null
       ? ["o.restaurant_id = {restaurant_id:Int32}"]
@@ -85,10 +88,10 @@ function buildFilterClauses(options: ListActiveOffersOptions) {
         ]
       : []),
     ...(options.from
-      ? ["o.created_at >= parseDateTime64BestEffort({from:String}, 6)"]
+      ? ["o.first_seen_at >= parseDateTime64BestEffort({from:String}, 6)"]
       : []),
     ...(options.to
-      ? ["o.created_at < parseDateTime64BestEffort({to:String}, 6)"]
+      ? ["o.first_seen_at < parseDateTime64BestEffort({to:String}, 6)"]
       : []),
   ];
 }
@@ -109,23 +112,26 @@ function buildFilterParams(options: ListActiveOffersOptions) {
   };
 }
 
-function mapOfferRow(row: OfferQueryRow): CompetitionOfferRow {
-  return {
-    id: row.id,
-    name: row.name,
-    description: row.description ?? null,
-    discountType: row.discount_type,
-    discountValue: parseNullableNumber(row.discount_value),
-    resultingPrice: parseNullableNumber(row.resulting_price),
-    currency: row.currency,
-    createdAt: row.created_at_iso ?? null,
-    startsAt: row.starts_at_iso ?? null,
-    endsAt: row.ends_at_iso ?? null,
-    restaurantId: row.restaurant_id,
-    restaurantName: row.restaurant_name ?? null,
-    processorId: row.processor_id,
-    processorName: row.processor_name ?? null,
-  };
+/** Latest price per product id from the `product_price` time-series. */
+async function fetchLatestPrices(productIds: number[]) {
+  if (productIds.length === 0) {
+    return new Map<number, number | null>();
+  }
+
+  const result = await clickhouse.query({
+    query: latestProductPriceSubquery(
+      "product_id IN ({product_ids:Array(Int32)})",
+    ),
+    query_params: {
+      product_ids: productIds,
+    },
+    format: "JSONEachRow",
+  });
+  const rows = await result.json<PriceRow>();
+
+  return new Map(
+    rows.map((row) => [row.product_id, parseNullableNumber(row.price)]),
+  );
 }
 
 export async function listActiveOffersPage(
@@ -145,12 +151,8 @@ export async function listActiveOffersPage(
   const countResult = await clickhouse.query({
     query: `
       SELECT count() AS total
-      FROM ${competitionTable("offers")} AS o FINAL
-      ${
-        options.restaurantQuery
-          ? `LEFT JOIN ${competitionTable("restaurants")} AS r FINAL ON r.id = o.restaurant_id`
-          : ""
-      }
+      FROM ${competitionTable("offer")} AS o FINAL
+      INNER JOIN ${competitionTable("restaurant")} AS r FINAL ON r.id = o.restaurant_id
       ${whereClause}
     `,
     query_params: filterParams,
@@ -168,22 +170,19 @@ export async function listActiveOffersPage(
     query: `
       SELECT
         o.id AS id,
-        o.name AS name,
+        o.title AS name,
         o.description AS description,
-        o.discount_type AS discount_type,
-        o.discount_value AS discount_value,
-        o.resulting_price AS resulting_price,
-        o.currency AS currency,
-        ${utcIsoExpression("o.created_at")} AS created_at_iso,
-        ${utcIsoExpression("o.starts_at")} AS starts_at_iso,
-        ${utcIsoExpression("o.ends_at")} AS ends_at_iso,
+        o.product_id AS product_id,
+        o.is_active AS is_active,
+        ${utcIsoExpression("o.first_seen_at")} AS first_seen_iso,
+        ${utcIsoExpression("o.last_seen_at")} AS last_seen_iso,
         o.restaurant_id AS restaurant_id,
         r.name AS restaurant_name,
-        o.processor_id AS processor_id,
-        p.name AS processor_name
-      FROM ${competitionTable("offers")} AS o FINAL
-      LEFT JOIN ${competitionTable("restaurants")} AS r FINAL ON r.id = o.restaurant_id
-      LEFT JOIN ${competitionTable("processors")} AS p FINAL ON p.id = o.processor_id
+        r.aggregator_id AS processor_id,
+        coalesce(nullIf(a.display_name, ''), a.name) AS processor_name
+      FROM ${competitionTable("offer")} AS o FINAL
+      INNER JOIN ${competitionTable("restaurant")} AS r FINAL ON r.id = o.restaurant_id
+      LEFT JOIN ${competitionTable("aggregator")} AS a FINAL ON a.id = r.aggregator_id
       ${whereClause}
       ORDER BY ${sortExpression} ${sortDirection}, o.id ASC
       LIMIT {limit:UInt32}
@@ -198,8 +197,45 @@ export async function listActiveOffersPage(
   });
   const rows = await rowsResult.json<OfferQueryRow>();
 
+  const productIds = [
+    ...new Set(
+      rows
+        .map((row) => row.product_id)
+        .filter((id): id is number => id != null),
+    ),
+  ];
+  const prices = await fetchLatestPrices(productIds);
+  const currency = getCompetitionCurrency();
+
+  const items = rows.map<CompetitionOfferRow>((row) => ({
+    id: row.id,
+    name: row.name,
+    description: row.description ?? null,
+    price: row.product_id != null ? (prices.get(row.product_id) ?? null) : null,
+    currency,
+    isActive: row.is_active === 1,
+    firstSeen: row.first_seen_iso ?? null,
+    lastSeen: row.last_seen_iso ?? null,
+    restaurantId: row.restaurant_id,
+    restaurantName: row.restaurant_name ?? null,
+    processorId: row.processor_id,
+    processorName: row.processor_name ?? null,
+  }));
+
+  // Price lives in a separate time-series, so it is sorted within the page
+  // after the merge (nulls last).
+  if (options.sortBy === "price") {
+    const direction = options.sortDir === "desc" ? -1 : 1;
+    items.sort((a, b) => {
+      if (a.price === b.price) return 0;
+      if (a.price === null) return 1;
+      if (b.price === null) return -1;
+      return direction * (a.price - b.price);
+    });
+  }
+
   return {
-    items: rows.map(mapOfferRow),
+    items,
     page: effectivePage,
     pageSize: safePageSize,
     totalItems,

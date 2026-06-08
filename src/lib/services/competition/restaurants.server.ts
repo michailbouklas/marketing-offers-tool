@@ -2,6 +2,8 @@ import { clickhouse } from "$lib/server/clickhouse";
 import {
   buildWhereClause,
   competitionTable,
+  getCompetitionCurrency,
+  latestProductPriceSubquery,
   parseCount,
   parseNullableNumber,
   utcIsoExpression,
@@ -13,6 +15,8 @@ import type {
   MenuCategory,
   MenuProduct,
   OfferHistory,
+  OfferStatusTransition,
+  OfferTimeSeriesPoint,
   Paginated,
   RestaurantDetail,
   RestaurantInfo,
@@ -21,18 +25,18 @@ import type {
 
 type RestaurantQueryRow = {
   id: number;
-  external_id: string;
+  external_id?: string | null;
   name: string;
+  slug?: string | null;
+  page_title?: string | null;
   processor_id: number;
   processor_name?: string | null;
-  brand?: string | null;
-  address?: string | null;
-  phone?: string | null;
   rating?: string | number | null;
-  delivery_fee?: string | number | null;
+  rating_count?: number | null;
+  rating_scale?: string | number | null;
   minimum_order?: string | number | null;
-  delivery_time?: string | null;
-  cuisine_types?: string | null;
+  delivery_info?: string | null;
+  source_url?: string | null;
   created_at_iso?: string | null;
   updated_at_iso?: string | null;
 };
@@ -49,26 +53,20 @@ type ActiveOfferCountRow = {
 type MenuQueryRow = {
   category_id?: number | null;
   category_name?: string | null;
-  category_order?: number | null;
+  category_item_count?: number | null;
   id: number;
   name: string;
   description?: string | null;
   price?: string | number | null;
-  original_price?: string | number | null;
-  currency: string;
-  discount_percentage?: string | number | null;
-  availability?: number | null;
-  offer_name?: string | null;
-  image_url?: string | null;
+  is_offer?: number | null;
 };
 
 type TimeSeriesQueryRow = {
   offer_id: number;
   offer_name?: string | null;
   offer_active?: number | null;
-  status: string;
-  discount_value?: string | number | null;
-  resulting_price?: string | number | null;
+  snapshot_active?: number | null;
+  price?: string | number | null;
   effective_at_iso: string;
 };
 
@@ -76,13 +74,11 @@ type ActiveOfferQueryRow = {
   id: number;
   name: string;
   description?: string | null;
-  discount_type: string;
-  discount_value?: string | number | null;
-  resulting_price?: string | number | null;
-  currency: string;
-  created_at_iso?: string | null;
-  starts_at_iso?: string | null;
-  ends_at_iso?: string | null;
+  product_id?: number | null;
+  is_active?: number | null;
+  price?: string | number | null;
+  first_seen_iso?: string | null;
+  last_seen_iso?: string | null;
 };
 
 export type ListRestaurantsOptions = {
@@ -99,11 +95,9 @@ function getSortExpression(sortBy: RestaurantSortField) {
     case "name":
       return "r.name";
     case "processor_name":
-      return "ifNull(p.name, '')";
-    case "brand":
-      return "ifNull(r.brand, '')";
+      return "ifNull(a.display_name, ifNull(a.name, ''))";
     case "rating":
-      return "ifNull(r.rating, -1)";
+      return "ifNull(r.rating_value, -1)";
     // Sorted client-side after the active-offer counts are merged in; the
     // ClickHouse query falls back to name order.
     case "active_offer_count":
@@ -117,7 +111,7 @@ function buildFilterClauses(options: ListRestaurantsOptions) {
       ? ["positionCaseInsensitiveUTF8(r.name, {query:String}) > 0"]
       : []),
     ...(options.processorId != null
-      ? ["r.processor_id = {processor_id:Int32}"]
+      ? ["r.aggregator_id = {processor_id:Int32}"]
       : []),
   ];
 }
@@ -139,9 +133,8 @@ async function fetchActiveOfferCounts(restaurantIds: number[]) {
   const result = await clickhouse.query({
     query: `
       SELECT restaurant_id, count() AS active_offers
-      FROM ${competitionTable("offers")} FINAL
-      WHERE active = 1
-        AND cancelled_at IS NULL
+      FROM ${competitionTable("offer")} FINAL
+      WHERE is_active = 1
         AND restaurant_id IN ({restaurant_ids:Array(Int32)})
       GROUP BY restaurant_id
     `,
@@ -174,7 +167,7 @@ export async function listRestaurantsPage(
   const countResult = await clickhouse.query({
     query: `
       SELECT count() AS total
-      FROM ${competitionTable("restaurants")} AS r FINAL
+      FROM ${competitionTable("restaurant")} AS r FINAL
       ${whereClause}
     `,
     query_params: filterParams,
@@ -192,19 +185,17 @@ export async function listRestaurantsPage(
     query: `
       SELECT
         r.id AS id,
-        r.external_id AS external_id,
+        r.provider_external_id AS external_id,
         r.name AS name,
-        r.processor_id AS processor_id,
-        p.name AS processor_name,
-        r.brand AS brand,
-        r.address AS address,
-        r.rating AS rating,
-        r.delivery_fee AS delivery_fee,
+        r.aggregator_id AS processor_id,
+        coalesce(nullIf(a.display_name, ''), a.name) AS processor_name,
+        r.rating_value AS rating,
+        r.rating_count AS rating_count,
         r.minimum_order AS minimum_order,
-        r.delivery_time AS delivery_time,
-        r.cuisine_types AS cuisine_types
-      FROM ${competitionTable("restaurants")} AS r FINAL
-      LEFT JOIN ${competitionTable("processors")} AS p FINAL ON p.id = r.processor_id
+        r.delivery_info AS delivery_info,
+        r.source_url AS source_url
+      FROM ${competitionTable("restaurant")} AS r FINAL
+      LEFT JOIN ${competitionTable("aggregator")} AS a FINAL ON a.id = r.aggregator_id
       ${whereClause}
       ORDER BY ${sortExpression} ${sortDirection}, r.id ASC
       LIMIT {limit:UInt32}
@@ -224,19 +215,18 @@ export async function listRestaurantsPage(
 
   const items = rows.map<CompetitionRestaurantRow>((row) => ({
     id: row.id,
-    externalId: row.external_id,
+    externalId: row.external_id ?? "",
     name: row.name,
     processorId: row.processor_id,
     processorName: row.processor_name ?? null,
-    brand: row.brand ?? null,
-    address: row.address ?? null,
     rating: parseNullableNumber(row.rating),
-    deliveryFee: parseNullableNumber(row.delivery_fee),
+    ratingCount: row.rating_count ?? null,
     minimumOrder: parseNullableNumber(row.minimum_order),
-    deliveryTime: row.delivery_time ?? null,
-    cuisineTypes: row.cuisine_types ?? "",
+    deliveryInfo: row.delivery_info ?? null,
+    sourceUrl: row.source_url ?? null,
     activeOfferCount: activeOfferCounts.get(row.id) ?? 0,
     trackState: null,
+    isMonitored: false,
   }));
 
   if (options.sortBy === "active_offer_count") {
@@ -253,7 +243,7 @@ export async function listRestaurantsPage(
   };
 }
 
-function groupMenuRows(rows: MenuQueryRow[]): MenuCategory[] {
+function groupMenuRows(rows: MenuQueryRow[], currency: string): MenuCategory[] {
   const categories = new Map<string, MenuCategory>();
 
   for (const row of rows) {
@@ -265,7 +255,7 @@ function groupMenuRows(rows: MenuQueryRow[]): MenuCategory[] {
       category = {
         id: categoryId,
         name: row.category_name ?? "Uncategorized",
-        displayOrder: row.category_order ?? null,
+        itemCount: row.category_item_count ?? null,
         products: [],
       };
       categories.set(key, category);
@@ -276,16 +266,39 @@ function groupMenuRows(rows: MenuQueryRow[]): MenuCategory[] {
       name: row.name,
       description: row.description ?? null,
       price: parseNullableNumber(row.price),
-      originalPrice: parseNullableNumber(row.original_price),
-      currency: row.currency,
-      discountPercentage: parseNullableNumber(row.discount_percentage),
-      available: row.availability === 1,
-      offerName: row.offer_name ?? null,
-      imageUrl: row.image_url ?? null,
+      currency,
+      isOffer: row.is_offer === 1,
     } satisfies MenuProduct);
   }
 
   return [...categories.values()];
+}
+
+/**
+ * Collapse a chronological list of scrape points into status-change events.
+ * A transition is emitted only when the status differs from the previous
+ * point, so a run of "active" scrapes yields a single "activated" event and the
+ * following "inactive" scrape yields a single "went inactive" event.
+ * Expects `points` ordered oldest-first (the query sorts by recorded_at ASC).
+ */
+function computeTransitions(
+  points: OfferTimeSeriesPoint[],
+): OfferStatusTransition[] {
+  const transitions: OfferStatusTransition[] = [];
+  let previousStatus: string | null = null;
+
+  for (const point of points) {
+    if (point.status !== previousStatus) {
+      transitions.push({
+        status: point.status,
+        effectiveAt: point.effectiveAt,
+        price: point.price,
+      });
+      previousStatus = point.status;
+    }
+  }
+
+  return transitions;
 }
 
 function groupTimeSeriesRows(rows: TimeSeriesQueryRow[]): OfferHistory[] {
@@ -300,16 +313,20 @@ function groupTimeSeriesRows(rows: TimeSeriesQueryRow[]): OfferHistory[] {
         offerName: row.offer_name ?? `Offer #${row.offer_id}`,
         active: row.offer_active === 1,
         points: [],
+        transitions: [],
       };
       histories.set(row.offer_id, history);
     }
 
     history.points.push({
       effectiveAt: row.effective_at_iso,
-      status: row.status,
-      discountValue: parseNullableNumber(row.discount_value),
-      resultingPrice: parseNullableNumber(row.resulting_price),
+      status: row.snapshot_active === 1 ? "active" : "inactive",
+      price: parseNullableNumber(row.price),
     });
+  }
+
+  for (const history of histories.values()) {
+    history.transitions = computeTransitions(history.points);
   }
 
   return [...histories.values()];
@@ -323,6 +340,14 @@ export async function getRestaurantDetail(
     restaurant_id: restaurantId,
     processor_id: processorId,
   };
+  const currency = getCompetitionCurrency();
+  // Scope the latest-price aggregation to this restaurant's products.
+  const restaurantPriceSubquery = latestProductPriceSubquery(
+    `product_id IN (
+       SELECT id FROM ${competitionTable("product")} FINAL
+       WHERE restaurant_id = {restaurant_id:Int32}
+     )`,
+  );
 
   const [restaurantRows, offerRows, menuRows, timeSeriesRows] =
     await Promise.all([
@@ -331,24 +356,24 @@ export async function getRestaurantDetail(
           query: `
             SELECT
               r.id AS id,
-              r.external_id AS external_id,
+              r.provider_external_id AS external_id,
               r.name AS name,
-              r.processor_id AS processor_id,
-              p.name AS processor_name,
-              r.brand AS brand,
-              r.address AS address,
-              r.phone AS phone,
-              r.rating AS rating,
-              r.delivery_fee AS delivery_fee,
+              r.slug AS slug,
+              r.page_title AS page_title,
+              r.aggregator_id AS processor_id,
+              coalesce(nullIf(a.display_name, ''), a.name) AS processor_name,
+              r.rating_value AS rating,
+              r.rating_count AS rating_count,
+              r.rating_scale AS rating_scale,
               r.minimum_order AS minimum_order,
-              r.delivery_time AS delivery_time,
-              r.cuisine_types AS cuisine_types,
+              r.delivery_info AS delivery_info,
+              r.source_url AS source_url,
               ${utcIsoExpression("r.created_at")} AS created_at_iso,
               ${utcIsoExpression("r.updated_at")} AS updated_at_iso
-            FROM ${competitionTable("restaurants")} AS r FINAL
-            LEFT JOIN ${competitionTable("processors")} AS p FINAL ON p.id = r.processor_id
+            FROM ${competitionTable("restaurant")} AS r FINAL
+            LEFT JOIN ${competitionTable("aggregator")} AS a FINAL ON a.id = r.aggregator_id
             WHERE r.id = {restaurant_id:Int32}
-              AND r.processor_id = {processor_id:Int32}
+              AND r.aggregator_id = {processor_id:Int32}
             LIMIT 1
           `,
           query_params: detailParams,
@@ -360,21 +385,18 @@ export async function getRestaurantDetail(
           query: `
             SELECT
               o.id AS id,
-              o.name AS name,
+              o.title AS name,
               o.description AS description,
-              o.discount_type AS discount_type,
-              o.discount_value AS discount_value,
-              o.resulting_price AS resulting_price,
-              o.currency AS currency,
-              ${utcIsoExpression("o.created_at")} AS created_at_iso,
-              ${utcIsoExpression("o.starts_at")} AS starts_at_iso,
-              ${utcIsoExpression("o.ends_at")} AS ends_at_iso
-            FROM ${competitionTable("offers")} AS o FINAL
+              o.product_id AS product_id,
+              o.is_active AS is_active,
+              pp.price AS price,
+              ${utcIsoExpression("o.first_seen_at")} AS first_seen_iso,
+              ${utcIsoExpression("o.last_seen_at")} AS last_seen_iso
+            FROM ${competitionTable("offer")} AS o FINAL
+            LEFT JOIN (${restaurantPriceSubquery}) AS pp ON pp.product_id = o.product_id
             WHERE o.restaurant_id = {restaurant_id:Int32}
-              AND o.processor_id = {processor_id:Int32}
-              AND o.active = 1
-              AND o.cancelled_at IS NULL
-            ORDER BY o.name ASC, o.id ASC
+              AND o.is_active = 1
+            ORDER BY o.title ASC, o.id ASC
           `,
           query_params: detailParams,
           format: "JSONEachRow",
@@ -386,28 +408,19 @@ export async function getRestaurantDetail(
             SELECT
               c.id AS category_id,
               c.name AS category_name,
-              c.display_order AS category_order,
+              c.item_count AS category_item_count,
               pr.id AS id,
-              pr.name AS name,
+              pr.title AS name,
               pr.description AS description,
-              pr.price AS price,
-              pr.original_price AS original_price,
-              pr.currency AS currency,
-              pr.discount_percentage AS discount_percentage,
-              pr.availability AS availability,
-              pr.offer_name AS offer_name,
-              pr.image_url AS image_url
-            FROM ${competitionTable("products")} AS pr FINAL
-            LEFT JOIN ${competitionTable("categories")} AS c FINAL ON c.id = pr.category_id
+              pp.price AS price,
+              pr.is_offer AS is_offer
+            FROM ${competitionTable("product")} AS pr FINAL
+            LEFT JOIN ${competitionTable("restaurant_category")} AS c FINAL ON c.id = pr.category_id
+            LEFT JOIN (${restaurantPriceSubquery}) AS pp ON pp.product_id = pr.id
             WHERE pr.restaurant_id = {restaurant_id:Int32}
-              AND pr.processor_id = {processor_id:Int32}
             ORDER BY
-              isNull(c.display_order) ASC,
-              c.display_order ASC,
               ifNull(c.name, '') ASC,
-              isNull(pr.display_order) ASC,
-              pr.display_order ASC,
-              pr.name ASC
+              pr.title ASC
           `,
           query_params: detailParams,
           format: "JSONEachRow",
@@ -417,18 +430,18 @@ export async function getRestaurantDetail(
         .query({
           query: `
             SELECT
-              ots.offer_id AS offer_id,
-              o.name AS offer_name,
-              o.active AS offer_active,
-              ots.status AS status,
-              ots.discount_value AS discount_value,
-              ots.resulting_price AS resulting_price,
-              ${utcIsoExpression("ots.effective_at")} AS effective_at_iso
-            FROM ${competitionTable("offer_time_series")} AS ots FINAL
-            INNER JOIN ${competitionTable("offers")} AS o FINAL ON o.id = ots.offer_id
+              os.offer_id AS offer_id,
+              o.title AS offer_name,
+              o.is_active AS offer_active,
+              os.is_active AS snapshot_active,
+              pp.price AS price,
+              ${utcIsoExpression("os.recorded_at")} AS effective_at_iso
+            FROM ${competitionTable("offer_snapshot")} AS os FINAL
+            INNER JOIN ${competitionTable("offer")} AS o FINAL ON o.id = os.offer_id
+            LEFT JOIN ${competitionTable("product_price")} AS pp FINAL
+              ON pp.product_id = os.product_id AND pp.session_id = os.session_id
             WHERE o.restaurant_id = {restaurant_id:Int32}
-              AND o.processor_id = {processor_id:Int32}
-            ORDER BY ots.offer_id ASC, ots.effective_at ASC
+            ORDER BY os.offer_id ASC, os.recorded_at ASC
           `,
           query_params: detailParams,
           format: "JSONEachRow",
@@ -444,18 +457,18 @@ export async function getRestaurantDetail(
 
   const restaurant: RestaurantInfo = {
     id: restaurantRow.id,
-    externalId: restaurantRow.external_id,
+    externalId: restaurantRow.external_id ?? "",
     name: restaurantRow.name,
+    slug: restaurantRow.slug ?? null,
+    pageTitle: restaurantRow.page_title ?? null,
     processorId: restaurantRow.processor_id,
     processorName: restaurantRow.processor_name ?? null,
-    brand: restaurantRow.brand ?? null,
-    address: restaurantRow.address ?? null,
-    phone: restaurantRow.phone ?? null,
     rating: parseNullableNumber(restaurantRow.rating),
-    deliveryFee: parseNullableNumber(restaurantRow.delivery_fee),
+    ratingCount: restaurantRow.rating_count ?? null,
+    ratingScale: parseNullableNumber(restaurantRow.rating_scale),
     minimumOrder: parseNullableNumber(restaurantRow.minimum_order),
-    deliveryTime: restaurantRow.delivery_time ?? null,
-    cuisineTypes: restaurantRow.cuisine_types ?? "",
+    deliveryInfo: restaurantRow.delivery_info ?? null,
+    sourceUrl: restaurantRow.source_url ?? null,
     createdAt: restaurantRow.created_at_iso ?? null,
     updatedAt: restaurantRow.updated_at_iso ?? null,
   };
@@ -464,13 +477,11 @@ export async function getRestaurantDetail(
     id: row.id,
     name: row.name,
     description: row.description ?? null,
-    discountType: row.discount_type,
-    discountValue: parseNullableNumber(row.discount_value),
-    resultingPrice: parseNullableNumber(row.resulting_price),
-    currency: row.currency,
-    createdAt: row.created_at_iso ?? null,
-    startsAt: row.starts_at_iso ?? null,
-    endsAt: row.ends_at_iso ?? null,
+    price: parseNullableNumber(row.price),
+    currency,
+    isActive: row.is_active === 1,
+    firstSeen: row.first_seen_iso ?? null,
+    lastSeen: row.last_seen_iso ?? null,
     restaurantId: restaurant.id,
     restaurantName: restaurant.name,
     processorId: restaurant.processorId,
@@ -480,7 +491,7 @@ export async function getRestaurantDetail(
   return {
     restaurant,
     activeOffers,
-    menu: groupMenuRows(menuRows),
+    menu: groupMenuRows(menuRows, currency),
     offerHistories: groupTimeSeriesRows(timeSeriesRows),
   };
 }

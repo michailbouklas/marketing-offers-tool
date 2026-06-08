@@ -53,3 +53,23 @@
 ## 2026-06-05T08:56:41Z [045acf4f-21e]
 
 📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ
+
+## 2026-06-05T12:55:45Z [9f2c9943-c52]
+
+📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ
+
+## 2026-06-05T12:55:49Z [9f2c9943-c52]
+
+📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ
+
+## 2026-06-08T07:56:27Z [17736daa-06d]
+
+📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ
+
+## 2026-06-08T10:37:08Z [21bfa8ef-46b]
+
+📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ
+
+## 2026-06-08T10:37:28Z [21bfa8ef-46b]
+
+📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ

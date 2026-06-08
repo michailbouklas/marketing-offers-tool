@@ -14,7 +14,12 @@ export type Paginated<T> = {
   totalPages: number;
 };
 
-/** Aggregator platform (Wolt, Foody, ...) — `processors` in the replica. */
+/**
+ * Aggregator platform (Wolt, Foody, ...) — the `aggregator` table in the
+ * replica. Kept named "Processor" internally; `name` is the aggregator's
+ * `display_name` (falling back to `name`). `id` maps onto the `processorId`
+ * stored in user preferences.
+ */
 export type Processor = {
   id: number;
   name: string;
@@ -31,9 +36,8 @@ export const offerSortFields = [
   "name",
   "restaurant_name",
   "processor_name",
-  "discount_value",
-  "resulting_price",
-  "created_at",
+  "price",
+  "first_seen",
 ] as const;
 
 export type OfferSortField = (typeof offerSortFields)[number];
@@ -47,18 +51,19 @@ export type CompetitionOfferRow = {
   id: number;
   name: string;
   description: string | null;
-  discountType: string;
-  discountValue: number | null;
-  resultingPrice: number | null;
-  currency: string;
   /**
-   * When the scraper first saw the offer. The aggregator-provided
-   * `starts_at` / `ends_at` windows are currently always NULL in the replica,
-   * so "first seen" is the reliable time dimension.
+   * Latest price of the offer's linked product (from the `product_price`
+   * time-series). The schema carries no discount value/type — an offer's
+   * presence is the discount signal. `null` when the offer has no linked
+   * product or no captured price.
    */
-  createdAt: string | null;
-  startsAt: string | null;
-  endsAt: string | null;
+  price: number | null;
+  /** Currency for `price`, supplied from env (the schema stores none). */
+  currency: string;
+  isActive: boolean;
+  /** When the scraper first / last saw the offer (UTC ISO). */
+  firstSeen: string | null;
+  lastSeen: string | null;
   restaurantId: number;
   restaurantName: string | null;
   processorId: number;
@@ -70,7 +75,6 @@ export type CompetitionOfferRow = {
 export const restaurantSortFields = [
   "name",
   "processor_name",
-  "brand",
   "rating",
   "active_offer_count",
 ] as const;
@@ -83,15 +87,14 @@ export type CompetitionRestaurantRow = {
   name: string;
   processorId: number;
   processorName: string | null;
-  brand: string | null;
-  address: string | null;
   rating: number | null;
-  deliveryFee: number | null;
+  ratingCount: number | null;
   minimumOrder: number | null;
-  deliveryTime: string | null;
-  cuisineTypes: string;
+  deliveryInfo: string | null;
+  sourceUrl: string | null;
   activeOfferCount: number;
   trackState: CompetitionTrackStateValue | null;
+  isMonitored: boolean;
 };
 
 // --- Restaurant detail ---
@@ -100,16 +103,16 @@ export type RestaurantInfo = {
   id: number;
   externalId: string;
   name: string;
+  slug: string | null;
+  pageTitle: string | null;
   processorId: number;
   processorName: string | null;
-  brand: string | null;
-  address: string | null;
-  phone: string | null;
   rating: number | null;
-  deliveryFee: number | null;
+  ratingCount: number | null;
+  ratingScale: number | null;
   minimumOrder: number | null;
-  deliveryTime: string | null;
-  cuisineTypes: string;
+  deliveryInfo: string | null;
+  sourceUrl: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 };
@@ -118,27 +121,40 @@ export type MenuProduct = {
   id: number;
   name: string;
   description: string | null;
+  /** Latest price from the `product_price` time-series. */
   price: number | null;
-  originalPrice: number | null;
   currency: string;
-  discountPercentage: number | null;
-  available: boolean;
-  offerName: string | null;
-  imageUrl: string | null;
+  /** `product.is_offer` — the product is part of an offer/promotion. */
+  isOffer: boolean;
 };
 
 export type MenuCategory = {
   id: number | null;
   name: string;
-  displayOrder: number | null;
+  itemCount: number | null;
   products: MenuProduct[];
 };
 
 export type OfferTimeSeriesPoint = {
   effectiveAt: string;
+  /** "active" / "inactive", derived from `offer_snapshot.is_active`. */
   status: string;
-  discountValue: number | null;
-  resultingPrice: number | null;
+  /** Price captured for that scrape session (from `product_price`). */
+  price: number | null;
+};
+
+/**
+ * A status change in an offer's lifecycle: the scrape that first recorded the
+ * offer becoming active or inactive. Consecutive same-status scrapes are
+ * collapsed, so this is the "activated on / went inactive on" timeline.
+ */
+export type OfferStatusTransition = {
+  /** "active" / "inactive", derived from `offer_snapshot.is_active`. */
+  status: string;
+  /** When this status first took effect (the scrape that recorded the change). */
+  effectiveAt: string;
+  /** Price captured at that transition (from `product_price`). */
+  price: number | null;
 };
 
 /** Full time series for one offer of a restaurant (chart + event history). */
@@ -146,7 +162,10 @@ export type OfferHistory = {
   offerId: number;
   offerName: string;
   active: boolean;
+  /** Every recorded scrape point — used to draw the price chart. */
   points: OfferTimeSeriesPoint[];
+  /** Status-change events only — used for the readable history table. */
+  transitions: OfferStatusTransition[];
 };
 
 export type RestaurantDetail = {
@@ -171,9 +190,10 @@ export type RecentOfferChange = {
   restaurantId: number | null;
   restaurantName: string | null;
   processorName: string | null;
+  /** "active" / "inactive", derived from `offer_snapshot.is_active`. */
   status: string;
-  discountValue: number | null;
-  resultingPrice: number | null;
+  price: number | null;
+  currency: string;
   effectiveAt: string;
 };
 
@@ -229,26 +249,4 @@ export function formatCompetitionDateTime(iso: string | null | undefined) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
-}
-
-/**
- * Human label for an offer discount, e.g. "20%" / "−2.50 €" / the raw type
- * when no value is present.
- */
-export function formatCompetitionDiscount(
-  discountType: string | null | undefined,
-  discountValue: number | null | undefined,
-  currency?: string | null,
-) {
-  if (discountValue === null || discountValue === undefined) {
-    return discountType ?? "—";
-  }
-
-  const normalizedType = (discountType ?? "").toLowerCase();
-
-  if (normalizedType.includes("percent")) {
-    return `${discountValue}%`;
-  }
-
-  return formatCompetitionMoney(discountValue, currency);
 }

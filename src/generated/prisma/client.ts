@@ -209,3 +209,20 @@ export type competition_user_restaurant_pref =
  */
 export type competition_dashboard_widget =
   Prisma.competition_dashboard_widgetModel;
+/**
+ * Model google_reviews_user_business_pref
+ *
+ */
+export type google_reviews_user_business_pref =
+  Prisma.google_reviews_user_business_prefModel;
+/**
+ * Model google_reviews_dashboard_widget
+ *
+ */
+export type google_reviews_dashboard_widget =
+  Prisma.google_reviews_dashboard_widgetModel;
+/**
+ * Model user_monitor
+ *
+ */
+export type user_monitor = Prisma.user_monitorModel;

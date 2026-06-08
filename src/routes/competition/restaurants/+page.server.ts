@@ -10,6 +10,11 @@ import {
 } from "$lib/services/competition/preferences.server";
 import { listProcessors } from "$lib/services/competition/processors.server";
 import { listRestaurantsPage } from "$lib/services/competition/restaurants.server";
+import {
+  addMonitor,
+  getMonitoredEntityIds,
+  removeMonitor,
+} from "$lib/services/user-monitor.server";
 import { fail, redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import type { Actions, PageServerLoad } from "./$types";
@@ -54,6 +59,10 @@ const toggleTrackSchema = z.object({
   state: z.union([z.enum(competitionTrackStates), z.literal("")]),
 });
 
+const monitorSchema = z.object({
+  entityId: z.string().trim().min(1),
+});
+
 export const load: PageServerLoad = async (event) => {
   const { user } = await requirePermission(event, { competition: ["view"] });
 
@@ -83,7 +92,7 @@ export const load: PageServerLoad = async (event) => {
       ? parseResult.data.processorId
       : null;
 
-  const [restaurantsPage, prefs] = await Promise.all([
+  const [restaurantsPage, prefs, monitoredIds] = await Promise.all([
     listRestaurantsPage({
       page,
       pageSize: PAGE_SIZE,
@@ -93,11 +102,13 @@ export const load: PageServerLoad = async (event) => {
       sortDir,
     }),
     getUserRestaurantPrefs(user.id),
+    getMonitoredEntityIds(user.id, "competition"),
   ]);
 
   restaurantsPage.items = restaurantsPage.items.map((restaurant) => ({
     ...restaurant,
     trackState: prefs.get(`${restaurant.processorId}:${restaurant.id}`) ?? null,
+    isMonitored: monitoredIds.has(`${restaurant.processorId}:${restaurant.id}`),
   }));
 
   return {
@@ -136,6 +147,48 @@ export const actions: Actions = {
       { processorId, restaurantId },
       state === "" ? null : state,
     );
+
+    return { success: true };
+  },
+
+  addMonitor: async (event) => {
+    const { user } = await requirePermission(event, { competition: ["view"] });
+
+    if (!user) {
+      redirect(302, "/login");
+    }
+
+    const formData = await event.request.formData();
+    const parseResult = monitorSchema.safeParse({
+      entityId: formData.get("entityId"),
+    });
+
+    if (!parseResult.success) {
+      return fail(400, { message: "Invalid monitor request." });
+    }
+
+    await addMonitor(user.id, "competition", parseResult.data.entityId);
+
+    return { success: true };
+  },
+
+  removeMonitor: async (event) => {
+    const { user } = await requirePermission(event, { competition: ["view"] });
+
+    if (!user) {
+      redirect(302, "/login");
+    }
+
+    const formData = await event.request.formData();
+    const parseResult = monitorSchema.safeParse({
+      entityId: formData.get("entityId"),
+    });
+
+    if (!parseResult.success) {
+      return fail(400, { message: "Invalid monitor request." });
+    }
+
+    await removeMonitor(user.id, "competition", parseResult.data.entityId);
 
     return { success: true };
   },

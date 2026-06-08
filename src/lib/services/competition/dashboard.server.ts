@@ -1,6 +1,7 @@
 import { clickhouse } from "$lib/server/clickhouse";
 import {
   competitionTable,
+  getCompetitionCurrency,
   parseCount,
   parseNullableNumber,
   utcIsoExpression,
@@ -31,9 +32,8 @@ type RecentChangeRow = {
   restaurant_id?: number | null;
   restaurant_name?: string | null;
   processor_name?: string | null;
-  status: string;
-  discount_value?: string | number | null;
-  resulting_price?: string | number | null;
+  snapshot_active?: number | null;
+  price?: string | number | null;
   effective_at_iso: string;
 };
 
@@ -45,13 +45,13 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       .query({
         query: `
           SELECT
-            (SELECT count() FROM ${competitionTable("restaurants")} FINAL) AS total_restaurants,
-            (SELECT count() FROM ${competitionTable("products")} FINAL) AS total_products,
-            (SELECT count() FROM ${competitionTable("offers")} FINAL) AS total_offers,
+            (SELECT count() FROM ${competitionTable("restaurant")} FINAL) AS total_restaurants,
+            (SELECT count() FROM ${competitionTable("product")} FINAL) AS total_products,
+            (SELECT count() FROM ${competitionTable("offer")} FINAL) AS total_offers,
             (
               SELECT count()
-              FROM ${competitionTable("offers")} FINAL
-              WHERE active = 1 AND cancelled_at IS NULL
+              FROM ${competitionTable("offer")} FINAL
+              WHERE is_active = 1
             ) AS active_offers
         `,
         format: "JSONEachRow",
@@ -61,14 +61,15 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       .query({
         query: `
           SELECT
-            o.processor_id AS processor_id,
-            any(p.name) AS processor_name,
+            r.aggregator_id AS processor_id,
+            any(coalesce(nullIf(a.display_name, ''), a.name)) AS processor_name,
             count() AS active_offers,
             uniqExact(o.restaurant_id) AS restaurants_with_offers
-          FROM ${competitionTable("offers")} AS o FINAL
-          LEFT JOIN ${competitionTable("processors")} AS p FINAL ON p.id = o.processor_id
-          WHERE o.active = 1 AND o.cancelled_at IS NULL
-          GROUP BY o.processor_id
+          FROM ${competitionTable("offer")} AS o FINAL
+          INNER JOIN ${competitionTable("restaurant")} AS r FINAL ON r.id = o.restaurant_id
+          LEFT JOIN ${competitionTable("aggregator")} AS a FINAL ON a.id = r.aggregator_id
+          WHERE o.is_active = 1
+          GROUP BY r.aggregator_id
           ORDER BY active_offers DESC
         `,
         format: "JSONEachRow",
@@ -78,20 +79,21 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       .query({
         query: `
           SELECT
-            ots.offer_id AS offer_id,
-            o.name AS offer_name,
+            os.offer_id AS offer_id,
+            o.title AS offer_name,
             o.restaurant_id AS restaurant_id,
             r.name AS restaurant_name,
-            p.name AS processor_name,
-            ots.status AS status,
-            ots.discount_value AS discount_value,
-            ots.resulting_price AS resulting_price,
-            ${utcIsoExpression("ots.effective_at")} AS effective_at_iso
-          FROM ${competitionTable("offer_time_series")} AS ots FINAL
-          LEFT JOIN ${competitionTable("offers")} AS o FINAL ON o.id = ots.offer_id
-          LEFT JOIN ${competitionTable("restaurants")} AS r FINAL ON r.id = o.restaurant_id
-          LEFT JOIN ${competitionTable("processors")} AS p FINAL ON p.id = o.processor_id
-          ORDER BY ots.effective_at DESC
+            coalesce(nullIf(a.display_name, ''), a.name) AS processor_name,
+            os.is_active AS snapshot_active,
+            pp.price AS price,
+            ${utcIsoExpression("os.recorded_at")} AS effective_at_iso
+          FROM ${competitionTable("offer_snapshot")} AS os FINAL
+          LEFT JOIN ${competitionTable("offer")} AS o FINAL ON o.id = os.offer_id
+          LEFT JOIN ${competitionTable("restaurant")} AS r FINAL ON r.id = o.restaurant_id
+          LEFT JOIN ${competitionTable("aggregator")} AS a FINAL ON a.id = r.aggregator_id
+          LEFT JOIN ${competitionTable("product_price")} AS pp FINAL
+            ON pp.product_id = os.product_id AND pp.session_id = os.session_id
+          ORDER BY os.recorded_at DESC
           LIMIT {limit:UInt32}
         `,
         query_params: {
@@ -101,6 +103,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       })
       .then((result) => result.json<RecentChangeRow>()),
   ]);
+
+  const currency = getCompetitionCurrency();
 
   const totalsRow = totalsRows[0];
   const totals = {
@@ -125,9 +129,9 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     restaurantId: row.restaurant_id ?? null,
     restaurantName: row.restaurant_name ?? null,
     processorName: row.processor_name ?? null,
-    status: row.status,
-    discountValue: parseNullableNumber(row.discount_value),
-    resultingPrice: parseNullableNumber(row.resulting_price),
+    status: row.snapshot_active === 1 ? "active" : "inactive",
+    price: parseNullableNumber(row.price),
+    currency,
     effectiveAt: row.effective_at_iso,
   }));
 

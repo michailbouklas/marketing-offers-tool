@@ -39,4 +39,7 @@ export type * from "./models/api_BOLT_lines";
 export type * from "./models/bolt_regex_patters";
 export type * from "./models/competition_user_restaurant_pref";
 export type * from "./models/competition_dashboard_widget";
+export type * from "./models/google_reviews_user_business_pref";
+export type * from "./models/google_reviews_dashboard_widget";
+export type * from "./models/user_monitor";
 export type * from "./commonInputTypes";

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   canAccessAdminSection,
   competitionRoles,
+  googleReviewsRoles,
   hasAnyRole,
   isAdminRole,
   parseRoles,
@@ -107,5 +108,16 @@ describe("competitionRoles", () => {
     expect(hasAnyRole("admin", competitionRoles)).toBe(false);
     expect(hasAnyRole("user", competitionRoles)).toBe(false);
     expect(hasAnyRole(null, competitionRoles)).toBe(false);
+  });
+});
+
+describe("googleReviewsRoles", () => {
+  it("grants the google-reviews section to analyticsViewer and superUser only", () => {
+    expect(hasAnyRole("analyticsViewer", googleReviewsRoles)).toBe(true);
+    expect(hasAnyRole("superUser", googleReviewsRoles)).toBe(true);
+    expect(hasAnyRole("user,analyticsViewer", googleReviewsRoles)).toBe(true);
+    expect(hasAnyRole("admin", googleReviewsRoles)).toBe(false);
+    expect(hasAnyRole("user", googleReviewsRoles)).toBe(false);
+    expect(hasAnyRole(null, googleReviewsRoles)).toBe(false);
   });
 });

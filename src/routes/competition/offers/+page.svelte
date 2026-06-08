@@ -9,7 +9,6 @@
   import * as Table from "$lib/components/ui/table/index.js";
   import {
     formatCompetitionDateTime,
-    formatCompetitionDiscount,
     formatCompetitionMoney,
     type CompetitionSortDirection,
     type OfferSortField,
@@ -35,9 +34,8 @@
     { key: "name", label: "Offer" },
     { key: "restaurant_name", label: "Restaurant" },
     { key: "processor_name", label: "Aggregator" },
-    { key: "discount_value", label: "Discount" },
-    { key: "resulting_price", label: "Price" },
-    { key: "created_at", label: "First seen" },
+    { key: "price", label: "Price" },
+    { key: "first_seen", label: "First seen" },
   ];
 
   function submitSearchForm() {
@@ -113,7 +111,7 @@
       params.set("to", to);
     }
 
-    if (sortBy && sortBy !== "created_at") {
+    if (sortBy && sortBy !== "first_seen") {
       params.set("sortBy", sortBy);
     }
 
@@ -212,7 +210,7 @@
       </h1>
       <p class="text-muted-foreground max-w-3xl text-base leading-7">
         Every offer competitors are currently running, with the platform,
-        restaurant, and discount details the scraper captured.
+        restaurant, and price details the scraper captured.
       </p>
     </section>
 
@@ -387,17 +385,10 @@
                       {row.processorName ?? "—"}
                     </Table.Cell>
                     <Table.Cell class="tabular-nums">
-                      {formatCompetitionDiscount(
-                        row.discountType,
-                        row.discountValue,
-                        row.currency,
-                      )}
-                    </Table.Cell>
-                    <Table.Cell class="tabular-nums">
-                      {formatCompetitionMoney(row.resultingPrice, row.currency)}
+                      {formatCompetitionMoney(row.price, row.currency)}
                     </Table.Cell>
                     <Table.Cell class="text-muted-foreground whitespace-nowrap">
-                      {formatCompetitionDateTime(row.createdAt)}
+                      {formatCompetitionDateTime(row.firstSeen)}
                     </Table.Cell>
                   </Table.Row>
                 {/each}

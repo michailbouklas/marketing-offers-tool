@@ -128,6 +128,9 @@ model user {
   reference_images  ReferenceImage[]
   competition_restaurant_prefs competition_user_restaurant_pref[]
   competition_dashboard_widgets competition_dashboard_widget[]
+  google_reviews_business_prefs google_reviews_user_business_pref[]
+  google_reviews_dashboard_widgets google_reviews_dashboard_widget[]
+  monitor_entries   user_monitor[]
 }
 
 model session {
@@ -571,8 +574,8 @@ model competition_user_restaurant_pref {
   id           String                @id @default(cuid())
   userId       String
   user         user                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  processorId  Int // ClickHouse processors.id
-  restaurantId Int // ClickHouse restaurants.id
+  processorId  Int // ClickHouse aggregator.id
+  restaurantId Int // ClickHouse restaurant.id
   state        CompetitionTrackState @default(tracked)
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
@@ -595,4 +598,64 @@ model competition_dashboard_widget {
   updatedAt  DateTime @updatedAt
 
   @@index([userId, position])
+}
+
+// --- Google reviews analytics (data lives in the google-maps-scraper
+// ClickHouse replica; these tables only hold per-user state on top of it).
+// Businesses are referenced by the ClickHouse `businesses.cid` — Google's
+// stable business identifier that every child table FKs to.
+
+enum GoogleReviewsPrefState {
+  monitored
+  ignored
+}
+
+model google_reviews_user_business_pref {
+  id          String                 @id @default(cuid())
+  userId      String
+  user        user                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessCid String // ClickHouse businesses.cid
+  state       GoogleReviewsPrefState @default(monitored)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  @@unique([userId, businessCid])
+  @@index([userId, state])
+}
+
+// Per-user dashboard layout for /google-reviews. `widgetType` is a plain
+// string (registry key validated in code) so adding phase-2 widgets needs no
+// migration; `settings` holds widget-specific configuration.
+model google_reviews_dashboard_widget {
+  id         String   @id @default(cuid())
+  userId     String
+  user       user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  widgetType String
+  position   Int
+  settings   Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, position])
+}
+
+// --- Cross-section monitor list (generic per-user "favorites"). `section`
+// scopes the entry to a feature area and `entityId` is that section's stable
+// identifier as a string: for `competition` it is the ClickHouse composite
+// `"${processorId}:${restaurantId}"`; for `googleReviews` it is `businesses.cid`.
+enum MonitorSection {
+  competition
+  googleReviews
+}
+
+model user_monitor {
+  id        String         @id @default(cuid())
+  userId    String
+  user      user           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  section   MonitorSection
+  entityId  String
+  createdAt DateTime       @default(now())
+
+  @@unique([userId, section, entityId])
+  @@index([userId, section])
 }

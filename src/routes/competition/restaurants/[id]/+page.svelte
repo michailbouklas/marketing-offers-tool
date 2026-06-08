@@ -5,7 +5,6 @@
   import * as Table from "$lib/components/ui/table/index.js";
   import {
     formatCompetitionDateTime,
-    formatCompetitionDiscount,
     formatCompetitionMoney,
   } from "$lib/services/competition/competition";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
@@ -23,26 +22,29 @@
     menu.reduce((sum, category) => sum + category.products.length, 0),
   );
 
+  function formatRating() {
+    if (restaurant.rating === null) {
+      return "—";
+    }
+
+    const scale =
+      restaurant.ratingScale !== null ? ` / ${restaurant.ratingScale}` : "";
+    const count =
+      restaurant.ratingCount !== null ? ` (${restaurant.ratingCount})` : "";
+
+    return `${restaurant.rating}${scale}${count}`;
+  }
+
   const infoRows = $derived(
     [
       { label: "Aggregator", value: restaurant.processorName ?? "—" },
-      { label: "Brand", value: restaurant.brand ?? "—" },
-      { label: "Address", value: restaurant.address ?? "—" },
-      { label: "Phone", value: restaurant.phone ?? "—" },
-      {
-        label: "Rating",
-        value: restaurant.rating !== null ? `${restaurant.rating}` : "—",
-      },
-      {
-        label: "Delivery fee",
-        value: formatCompetitionMoney(restaurant.deliveryFee, null),
-      },
+      { label: "Rating", value: formatRating() },
       {
         label: "Minimum order",
         value: formatCompetitionMoney(restaurant.minimumOrder, null),
       },
-      { label: "Delivery time", value: restaurant.deliveryTime ?? "—" },
-      { label: "Cuisines", value: restaurant.cuisineTypes || "—" },
+      { label: "Delivery", value: restaurant.deliveryInfo ?? "—" },
+      { label: "External id", value: restaurant.externalId || "—" },
       {
         label: "First scraped",
         value: formatCompetitionDateTime(restaurant.createdAt),
@@ -53,11 +55,6 @@
       },
     ].filter((row) => row.value !== "—"),
   );
-
-  // Newest first for the event history tables.
-  function reversedPoints(points: (typeof offerHistories)[number]["points"]) {
-    return [...points].reverse();
-  }
 </script>
 
 <svelte:head>
@@ -131,6 +128,16 @@
               </div>
             {/each}
           </dl>
+          {#if restaurant.sourceUrl}
+            <a
+              href={restaurant.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              class="text-primary mt-4 inline-block text-sm hover:underline"
+            >
+              View on {restaurant.processorName ?? "aggregator"} →
+            </a>
+          {/if}
         </Card.Content>
       </Card.Root>
 
@@ -153,7 +160,6 @@
                 <Table.Header>
                   <Table.Row>
                     <Table.Head>Offer</Table.Head>
-                    <Table.Head>Discount</Table.Head>
                     <Table.Head class="text-right">Price</Table.Head>
                     <Table.Head>First seen</Table.Head>
                   </Table.Row>
@@ -169,23 +175,13 @@
                           </p>
                         {/if}
                       </Table.Cell>
-                      <Table.Cell class="tabular-nums">
-                        {formatCompetitionDiscount(
-                          offer.discountType,
-                          offer.discountValue,
-                          offer.currency,
-                        )}
-                      </Table.Cell>
                       <Table.Cell class="text-right tabular-nums">
-                        {formatCompetitionMoney(
-                          offer.resultingPrice,
-                          offer.currency,
-                        )}
+                        {formatCompetitionMoney(offer.price, offer.currency)}
                       </Table.Cell>
                       <Table.Cell
                         class="text-muted-foreground whitespace-nowrap"
                       >
-                        {formatCompetitionDateTime(offer.createdAt)}
+                        {formatCompetitionDateTime(offer.firstSeen)}
                       </Table.Cell>
                     </Table.Row>
                   {/each}
@@ -225,30 +221,32 @@
                   <Table.Root>
                     <Table.Header>
                       <Table.Row>
-                        <Table.Head>When</Table.Head>
-                        <Table.Head>Status</Table.Head>
-                        <Table.Head class="text-right">Discount</Table.Head>
+                        <Table.Head>Event</Table.Head>
+                        <Table.Head>Date</Table.Head>
                         <Table.Head class="text-right">Price</Table.Head>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                      {#each reversedPoints(history.points) as point (`${history.offerId}-${point.effectiveAt}-${point.status}`)}
+                      {#each history.transitions as transition (`${history.offerId}-${transition.effectiveAt}-${transition.status}`)}
                         <Table.Row>
+                          <Table.Cell>
+                            <Badge
+                              variant={transition.status === "active"
+                                ? "default"
+                                : "secondary"}
+                            >
+                              {transition.status === "active"
+                                ? "Activated"
+                                : "Went inactive"}
+                            </Badge>
+                          </Table.Cell>
                           <Table.Cell
                             class="text-muted-foreground whitespace-nowrap"
                           >
-                            {formatCompetitionDateTime(point.effectiveAt)}
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Badge variant="outline" class="capitalize"
-                              >{point.status}</Badge
-                            >
+                            {formatCompetitionDateTime(transition.effectiveAt)}
                           </Table.Cell>
                           <Table.Cell class="text-right tabular-nums">
-                            {point.discountValue ?? "—"}
-                          </Table.Cell>
-                          <Table.Cell class="text-right tabular-nums">
-                            {formatCompetitionMoney(point.resultingPrice, null)}
+                            {formatCompetitionMoney(transition.price, null)}
                           </Table.Cell>
                         </Table.Row>
                       {/each}
@@ -289,16 +287,12 @@
                       <Table.Row>
                         <Table.Head>Product</Table.Head>
                         <Table.Head class="text-right">Price</Table.Head>
-                        <Table.Head class="text-right">Original</Table.Head>
-                        <Table.Head class="text-right">Discount</Table.Head>
                         <Table.Head>Offer</Table.Head>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
                       {#each category.products as product (product.id)}
-                        <Table.Row
-                          class={product.available ? "" : "opacity-50"}
-                        >
+                        <Table.Row>
                           <Table.Cell class="max-w-80">
                             <p class="truncate font-medium">{product.name}</p>
                             {#if product.description}
@@ -313,27 +307,12 @@
                               product.currency,
                             )}
                           </Table.Cell>
-                          <Table.Cell
-                            class="text-muted-foreground text-right tabular-nums"
-                          >
-                            {#if product.originalPrice !== null && product.originalPrice !== product.price}
-                              <s
-                                >{formatCompetitionMoney(
-                                  product.originalPrice,
-                                  product.currency,
-                                )}</s
-                              >
+                          <Table.Cell>
+                            {#if product.isOffer}
+                              <Badge variant="secondary">Offer</Badge>
                             {:else}
-                              —
+                              <span class="text-muted-foreground">—</span>
                             {/if}
-                          </Table.Cell>
-                          <Table.Cell class="text-right tabular-nums">
-                            {product.discountPercentage !== null
-                              ? `${product.discountPercentage}%`
-                              : "—"}
-                          </Table.Cell>
-                          <Table.Cell class="max-w-48 truncate">
-                            {product.offerName ?? "—"}
                           </Table.Cell>
                         </Table.Row>
                       {/each}

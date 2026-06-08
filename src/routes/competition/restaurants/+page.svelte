@@ -1,5 +1,6 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
+  import MonitorToggleButton from "$lib/components/competition/monitor-toggle-button.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
@@ -34,7 +35,6 @@
   const sortableColumns: { key: RestaurantSortField; label: string }[] = [
     { key: "name", label: "Restaurant" },
     { key: "processor_name", label: "Aggregator" },
-    { key: "brand", label: "Brand" },
     { key: "rating", label: "Rating" },
     { key: "active_offer_count", label: "Active offers" },
   ];
@@ -325,14 +325,15 @@
                     </a>
                   </Table.Head>
                 {/each}
-                <Table.Head>Cuisines</Table.Head>
+                <Table.Head>Delivery</Table.Head>
+                <Table.Head class="w-12"></Table.Head>
               </Table.Row>
             </Table.Header>
             <Table.Body>
               {#if rows.length === 0}
                 <Table.Row>
                   <Table.Cell
-                    colspan={sortableColumns.length + 2}
+                    colspan={sortableColumns.length + 3}
                     class="text-muted-foreground py-8 text-center"
                   >
                     No restaurants match the current filters.
@@ -405,20 +406,21 @@
                       >
                         {row.name}
                       </a>
-                      {#if row.address}
-                        <p class="text-muted-foreground truncate text-xs">
-                          {row.address}
-                        </p>
-                      {/if}
                     </Table.Cell>
                     <Table.Cell class="capitalize">
                       {row.processorName ?? "—"}
                     </Table.Cell>
-                    <Table.Cell class="max-w-40 truncate">
-                      {row.brand ?? "—"}
-                    </Table.Cell>
                     <Table.Cell class="tabular-nums">
-                      {row.rating ?? "—"}
+                      {#if row.rating !== null}
+                        {row.rating}
+                        {#if row.ratingCount !== null}
+                          <span class="text-muted-foreground text-xs">
+                            ({row.ratingCount})
+                          </span>
+                        {/if}
+                      {:else}
+                        —
+                      {/if}
                     </Table.Cell>
                     <Table.Cell class="tabular-nums">
                       {row.activeOfferCount}
@@ -426,7 +428,13 @@
                     <Table.Cell
                       class="text-muted-foreground max-w-48 truncate text-sm"
                     >
-                      {row.cuisineTypes || "—"}
+                      {row.deliveryInfo || "—"}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <MonitorToggleButton
+                        entityId={`${row.processorId}:${row.id}`}
+                        isMonitored={row.isMonitored}
+                      />
                     </Table.Cell>
                   </Table.Row>
                 {/each}

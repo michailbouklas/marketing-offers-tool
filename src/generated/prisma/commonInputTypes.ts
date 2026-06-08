@@ -976,6 +976,74 @@ export type EnumCompetitionTrackStateWithAggregatesFilter<
   _max?: Prisma.NestedEnumCompetitionTrackStateFilter<$PrismaModel>;
 };
 
+export type EnumGoogleReviewsPrefStateFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.GoogleReviewsPrefState
+    | Prisma.EnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.GoogleReviewsPrefState[]
+    | Prisma.ListEnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.GoogleReviewsPrefState[]
+    | Prisma.ListEnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumGoogleReviewsPrefStateFilter<$PrismaModel>
+    | $Enums.GoogleReviewsPrefState;
+};
+
+export type EnumGoogleReviewsPrefStateWithAggregatesFilter<
+  $PrismaModel = never,
+> = {
+  equals?:
+    | $Enums.GoogleReviewsPrefState
+    | Prisma.EnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.GoogleReviewsPrefState[]
+    | Prisma.ListEnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.GoogleReviewsPrefState[]
+    | Prisma.ListEnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumGoogleReviewsPrefStateWithAggregatesFilter<$PrismaModel>
+    | $Enums.GoogleReviewsPrefState;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumGoogleReviewsPrefStateFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumGoogleReviewsPrefStateFilter<$PrismaModel>;
+};
+
+export type EnumMonitorSectionFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.MonitorSection
+    | Prisma.EnumMonitorSectionFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.MonitorSection[]
+    | Prisma.ListEnumMonitorSectionFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.MonitorSection[]
+    | Prisma.ListEnumMonitorSectionFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumMonitorSectionFilter<$PrismaModel>
+    | $Enums.MonitorSection;
+};
+
+export type EnumMonitorSectionWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.MonitorSection
+    | Prisma.EnumMonitorSectionFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.MonitorSection[]
+    | Prisma.ListEnumMonitorSectionFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.MonitorSection[]
+    | Prisma.ListEnumMonitorSectionFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumMonitorSectionWithAggregatesFilter<$PrismaModel>
+    | $Enums.MonitorSection;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumMonitorSectionFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumMonitorSectionFilter<$PrismaModel>;
+};
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>;
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
@@ -1863,3 +1931,72 @@ export type NestedEnumCompetitionTrackStateWithAggregatesFilter<
   _min?: Prisma.NestedEnumCompetitionTrackStateFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumCompetitionTrackStateFilter<$PrismaModel>;
 };
+
+export type NestedEnumGoogleReviewsPrefStateFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.GoogleReviewsPrefState
+    | Prisma.EnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.GoogleReviewsPrefState[]
+    | Prisma.ListEnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.GoogleReviewsPrefState[]
+    | Prisma.ListEnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumGoogleReviewsPrefStateFilter<$PrismaModel>
+    | $Enums.GoogleReviewsPrefState;
+};
+
+export type NestedEnumGoogleReviewsPrefStateWithAggregatesFilter<
+  $PrismaModel = never,
+> = {
+  equals?:
+    | $Enums.GoogleReviewsPrefState
+    | Prisma.EnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.GoogleReviewsPrefState[]
+    | Prisma.ListEnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.GoogleReviewsPrefState[]
+    | Prisma.ListEnumGoogleReviewsPrefStateFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumGoogleReviewsPrefStateWithAggregatesFilter<$PrismaModel>
+    | $Enums.GoogleReviewsPrefState;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumGoogleReviewsPrefStateFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumGoogleReviewsPrefStateFilter<$PrismaModel>;
+};
+
+export type NestedEnumMonitorSectionFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.MonitorSection
+    | Prisma.EnumMonitorSectionFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.MonitorSection[]
+    | Prisma.ListEnumMonitorSectionFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.MonitorSection[]
+    | Prisma.ListEnumMonitorSectionFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumMonitorSectionFilter<$PrismaModel>
+    | $Enums.MonitorSection;
+};
+
+export type NestedEnumMonitorSectionWithAggregatesFilter<$PrismaModel = never> =
+  {
+    equals?:
+      | $Enums.MonitorSection
+      | Prisma.EnumMonitorSectionFieldRefInput<$PrismaModel>;
+    in?:
+      | $Enums.MonitorSection[]
+      | Prisma.ListEnumMonitorSectionFieldRefInput<$PrismaModel>;
+    notIn?:
+      | $Enums.MonitorSection[]
+      | Prisma.ListEnumMonitorSectionFieldRefInput<$PrismaModel>;
+    not?:
+      | Prisma.NestedEnumMonitorSectionWithAggregatesFilter<$PrismaModel>
+      | $Enums.MonitorSection;
+    _count?: Prisma.NestedIntFilter<$PrismaModel>;
+    _min?: Prisma.NestedEnumMonitorSectionFilter<$PrismaModel>;
+    _max?: Prisma.NestedEnumMonitorSectionFilter<$PrismaModel>;
+  };

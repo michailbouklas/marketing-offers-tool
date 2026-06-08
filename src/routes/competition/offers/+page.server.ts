@@ -45,7 +45,7 @@ const searchParamsSchema = z.object({
   restaurant: optionalTrimmedString.catch(undefined),
   from: optionalDay.catch(undefined),
   to: optionalDay.catch(undefined),
-  sortBy: z.enum(offerSortFields).default("created_at").catch("created_at"),
+  sortBy: z.enum(offerSortFields).default("first_seen").catch("first_seen"),
   sortDir: z.enum(competitionSortDirections).default("desc").catch("desc"),
 });
 
@@ -77,7 +77,7 @@ export const load: PageServerLoad = async (event) => {
     : null;
   const from = parseResult.success ? (parseResult.data.from ?? null) : null;
   const to = parseResult.success ? (parseResult.data.to ?? null) : null;
-  const sortBy = parseResult.success ? parseResult.data.sortBy : "created_at";
+  const sortBy = parseResult.success ? parseResult.data.sortBy : "first_seen";
   const sortDir = parseResult.success ? parseResult.data.sortDir : "desc";
   const selectedProcessorId =
     parseResult.success &&

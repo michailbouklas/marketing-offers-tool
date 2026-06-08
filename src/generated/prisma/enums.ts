@@ -90,3 +90,19 @@ export const CompetitionTrackState = {
 
 export type CompetitionTrackState =
   (typeof CompetitionTrackState)[keyof typeof CompetitionTrackState];
+
+export const GoogleReviewsPrefState = {
+  monitored: "monitored",
+  ignored: "ignored",
+} as const;
+
+export type GoogleReviewsPrefState =
+  (typeof GoogleReviewsPrefState)[keyof typeof GoogleReviewsPrefState];
+
+export const MonitorSection = {
+  competition: "competition",
+  googleReviews: "googleReviews",
+} as const;
+
+export type MonitorSection =
+  (typeof MonitorSection)[keyof typeof MonitorSection];
