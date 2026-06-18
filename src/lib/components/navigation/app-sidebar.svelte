@@ -28,6 +28,13 @@
     label: string;
     icon: Component;
     roles?: UserRole[];
+    badge?: number;
+  };
+
+  type NavChild = {
+    href: string;
+    label: string;
+    roles?: UserRole[];
   };
 
   // A group renders as a parent entry with indented sub-items (always
@@ -37,7 +44,8 @@
     label: string;
     icon: Component;
     roles?: UserRole[];
-    children: { href: string; label: string }[];
+    badge?: number;
+    children: NavChild[];
   };
 
   type NavItem = NavLeaf | NavGroup;
@@ -47,6 +55,12 @@
   }
 
   const user = $derived(page.data.user as { role?: string } | null | undefined);
+
+  // Unsent offer-notification count for the Competition menu badge, provided by
+  // the root layout load.
+  const pendingNotificationCount = $derived(
+    (page.data.pendingNotificationCount as number | undefined) ?? 0,
+  );
 
   const allNavItems: NavItem[] = [
     { href: "/", label: "Home", icon: HouseIcon },
@@ -88,6 +102,11 @@
       children: [
         { href: "/competition", label: "Dashboard" },
         { href: "/competition/offers", label: "Active Offers" },
+        {
+          href: "/competition/offers/scrape-sessions",
+          label: "Scrape Sessions",
+          roles: ["superUser"],
+        },
         { href: "/competition/restaurants", label: "Restaurants" },
       ],
     },
@@ -105,13 +124,33 @@
   ];
 
   const navigationItems = $derived<NavItem[]>([
-    ...allNavItems.filter(
-      (item) => !item.roles || hasAnyRole(user?.role, item.roles),
-    ),
+    ...allNavItems
+      .filter((item) => !item.roles || hasAnyRole(user?.role, item.roles))
+      .map((item) => {
+        const visibleItem = isGroup(item)
+          ? {
+              ...item,
+              children: item.children.filter(
+                (child) => !child.roles || hasAnyRole(user?.role, child.roles),
+              ),
+            }
+          : item;
+
+        return visibleItem.href === "/competition" &&
+          pendingNotificationCount > 0
+          ? { ...visibleItem, badge: pendingNotificationCount }
+          : visibleItem;
+      }),
     ...(canAccessAdminSection(user?.role)
       ? [{ href: "/admin", label: "Admin", icon: ShieldIcon }]
       : []),
   ]);
+
+  // Sidebar badges hide in icon-collapsed mode; cap the label so a large
+  // backlog stays legible.
+  function formatBadge(count: number) {
+    return count > 99 ? "99+" : String(count);
+  }
 
   function matchesPath(href: string) {
     if (href === "/") {
@@ -194,6 +233,11 @@
                     </a>
                   {/snippet}
                 </Sidebar.MenuButton>
+                {#if item.badge}
+                  <Sidebar.MenuBadge
+                    >{formatBadge(item.badge)}</Sidebar.MenuBadge
+                  >
+                {/if}
                 <Sidebar.MenuSub>
                   {#each item.children as subItem (subItem.href)}
                     <Sidebar.MenuSubItem>
@@ -219,6 +263,11 @@
                     </a>
                   {/snippet}
                 </Sidebar.MenuButton>
+                {#if item.badge}
+                  <Sidebar.MenuBadge
+                    >{formatBadge(item.badge)}</Sidebar.MenuBadge
+                  >
+                {/if}
               {/if}
             </Sidebar.MenuItem>
           {/each}

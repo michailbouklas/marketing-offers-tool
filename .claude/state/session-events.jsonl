@@ -65,3 +65,99 @@
 {"data":{"file_path":"C:\\work\\marketing-offers-tool\\docs\\specs\\add-to-favorites\\tasks.md"},"id":"event-000487","state":"stopped","ts":"2026-06-08T11:44:05Z","type":"tool.edit"}
 {"data":{"file_path":"C:\\work\\marketing-offers-tool\\docs\\specs\\add-to-favorites\\tasks.md"},"id":"event-000488","state":"stopped","ts":"2026-06-08T11:44:16Z","type":"tool.edit"}
 {"data":{"file_path":"C:\\work\\marketing-offers-tool\\docs\\specs\\add-to-favorites\\tasks.md"},"id":"event-000489","state":"stopped","ts":"2026-06-08T11:44:27Z","type":"tool.edit"}
+{"data":{"command":"ls -1 \"C:\\work\\marketing-offers-tool\\prisma\\migrations\" 2\u003e\u00261"},"id":"event-000490","state":"stopped","ts":"2026-06-08T13:37:43Z","type":"tool.bash"}
+{"data":{"command":"find \"C:\\work\\marketing-offers-tool\\src\" -name \"*prisma*\" -type f 2\u003e\u00261 | head -20"},"id":"event-000491","state":"stopped","ts":"2026-06-08T13:37:46Z","type":"tool.bash"}
+{"data":{"command":"grep -r \"DATABASE_URL\" \"C:\\work\\marketing-offers-tool\" --include=\"*.env*\" --include=\"*.ts\" --include=\"*.js\" 2\u003e\u00261 | head -10"},"id":"event-000492","state":"stopped","ts":"2026-06-08T13:37:52Z","type":"tool.bash"}
+{"data":{"command":"ls -la \"C:\\work\\marketing-offers-tool\\prisma\\migrations\" | tail -5"},"id":"event-000493","state":"stopped","ts":"2026-06-08T13:37:55Z","type":"tool.bash"}
+{"data":{"command":"find C:\\work\\marketing-offers-tool\\src\\routes -name \"+server.ts\" | head -20"},"id":"event-000494","state":"stopped","ts":"2026-06-08T13:38:05Z","type":"tool.bash"}
+{"data":{"command":"find C:\\work\\marketing-offers-tool -maxdepth 1 -name \".env*\" -o -name \"*.env*\" 2\u003e/dev/null"},"id":"event-000495","state":"stopped","ts":"2026-06-08T13:38:28Z","type":"tool.bash"}
+{"data":{"command":"grep -r \"nodemailer\\|resend\\|sendgrid\\|postmark\\|brevomail\\|mailgun\\|@react-email\" C:\\work\\marketing-offers-tool --include=\"*.ts\" --include=\"*.js\" 2\u003e/dev/null | head -10"},"id":"event-000496","state":"stopped","ts":"2026-06-08T13:38:36Z","type":"tool.bash"}
+{"data":{"command":"ls C:/work/marketing-offers-tool/src/lib/services/ \u0026\u0026 echo \"---SERVER---\" \u0026\u0026 ls C:/work/marketing-offers-tool/src/lib/server/ \u0026\u0026 echo \"---ROOT SRC---\" \u0026\u0026 ls C:/work/marketing-offers-tool/src/"},"id":"event-000497","state":"stopped","ts":"2026-06-08T13:42:40Z","type":"tool.bash"}
+{"data":{"command":"cat C:/work/marketing-offers-tool/package.json"},"id":"event-000498","state":"stopped","ts":"2026-06-08T13:42:40Z","type":"tool.bash"}
+{"data":{"command":"head -80 C:/work/marketing-offers-tool/prisma/schema.prisma \u0026\u0026 echo \"---MIGRATIONS---\" \u0026\u0026 ls C:/work/marketing-offers-tool/prisma/migrations/"},"id":"event-000499","state":"stopped","ts":"2026-06-08T13:42:41Z","type":"tool.bash"}
+{"data":{"command":"cat \"C:/work/marketing-offers-tool/prisma/migrations/20260608103745_add_user_monitor/migration.sql\""},"id":"event-000500","state":"stopped","ts":"2026-06-08T13:42:48Z","type":"tool.bash"}
+{"data":{"command":"ls C:/work/marketing-offers-tool/src/routes/ \u0026\u0026 echo \"---API---\" \u0026\u0026 ls C:/work/marketing-offers-tool/src/routes/api/ 2\u003e/dev/null \u0026\u0026 echo \"---ADMIN API maybe---\" \u0026\u0026 find C:/work/marketing-offers-tool/s"},"id":"event-000501","state":"stopped","ts":"2026-06-08T13:42:54Z","type":"tool.bash"}
+{"data":{"command":"find C:/work/marketing-offers-tool/docs/specs -type d 2\u003e/dev/null | head -30; echo \"---notif?---\"; find C:/work/marketing-offers-tool/docs -iname \"*notif*\" 2\u003e/dev/null"},"id":"event-000502","state":"stopped","ts":"2026-06-08T13:43:02Z","type":"tool.bash"}
+{"data":{"command":"ls -la C:/work/marketing-offers-tool/docs/specs/notifications/; echo \"===\"; for f in C:/work/marketing-offers-tool/docs/specs/notifications/*; do echo \"### $f\"; cat \"$f\"; echo; done"},"id":"event-000503","state":"stopped","ts":"2026-06-08T13:43:09Z","type":"tool.bash"}
+{"data":{"command":"cat C:/work/marketing-offers-tool/svelte.config.js 2\u003e/dev/null; echo \"---hooks files---\"; ls C:/work/marketing-offers-tool/src/hooks* 2\u003e/dev/null; ls C:/work/marketing-offers-tool/src/*.server.* 2\u003e/de"},"id":"event-000504","state":"stopped","ts":"2026-06-08T13:43:14Z","type":"tool.bash"}
+{"data":{"command":"mkdir -p \"C:/Users/mbouklas/.claude/plans\" 2\u003e/dev/null; echo done"},"id":"event-000505","state":"stopped","ts":"2026-06-08T13:43:22Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\Users\\mbouklas\\.claude\\plans\\read-docs-specs-notifications-instructio-fuzzy-frog.md"},"id":"event-000506","state":"stopped","ts":"2026-06-08T13:46:01Z","type":"tool.write"}
+{"data":{"command":"bun add croner nodemailer \u0026\u0026 bun add -d @types/nodemailer"},"id":"event-000507","state":"stopped","ts":"2026-06-08T13:47:48Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\prisma\\schema.prisma"},"id":"event-000508","state":"stopped","ts":"2026-06-08T13:48:02Z","type":"tool.edit"}
+{"data":{"command":"bun prisma migrate status"},"id":"event-000509","state":"stopped","ts":"2026-06-08T13:48:14Z","type":"tool.bash"}
+{"data":{"command":"git diff --stat prisma/schema.prisma \u0026\u0026 echo \"---DIFF---\" \u0026\u0026 git diff prisma/schema.prisma"},"id":"event-000510","state":"stopped","ts":"2026-06-08T13:48:24Z","type":"tool.bash"}
+{"data":{"command":"bun prisma migrate dev --name add_notification_cursor"},"id":"event-000511","state":"stopped","ts":"2026-06-08T13:48:30Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\server\\notifications\\notifications-env.ts"},"id":"event-000512","state":"stopped","ts":"2026-06-08T13:49:10Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\types.ts"},"id":"event-000513","state":"stopped","ts":"2026-06-08T13:49:41Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\server\\scraper-db.ts"},"id":"event-000514","state":"stopped","ts":"2026-06-08T13:50:03Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\server\\mailer.server.ts"},"id":"event-000515","state":"stopped","ts":"2026-06-08T13:50:21Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\digest-cursor.server.ts"},"id":"event-000516","state":"stopped","ts":"2026-06-08T13:51:26Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\digest-email.server.ts"},"id":"event-000517","state":"stopped","ts":"2026-06-08T13:51:43Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\user-monitor.server.ts"},"id":"event-000518","state":"stopped","ts":"2026-06-08T13:51:57Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\offer-digest.server.ts"},"id":"event-000519","state":"stopped","ts":"2026-06-08T13:52:37Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\server\\scheduler.server.ts"},"id":"event-000520","state":"stopped","ts":"2026-06-08T13:53:18Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\hooks.server.ts"},"id":"event-000521","state":"stopped","ts":"2026-06-08T13:53:27Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\auth\\permissions.ts"},"id":"event-000522","state":"stopped","ts":"2026-06-08T13:53:39Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\auth\\permissions.ts"},"id":"event-000523","state":"stopped","ts":"2026-06-08T13:53:45Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\api\\admin\\notifications\\run-digest\\+server.ts"},"id":"event-000524","state":"stopped","ts":"2026-06-08T13:53:55Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\digest-email.server.test.ts"},"id":"event-000525","state":"stopped","ts":"2026-06-08T13:54:18Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\docs\\specs\\notifications\\part-b-config.md"},"id":"event-000526","state":"stopped","ts":"2026-06-08T13:54:48Z","type":"tool.write"}
+{"data":{"command":"bun run svelte-autofixer 2\u003e\u00261 | tail -5"},"id":"event-000527","state":"stopped","ts":"2026-06-08T13:55:06Z","type":"tool.bash"}
+{"data":{"command":"bun run check 2\u003e\u00261 | tail -30"},"id":"event-000528","state":"stopped","ts":"2026-06-08T13:55:24Z","type":"tool.bash"}
+{"data":{"command":"bun prisma generate 2\u003e\u00261 | tail -8"},"id":"event-000529","state":"stopped","ts":"2026-06-08T13:55:36Z","type":"tool.bash"}
+{"data":{"command":"bun run check 2\u003e\u00261 | grep -E \"notification|scraper|mailer|scheduler|offer-digest|digest-|run-digest|ERROR|COMPLETED\" | tail -20"},"id":"event-000530","state":"stopped","ts":"2026-06-08T13:55:55Z","type":"tool.bash"}
+{"data":{"command":"git stash list \u003e/dev/null 2\u003e\u00261; git diff --name-only HEAD -- src/lib/services/text-providers/openai.server.test.ts | grep . \u0026\u0026 echo \"I MODIFIED IT\" || echo \"PRE-EXISTING (untouched by me)\""},"id":"event-000531","state":"stopped","ts":"2026-06-08T13:56:03Z","type":"tool.bash"}
+{"data":{"command":"bun run test src/lib/services/notifications/digest-email.server.test.ts 2\u003e\u00261 | tail -20"},"id":"event-000532","state":"stopped","ts":"2026-06-08T13:56:09Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\server\\notifications\\notifications-env.ts"},"id":"event-000533","state":"stopped","ts":"2026-06-09T09:30:13Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\digest-cursor.server.ts"},"id":"event-000534","state":"stopped","ts":"2026-06-09T09:30:23Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\offer-digest.server.ts"},"id":"event-000535","state":"stopped","ts":"2026-06-09T09:30:39Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\offer-digest.server.ts"},"id":"event-000536","state":"stopped","ts":"2026-06-09T09:30:45Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\offer-digest.server.ts"},"id":"event-000537","state":"stopped","ts":"2026-06-09T09:30:54Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\offer-digest.server.ts"},"id":"event-000538","state":"stopped","ts":"2026-06-09T09:31:04Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\offer-digest.server.ts"},"id":"event-000539","state":"stopped","ts":"2026-06-09T09:31:24Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\scripts\\run-digest.ts"},"id":"event-000540","state":"stopped","ts":"2026-06-09T09:32:17Z","type":"tool.write"}
+{"data":{"command":"bun add -d vite-node 2\u003e\u00261 | tail -4"},"id":"event-000541","state":"stopped","ts":"2026-06-09T09:32:30Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\package.json"},"id":"event-000542","state":"stopped","ts":"2026-06-09T09:32:45Z","type":"tool.edit"}
+{"data":{"command":"bun run digest --help 2\u003e\u00261 | tail -20"},"id":"event-000543","state":"stopped","ts":"2026-06-09T09:33:00Z","type":"tool.bash"}
+{"data":{"command":"bun run digest --dry-run 2\u003e\u00261 | tail -20"},"id":"event-000544","state":"stopped","ts":"2026-06-09T09:33:14Z","type":"tool.bash"}
+{"data":{"command":"bun add -d vite-node@3.2.4 2\u003e\u00261 | tail -4"},"id":"event-000545","state":"stopped","ts":"2026-06-09T09:33:29Z","type":"tool.bash"}
+{"data":{"command":"bun run digest --dry-run 2\u003e\u00261 | tail -20"},"id":"event-000546","state":"stopped","ts":"2026-06-09T09:33:37Z","type":"tool.bash"}
+{"data":{"command":"bunx vite-node --help 2\u003e\u00261 | head -40"},"id":"event-000547","state":"stopped","ts":"2026-06-09T09:34:20Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\scripts\\run-digest.ts"},"id":"event-000548","state":"stopped","ts":"2026-06-09T09:34:35Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\scripts\\run-digest.ts"},"id":"event-000549","state":"stopped","ts":"2026-06-09T09:34:43Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\package.json"},"id":"event-000550","state":"stopped","ts":"2026-06-09T09:34:48Z","type":"tool.edit"}
+{"data":{"command":"bun run digest --dry-run 2\u003e\u00261 | tail -20"},"id":"event-000551","state":"stopped","ts":"2026-06-09T09:34:56Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\vite.config.script.ts"},"id":"event-000552","state":"stopped","ts":"2026-06-09T09:36:00Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\package.json"},"id":"event-000553","state":"stopped","ts":"2026-06-09T09:36:05Z","type":"tool.edit"}
+{"data":{"command":"bun run digest --dry-run 2\u003e\u00261 | tail -20"},"id":"event-000554","state":"stopped","ts":"2026-06-09T09:36:17Z","type":"tool.bash"}
+{"data":{"command":"bun run digest --dry-run --scraper-url=postgresql://u:p@override.invalid:5432/db 2\u003e\u00261 | grep -E \"hostname|ENOTFOUND|getaddrinfo\" | tail -3"},"id":"event-000555","state":"stopped","ts":"2026-06-09T09:37:03Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\server\\notifications\\notifications-env.ts"},"id":"event-000556","state":"stopped","ts":"2026-06-09T09:37:29Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\scripts\\run-digest.ts"},"id":"event-000557","state":"stopped","ts":"2026-06-09T09:37:37Z","type":"tool.edit"}
+{"data":{"command":"bun run digest --dry-run --scraper-url=postgresql://u:p@override.invalid:5432/db 2\u003e\u00261 | grep -E \"hostname\" | tail -2"},"id":"event-000558","state":"stopped","ts":"2026-06-09T09:37:49Z","type":"tool.bash"}
+{"data":{"command":"bun run svelte-autofixer \u003e/dev/null 2\u003e\u00261 \u0026\u0026 bun run check 2\u003e\u00261 | grep -E \"ERROR|COMPLETED\""},"id":"event-000559","state":"stopped","ts":"2026-06-09T09:38:30Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\docs\\specs\\notifications\\part-b-config.md"},"id":"event-000560","state":"stopped","ts":"2026-06-09T09:38:47Z","type":"tool.edit"}
+{"data":{"command":"grep -i \"DATABASE_URL\" \"C:\\work\\marketing-offers-tool\\.env\" 2\u003e/dev/null | grep -v SCRAPER"},"id":"event-000561","state":"stopped","ts":"2026-06-09T09:57:34Z","type":"tool.bash"}
+{"data":{"command":"command -v psql \u003e/dev/null 2\u003e\u00261 \u0026\u0026 echo \"psql available\" || echo \"psql NOT found\""},"id":"event-000562","state":"stopped","ts":"2026-06-09T09:57:42Z","type":"tool.bash"}
+{"data":{"command":"ls -la docs/specs/notifications/"},"id":"event-000563","state":"stopped","ts":"2026-06-09T10:07:26Z","type":"tool.bash"}
+{"data":{"command":"ls src/lib/components/ui/sidebar/"},"id":"event-000564","state":"stopped","ts":"2026-06-09T10:10:10Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\types.ts"},"id":"event-000565","state":"stopped","ts":"2026-06-09T10:11:47Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\server\\scraper-db.ts"},"id":"event-000566","state":"stopped","ts":"2026-06-09T10:12:00Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\notifications\\pending.server.ts"},"id":"event-000567","state":"stopped","ts":"2026-06-09T10:12:18Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\+layout.server.ts"},"id":"event-000568","state":"stopped","ts":"2026-06-09T10:12:26Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\navigation\\app-sidebar.svelte"},"id":"event-000569","state":"stopped","ts":"2026-06-09T10:12:32Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\navigation\\app-sidebar.svelte"},"id":"event-000570","state":"stopped","ts":"2026-06-09T10:12:38Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\navigation\\app-sidebar.svelte"},"id":"event-000571","state":"stopped","ts":"2026-06-09T10:12:45Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\navigation\\app-sidebar.svelte"},"id":"event-000572","state":"stopped","ts":"2026-06-09T10:12:54Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\navigation\\app-sidebar.svelte"},"id":"event-000573","state":"stopped","ts":"2026-06-09T10:13:01Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\navigation\\app-sidebar.svelte"},"id":"event-000574","state":"stopped","ts":"2026-06-09T10:13:07Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\competition\\+page.server.ts"},"id":"event-000575","state":"stopped","ts":"2026-06-09T10:13:14Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\competition\\widgets\\my-notifications-widget.svelte"},"id":"event-000576","state":"stopped","ts":"2026-06-09T10:13:28Z","type":"tool.write"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\competition\\+page.svelte"},"id":"event-000577","state":"stopped","ts":"2026-06-09T10:13:36Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\competition\\+page.svelte"},"id":"event-000578","state":"stopped","ts":"2026-06-09T10:13:43Z","type":"tool.edit"}
+{"data":{"command":"bun run svelte-autofixer 2\u003e\u00261 | tail -40"},"id":"event-000579","state":"stopped","ts":"2026-06-09T10:13:59Z","type":"tool.bash"}
+{"data":{"command":"cat package.json | grep -A20 '\"scripts\"'"},"id":"event-000580","state":"stopped","ts":"2026-06-09T10:14:05Z","type":"tool.bash"}
+{"data":{"command":"bun run check 2\u003e\u00261 | tail -30"},"id":"event-000581","state":"stopped","ts":"2026-06-09T10:14:22Z","type":"tool.bash"}
+{"data":{"file_path":"C:\\Users\\mbouklas\\.claude\\projects\\C--work-marketing-offers-tool\\memory\\competition-dashboard.md"},"id":"event-000582","state":"stopped","ts":"2026-06-09T10:14:44Z","type":"tool.edit"}
+{"data":{"command":"echo \"=== SCRAPER DB: queue rows matching 2:1 with id\u003e0 ===\"; PGPASSWORD=postgres123 psql -h 200.1.3.249 -p 5432 -U postgres -d aggregator_scraper -c \"SELECT id, entity_key, pg_typeof(entity_key) AS t"},"id":"event-000583","state":"stopped","ts":"2026-06-09T10:20:18Z","type":"tool.bash"}
+{"data":{"command":"echo \"=== APP DB: user_monitor rows for entityId 2:1 ===\"; PGPASSWORD=postgres123 psql -h 200.1.3.249 -p 5432 -U postgres -d aggregator_invoices_shadow -c \"SELECT \\\"userId\\\", section, \\\"entityId\\\" FRO"},"id":"event-000584","state":"stopped","ts":"2026-06-09T10:20:29Z","type":"tool.bash"}
+{"data":{"command":"PGPASSWORD=postgres123 psql -h 200.1.3.249 -p 5432 -U postgres -d aggregator_scraper -c \"SELECT COUNT(*)::int AS count FROM offer_notification_queue WHERE id \u003e 5 AND entity_key = ANY('{2:1}'::text[]);"},"id":"event-000585","state":"stopped","ts":"2026-06-09T10:20:48Z","type":"tool.bash"}

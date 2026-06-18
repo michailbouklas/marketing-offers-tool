@@ -89,6 +89,7 @@ export const ModelName = {
   google_reviews_user_business_pref: "google_reviews_user_business_pref",
   google_reviews_dashboard_widget: "google_reviews_dashboard_widget",
   user_monitor: "user_monitor",
+  notification_cursor: "notification_cursor",
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -621,6 +622,15 @@ export const User_monitorScalarFieldEnum = {
 
 export type User_monitorScalarFieldEnum =
   (typeof User_monitorScalarFieldEnum)[keyof typeof User_monitorScalarFieldEnum];
+
+export const Notification_cursorScalarFieldEnum = {
+  id: "id",
+  lastProcessedQueueId: "lastProcessedQueueId",
+  updatedAt: "updatedAt",
+} as const;
+
+export type Notification_cursorScalarFieldEnum =
+  (typeof Notification_cursorScalarFieldEnum)[keyof typeof Notification_cursorScalarFieldEnum];
 
 export const SortOrder = {
   asc: "asc",

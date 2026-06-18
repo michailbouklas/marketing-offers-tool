@@ -21,6 +21,7 @@ export const statement = {
   promptGallery: ["manage"],
   competition: ["view"],
   googleReviews: ["view"],
+  notifications: ["run"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -100,6 +101,7 @@ export const roles = {
     promptGallery: ["manage"],
     competition: ["view"],
     googleReviews: ["view"],
+    notifications: ["run"],
   }),
 } satisfies Record<UserRole, Role>;
 

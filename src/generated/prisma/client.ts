@@ -226,3 +226,8 @@ export type google_reviews_dashboard_widget =
  *
  */
 export type user_monitor = Prisma.user_monitorModel;
+/**
+ * Model notification_cursor
+ *
+ */
+export type notification_cursor = Prisma.notification_cursorModel;

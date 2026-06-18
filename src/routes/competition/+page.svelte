@@ -1,5 +1,6 @@
 <script lang="ts">
   import ActiveOffersByAggregatorWidget from "$lib/components/competition/widgets/active-offers-by-aggregator-widget.svelte";
+  import MyNotificationsWidget from "$lib/components/competition/widgets/my-notifications-widget.svelte";
   import RecentOfferChangesWidget from "$lib/components/competition/widgets/recent-offer-changes-widget.svelte";
   import StatCardsWidget from "$lib/components/competition/widgets/stat-cards-widget.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
@@ -60,6 +61,8 @@
     </section>
 
     <StatCardsWidget data={stats.totals} />
+
+    <MyNotificationsWidget data={data.notifications} />
 
     <section class="grid gap-6 xl:grid-cols-2">
       <ActiveOffersByAggregatorWidget data={stats.activeOffersByProcessor} />

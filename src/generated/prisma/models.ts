@@ -42,4 +42,5 @@ export type * from "./models/competition_dashboard_widget";
 export type * from "./models/google_reviews_user_business_pref";
 export type * from "./models/google_reviews_dashboard_widget";
 export type * from "./models/user_monitor";
+export type * from "./models/notification_cursor";
 export type * from "./commonInputTypes";

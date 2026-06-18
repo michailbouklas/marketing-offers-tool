@@ -447,6 +447,7 @@ export const ModelName = {
   google_reviews_user_business_pref: "google_reviews_user_business_pref",
   google_reviews_dashboard_widget: "google_reviews_dashboard_widget",
   user_monitor: "user_monitor",
+  notification_cursor: "notification_cursor",
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -503,7 +504,8 @@ export type TypeMap<
       | "competition_dashboard_widget"
       | "google_reviews_user_business_pref"
       | "google_reviews_dashboard_widget"
-      | "user_monitor";
+      | "user_monitor"
+      | "notification_cursor";
     txIsolationLevel: TransactionIsolationLevel;
   };
   model: {
@@ -3167,6 +3169,82 @@ export type TypeMap<
         };
       };
     };
+    notification_cursor: {
+      payload: Prisma.$notification_cursorPayload<ExtArgs>;
+      fields: Prisma.notification_cursorFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.notification_cursorFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$notification_cursorPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.notification_cursorFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$notification_cursorPayload>;
+        };
+        findFirst: {
+          args: Prisma.notification_cursorFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$notification_cursorPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.notification_cursorFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$notification_cursorPayload>;
+        };
+        findMany: {
+          args: Prisma.notification_cursorFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$notification_cursorPayload>[];
+        };
+        create: {
+          args: Prisma.notification_cursorCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$notification_cursorPayload>;
+        };
+        createMany: {
+          args: Prisma.notification_cursorCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.notification_cursorCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$notification_cursorPayload>[];
+        };
+        delete: {
+          args: Prisma.notification_cursorDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$notification_cursorPayload>;
+        };
+        update: {
+          args: Prisma.notification_cursorUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$notification_cursorPayload>;
+        };
+        deleteMany: {
+          args: Prisma.notification_cursorDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.notification_cursorUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.notification_cursorUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$notification_cursorPayload>[];
+        };
+        upsert: {
+          args: Prisma.notification_cursorUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$notification_cursorPayload>;
+        };
+        aggregate: {
+          args: Prisma.Notification_cursorAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNotification_cursor>;
+        };
+        groupBy: {
+          args: Prisma.notification_cursorGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Notification_cursorGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.notification_cursorCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Notification_cursorCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
   };
 } & {
   other: {
@@ -3721,6 +3799,15 @@ export const User_monitorScalarFieldEnum = {
 export type User_monitorScalarFieldEnum =
   (typeof User_monitorScalarFieldEnum)[keyof typeof User_monitorScalarFieldEnum];
 
+export const Notification_cursorScalarFieldEnum = {
+  id: "id",
+  lastProcessedQueueId: "lastProcessedQueueId",
+  updatedAt: "updatedAt",
+} as const;
+
+export type Notification_cursorScalarFieldEnum =
+  (typeof Notification_cursorScalarFieldEnum)[keyof typeof Notification_cursorScalarFieldEnum];
+
 export const SortOrder = {
   asc: "asc",
   desc: "desc",
@@ -4018,6 +4105,22 @@ export type ListEnumMonitorSectionFieldRefInput<$PrismaModel> =
   FieldRefInputType<$PrismaModel, "MonitorSection[]">;
 
 /**
+ * Reference to a field of type 'BigInt'
+ */
+export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  "BigInt"
+>;
+
+/**
+ * Reference to a field of type 'BigInt[]'
+ */
+export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  "BigInt[]"
+>;
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -4171,6 +4274,7 @@ export type GlobalOmitConfig = {
   google_reviews_user_business_pref?: Prisma.google_reviews_user_business_prefOmit;
   google_reviews_dashboard_widget?: Prisma.google_reviews_dashboard_widgetOmit;
   user_monitor?: Prisma.user_monitorOmit;
+  notification_cursor?: Prisma.notification_cursorOmit;
 };
 
 /* Types for Logging */

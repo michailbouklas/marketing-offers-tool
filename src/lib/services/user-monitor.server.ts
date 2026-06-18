@@ -22,6 +22,41 @@ export async function getMonitoredEntityIds(
   return new Set(rows.map((row) => row.entityId));
 }
 
+/**
+ * Reverse lookup for the notification digest: given a batch of `entityId`s,
+ * returns which users monitor each one within a section. The map is keyed by
+ * `entityId`; entities with no monitors are simply absent. Used to match new
+ * `offer_notification_queue` rows (whose `entityKey` equals `entityId` for
+ * `section = 'competition'`) to the users who should be emailed.
+ */
+export async function getMonitorUsersByEntityIds(
+  entityIds: string[],
+  section: MonitorSectionValue = "competition",
+): Promise<Map<string, string[]>> {
+  const usersByEntityId = new Map<string, string[]>();
+
+  if (entityIds.length === 0) {
+    return usersByEntityId;
+  }
+
+  const rows = await prisma.user_monitor.findMany({
+    where: { section, entityId: { in: entityIds } },
+    select: { userId: true, entityId: true },
+  });
+
+  for (const row of rows) {
+    const bucket = usersByEntityId.get(row.entityId);
+
+    if (bucket) {
+      bucket.push(row.userId);
+    } else {
+      usersByEntityId.set(row.entityId, [row.userId]);
+    }
+  }
+
+  return usersByEntityId;
+}
+
 /** Adds an entry to the user's monitor list (no-op if already present). */
 export async function addMonitor(
   userId: string,

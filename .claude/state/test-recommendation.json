@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-08T10:39:52Z",
-  "changed_file": "src/routes/competition/restaurants/+page.server.ts",
+  "timestamp": "2026-06-09T10:13:14Z",
+  "changed_file": "src/routes/competition/+page.server.ts",
   "test_command": "npx vitest run --reporter=verbose",
   "related_test": "",
   "recommendation": "テストの実行を推奨します"

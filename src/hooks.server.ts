@@ -6,10 +6,15 @@ import {
   isApiPath,
   isPublicPath,
 } from "$lib/server/auth-guards";
+import { startScheduler } from "$lib/server/scheduler.server";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from "$app/environment";
 import { redirect, type Handle } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
+
+// Bootstrap the offer-notification digest cron once, at server start. No-op
+// during build and when the digest transport is not configured.
+startScheduler();
 
 const sessionHandle: Handle = async ({ event, resolve }) => {
   let sessionData;

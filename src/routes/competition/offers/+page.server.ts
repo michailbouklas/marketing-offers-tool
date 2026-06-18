@@ -1,4 +1,4 @@
-import { requirePermission } from "$lib/server/auth-guards";
+import { hasSuperUserRole, requirePermission } from "$lib/server/auth-guards";
 import {
   competitionSortDirections,
   offerSortFields,
@@ -89,6 +89,7 @@ export const load: PageServerLoad = async (event) => {
       : null;
 
   return {
+    canViewScrapeSessions: await hasSuperUserRole(event),
     processors,
     restaurantQuery,
     from,

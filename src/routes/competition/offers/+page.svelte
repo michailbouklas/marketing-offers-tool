@@ -204,14 +204,24 @@
       <span>Active offers</span>
     </div>
 
-    <section class="space-y-2">
-      <h1 class="text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
-        Active offers
-      </h1>
-      <p class="text-muted-foreground max-w-3xl text-base leading-7">
-        Every offer competitors are currently running, with the platform,
-        restaurant, and price details the scraper captured.
-      </p>
+    <section
+      class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"
+    >
+      <div class="space-y-2">
+        <h1 class="text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
+          Active offers
+        </h1>
+        <p class="text-muted-foreground max-w-3xl text-base leading-7">
+          Every offer competitors are currently running, with the platform,
+          restaurant, and price details the scraper captured.
+        </p>
+      </div>
+
+      {#if data.canViewScrapeSessions}
+        <Button href="/competition/offers/scrape-sessions" variant="outline">
+          Scrape sessions
+        </Button>
+      {/if}
     </section>
 
     <Card.Root

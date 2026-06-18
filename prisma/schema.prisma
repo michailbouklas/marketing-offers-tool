@@ -659,3 +659,14 @@ model user_monitor {
   @@unique([userId, section, entityId])
   @@index([userId, section])
 }
+
+// --- Offer-notification digest cursor (Part B consumer). Singleton row
+// (`id` is always 1) tracking the highest `offer_notification_queue.id` already
+// processed from the scraper Postgres. The digest job reads queue rows with
+// `id > lastProcessedQueueId`, emails monitoring users, then advances this
+// cursor. See `src/lib/services/notifications/`.
+model notification_cursor {
+  id                   Int      @id @default(1)
+  lastProcessedQueueId BigInt   @default(0)
+  updatedAt            DateTime @updatedAt
+}
