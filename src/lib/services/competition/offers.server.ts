@@ -38,6 +38,11 @@ type PriceRow = {
   price?: string | number | null;
 };
 
+type MonitoredRestaurantPair = {
+  processorId: number;
+  restaurantId: number;
+};
+
 export type ListActiveOffersOptions = {
   page: number;
   pageSize: number;
@@ -51,9 +56,98 @@ export type ListActiveOffersOptions = {
    */
   from?: string | null;
   to?: string | null;
+  monitoredRestaurantKeys?: string[] | null;
   sortBy: OfferSortField;
   sortDir: CompetitionSortDirection;
 };
+
+const monitoredRestaurantKeyPattern = /^(\d+):(\d+)$/;
+const CLICKHOUSE_INT32_MAX = 2_147_483_647;
+
+function parseMonitoredRestaurantKeys(
+  monitoredRestaurantKeys: string[] | null | undefined,
+) {
+  if (monitoredRestaurantKeys == null) {
+    return null;
+  }
+
+  const uniquePairs = new Map<string, MonitoredRestaurantPair>();
+
+  for (const monitoredRestaurantKey of monitoredRestaurantKeys) {
+    const match = monitoredRestaurantKeyPattern.exec(
+      monitoredRestaurantKey.trim(),
+    );
+
+    if (!match) {
+      continue;
+    }
+
+    const processorId = Number.parseInt(match[1], 10);
+    const restaurantId = Number.parseInt(match[2], 10);
+
+    if (
+      !Number.isSafeInteger(processorId) ||
+      !Number.isSafeInteger(restaurantId) ||
+      processorId <= 0 ||
+      restaurantId <= 0 ||
+      processorId > CLICKHOUSE_INT32_MAX ||
+      restaurantId > CLICKHOUSE_INT32_MAX
+    ) {
+      continue;
+    }
+
+    uniquePairs.set(`${processorId}:${restaurantId}`, {
+      processorId,
+      restaurantId,
+    });
+  }
+
+  return [...uniquePairs.values()];
+}
+
+function buildMonitoredRestaurantClause(
+  monitoredRestaurantPairs: MonitoredRestaurantPair[],
+) {
+  if (monitoredRestaurantPairs.length === 0) {
+    return null;
+  }
+
+  return `(${monitoredRestaurantPairs
+    .map(
+      (_, index) =>
+        `(r.aggregator_id = {monitored_processor_id_${index}:Int32} AND o.restaurant_id = {monitored_restaurant_id_${index}:Int32})`,
+    )
+    .join(" OR ")})`;
+}
+
+function buildMonitoredRestaurantParams(
+  monitoredRestaurantPairs: MonitoredRestaurantPair[] | null,
+) {
+  if (!monitoredRestaurantPairs) {
+    return {};
+  }
+
+  return monitoredRestaurantPairs.reduce<Record<string, number>>(
+    (params, pair, index) => ({
+      ...params,
+      [`monitored_processor_id_${index}`]: pair.processorId,
+      [`monitored_restaurant_id_${index}`]: pair.restaurantId,
+    }),
+    {},
+  );
+}
+
+function buildEmptyOffersPage(
+  safePageSize: number,
+): Paginated<CompetitionOfferRow> {
+  return {
+    items: [],
+    page: 1,
+    pageSize: safePageSize,
+    totalItems: 0,
+    totalPages: 1,
+  };
+}
 
 // "price" is resolved from the product_price time-series after the page is
 // fetched, so it is sorted client-side (see below); the query falls back to
@@ -73,7 +167,14 @@ function getSortExpression(sortBy: OfferSortField) {
   }
 }
 
-function buildFilterClauses(options: ListActiveOffersOptions) {
+function buildFilterClauses(
+  options: ListActiveOffersOptions,
+  monitoredRestaurantPairs: MonitoredRestaurantPair[] | null,
+) {
+  const monitoredRestaurantClause = buildMonitoredRestaurantClause(
+    monitoredRestaurantPairs ?? [],
+  );
+
   return [
     "o.is_active = 1",
     ...(options.processorId != null
@@ -93,10 +194,14 @@ function buildFilterClauses(options: ListActiveOffersOptions) {
     ...(options.to
       ? ["o.first_seen_at < parseDateTime64BestEffort({to:String}, 6)"]
       : []),
+    ...(monitoredRestaurantClause ? [monitoredRestaurantClause] : []),
   ];
 }
 
-function buildFilterParams(options: ListActiveOffersOptions) {
+function buildFilterParams(
+  options: ListActiveOffersOptions,
+  monitoredRestaurantPairs: MonitoredRestaurantPair[] | null,
+) {
   return {
     ...(options.processorId != null
       ? { processor_id: options.processorId }
@@ -109,6 +214,7 @@ function buildFilterParams(options: ListActiveOffersOptions) {
       : {}),
     ...(options.from ? { from: options.from } : {}),
     ...(options.to ? { to: options.to } : {}),
+    ...buildMonitoredRestaurantParams(monitoredRestaurantPairs),
   };
 }
 
@@ -145,8 +251,18 @@ export async function listActiveOffersPage(
     Number.isFinite(options.pageSize) && options.pageSize > 0
       ? Math.trunc(options.pageSize)
       : 50;
-  const whereClause = buildWhereClause(buildFilterClauses(options));
-  const filterParams = buildFilterParams(options);
+  const monitoredRestaurantPairs = parseMonitoredRestaurantKeys(
+    options.monitoredRestaurantKeys,
+  );
+
+  if (monitoredRestaurantPairs?.length === 0) {
+    return buildEmptyOffersPage(safePageSize);
+  }
+
+  const whereClause = buildWhereClause(
+    buildFilterClauses(options, monitoredRestaurantPairs),
+  );
+  const filterParams = buildFilterParams(options, monitoredRestaurantPairs);
 
   const countResult = await clickhouse.query({
     query: `

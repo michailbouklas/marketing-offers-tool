@@ -5,6 +5,8 @@ import {
 } from "$lib/services/competition/competition";
 import { listActiveOffersPage } from "$lib/services/competition/offers.server";
 import { listProcessors } from "$lib/services/competition/processors.server";
+import { getMonitoredEntityIds } from "$lib/services/user-monitor.server";
+import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import type { PageServerLoad } from "./$types";
 
@@ -47,6 +49,7 @@ const searchParamsSchema = z.object({
   to: optionalDay.catch(undefined),
   sortBy: z.enum(offerSortFields).default("first_seen").catch("first_seen"),
   sortDir: z.enum(competitionSortDirections).default("desc").catch("desc"),
+  trackedOnly: z.literal("true").optional().catch(undefined),
 });
 
 /** Day after `day` (UTC) so an inclusive end date becomes an exclusive bound. */
@@ -58,7 +61,7 @@ function exclusiveUpperBound(day: string) {
 }
 
 export const load: PageServerLoad = async (event) => {
-  await requirePermission(event, { competition: ["view"] });
+  const { user } = await requirePermission(event, { competition: ["view"] });
 
   const processors = await listProcessors();
   const parseResult = searchParamsSchema.safeParse({
@@ -69,6 +72,7 @@ export const load: PageServerLoad = async (event) => {
     to: event.url.searchParams.get("to") ?? undefined,
     sortBy: event.url.searchParams.get("sortBy") ?? undefined,
     sortDir: event.url.searchParams.get("sortDir") ?? undefined,
+    trackedOnly: event.url.searchParams.get("trackedOnly") ?? undefined,
   });
 
   const page = parseResult.success ? parseResult.data.page : 1;
@@ -79,6 +83,9 @@ export const load: PageServerLoad = async (event) => {
   const to = parseResult.success ? (parseResult.data.to ?? null) : null;
   const sortBy = parseResult.success ? parseResult.data.sortBy : "first_seen";
   const sortDir = parseResult.success ? parseResult.data.sortDir : "desc";
+  const trackedOnly = parseResult.success
+    ? parseResult.data.trackedOnly === "true"
+    : false;
   const selectedProcessorId =
     parseResult.success &&
     parseResult.data.processorId !== undefined &&
@@ -87,6 +94,17 @@ export const load: PageServerLoad = async (event) => {
     )
       ? parseResult.data.processorId
       : null;
+  let monitoredRestaurantKeys: string[] | null = null;
+
+  if (trackedOnly) {
+    if (!user) {
+      redirect(302, "/login");
+    }
+
+    monitoredRestaurantKeys = [
+      ...(await getMonitoredEntityIds(user.id, "competition")),
+    ];
+  }
 
   return {
     canViewScrapeSessions: await hasSuperUserRole(event),
@@ -96,6 +114,7 @@ export const load: PageServerLoad = async (event) => {
     to,
     sortBy,
     sortDir,
+    trackedOnly,
     selectedProcessorId,
     offersPage: await listActiveOffersPage({
       page,
@@ -104,6 +123,7 @@ export const load: PageServerLoad = async (event) => {
       restaurantQuery,
       from,
       to: to ? exclusiveUpperBound(to) : null,
+      monitoredRestaurantKeys,
       sortBy,
       sortDir,
     }),
