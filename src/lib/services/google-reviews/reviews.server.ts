@@ -44,9 +44,39 @@ export type ListReviewsOptions = {
   /** UTC ISO bounds on `review_date`. `from` inclusive, `to` exclusive. */
   from?: string | null;
   to?: string | null;
+  /** Business CIDs selected from the user's Google Reviews monitor list. */
+  monitoredBusinessCids?: string[] | null;
   sortBy: ReviewSortField;
   sortDir: GoogleReviewsSortDirection;
 };
+
+function normalizeMonitoredBusinessCids(
+  monitoredBusinessCids: string[] | null | undefined,
+) {
+  if (monitoredBusinessCids == null) {
+    return null;
+  }
+
+  return [
+    ...new Set(
+      monitoredBusinessCids
+        .map((businessCid) => businessCid.trim())
+        .filter((businessCid) => businessCid.length > 0),
+    ),
+  ];
+}
+
+function buildEmptyReviewsPage(
+  safePageSize: number,
+): Paginated<GoogleReviewRow> {
+  return {
+    items: [],
+    page: 1,
+    pageSize: safePageSize,
+    totalItems: 0,
+    totalPages: 1,
+  };
+}
 
 function getSortExpression(sortBy: ReviewSortField) {
   switch (sortBy) {
@@ -71,6 +101,9 @@ function buildFilterClauses(options: ListReviewsOptions) {
           "positionCaseInsensitiveUTF8(ifNull(b.title, ''), {business_query:String}) > 0",
         ]
       : []),
+    ...(options.monitoredBusinessCids?.length
+      ? ["r.business_cid IN ({monitored_business_cids:Array(String)})"]
+      : []),
     ...(options.rating != null ? ["r.rating = {rating:UInt8}"] : []),
     // Stored casing is not guaranteed; compare lowercased.
     ...(options.sentiment ? ["lower(r.sentiment) = {sentiment:String}"] : []),
@@ -87,6 +120,9 @@ function buildFilterParams(options: ListReviewsOptions) {
   return {
     ...(options.businessCid ? { business_cid: options.businessCid } : {}),
     ...(options.businessQuery ? { business_query: options.businessQuery } : {}),
+    ...(options.monitoredBusinessCids?.length
+      ? { monitored_business_cids: options.monitoredBusinessCids }
+      : {}),
     ...(options.rating != null ? { rating: options.rating } : {}),
     ...(options.sentiment
       ? { sentiment: options.sentiment.toLowerCase() }
@@ -121,8 +157,20 @@ export async function listReviewsPage(
     Number.isFinite(options.pageSize) && options.pageSize > 0
       ? Math.trunc(options.pageSize)
       : 50;
-  const whereClause = buildWhereClause(buildFilterClauses(options));
-  const filterParams = buildFilterParams(options);
+  const monitoredBusinessCids = normalizeMonitoredBusinessCids(
+    options.monitoredBusinessCids,
+  );
+
+  if (monitoredBusinessCids?.length === 0) {
+    return buildEmptyReviewsPage(safePageSize);
+  }
+
+  const filterOptions = {
+    ...options,
+    monitoredBusinessCids,
+  };
+  const whereClause = buildWhereClause(buildFilterClauses(filterOptions));
+  const filterParams = buildFilterParams(filterOptions);
 
   const countResult = await clickhouse.query({
     query: `

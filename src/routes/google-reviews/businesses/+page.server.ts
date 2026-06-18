@@ -92,7 +92,7 @@ export const load: PageServerLoad = async (event) => {
       sortBy,
       sortDir,
     }),
-    getMonitoredEntityIds(user.id, "competition"),
+    getMonitoredEntityIds(user.id, "googleReviews"),
   ]);
 
   businessesPage.items = businessesPage.items.map((business) => ({
@@ -129,7 +129,7 @@ export const actions: Actions = {
       return fail(400, { message: "Invalid monitor request." });
     }
 
-    await addMonitor(user.id, "competition", parseResult.data.entityId);
+    await addMonitor(user.id, "googleReviews", parseResult.data.entityId);
 
     return { success: true };
   },
@@ -152,7 +152,7 @@ export const actions: Actions = {
       return fail(400, { message: "Invalid monitor request." });
     }
 
-    await removeMonitor(user.id, "competition", parseResult.data.entityId);
+    await removeMonitor(user.id, "googleReviews", parseResult.data.entityId);
 
     return { success: true };
   },

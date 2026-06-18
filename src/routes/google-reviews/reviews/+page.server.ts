@@ -5,6 +5,8 @@ import {
   sentimentValues,
 } from "$lib/services/google-reviews/google-reviews";
 import { listReviewsPage } from "$lib/services/google-reviews/reviews.server";
+import { getMonitoredEntityIds } from "$lib/services/user-monitor.server";
+import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import type { PageServerLoad } from "./$types";
 
@@ -51,6 +53,7 @@ const searchParamsSchema = z.object({
   to: optionalDay.catch(undefined),
   sortBy: z.enum(reviewSortFields).default("review_date").catch("review_date"),
   sortDir: z.enum(googleReviewsSortDirections).default("desc").catch("desc"),
+  trackedOnly: z.literal("true").optional().catch(undefined),
 });
 
 /** Day after `day` (UTC) so an inclusive end date becomes an exclusive bound. */
@@ -62,7 +65,7 @@ function exclusiveUpperBound(day: string) {
 }
 
 export const load: PageServerLoad = async (event) => {
-  await requirePermission(event, { googleReviews: ["view"] });
+  const { user } = await requirePermission(event, { googleReviews: ["view"] });
 
   const parseResult = searchParamsSchema.safeParse({
     page: event.url.searchParams.get("page") ?? 1,
@@ -74,6 +77,7 @@ export const load: PageServerLoad = async (event) => {
     to: event.url.searchParams.get("to") ?? undefined,
     sortBy: event.url.searchParams.get("sortBy") ?? undefined,
     sortDir: event.url.searchParams.get("sortDir") ?? undefined,
+    trackedOnly: event.url.searchParams.get("trackedOnly") ?? undefined,
   });
 
   const page = parseResult.success ? parseResult.data.page : 1;
@@ -91,6 +95,20 @@ export const load: PageServerLoad = async (event) => {
   const to = parseResult.success ? (parseResult.data.to ?? null) : null;
   const sortBy = parseResult.success ? parseResult.data.sortBy : "review_date";
   const sortDir = parseResult.success ? parseResult.data.sortDir : "desc";
+  const trackedOnly = parseResult.success
+    ? parseResult.data.trackedOnly === "true"
+    : false;
+  let monitoredBusinessCids: string[] | null = null;
+
+  if (trackedOnly) {
+    if (!user) {
+      redirect(302, "/login");
+    }
+
+    monitoredBusinessCids = [
+      ...(await getMonitoredEntityIds(user.id, "googleReviews")),
+    ];
+  }
 
   return {
     businessQuery,
@@ -101,6 +119,7 @@ export const load: PageServerLoad = async (event) => {
     to,
     sortBy,
     sortDir,
+    trackedOnly,
     reviewsPage: await listReviewsPage({
       page,
       pageSize: PAGE_SIZE,
@@ -110,6 +129,7 @@ export const load: PageServerLoad = async (event) => {
       sentiment,
       from,
       to: to ? exclusiveUpperBound(to) : null,
+      monitoredBusinessCids,
       sortBy,
       sortDir,
     }),

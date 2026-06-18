@@ -6,6 +6,7 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
+  import { Switch } from "$lib/components/ui/switch/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import {
     formatGoogleReviewsDateTime,
@@ -27,12 +28,18 @@
   let { data }: { data: PageData } = $props();
   let searchForm: HTMLFormElement | null = null;
   let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
+  // svelte-ignore state_referenced_locally
+  let trackedOnly = $state(data.trackedOnly);
 
   const rows = $derived(data.reviewsPage.items);
   const page = $derived(data.reviewsPage.page);
   const pageSize = $derived(data.reviewsPage.pageSize);
   const totalItems = $derived(data.reviewsPage.totalItems);
   const totalPages = $derived(data.reviewsPage.totalPages);
+
+  $effect(() => {
+    trackedOnly = data.trackedOnly;
+  });
 
   const sortableColumns: { key: ReviewSortField; label: string }[] = [
     { key: "review_date", label: "Date" },
@@ -66,6 +73,15 @@
     submitSearchForm();
   }
 
+  function handleTrackedOnlyChange() {
+    if (searchDebounceTimeout) {
+      clearTimeout(searchDebounceTimeout);
+      searchDebounceTimeout = null;
+    }
+
+    setTimeout(submitSearchForm, 0);
+  }
+
   function handleSearchKeydown(event: KeyboardEvent) {
     if (event.key !== "Enter") {
       return;
@@ -90,6 +106,7 @@
     to = data.to,
     sortBy = data.sortBy,
     sortDir = data.sortDir,
+    trackedOnly = data.trackedOnly,
   }: {
     page?: number;
     business?: string | null;
@@ -100,6 +117,7 @@
     to?: string | null;
     sortBy?: ReviewSortField;
     sortDir?: GoogleReviewsSortDirection;
+    trackedOnly?: boolean;
   }) {
     const params = new URLSearchParams();
 
@@ -133,6 +151,10 @@
 
     if (sortDir && sortDir !== "desc") {
       params.set("sortDir", sortDir);
+    }
+
+    if (trackedOnly) {
+      params.set("trackedOnly", "true");
     }
 
     if (page && page > 1) {
@@ -239,7 +261,7 @@
           <form
             method="GET"
             bind:this={searchForm}
-            class="grid gap-3 lg:grid-cols-[minmax(0,15rem)_minmax(0,8rem)_minmax(0,10rem)_auto_auto] lg:items-end"
+            class="grid gap-3 lg:grid-cols-[minmax(0,15rem)_minmax(0,8rem)_minmax(0,10rem)_auto_auto_auto] lg:items-end"
           >
             <div class="space-y-2">
               <label class="text-sm font-medium" for="business">Business</label>
@@ -310,6 +332,24 @@
               />
             </div>
 
+            <div
+              class="border-border bg-muted/30 flex min-h-10 items-center justify-between gap-3 rounded-md border px-3 py-2"
+            >
+              <label
+                class="cursor-pointer text-sm font-medium whitespace-nowrap"
+                for="trackedOnly"
+              >
+                Tracked only
+              </label>
+              <Switch
+                id="trackedOnly"
+                type="button"
+                bind:checked={trackedOnly}
+                onclick={handleTrackedOnlyChange}
+                aria-label="Show tracked businesses only"
+              />
+            </div>
+
             {#if data.businessCid}
               <input type="hidden" name="cid" value={data.businessCid} />
             {/if}
@@ -318,6 +358,9 @@
             {/if}
             {#if data.to}
               <input type="hidden" name="to" value={data.to} />
+            {/if}
+            {#if trackedOnly}
+              <input type="hidden" name="trackedOnly" value="true" />
             {/if}
             <input type="hidden" name="sortBy" value={data.sortBy} />
             <input type="hidden" name="sortDir" value={data.sortDir} />
@@ -352,6 +395,9 @@
             <Badge variant="outline">
               {data.from ?? "…"} – {data.to ?? "…"}
             </Badge>
+          {/if}
+          {#if data.trackedOnly}
+            <Badge variant="outline">Tracked only</Badge>
           {/if}
           <span class="text-muted-foreground text-sm">
             {(page - 1) * pageSize + (totalItems === 0 ? 0 : 1)}-{Math.min(

@@ -1,11 +1,11 @@
 ---
 name: image-generator
-description: "Skill for the Image-generator area of marketing-offers-tool. 72 symbols across 20 files."
+description: "Skill for the Image-generator area of marketing-offers-tool. 80 symbols across 21 files."
 ---
 
 # Image-generator
 
-72 symbols | 20 files | Cohesion: 79%
+80 symbols | 21 files | Cohesion: 79%
 
 ## When to Use
 
@@ -15,18 +15,18 @@ description: "Skill for the Image-generator area of marketing-offers-tool. 72 sy
 
 ## Key Files
 
-| File                                                          | Symbols                                                                                                 |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `src/lib/services/image-generator/image-generator.server.ts`  | clampPage, clampPageSize, getDateRange, buildHistoryWhere, listGeneratedImagesHistoryForUser (+14)      |
-| `src/lib/services/image-generator/image-generator-client.ts`  | listBrandAssets, attachBrandAssetAsReference, fetchBrandGuidelines, jsonOrThrow, uploadReferences (+12) |
-| `src/lib/services/image-generator/composer-library.server.ts` | toTemplateDTO, assertAssignedBrands, listTemplatesForUser, createTemplate, updateTemplate (+4)          |
-| `src/lib/services/image-generator/orchestrate.server.ts`      | isImageQuality, isImageBackground, isInputFidelity, generateOneRow, kickoffPendingGenerations           |
-| `src/lib/services/image-generator/structured-prompt.ts`       | cleanList, serializeStructuredPrompt, set, mergeSuggestionIntoState                                     |
-| `src/lib/services/image-generator/generate.server.ts`         | GenerateValidationError, buildFinalPrompt, createPendingGenerations                                     |
-| `src/routes/api/images/templates/+server.ts`                  | GET, POST                                                                                               |
-| `src/lib/server/generations-history.ts`                       | loadGenerationsHistory                                                                                  |
-| `src/routes/image-generator/me/+page.server.ts`               | load                                                                                                    |
-| `src/routes/api/images/templates/[id]/+server.ts`             | PATCH                                                                                                   |
+| File | Symbols |
+|------|---------|
+| `src/lib/services/image-generator/image-generator.server.ts` | clampPage, clampPageSize, getDateRange, buildHistoryWhere, listGeneratedImagesHistoryForUser (+15) |
+| `src/lib/services/image-generator/image-generator-client.ts` | listBrandAssets, attachBrandAssetAsReference, fetchBrandGuidelines, jsonOrThrow, uploadReferences (+12) |
+| `src/lib/services/image-generator/composer-library.server.ts` | toTemplateDTO, assertAssignedBrands, listTemplatesForUser, createTemplate, updateTemplate (+4) |
+| `src/lib/services/image-generator/orchestrate.server.ts` | toJsonValue, recordFailureLog, generateWithFailureLogging, isImageQuality, isImageBackground (+3) |
+| `src/lib/services/image-generator/structured-prompt.ts` | cleanList, serializeStructuredPrompt, set, mergeSuggestionIntoState |
+| `src/lib/services/image-providers/types.ts` | isProviderRequestError, generateImage, generateImage |
+| `src/lib/services/image-generator/generate.server.ts` | GenerateValidationError, buildFinalPrompt, createPendingGenerations |
+| `src/lib/services/copywriter/generate.server.ts` | toJsonValue, recordFailureLogs |
+| `src/routes/api/images/templates/+server.ts` | GET, POST |
+| `src/lib/server/generations-history.ts` | loadGenerationsHistory |
 
 ## Entry Points
 
@@ -40,51 +40,53 @@ Start here when exploring this area:
 
 ## Key Symbols
 
-| Symbol                                  | Type     | File                                                         | Line |
-| --------------------------------------- | -------- | ------------------------------------------------------------ | ---- |
-| `GenerateValidationError`               | Class    | `src/lib/services/image-generator/generate.server.ts`        | 77   |
-| `listBrandAssets`                       | Function | `src/lib/services/image-generator/image-generator-client.ts` | 71   |
-| `attachBrandAssetAsReference`           | Function | `src/lib/services/image-generator/image-generator-client.ts` | 85   |
-| `fetchBrandGuidelines`                  | Function | `src/lib/services/image-generator/image-generator-client.ts` | 96   |
-| `uploadReferences`                      | Function | `src/lib/services/image-generator/image-generator-client.ts` | 112  |
-| `enhancePrompt`                         | Function | `src/lib/services/image-generator/image-generator-client.ts` | 126  |
-| `suggestStructuredPrompt`               | Function | `src/lib/services/image-generator/image-generator-client.ts` | 148  |
-| `submitGeneration`                      | Function | `src/lib/services/image-generator/image-generator-client.ts` | 160  |
-| `fetchImagesSince`                      | Function | `src/lib/services/image-generator/image-generator-client.ts` | 171  |
-| `createPreset`                          | Function | `src/lib/services/image-generator/image-generator-client.ts` | 181  |
-| `updatePreset`                          | Function | `src/lib/services/image-generator/image-generator-client.ts` | 193  |
-| `deletePreset`                          | Function | `src/lib/services/image-generator/image-generator-client.ts` | 206  |
-| `refreshPresets`                        | Function | `src/lib/services/image-generator/image-generator-client.ts` | 211  |
-| `createTemplate`                        | Function | `src/lib/services/image-generator/image-generator-client.ts` | 217  |
-| `updateTemplate`                        | Function | `src/lib/services/image-generator/image-generator-client.ts` | 229  |
-| `deleteTemplate`                        | Function | `src/lib/services/image-generator/image-generator-client.ts` | 242  |
-| `refreshTemplates`                      | Function | `src/lib/services/image-generator/image-generator-client.ts` | 247  |
-| `loadGenerationsHistory`                | Function | `src/lib/server/generations-history.ts`                      | 28   |
-| `listGeneratedImagesHistoryForUser`     | Function | `src/lib/services/image-generator/image-generator.server.ts` | 216  |
-| `listGeneratedImagePromptGroupsForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 243  |
+| Symbol | Type | File | Line |
+|--------|------|------|------|
+| `GenerateValidationError` | Class | `src/lib/services/image-generator/generate.server.ts` | 77 |
+| `listBrandAssets` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 71 |
+| `attachBrandAssetAsReference` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 85 |
+| `fetchBrandGuidelines` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 96 |
+| `uploadReferences` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 112 |
+| `enhancePrompt` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 126 |
+| `suggestStructuredPrompt` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 148 |
+| `submitGeneration` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 160 |
+| `fetchImagesSince` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 171 |
+| `createPreset` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 181 |
+| `updatePreset` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 193 |
+| `deletePreset` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 206 |
+| `refreshPresets` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 211 |
+| `createTemplate` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 217 |
+| `updateTemplate` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 229 |
+| `deleteTemplate` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 242 |
+| `refreshTemplates` | Function | `src/lib/services/image-generator/image-generator-client.ts` | 247 |
+| `loadGenerationsHistory` | Function | `src/lib/server/generations-history.ts` | 28 |
+| `load` | Function | `src/routes/image-generator/me/+page.server.ts` | 4 |
+| `listGeneratedImagesHistoryForUser` | Function | `src/lib/services/image-generator/image-generator.server.ts` | 216 |
 
 ## Execution Flows
 
-| Flow                                           | Type            | Steps |
-| ---------------------------------------------- | --------------- | ----- |
-| `GET → AssertSafeKey`                          | cross_community | 6     |
-| `GET → LoadEnvFileValues`                      | cross_community | 6     |
-| `POST → LoadEnvFileValues`                     | cross_community | 6     |
-| `POST → AssertSafeKey`                         | cross_community | 6     |
-| `POST → From`                                  | cross_community | 6     |
-| `Load → AssertSafeKey`                         | cross_community | 6     |
-| `Load → LoadEnvFileValues`                     | cross_community | 6     |
-| `GET → AssertSafeKey`                          | cross_community | 6     |
-| `GET → LoadEnvFileValues`                      | cross_community | 6     |
-| `CreatePendingGenerations → LoadEnvFileValues` | cross_community | 6     |
+| Flow | Type | Steps |
+|------|------|-------|
+| `POST → LoadEnvFileValues` | cross_community | 6 |
+| `POST → AssertSafeKey` | cross_community | 6 |
+| `POST → From` | cross_community | 6 |
+| `CreatePendingGenerations → LoadEnvFileValues` | cross_community | 6 |
+| `Load → GetDateRange` | cross_community | 5 |
+| `POST → ToModelList` | cross_community | 5 |
+| `POST → StringArray` | cross_community | 5 |
+| `POST → GetSupabaseClient` | cross_community | 5 |
+| `POST → SupabaseObjectStore` | cross_community | 5 |
+| `POST → LocalObjectStore` | cross_community | 5 |
 
 ## Connected Areas
 
-| Area            | Connections |
-| --------------- | ----------- |
-| Server          | 18 calls    |
-| Services        | 5 calls     |
-| Image-providers | 4 calls     |
+| Area | Connections |
+|------|-------------|
+| Server | 17 calls |
+| Image-providers | 5 calls |
+| Services | 4 calls |
+| Restaurants | 1 calls |
+| Brand-context | 1 calls |
 
 ## How to Explore
 
