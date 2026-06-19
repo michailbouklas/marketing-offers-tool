@@ -8,7 +8,9 @@
     formatRating,
     formatSentimentLabel,
     sentimentBadgeClass,
+    type ReviewCategoryMetric,
   } from "$lib/services/google-reviews/google-reviews";
+  import CategoryReviewsDialog from "./CategoryReviewsDialog.svelte";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import ExternalLinkIcon from "@lucide/svelte/icons/external-link";
   import GlobeIcon from "@lucide/svelte/icons/globe";
@@ -22,6 +24,15 @@
   const profile = $derived(data.detail.profile);
   const starBreakdown = $derived(data.detail.starBreakdown);
   const sentiment = $derived(data.detail.sentiment);
+  const categories = $derived(data.detail.categories);
+
+  let dialogOpen = $state(false);
+  let selectedCategory = $state<ReviewCategoryMetric | null>(null);
+
+  function openCategory(category: ReviewCategoryMetric) {
+    selectedCategory = category;
+    dialogOpen = true;
+  }
 
   const numberFormatter = new Intl.NumberFormat();
 
@@ -201,6 +212,54 @@
         </Card.Content>
       </Card.Root>
 
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Categories</Card.Title>
+          <Card.Description>
+            {#if categories.length > 0}
+              {numberFormatter.format(categories.length)} categories from the latest
+              snapshot. Select one to read its reviews.
+            {:else}
+              No category breakdown available yet.
+            {/if}
+          </Card.Description>
+        </Card.Header>
+        <Card.Content>
+          {#if categories.length === 0}
+            <p class="text-muted-foreground text-sm">No categories captured yet.</p>
+          {:else}
+            <div class="space-y-3">
+              {#each categories as item (item.categoryId)}
+                <div class="flex items-center gap-3">
+                  <button
+                    type="button"
+                    class="hover:text-foreground w-32 cursor-pointer truncate text-left text-sm capitalize underline-offset-2 hover:underline"
+                    onclick={() => openCategory(item)}
+                  >
+                    {item.category}
+                  </button>
+                  <div class="bg-muted h-2.5 flex-1 overflow-hidden rounded-full">
+                    <div
+                      class="bg-chart-1 h-full rounded-full"
+                      style="width: {item.percentage ?? 0}%"
+                    ></div>
+                  </div>
+                  <span
+                    class="text-muted-foreground w-20 text-right text-sm tabular-nums"
+                  >
+                    {item.percentage === null
+                      ? numberFormatter.format(item.reviewCount)
+                      : `${item.percentage.toFixed(1)}%`}
+                  </span>
+                </div>
+              {/each}
+            </div>
+          {/if}
+        </Card.Content>
+      </Card.Root>
+    </section>
+
+    <section class="grid gap-6 xl:grid-cols-2">
       <Card.Root>
         <Card.Header>
           <Card.Title>Sentiment</Card.Title>
@@ -402,3 +461,9 @@
     {/if}
   </main>
 </div>
+
+<CategoryReviewsDialog
+  bind:open={dialogOpen}
+  cid={profile.cid}
+  category={selectedCategory}
+/>
