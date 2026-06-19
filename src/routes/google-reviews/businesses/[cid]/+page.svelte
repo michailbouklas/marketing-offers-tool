@@ -1,4 +1,7 @@
 <script lang="ts">
+  import AvgRatingPerDayChart from "$lib/components/google-reviews/widgets/avg-rating-per-day-chart.svelte";
+  import ReviewsPerDayChart from "$lib/components/google-reviews/widgets/reviews-per-day-chart.svelte";
+  import SentimentOverTimeChart from "$lib/components/google-reviews/widgets/sentiment-over-time-chart.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
@@ -323,6 +326,24 @@
           {/if}
         </Card.Content>
       </Card.Root>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <div class="grid gap-6 xl:grid-cols-2">
+        <ReviewsPerDayChart
+          title="Reviews per month"
+          description="New Google reviews captured per month across this business's history."
+          dateFormat="month"
+          data={data.detail.reviewsPerDay}
+        />
+        <AvgRatingPerDayChart
+          title="Average rating per month"
+          description="Average star rating of the reviews left each month across this business's history."
+          dateFormat="month"
+          data={data.detail.avgRatingPerDay}
+        />
+      </div>
+      <SentimentOverTimeChart data={data.detail.sentimentPerDay} />
     </section>
 
     <Card.Root>

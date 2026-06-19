@@ -1,63 +1,60 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Chart from "$lib/components/ui/chart/index.js";
-  import type { TimeseriesPoint } from "$lib/services/google-reviews/google-reviews";
+  import type { SentimentTimeseriesPoint } from "$lib/services/google-reviews/google-reviews";
   import { scaleUtc } from "d3-scale";
   import { Area, AreaChart, LinearGradient } from "layerchart";
 
   let {
-    title = "Average rating per day",
-    description = "Average star rating of the reviews left each day over the last six months.",
-    dateFormat = "day",
+    title = "Sentiment over time",
     data,
   }: {
     title?: string;
-    description?: string;
-    /** Granularity of the buckets in `data`; controls axis/tooltip labels. */
-    dateFormat?: "day" | "month";
     settings?: Record<string, unknown>;
-    data: TimeseriesPoint[];
+    data: SentimentTimeseriesPoint[];
   } = $props();
 
   const chartData = $derived(
     data.map((point) => ({
       date: new Date(`${point.day}T00:00:00Z`),
-      value: point.value,
+      positive: point.positive,
+      neutral: point.neutral,
+      negative: point.negative,
     })),
   );
 
   const chartConfig = {
-    value: { label: "Avg rating", color: "var(--chart-2)" },
+    positive: { label: "Positive", color: "var(--color-emerald-600)" },
+    neutral: { label: "Neutral", color: "var(--color-zinc-400)" },
+    negative: { label: "Negative", color: "var(--color-red-600)" },
   } satisfies Chart.ChartConfig;
 
+  const chartSeries = [
+    { key: "positive", label: "Positive", color: "var(--color-positive)" },
+    { key: "neutral", label: "Neutral", color: "var(--color-neutral)" },
+    { key: "negative", label: "Negative", color: "var(--color-negative)" },
+  ];
+
   const formatAxis = (v: Date) =>
-    dateFormat === "month"
-      ? v.toLocaleDateString("en-US", {
-          month: "short",
-          year: "numeric",
-          timeZone: "UTC",
-        })
-      : v.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    v.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    });
 
   const formatTooltip = (v: Date) =>
-    dateFormat === "month"
-      ? v.toLocaleDateString("en-US", {
-          month: "long",
-          year: "numeric",
-          timeZone: "UTC",
-        })
-      : v.toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        });
+    v.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    });
 </script>
 
-<Card.Root>
+<Card.Root class="w-full">
   <Card.Header>
     <Card.Title>{title}</Card.Title>
     <Card.Description>
-      {description}
+      Reviews per month by sentiment across this business's history.
     </Card.Description>
   </Card.Header>
   <Card.Content>
@@ -66,19 +63,15 @@
         Not enough review history to chart yet.
       </p>
     {:else}
-      <Chart.Container config={chartConfig} class="h-56 w-full">
+      <Chart.Container config={chartConfig} class="h-72 w-full">
         <AreaChart
           data={chartData}
           x="date"
           xScale={scaleUtc()}
-          yDomain={[0, 5]}
-          series={[
-            {
-              key: "value",
-              label: "Avg rating",
-              color: "var(--color-value)",
-            },
-          ]}
+          yPadding={[0, 16]}
+          series={chartSeries}
+          seriesLayout="stack"
+          legend
           props={{
             xAxis: { format: formatAxis },
             yAxis: { format: (v: number) => `${v}` },

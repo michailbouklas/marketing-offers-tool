@@ -7,9 +7,14 @@
 
   let {
     title = "Reviews per day",
+    description = "New Google reviews captured per day over the last six months.",
+    dateFormat = "day",
     data,
   }: {
     title?: string;
+    description?: string;
+    /** Granularity of the buckets in `data`; controls axis/tooltip labels. */
+    dateFormat?: "day" | "month";
     settings?: Record<string, unknown>;
     data: TimeseriesPoint[];
   } = $props();
@@ -24,13 +29,35 @@
   const chartConfig = {
     value: { label: "Reviews", color: "var(--chart-1)" },
   } satisfies Chart.ChartConfig;
+
+  const formatAxis = (v: Date) =>
+    dateFormat === "month"
+      ? v.toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC",
+        })
+      : v.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  const formatTooltip = (v: Date) =>
+    dateFormat === "month"
+      ? v.toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+          timeZone: "UTC",
+        })
+      : v.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
 </script>
 
 <Card.Root>
   <Card.Header>
     <Card.Title>{title}</Card.Title>
     <Card.Description>
-      New Google reviews captured per day over the last six months.
+      {description}
     </Card.Description>
   </Card.Header>
   <Card.Content>
@@ -53,26 +80,12 @@
             },
           ]}
           props={{
-            xAxis: {
-              format: (v: Date) =>
-                v.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                }),
-            },
+            xAxis: { format: formatAxis },
             yAxis: { format: (v: number) => `${v}` },
           }}
         >
           {#snippet tooltip()}
-            <Chart.Tooltip
-              indicator="dot"
-              labelFormatter={(v: Date) =>
-                v.toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-            />
+            <Chart.Tooltip indicator="dot" labelFormatter={formatTooltip} />
           {/snippet}
           {#snippet marks({ context })}
             {#each context.series.visibleSeries as s (s.key)}

@@ -1,7 +1,3 @@
-{"file":"src/lib/services/image-providers/types.test.ts","action":"Write","timestamp":"2026-05-26T09:39:19Z","important":true}
-{"file":"src/lib/services/image-providers/types.ts","action":"Write","timestamp":"2026-05-26T09:39:22Z","important":false}
-{"file":"src/lib/server/image-storage.test.ts","action":"Write","timestamp":"2026-05-26T09:40:19Z","important":true}
-{"file":"src/lib/server/image-storage.ts","action":"Write","timestamp":"2026-05-26T09:40:25Z","important":false}
 {"file":"src/lib/server/reference-storage.test.ts","action":"Write","timestamp":"2026-05-26T09:40:59Z","important":true}
 {"file":"src/lib/server/reference-storage.ts","action":"Write","timestamp":"2026-05-26T09:41:07Z","important":false}
 {"file":"src/lib/server/image-size.test.ts","action":"Write","timestamp":"2026-05-26T09:41:57Z","important":true}
@@ -499,3 +495,7 @@
 {"file":"src/routes/google-reviews/businesses/[cid]/categories/[categoryId]/reviews/+server.ts","action":"Write","timestamp":"2026-06-19T11:51:45Z","important":false}
 {"file":"src/lib/services/google-reviews/google-reviews-client.ts","action":"Write","timestamp":"2026-06-19T11:55:26Z","important":false}
 {"file":"src/routes/google-reviews/businesses/[cid]/CategoryReviewsDialog.svelte","action":"Write","timestamp":"2026-06-19T11:56:06Z","important":false}
+{"file":"C:/Users/mbouklas/.claude/plans/on-the-business-page-functional-pie.md","action":"Write","timestamp":"2026-06-19T12:14:32Z","important":false}
+{"file":"src/lib/components/google-reviews/widgets/sentiment-over-time-chart.svelte","action":"Write","timestamp":"2026-06-19T12:16:56Z","important":false}
+{"file":"src/lib/components/google-reviews/widgets/reviews-per-day-chart.svelte","action":"Edit","timestamp":"2026-06-19T12:27:07Z","important":false}
+{"file":"src/lib/components/google-reviews/widgets/avg-rating-per-day-chart.svelte","action":"Edit","timestamp":"2026-06-19T12:27:32Z","important":false}

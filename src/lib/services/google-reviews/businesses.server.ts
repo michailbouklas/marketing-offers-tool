@@ -18,8 +18,10 @@ import type {
   OrderingOption,
   Paginated,
   ReviewCategoryMetric,
+  SentimentTimeseriesPoint,
   SentimentValue,
   StarBreakdown,
+  TimeseriesPoint,
 } from "$lib/services/google-reviews/google-reviews";
 import { mapReviewRow } from "$lib/services/google-reviews/reviews.server";
 
@@ -97,6 +99,15 @@ type CategoryMetricQueryRow = {
   category?: string | null;
   review_count?: string | number | null;
   percentage?: string | number | null;
+};
+
+type TimeseriesAggRow = {
+  day: string;
+  review_count: string | number;
+  avg_rating?: string | number | null;
+  positive: string | number;
+  neutral: string | number;
+  negative: string | number;
 };
 
 const RECENT_REVIEWS_LIMIT = 20;
@@ -304,6 +315,7 @@ export async function getBusinessDetail(
     hourRows,
     orderingRows,
     categoryRows,
+    timeseriesRows,
   ] = await Promise.all([
     clickhouse
       .query({
@@ -453,6 +465,26 @@ export async function getBusinessDetail(
         format: "JSONEachRow",
       })
       .then((result) => result.json<CategoryMetricQueryRow>()),
+    clickhouse
+      .query({
+        query: `
+          SELECT
+            toString(toStartOfMonth(r.review_date)) AS day,
+            count() AS review_count,
+            avg(r.rating) AS avg_rating,
+            countIf(r.sentiment = 'positive') AS positive,
+            countIf(r.sentiment = 'neutral') AS neutral,
+            countIf(r.sentiment = 'negative') AS negative
+          FROM ${googleReviewsTable("reviews")} AS r FINAL
+          WHERE r.business_cid = {cid:String}
+            AND r.review_date IS NOT NULL
+          GROUP BY day
+          ORDER BY day ASC
+        `,
+        query_params: cidParam,
+        format: "JSONEachRow",
+      })
+      .then((result) => result.json<TimeseriesAggRow>()),
   ]);
 
   const profileRow = profileRows[0];
@@ -527,6 +559,25 @@ export async function getBusinessDetail(
       percentage: parseNullableNumber(row.percentage),
     }));
 
+  const reviewsPerDay = timeseriesRows.map<TimeseriesPoint>((row) => ({
+    day: row.day,
+    value: parseCount(row.review_count),
+  }));
+
+  const avgRatingPerDay = timeseriesRows.map<TimeseriesPoint>((row) => ({
+    day: row.day,
+    value: parseNullableNumber(row.avg_rating) ?? 0,
+  }));
+
+  const sentimentPerDay = timeseriesRows.map<SentimentTimeseriesPoint>(
+    (row) => ({
+      day: row.day,
+      positive: parseCount(row.positive),
+      neutral: parseCount(row.neutral),
+      negative: parseCount(row.negative),
+    }),
+  );
+
   return {
     profile,
     starBreakdown,
@@ -536,5 +587,8 @@ export async function getBusinessDetail(
     operatingHours,
     orderingOptions,
     categories,
+    reviewsPerDay,
+    avgRatingPerDay,
+    sentimentPerDay,
   };
 }

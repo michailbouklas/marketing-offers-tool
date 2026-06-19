@@ -154,6 +154,9 @@ export type BusinessDetail = {
   operatingHours: OperatingHour[];
   orderingOptions: OrderingOption[];
   categories: ReviewCategoryMetric[];
+  reviewsPerDay: TimeseriesPoint[];
+  avgRatingPerDay: TimeseriesPoint[];
+  sentimentPerDay: SentimentTimeseriesPoint[];
 };
 
 // --- Dashboard ---
@@ -162,6 +165,14 @@ export type TimeseriesPoint = {
   /** UTC day, "YYYY-MM-DD". */
   day: string;
   value: number;
+};
+
+export type SentimentTimeseriesPoint = {
+  /** UTC day, "YYYY-MM-DD". */
+  day: string;
+  positive: number;
+  neutral: number;
+  negative: number;
 };
 
 export type SentimentBucket = {
