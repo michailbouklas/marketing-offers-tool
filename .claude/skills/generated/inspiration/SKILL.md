@@ -15,11 +15,11 @@ description: "Skill for the Inspiration area of marketing-offers-tool. 6 symbols
 
 ## Key Files
 
-| File | Symbols |
-|------|---------|
-| `src/lib/services/inspiration/category-form.ts` | getDefaultCreateCategoryFormData, getDefaultRenameCategoryFormData, getDefaultDeleteCategoryFormData |
-| `src/lib/server/inspiration/frontmatter.ts` | sanitizeValue, lines |
-| `src/routes/admin/prompt-gallery/+page.server.ts` | load |
+| File                                              | Symbols                                                                                              |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `src/lib/services/inspiration/category-form.ts`   | getDefaultCreateCategoryFormData, getDefaultRenameCategoryFormData, getDefaultDeleteCategoryFormData |
+| `src/lib/server/inspiration/frontmatter.ts`       | sanitizeValue, lines                                                                                 |
+| `src/routes/admin/prompt-gallery/+page.server.ts` | load                                                                                                 |
 
 ## Entry Points
 
@@ -33,35 +33,35 @@ Start here when exploring this area:
 
 ## Key Symbols
 
-| Symbol | Type | File | Line |
-|--------|------|------|------|
-| `load` | Function | `src/routes/admin/prompt-gallery/+page.server.ts` | 22 |
-| `getDefaultCreateCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 42 |
-| `getDefaultRenameCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 46 |
-| `getDefaultDeleteCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts` | 50 |
-| `lines` | Function | `src/lib/server/inspiration/frontmatter.ts` | 21 |
-| `sanitizeValue` | Function | `src/lib/server/inspiration/frontmatter.ts` | 13 |
+| Symbol                             | Type     | File                                              | Line |
+| ---------------------------------- | -------- | ------------------------------------------------- | ---- |
+| `load`                             | Function | `src/routes/admin/prompt-gallery/+page.server.ts` | 22   |
+| `getDefaultCreateCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts`   | 42   |
+| `getDefaultRenameCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts`   | 46   |
+| `getDefaultDeleteCategoryFormData` | Function | `src/lib/services/inspiration/category-form.ts`   | 50   |
+| `lines`                            | Function | `src/lib/server/inspiration/frontmatter.ts`       | 21   |
+| `sanitizeValue`                    | Function | `src/lib/server/inspiration/frontmatter.ts`       | 13   |
 
 ## Execution Flows
 
-| Flow | Type | Steps |
-|------|------|-------|
-| `Load → AssertSafeKey` | cross_community | 5 |
-| `Load → From` | cross_community | 5 |
-| `Load → GetText` | cross_community | 4 |
-| `Load → List` | cross_community | 4 |
-| `Load → RequireAuthenticatedUser` | cross_community | 3 |
-| `Load → HasPermission` | cross_community | 3 |
-| `Load → GetSupabaseClient` | cross_community | 3 |
-| `Load → SupabaseObjectStore` | cross_community | 3 |
-| `Load → LocalObjectStore` | cross_community | 3 |
+| Flow                              | Type            | Steps |
+| --------------------------------- | --------------- | ----- |
+| `Load → AssertSafeKey`            | cross_community | 5     |
+| `Load → From`                     | cross_community | 5     |
+| `Load → GetText`                  | cross_community | 4     |
+| `Load → List`                     | cross_community | 4     |
+| `Load → RequireAuthenticatedUser` | cross_community | 3     |
+| `Load → HasPermission`            | cross_community | 3     |
+| `Load → GetSupabaseClient`        | cross_community | 3     |
+| `Load → SupabaseObjectStore`      | cross_community | 3     |
+| `Load → LocalObjectStore`         | cross_community | 3     |
 
 ## Connected Areas
 
-| Area | Connections |
-|------|-------------|
-| Server | 2 calls |
-| Restaurants | 1 calls |
+| Area        | Connections |
+| ----------- | ----------- |
+| Server      | 2 calls     |
+| Restaurants | 1 calls     |
 
 ## How to Explore
 
