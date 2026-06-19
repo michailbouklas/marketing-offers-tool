@@ -17,6 +17,7 @@ import type {
   OperatingHour,
   OrderingOption,
   Paginated,
+  ReviewCategoryMetric,
   SentimentValue,
   StarBreakdown,
 } from "$lib/services/google-reviews/google-reviews";
@@ -66,16 +67,11 @@ type StarBreakdownQueryRow = {
   rating_5_count?: string | number | null;
 };
 
-type SentimentMetricsQueryRow = {
-  total_reviews: string | number;
-  positive_count: string | number;
-  negative_count: string | number;
-  neutral_count: string | number;
-  positive_percentage?: string | number | null;
-  negative_percentage?: string | number | null;
-  neutral_percentage?: string | number | null;
-  sentiment_score?: string | number | null;
-  last_updated_iso?: string | null;
+type SentimentSummaryQueryRow = {
+  positive_count?: string | number | null;
+  negative_count?: string | number | null;
+  neutral_count?: string | number | null;
+  last_sentiment_analysis_iso?: string | null;
 };
 
 type ReviewQueryRow = Parameters<typeof mapReviewRow>[0];
@@ -94,6 +90,13 @@ type OperatingHourQueryRow = {
 type OrderingOptionQueryRow = {
   platform_name: string;
   order_url: string;
+};
+
+type CategoryMetricQueryRow = {
+  category_id?: string | number | null;
+  category?: string | null;
+  review_count?: string | number | null;
+  percentage?: string | number | null;
 };
 
 const RECENT_REVIEWS_LIMIT = 20;
@@ -150,6 +153,35 @@ function buildSentimentClause(sentiment: SentimentValue) {
   // Dominant sentiment: at least as many reviews as each other bucket, and at
   // least one analyzed review (otherwise an all-zero row matches everything).
   return `${own} >= greatest(${others.join(", ")}) AND ${own} > 0`;
+}
+
+function mapSentimentSummaryRow(
+  row: SentimentSummaryQueryRow | undefined,
+): BusinessSentimentMetrics | null {
+  if (!row) {
+    return null;
+  }
+
+  const positiveCount = parseCount(row.positive_count);
+  const negativeCount = parseCount(row.negative_count);
+  const neutralCount = parseCount(row.neutral_count);
+  const totalReviews = positiveCount + negativeCount + neutralCount;
+
+  if (totalReviews === 0) {
+    return null;
+  }
+
+  return {
+    totalReviews,
+    positiveCount,
+    negativeCount,
+    neutralCount,
+    positivePercentage: (positiveCount / totalReviews) * 100,
+    negativePercentage: (negativeCount / totalReviews) * 100,
+    neutralPercentage: (neutralCount / totalReviews) * 100,
+    sentimentScore: null,
+    lastUpdated: row.last_sentiment_analysis_iso ?? null,
+  };
 }
 
 function buildFilterClauses(options: ListBusinessesOptions) {
@@ -271,6 +303,7 @@ export async function getBusinessDetail(
     featureRows,
     hourRows,
     orderingRows,
+    categoryRows,
   ] = await Promise.all([
     clickhouse
       .query({
@@ -322,23 +355,18 @@ export async function getBusinessDetail(
       .query({
         query: `
           SELECT
-            bsm.total_reviews AS total_reviews,
-            bsm.positive_count AS positive_count,
-            bsm.negative_count AS negative_count,
-            bsm.neutral_count AS neutral_count,
-            bsm.positive_percentage AS positive_percentage,
-            bsm.negative_percentage AS negative_percentage,
-            bsm.neutral_percentage AS neutral_percentage,
-            bsm.sentiment_score AS sentiment_score,
-            ${utcIsoExpression("bsm.last_updated")} AS last_updated_iso
-          FROM ${googleReviewsTable("business_sentiment_metrics")} AS bsm FINAL
-          WHERE bsm.business_cid = {cid:String}
+            rs.positive_count AS positive_count,
+            rs.negative_count AS negative_count,
+            rs.neutral_count AS neutral_count,
+            ${utcIsoExpression("rs.last_sentiment_analysis")} AS last_sentiment_analysis_iso
+          FROM ${googleReviewsTable("review_summaries")} AS rs FINAL
+          WHERE rs.business_cid = {cid:String}
           LIMIT 1
         `,
         query_params: cidParam,
         format: "JSONEachRow",
       })
-      .then((result) => result.json<SentimentMetricsQueryRow>()),
+      .then((result) => result.json<SentimentSummaryQueryRow>()),
     clickhouse
       .query({
         query: `
@@ -402,6 +430,29 @@ export async function getBusinessDetail(
         format: "JSONEachRow",
       })
       .then((result) => result.json<OrderingOptionQueryRow>()),
+    clickhouse
+      .query({
+        query: `
+          SELECT
+            m.category_id AS category_id,
+            rc.category AS category,
+            m.review_count AS review_count,
+            m.percentage AS percentage
+          FROM ${googleReviewsTable("review_category_metrics_timeseries")} AS m FINAL
+          INNER JOIN ${googleReviewsTable("review_categories")} AS rc FINAL
+            ON rc.id = m.category_id
+          WHERE m.business_cid = {cid:String}
+            AND m.snapshot_date = (
+              SELECT max(snapshot_date)
+              FROM ${googleReviewsTable("review_category_metrics_timeseries")} FINAL
+              WHERE business_cid = {cid:String}
+            )
+          ORDER BY m.review_count DESC
+        `,
+        query_params: cidParam,
+        format: "JSONEachRow",
+      })
+      .then((result) => result.json<CategoryMetricQueryRow>()),
   ]);
 
   const profileRow = profileRows[0];
@@ -443,24 +494,7 @@ export async function getBusinessDetail(
       }
     : null;
 
-  const sentimentRow = sentimentRows[0];
-  const sentiment: BusinessSentimentMetrics | null = sentimentRow
-    ? {
-        totalReviews: parseCount(sentimentRow.total_reviews),
-        positiveCount: parseCount(sentimentRow.positive_count),
-        negativeCount: parseCount(sentimentRow.negative_count),
-        neutralCount: parseCount(sentimentRow.neutral_count),
-        positivePercentage: parseNullableNumber(
-          sentimentRow.positive_percentage,
-        ),
-        negativePercentage: parseNullableNumber(
-          sentimentRow.negative_percentage,
-        ),
-        neutralPercentage: parseNullableNumber(sentimentRow.neutral_percentage),
-        sentimentScore: parseNullableNumber(sentimentRow.sentiment_score),
-        lastUpdated: sentimentRow.last_updated_iso ?? null,
-      }
-    : null;
+  const sentiment = mapSentimentSummaryRow(sentimentRows[0]);
 
   const features = featureRows.map<BusinessFeature>((row) => ({
     category: row.feature_category,
@@ -484,6 +518,15 @@ export async function getBusinessDetail(
     orderUrl: row.order_url,
   }));
 
+  const categories = categoryRows
+    .filter((row) => row.category != null && row.category !== "")
+    .map<ReviewCategoryMetric>((row) => ({
+      categoryId: parseCount(row.category_id),
+      category: row.category as string,
+      reviewCount: parseCount(row.review_count),
+      percentage: parseNullableNumber(row.percentage),
+    }));
+
   return {
     profile,
     starBreakdown,
@@ -492,5 +535,6 @@ export async function getBusinessDetail(
     features,
     operatingHours,
     orderingOptions,
+    categories,
   };
 }

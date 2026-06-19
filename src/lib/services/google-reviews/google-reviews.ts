@@ -110,6 +110,13 @@ export type StarBreakdown = {
   buckets: StarBucket[];
 };
 
+export type ReviewCategoryMetric = {
+  categoryId: number;
+  category: string;
+  reviewCount: number;
+  percentage: number | null;
+};
+
 export type BusinessSentimentMetrics = {
   totalReviews: number;
   positiveCount: number;
@@ -146,6 +153,7 @@ export type BusinessDetail = {
   features: BusinessFeature[];
   operatingHours: OperatingHour[];
   orderingOptions: OrderingOption[];
+  categories: ReviewCategoryMetric[];
 };
 
 // --- Dashboard ---

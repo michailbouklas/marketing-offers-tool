@@ -39,6 +39,8 @@ export type ListReviewsOptions = {
   businessQuery?: string | null;
   /** Star rating given by the reviewer (1–5). */
   rating?: number | null;
+  /** AI-derived review category id (`review_categories.id`). */
+  categoryId?: number | null;
   /** Lowercase sentiment label from the analysis pipeline. */
   sentiment?: SentimentValue | null;
   /** UTC ISO bounds on `review_date`. `from` inclusive, `to` exclusive. */
@@ -105,6 +107,9 @@ function buildFilterClauses(options: ListReviewsOptions) {
       ? ["r.business_cid IN ({monitored_business_cids:Array(String)})"]
       : []),
     ...(options.rating != null ? ["r.rating = {rating:UInt8}"] : []),
+    ...(options.categoryId != null
+      ? ["r.category_id = {category_id:Int32}"]
+      : []),
     // Stored casing is not guaranteed; compare lowercased.
     ...(options.sentiment ? ["lower(r.sentiment) = {sentiment:String}"] : []),
     ...(options.from
@@ -124,6 +129,7 @@ function buildFilterParams(options: ListReviewsOptions) {
       ? { monitored_business_cids: options.monitoredBusinessCids }
       : {}),
     ...(options.rating != null ? { rating: options.rating } : {}),
+    ...(options.categoryId != null ? { category_id: options.categoryId } : {}),
     ...(options.sentiment
       ? { sentiment: options.sentiment.toLowerCase() }
       : {}),
