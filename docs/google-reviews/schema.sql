@@ -1,3 +1,89 @@
+create table google_maps_scraper_replica.Gate
+(
+    id         Int32,
+    name       String,
+    slug       String,
+    active     UInt8,
+    level      Int32,
+    provider   String,
+    created_at DateTime64(6),
+    updated_at DateTime64(6),
+    _sign      Int8 materialized 1,
+    _version   UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
+create table google_maps_scraper_replica.Role
+(
+    id          Int32,
+    name        String,
+    slug        String,
+    level       Int32,
+    description Nullable(String),
+    active      UInt8,
+    permissions Nullable(String),
+    meta        Nullable(String),
+    conditions  Nullable(String),
+    rules       Nullable(String),
+    created_at  DateTime64(6),
+    updated_at  DateTime64(6),
+    _sign       Int8 materialized 1,
+    _version    UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
+create table google_maps_scraper_replica.UserRole
+(
+    id         Int32,
+    user_id    Int32,
+    role_id    Int32,
+    created_at DateTime64(6),
+    updated_at DateTime64(6),
+    _sign      Int8 materialized 1,
+    _version   UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
+create table google_maps_scraper_replica._prisma_migrations
+(
+    id                  String,
+    checksum            String,
+    finished_at         Nullable(DateTime64(6)),
+    migration_name      String,
+    logs                Nullable(String),
+    rolled_back_at      Nullable(DateTime64(6)),
+    started_at          DateTime64(6),
+    applied_steps_count Int32,
+    _sign               Int8 materialized 1,
+    _version            UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
+create table google_maps_scraper_replica.account
+(
+    scope                 Nullable(String),
+    password              Nullable(String),
+    accessToken           Nullable(String),
+    accessTokenExpiresAt  Nullable(DateTime64(6)),
+    accountId             String,
+    createdAt             DateTime64(6),
+    idToken               Nullable(String),
+    providerId            String,
+    refreshToken          Nullable(String),
+    refreshTokenExpiresAt Nullable(DateTime64(6)),
+    updatedAt             DateTime64(6),
+    userId                Int32,
+    id                    Int32,
+    _sign                 Int8 materialized 1,
+    _version              UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
 create table google_maps_scraper_replica.brands
 (
     id          Int32,
@@ -114,6 +200,64 @@ create table google_maps_scraper_replica.businesses
     updated_at   Nullable(DateTime64(6)),
     _sign        Int8 materialized 1,
     _version     UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
+create table google_maps_scraper_replica.facebook_apps
+(
+    id                      String,
+    name                    String,
+    app_url                 String,
+    client_id               String,
+    client_secret           String,
+    page_id                 Nullable(String),
+    fb_exchange_token       String,
+    access_token            Nullable(String),
+    page_token              Nullable(String),
+    access_token_expires_at Nullable(DateTime64(6)),
+    last_refreshed_at       Nullable(DateTime64(6)),
+    is_active               UInt8,
+    last_scraped_at         Nullable(DateTime64(6)),
+    metadata                Nullable(String),
+    created_at              DateTime64(6),
+    updated_at              DateTime64(6),
+    brand_id                Nullable(Int32),
+    _sign                   Int8 materialized 1,
+    _version                UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
+create table google_maps_scraper_replica.facebook_reviews
+(
+    id                  Int32,
+    facebook_app_id     String,
+    created_time        DateTime64(6),
+    review_text         Nullable(String),
+    recommendation_type String,
+    has_review          UInt8,
+    has_rating          UInt8,
+    rating              Nullable(Int32),
+    created_at          DateTime64(6),
+    updated_at          DateTime64(6),
+    _sign               Int8 materialized 1,
+    _version            UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
+create table google_maps_scraper_replica.images
+(
+    id             Int32,
+    business_cid   Nullable(String),
+    image_url      String,
+    image_title    Nullable(String),
+    image_category Nullable(String),
+    created_at     Nullable(DateTime64(6)),
+    updated_at     Nullable(DateTime64(6)),
+    _sign          Int8 materialized 1,
+    _version       UInt64 materialized 1
 )
     engine = ReplacingMergeTree(_version)
         ORDER BY tuple(id);
@@ -266,6 +410,21 @@ create table google_maps_scraper_replica.reviews
     engine = ReplacingMergeTree(_version)
         ORDER BY tuple(id);
 
+create table google_maps_scraper_replica.schema_migrations
+(
+    id                Int32,
+    version           String,
+    name              String,
+    applied_at        Nullable(DateTime64(6)),
+    description       Nullable(String),
+    checksum          Nullable(String),
+    execution_time_ms Nullable(Int32),
+    _sign             Int8 materialized 1,
+    _version          UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
 create table google_maps_scraper_replica.sentiment_correction_audit
 (
     id                     UUID,
@@ -313,6 +472,55 @@ create table google_maps_scraper_replica.sentiment_summary_timeseries
     created_at             Nullable(DateTime64(6)),
     _sign                  Int8 materialized 1,
     _version               UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
+create table google_maps_scraper_replica.session
+(
+    token     String,
+    createdAt DateTime64(6),
+    expiresAt DateTime64(6),
+    ipAddress Nullable(String),
+    updatedAt DateTime64(6),
+    userAgent Nullable(String),
+    userId    Int32,
+    id        Int32,
+    _sign     Int8 materialized 1,
+    _version  UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
+create table google_maps_scraper_replica.user
+(
+    id             Int32,
+    first_name     String,
+    last_name      String,
+    email          String,
+    email_verified UInt8,
+    image          Nullable(String),
+    created_at     DateTime64(6),
+    updated_at     DateTime64(6),
+    settings       Nullable(String),
+    meta           Nullable(String),
+    name           String,
+    _sign          Int8 materialized 1,
+    _version       UInt64 materialized 1
+)
+    engine = ReplacingMergeTree(_version)
+        ORDER BY tuple(id);
+
+create table google_maps_scraper_replica.verification
+(
+    id         String,
+    identifier String,
+    value      String,
+    expires_at DateTime64(6),
+    created_at DateTime64(6),
+    updated_at DateTime64(6),
+    _sign      Int8 materialized 1,
+    _version   UInt64 materialized 1
 )
     engine = ReplacingMergeTree(_version)
         ORDER BY tuple(id);

@@ -10,6 +10,7 @@
   import { scaleUtc } from "d3-scale";
   import { curveNatural } from "d3-shape";
   import { Area, AreaChart, LinearGradient } from "layerchart";
+  import { onMount } from "svelte";
 
   type ChartPoint = Record<string, Date | number>;
 
@@ -81,11 +82,11 @@
     );
   }
 
-  $effect(() => {
+  onMount(() => {
     let cancelled = false;
     status = "loading";
 
-    (async () => {
+    async function loadActiveOffers() {
       try {
         const payload = await fetchActiveOffersByDayByAggregator();
 
@@ -102,7 +103,9 @@
           status = "error";
         }
       }
-    })();
+    }
+
+    void loadActiveOffers();
 
     return () => {
       cancelled = true;
