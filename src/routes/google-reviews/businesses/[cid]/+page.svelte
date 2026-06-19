@@ -226,7 +226,9 @@
         </Card.Header>
         <Card.Content>
           {#if categories.length === 0}
-            <p class="text-muted-foreground text-sm">No categories captured yet.</p>
+            <p class="text-muted-foreground text-sm">
+              No categories captured yet.
+            </p>
           {:else}
             <div class="space-y-3">
               {#each categories as item (item.categoryId)}
@@ -238,7 +240,9 @@
                   >
                     {item.category}
                   </button>
-                  <div class="bg-muted h-2.5 flex-1 overflow-hidden rounded-full">
+                  <div
+                    class="bg-muted h-2.5 flex-1 overflow-hidden rounded-full"
+                  >
                     <div
                       class="bg-chart-1 h-full rounded-full"
                       style="width: {item.percentage ?? 0}%"
