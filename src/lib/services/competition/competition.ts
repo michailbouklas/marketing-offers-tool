@@ -208,6 +208,27 @@ export type DashboardStats = {
   recentChanges: RecentOfferChange[];
 };
 
+export type ActiveOffersByAggregatorSeries = {
+  /** Stable, CSS-variable-safe series key (e.g. `aggregator-0`). */
+  key: string;
+  /** Aggregator table id, used only for stable joins and diagnostics. */
+  aggregatorId: number;
+  /** Human-readable aggregator name. */
+  label: string;
+};
+
+export type ActiveOffersByAggregatorPoint = {
+  /** UTC day in `YYYY-MM-DD` format. */
+  date: string;
+  /** Active offer count per series key for that day. */
+  counts: Record<string, number>;
+};
+
+export type ActiveOffersByAggregatorTimeSeries = {
+  series: ActiveOffersByAggregatorSeries[];
+  points: ActiveOffersByAggregatorPoint[];
+};
+
 // --- Shared formatting helpers (browser-safe) ---
 
 export function formatCompetitionMoney(

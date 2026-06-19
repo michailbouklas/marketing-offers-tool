@@ -238,6 +238,8 @@ Before every new task, use the SymDex MCP server to reindex the project so the s
 - `src/lib/services/image-generator/composer-library.server.ts`: Server-only CRUD services for image-generator presets/templates, including owner checks and template brand assignment validation.
 - `src/lib/services/competition/scrape-sessions.ts`: Browser-safe scrape session row and pagination types for the super-user Competition active-offers audit view.
 - `src/lib/services/competition/scrape-sessions.server.ts`: Server-only ClickHouse queries for paginated scraper session audit data from `scrape_session`, ordered by newest scrape.
+- `src/lib/services/competition/active-offers-by-day.ts`: Browser-safe client for asynchronously loading the Competition dashboard active-offers-by-day-by-aggregator chart from its API endpoint.
+- `src/lib/services/competition/active-offers-timeseries.server.ts`: Server-only ClickHouse query service for the Competition dashboard 45-day active-offers-by-aggregator time series.
 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
