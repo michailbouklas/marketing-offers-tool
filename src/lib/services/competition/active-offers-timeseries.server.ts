@@ -62,29 +62,24 @@ export async function getActiveOffersByDayByAggregator(): Promise<ActiveOffersBy
   const rows = await clickhouse
     .query({
       query: `
-        WITH daily_offer_state AS (
-          SELECT
-            toString(toDate(os.recorded_at)) AS day,
-            r.aggregator_id AS aggregator_id,
-            argMax(coalesce(nullIf(a.display_name, ''), a.name), os.recorded_at) AS aggregator_name,
-            os.offer_id AS offer_id,
-            argMax(os.is_active, os.recorded_at) AS is_active
-          FROM ${competitionTable("offer_snapshot")} AS os FINAL
-          INNER JOIN ${competitionTable("offer")} AS o FINAL ON o.id = os.offer_id
-          INNER JOIN ${competitionTable("restaurant")} AS r FINAL ON r.id = o.restaurant_id
-          LEFT JOIN ${competitionTable("aggregator")} AS a FINAL ON a.id = r.aggregator_id
-          WHERE toDate(os.recorded_at) >= toDate({start_day:String})
-            AND toDate(os.recorded_at) <= toDate({end_day:String})
-          GROUP BY day, aggregator_id, offer_id
-        )
         SELECT
-          day,
-          aggregator_id,
-          any(aggregator_name) AS aggregator_name,
-          countIf(is_active = 1) AS offer_count
-        FROM daily_offer_state
-        GROUP BY day, aggregator_id
-        ORDER BY day ASC, aggregator_id ASC
+          toString(days.day) AS day,
+          r.aggregator_id AS aggregator_id,
+          any(coalesce(nullIf(a.display_name, ''), a.name)) AS aggregator_name,
+          count() AS offer_count
+        FROM ${competitionTable("offer")} AS o FINAL
+        CROSS JOIN (
+          WITH
+            toDate({start_day:String}) AS start_day,
+            toDate({end_day:String}) AS end_day
+          SELECT arrayJoin(arrayMap(i -> start_day + i, range(dateDiff('day', start_day, end_day) + 1))) AS day
+        ) AS days
+        INNER JOIN ${competitionTable("restaurant")} AS r FINAL ON r.id = o.restaurant_id
+        LEFT JOIN ${competitionTable("aggregator")} AS a FINAL ON a.id = r.aggregator_id
+        WHERE toDate(o.first_seen_at) <= days.day
+          AND (o.is_active = 1 OR toDate(o.last_seen_at) >= days.day)
+        GROUP BY days.day, r.aggregator_id
+        ORDER BY days.day ASC, r.aggregator_id ASC
       `,
       query_params: {
         start_day: firstDay,
