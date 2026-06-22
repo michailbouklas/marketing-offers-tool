@@ -117,6 +117,25 @@ export type ReviewCategoryMetric = {
   percentage: number | null;
 };
 
+// --- Negative review categories ---
+
+export const negativeCategorySortFields = [
+  "business_count",
+  "negative_review_count",
+  "category",
+] as const;
+
+export type NegativeCategorySortField =
+  (typeof negativeCategorySortFields)[number];
+
+export type NegativeReviewCategoryRow = {
+  categoryId: number;
+  category: string;
+  /** Distinct businesses with at least one negative review in this category. */
+  businessCount: number;
+  negativeReviewCount: number;
+};
+
 export type BusinessSentimentMetrics = {
   totalReviews: number;
   positiveCount: number;

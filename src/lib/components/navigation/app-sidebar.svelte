@@ -119,6 +119,10 @@
         { href: "/google-reviews", label: "Dashboard" },
         { href: "/google-reviews/reviews", label: "Reviews" },
         { href: "/google-reviews/businesses", label: "Businesses" },
+        {
+          href: "/google-reviews/negative-reviews-categories",
+          label: "Negative review categories",
+        },
       ],
     },
   ];

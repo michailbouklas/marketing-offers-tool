@@ -1,17 +1,13 @@
 import { requirePermission } from "$lib/server/auth-guards";
-import { listReviewCategories } from "$lib/services/google-reviews/categories.server";
+import { listNegativeReviewCategories } from "$lib/services/google-reviews/categories.server";
 import {
   googleReviewsSortDirections,
-  reviewSortFields,
-  sentimentValues,
+  negativeCategorySortFields,
 } from "$lib/services/google-reviews/google-reviews";
-import { listReviewsPage } from "$lib/services/google-reviews/reviews.server";
 import { getMonitoredEntityIds } from "$lib/services/user-monitor.server";
 import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import type { PageServerLoad } from "./$types";
-
-const PAGE_SIZE = 50;
 
 const dayPattern = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -38,7 +34,6 @@ const optionalDay = z.preprocess(
 );
 
 const searchParamsSchema = z.object({
-  page: z.coerce.number().int().positive().default(1).catch(1),
   business: optionalTrimmedString.catch(undefined),
   cid: optionalTrimmedString.catch(undefined),
   rating: z
@@ -47,15 +42,12 @@ const searchParamsSchema = z.object({
       z.coerce.number().int().min(1).max(5).optional(),
     )
     .catch(undefined),
-  sentiment: z
-    .preprocess(emptyToUndefined, z.enum(sentimentValues).optional())
-    .catch(undefined),
-  categoryId: z
-    .preprocess(emptyToUndefined, z.coerce.number().int().positive().optional())
-    .catch(undefined),
   from: optionalDay.catch(undefined),
   to: optionalDay.catch(undefined),
-  sortBy: z.enum(reviewSortFields).default("review_date").catch("review_date"),
+  sortBy: z
+    .enum(negativeCategorySortFields)
+    .default("business_count")
+    .catch("business_count"),
   sortDir: z.enum(googleReviewsSortDirections).default("desc").catch("desc"),
   trackedOnly: z.literal("true").optional().catch(undefined),
 });
@@ -72,12 +64,9 @@ export const load: PageServerLoad = async (event) => {
   const { user } = await requirePermission(event, { googleReviews: ["view"] });
 
   const parseResult = searchParamsSchema.safeParse({
-    page: event.url.searchParams.get("page") ?? 1,
     business: event.url.searchParams.get("business") ?? undefined,
     cid: event.url.searchParams.get("cid") ?? undefined,
     rating: event.url.searchParams.get("rating") ?? undefined,
-    sentiment: event.url.searchParams.get("sentiment") ?? undefined,
-    categoryId: event.url.searchParams.get("categoryId") ?? undefined,
     from: event.url.searchParams.get("from") ?? undefined,
     to: event.url.searchParams.get("to") ?? undefined,
     sortBy: event.url.searchParams.get("sortBy") ?? undefined,
@@ -85,7 +74,6 @@ export const load: PageServerLoad = async (event) => {
     trackedOnly: event.url.searchParams.get("trackedOnly") ?? undefined,
   });
 
-  const page = parseResult.success ? parseResult.data.page : 1;
   const businessQuery = parseResult.success
     ? (parseResult.data.business ?? null)
     : null;
@@ -93,15 +81,11 @@ export const load: PageServerLoad = async (event) => {
     ? (parseResult.data.cid ?? null)
     : null;
   const rating = parseResult.success ? (parseResult.data.rating ?? null) : null;
-  const sentiment = parseResult.success
-    ? (parseResult.data.sentiment ?? null)
-    : null;
-  const categoryId = parseResult.success
-    ? (parseResult.data.categoryId ?? null)
-    : null;
   const from = parseResult.success ? (parseResult.data.from ?? null) : null;
   const to = parseResult.success ? (parseResult.data.to ?? null) : null;
-  const sortBy = parseResult.success ? parseResult.data.sortBy : "review_date";
+  const sortBy = parseResult.success
+    ? parseResult.data.sortBy
+    : "business_count";
   const sortDir = parseResult.success ? parseResult.data.sortDir : "desc";
   const trackedOnly = parseResult.success
     ? parseResult.data.trackedOnly === "true"
@@ -118,34 +102,19 @@ export const load: PageServerLoad = async (event) => {
     ];
   }
 
-  const reviewCategories = await listReviewCategories();
-  const categoryName =
-    categoryId != null
-      ? (reviewCategories.find((category) => category.id === categoryId)
-          ?.category ?? null)
-      : null;
-
   return {
     businessQuery,
     businessCid,
     rating,
-    sentiment,
-    categoryId,
-    categoryName,
-    reviewCategories,
     from,
     to,
     sortBy,
     sortDir,
     trackedOnly,
-    reviewsPage: await listReviewsPage({
-      page,
-      pageSize: PAGE_SIZE,
+    categories: await listNegativeReviewCategories({
       businessCid,
       businessQuery,
       rating,
-      categoryId,
-      sentiment,
       from,
       to: to ? exclusiveUpperBound(to) : null,
       monitoredBusinessCids,

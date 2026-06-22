@@ -4,6 +4,7 @@
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
   import { Switch } from "$lib/components/ui/switch/index.js";
@@ -13,6 +14,7 @@
     formatSentimentLabel,
     sentimentBadgeClass,
     sentimentValues,
+    type GoogleReviewRow,
     type GoogleReviewsSortDirection,
     type ReviewSortField,
     type SentimentValue,
@@ -23,6 +25,7 @@
   import FilterIcon from "@lucide/svelte/icons/filter";
   import SearchIcon from "@lucide/svelte/icons/search";
   import StarIcon from "@lucide/svelte/icons/star";
+  import XIcon from "@lucide/svelte/icons/x";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -30,6 +33,14 @@
   let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
   // svelte-ignore state_referenced_locally
   let trackedOnly = $state(data.trackedOnly);
+
+  let reviewDialogOpen = $state(false);
+  let selectedReview = $state<GoogleReviewRow | null>(null);
+
+  function openReview(review: GoogleReviewRow) {
+    selectedReview = review;
+    reviewDialogOpen = true;
+  }
 
   const rows = $derived(data.reviewsPage.items);
   const page = $derived(data.reviewsPage.page);
@@ -102,6 +113,7 @@
     cid = data.businessCid,
     rating = data.rating,
     sentiment = data.sentiment,
+    categoryId = data.categoryId,
     from = data.from,
     to = data.to,
     sortBy = data.sortBy,
@@ -113,6 +125,7 @@
     cid?: string | null;
     rating?: number | null;
     sentiment?: SentimentValue | null;
+    categoryId?: number | null;
     from?: string | null;
     to?: string | null;
     sortBy?: ReviewSortField;
@@ -135,6 +148,10 @@
 
     if (sentiment) {
       params.set("sentiment", sentiment);
+    }
+
+    if (categoryId) {
+      params.set("categoryId", categoryId.toString());
     }
 
     if (from) {
@@ -261,7 +278,7 @@
           <form
             method="GET"
             bind:this={searchForm}
-            class="grid gap-3 lg:grid-cols-[minmax(0,15rem)_minmax(0,8rem)_minmax(0,10rem)_auto_auto_auto] lg:items-end"
+            class="grid gap-3 lg:grid-cols-[minmax(0,15rem)_minmax(0,8rem)_minmax(0,10rem)_minmax(0,12rem)_auto_auto_auto] lg:items-end"
           >
             <div class="space-y-2">
               <label class="text-sm font-medium" for="business">Business</label>
@@ -321,6 +338,28 @@
                   {/each}
                 </NativeSelect.Root>
               </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium" for="categoryId"
+                >Category</label
+              >
+              <NativeSelect.Root
+                id="categoryId"
+                name="categoryId"
+                value={data.categoryId?.toString() ?? ""}
+                class="capitalize"
+                onchange={handleSearchChange}
+              >
+                <NativeSelect.Option value=""
+                  >All categories</NativeSelect.Option
+                >
+                {#each data.reviewCategories as category (category.id)}
+                  <NativeSelect.Option value={category.id.toString()}>
+                    {category.category}
+                  </NativeSelect.Option>
+                {/each}
+              </NativeSelect.Root>
             </div>
 
             <div class="space-y-2">
@@ -390,6 +429,18 @@
             <Badge variant="outline" class="capitalize"
               >{formatSentimentLabel(data.sentiment)}</Badge
             >
+          {/if}
+          {#if data.categoryId}
+            <Badge variant="outline" class="gap-1 capitalize">
+              Category: {data.categoryName ?? `#${data.categoryId}`}
+              <a
+                href={getRouteHref({ page: 1, categoryId: null })}
+                class="hover:text-foreground -mr-1 inline-flex"
+                aria-label="Clear category filter"
+              >
+                <XIcon class="size-3" />
+              </a>
+            </Badge>
           {/if}
           {#if data.from || data.to}
             <Badge variant="outline">
@@ -483,11 +534,18 @@
                       {/if}
                     </Table.Cell>
                     <Table.Cell class="max-w-md">
-                      <p
-                        class="text-muted-foreground line-clamp-2 text-sm whitespace-normal"
+                      <button
+                        type="button"
+                        class="hover:text-foreground block w-full cursor-pointer text-left"
+                        onclick={() => openReview(row)}
+                        title="Read full review"
                       >
-                        {row.reviewText ?? "—"}
-                      </p>
+                        <span
+                          class="text-muted-foreground line-clamp-2 text-sm whitespace-normal"
+                        >
+                          {row.reviewText ?? "—"}
+                        </span>
+                      </button>
                     </Table.Cell>
                   </Table.Row>
                 {/each}
@@ -533,3 +591,70 @@
     </Card.Root>
   </main>
 </div>
+
+<Dialog.Root bind:open={reviewDialogOpen}>
+  <Dialog.Content class="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+    {#if selectedReview}
+      <Dialog.Header>
+        <Dialog.Title class="flex flex-wrap items-center gap-2">
+          {selectedReview.reviewerName}
+          <span class="inline-flex items-center gap-1 text-base tabular-nums">
+            {selectedReview.rating}
+            <StarIcon class="size-4 fill-amber-400 text-amber-400" />
+          </span>
+        </Dialog.Title>
+        <Dialog.Description>
+          {formatGoogleReviewsDateTime(selectedReview.reviewDate)}
+        </Dialog.Description>
+      </Dialog.Header>
+
+      <dl class="grid grid-cols-[8rem_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
+        <dt class="text-muted-foreground">Business</dt>
+        <dd>
+          {#if getBusinessHref(selectedReview)}
+            <a href={getBusinessHref(selectedReview)} class="hover:underline">
+              {selectedReview.businessTitle ?? selectedReview.businessCid}
+            </a>
+          {:else}
+            <span class="text-muted-foreground">—</span>
+          {/if}
+        </dd>
+
+        <dt class="text-muted-foreground">Reviewer</dt>
+        <dd>{selectedReview.reviewerName}</dd>
+
+        <dt class="text-muted-foreground">Rating</dt>
+        <dd class="tabular-nums">{selectedReview.rating} / 5</dd>
+
+        <dt class="text-muted-foreground">Sentiment</dt>
+        <dd>
+          {#if selectedReview.sentiment}
+            <Badge
+              variant="outline"
+              class={sentimentBadgeClass(selectedReview.sentiment)}
+            >
+              {formatSentimentLabel(selectedReview.sentiment)}
+            </Badge>
+            {#if selectedReview.sentimentCertainty !== null}
+              <span class="text-muted-foreground ml-1 text-xs tabular-nums">
+                ({selectedReview.sentimentCertainty.toFixed(2)} certainty)
+              </span>
+            {/if}
+          {:else}
+            <span class="text-muted-foreground">—</span>
+          {/if}
+        </dd>
+
+        <dt class="text-muted-foreground">Date</dt>
+        <dd>{formatGoogleReviewsDateTime(selectedReview.reviewDate)}</dd>
+      </dl>
+
+      <div class="space-y-2">
+        <p class="text-sm font-medium">Review</p>
+        <p class="text-muted-foreground text-sm leading-6 whitespace-pre-wrap">
+          {selectedReview.reviewText ?? "No review text."}
+        </p>
+      </div>
+    {/if}
+  </Dialog.Content>
+</Dialog.Root>
