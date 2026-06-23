@@ -7,7 +7,7 @@
 
   let {
     title = "Reviews per day",
-    description = "New Google reviews captured per day over the last six months.",
+    description = "New Google reviews captured per day over the last 45 days.",
     dateFormat = "day",
     data,
   }: {

@@ -7,7 +7,7 @@
 
   let {
     title = "Average rating per day",
-    description = "Average star rating of the reviews left each day over the last six months.",
+    description = "Average star rating of the reviews left each day over the last 45 days.",
     dateFormat = "day",
     data,
   }: {

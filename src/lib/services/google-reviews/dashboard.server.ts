@@ -48,8 +48,13 @@ type TopBusinessQueryRow = {
 
 const TOP_BUSINESSES_LIMIT = 20;
 
-/** Matches the Grafana dashboard's default 6-month window. */
-const TIMESERIES_WINDOW_DAYS = 180;
+/**
+ * Trailing window for the dashboard timeseries charts. Anchored to the latest
+ * `review_date` in the replica (not `now()`): the scraper pipeline lags real
+ * time, so a `now()`-relative window can fall entirely past the available data
+ * and collapse the timeseries to a couple of stray points.
+ */
+const TIMESERIES_WINDOW_DAYS = 45;
 
 export async function getDashboardStats(): Promise<GoogleReviewsDashboardStats> {
   const [
@@ -95,7 +100,11 @@ export async function getDashboardStats(): Promise<GoogleReviewsDashboardStats> 
           SELECT toString(toDate(r.review_date)) AS day, count() AS value
           FROM ${googleReviewsTable("reviews")} AS r FINAL
           WHERE r.review_date IS NOT NULL
-            AND r.review_date >= now() - INTERVAL {window_days:UInt32} DAY
+            AND r.review_date >= (
+              SELECT max(review_date)
+              FROM ${googleReviewsTable("reviews")} FINAL
+              WHERE review_date IS NOT NULL
+            ) - INTERVAL {window_days:UInt32} DAY
           GROUP BY day
           ORDER BY day ASC
         `,
@@ -109,7 +118,11 @@ export async function getDashboardStats(): Promise<GoogleReviewsDashboardStats> 
           SELECT toString(toDate(r.review_date)) AS day, avg(r.rating) AS value
           FROM ${googleReviewsTable("reviews")} AS r FINAL
           WHERE r.review_date IS NOT NULL
-            AND r.review_date >= now() - INTERVAL {window_days:UInt32} DAY
+            AND r.review_date >= (
+              SELECT max(review_date)
+              FROM ${googleReviewsTable("reviews")} FINAL
+              WHERE review_date IS NOT NULL
+            ) - INTERVAL {window_days:UInt32} DAY
           GROUP BY day
           ORDER BY day ASC
         `,

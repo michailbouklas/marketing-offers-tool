@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
@@ -57,6 +58,34 @@
 
   const previewText = $derived(serializeStructuredPrompt(builder));
   const canUse = $derived(builder.primarySubject.trim() !== "");
+
+  // Auto-fill the builder from brand guidelines when the dialog opens with a
+  // brand selected and a description already typed. Fires only on the
+  // open-edge (not on keystrokes) and at most once per unique
+  // guidelines+description pair, so it never fights the user's manual edits or
+  // the "Suggest with AI" button.
+  let wasOpen = false;
+  let lastAutoSuggestSig: string | null = null;
+
+  $effect(() => {
+    const isOpen = open;
+    untrack(() => {
+      if (isOpen && !wasOpen) {
+        const desc = description.trim();
+        const sig = `${brandGuidelines ?? ""}::${desc}`;
+        if (
+          hasGuidelines &&
+          desc !== "" &&
+          sig !== lastAutoSuggestSig &&
+          !suggesting
+        ) {
+          lastAutoSuggestSig = sig;
+          void handleSuggest();
+        }
+      }
+      wasOpen = isOpen;
+    });
+  });
 
   async function handleSuggest() {
     const desc = description.trim();
@@ -150,8 +179,9 @@
           </div>
           <p class="text-muted-foreground text-xs">
             {#if hasGuidelines}
-              Suggestions follow the {brandName ?? "selected brand"} guidelines. Every
-              field below stays editable.
+              Suggestions follow the {brandName ?? "selected brand"} guidelines —
+              the form auto-fills from them when you open this builder with a description.
+              Every field below stays editable.
             {:else}
               Every field below stays editable — AI suggestions are just a
               starting point. Select a brand on the page to get brand-aware

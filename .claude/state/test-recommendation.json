@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-22T07:45:14Z",
-  "changed_file": "src/routes/google-reviews/reviews/+page.server.ts",
+  "timestamp": "2026-06-22T13:05:49Z",
+  "changed_file": "src/lib/services/google-reviews/dashboard.server.ts",
   "test_command": "npx vitest run --reporter=verbose",
   "related_test": "",
   "recommendation": "テストの実行を推奨します"
