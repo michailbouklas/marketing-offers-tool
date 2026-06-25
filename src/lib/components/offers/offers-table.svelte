@@ -61,6 +61,7 @@
     <Table.Row>
       <Table.Head class="w-16">ID</Table.Head>
       <Table.Head class="min-w-32">Offer ID</Table.Head>
+      <Table.Head class="min-w-40">Novasero Item Code</Table.Head>
       <Table.Head class="min-w-52">Name</Table.Head>
       <Table.Head class="min-w-32">Brand</Table.Head>
       <Table.Head class="min-w-28">Aggregator</Table.Head>
@@ -91,6 +92,9 @@
           <Table.Cell class="font-medium">{offer.id}</Table.Cell>
           <Table.Cell class="font-mono text-xs tracking-[0.12em] uppercase">
             {offer.offer_id}
+          </Table.Cell>
+          <Table.Cell class="font-mono text-xs">
+            {offer.novasero_item_code}
           </Table.Cell>
           <Table.Cell>
             <div class="space-y-1">
@@ -145,7 +149,7 @@
     {:else}
       <Table.Row>
         <Table.Cell
-          colspan={canEdit ? 12 : 11}
+          colspan={canEdit ? 13 : 12}
           class="text-muted-foreground py-12 text-center text-sm"
         >
           No offers matched these filters. Adjust the sidebar criteria or clear

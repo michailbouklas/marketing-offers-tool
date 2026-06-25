@@ -67,6 +67,7 @@
 
     $form.name = nextValues.name;
     $form.offerId = nextValues.offerId;
+    $form.novaseroItemCode = nextValues.novaseroItemCode;
     $form.aggregator =
       nextValues.aggregator === ""
         ? aggregatorOptions[0]
@@ -139,6 +140,20 @@
       />
       {#if $errors.offerId}
         <p class="text-destructive text-sm">{$errors.offerId}</p>
+      {/if}
+    </div>
+
+    <div class="space-y-2">
+      <Label for="offer-editor-novasero-item-code">Novasero Item Code</Label>
+      <Input
+        id="offer-editor-novasero-item-code"
+        name="novaseroItemCode"
+        bind:value={$form.novaseroItemCode}
+        aria-invalid={!!$errors.novaseroItemCode}
+        {...$constraints.novaseroItemCode}
+      />
+      {#if $errors.novaseroItemCode}
+        <p class="text-destructive text-sm">{$errors.novaseroItemCode}</p>
       {/if}
     </div>
 

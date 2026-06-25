@@ -16,6 +16,10 @@ export const offerEditorFormSchema = z
   .object({
     name: z.string().trim().min(1, "Name is required"),
     offerId: z.string().trim().min(1, "Offer ID is required"),
+    novaseroItemCode: z
+      .string()
+      .trim()
+      .min(1, "Novasero Item Code is required"),
     aggregator: z
       .string()
       .trim()
@@ -67,6 +71,7 @@ export function getDefaultOfferEditorFormData(): OfferEditorFormDefaults {
   return {
     name: "",
     offerId: "",
+    novaseroItemCode: "",
     aggregator: "",
     brandId: "",
     details: "",
@@ -82,6 +87,7 @@ export function mapOfferEditorFormToCreateInput(
   return {
     name: formData.name,
     offer_id: formData.offerId,
+    novasero_item_code: formData.novaseroItemCode,
     aggregator: formData.aggregator,
     brand_id: Number.parseInt(formData.brandId, 10),
     details: formData.details,
@@ -97,6 +103,7 @@ export function mapOfferToEditorFormDefaults(
   return {
     name: offer.name,
     offerId: offer.offer_id,
+    novaseroItemCode: offer.novasero_item_code,
     aggregator: offer.aggregator,
     brandId: offer.brand.id.toString(),
     details: offer.details,

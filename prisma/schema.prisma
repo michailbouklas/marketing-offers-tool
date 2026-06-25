@@ -52,15 +52,15 @@ model error_log {
 }
 
 model brand {
-  id                Int                 @id @default(autoincrement())
-  name              String              @db.Text
-  alias             String              @default("") @db.Text
-  logo              String              @default("") @db.Text
-  slug              String              @default("") @db.Text
-  created_at        DateTime            @default(now()) @db.Timestamp(3)
-  updated_at        DateTime            @db.Timestamp(3)
-  description       String?             @default("") @db.Text
-  active            Boolean             @default(true)
+  id                Int                           @id @default(autoincrement())
+  name              String                        @db.Text
+  alias             String                        @default("") @db.Text
+  logo              String                        @default("") @db.Text
+  slug              String                        @default("") @db.Text
+  created_at        DateTime                      @default(now()) @db.Timestamp(3)
+  updated_at        DateTime                      @db.Timestamp(3)
+  description       String?                       @default("") @db.Text
+  active            Boolean                       @default(true)
   aggregator_offers aggregator_offers[]
   user_assignments  user_brand[]
   brand_assets      BrandAsset[]
@@ -106,31 +106,31 @@ model wolt_regex_patters {
 
 // Better Auth tables
 model user {
-  id                String             @id
-  name              String
-  email             String             @unique
-  emailVerified     Boolean
-  image             String?
-  role              String?            @default("user")
-  banned            Boolean?           @default(false)
-  banReason         String?
-  banExpires        DateTime?
-  createdAt         DateTime
-  updatedAt         DateTime
-  sessions          session[]
-  accounts          account[]
-  brand_assignments user_brand[]
-  dim_offers_audits dim_offers_audit[] @relation("DimOffersAuditActor")
-  generated_images  GeneratedImage[]
-  generated_copies  GeneratedCopy[]
-  image_presets     ImageGeneratorPreset[]
-  image_templates   ImageGeneratorTemplate[]
-  reference_images  ReferenceImage[]
-  competition_restaurant_prefs competition_user_restaurant_pref[]
-  competition_dashboard_widgets competition_dashboard_widget[]
-  google_reviews_business_prefs google_reviews_user_business_pref[]
+  id                               String                              @id
+  name                             String
+  email                            String                              @unique
+  emailVerified                    Boolean
+  image                            String?
+  role                             String?                             @default("user")
+  banned                           Boolean?                            @default(false)
+  banReason                        String?
+  banExpires                       DateTime?
+  createdAt                        DateTime
+  updatedAt                        DateTime
+  sessions                         session[]
+  accounts                         account[]
+  brand_assignments                user_brand[]
+  dim_offers_audits                dim_offers_audit[]                  @relation("DimOffersAuditActor")
+  generated_images                 GeneratedImage[]
+  generated_copies                 GeneratedCopy[]
+  image_presets                    ImageGeneratorPreset[]
+  image_templates                  ImageGeneratorTemplate[]
+  reference_images                 ReferenceImage[]
+  competition_restaurant_prefs     competition_user_restaurant_pref[]
+  competition_dashboard_widgets    competition_dashboard_widget[]
+  google_reviews_business_prefs    google_reviews_user_business_pref[]
   google_reviews_dashboard_widgets google_reviews_dashboard_widget[]
-  monitor_entries   user_monitor[]
+  monitor_entries                  user_monitor[]
 }
 
 model session {
@@ -286,18 +286,19 @@ enum DimOffersAuditSource {
 }
 
 model aggregator_offers {
-  id         Int        @id @default(autoincrement())
-  name       String
-  offer_id   String
-  aggregator Aggregator
-  brand_id   Int
-  brand      brand      @relation(fields: [brand_id], references: [id])
-  details    String     @db.Text
-  starts_at  DateTime
-  ends_at    DateTime
-  active     Boolean    @default(true)
-  created_at DateTime   @default(now())
-  updated_at DateTime   @updatedAt
+  id                 Int        @id @default(autoincrement())
+  name               String
+  offer_id           String
+  novasero_item_code String     @default("")
+  aggregator         Aggregator
+  brand_id           Int
+  brand              brand      @relation(fields: [brand_id], references: [id])
+  details            String     @db.Text
+  starts_at          DateTime
+  ends_at            DateTime
+  active             Boolean    @default(true)
+  created_at         DateTime   @default(now())
+  updated_at         DateTime   @updatedAt
 
   @@index([brand_id])
 }
@@ -331,10 +332,10 @@ model GeneratedImage {
   durationMs       Int?
   createdAt        DateTime             @default(now())
 
+  failureLogs GenerationFailureLog[]
+
   @@index([userId, createdAt])
   @@index([brandId, createdAt])
-
-  failureLogs GenerationFailureLog[]
 }
 
 // One row per failed provider attempt (including attempts that later succeed
@@ -449,10 +450,10 @@ model GeneratedCopy {
   durationMs   Int?
   createdAt    DateTime            @default(now())
 
+  failureLogs CopyGenerationFailureLog[]
+
   @@index([userId, createdAt])
   @@index([brandId, createdAt])
-
-  failureLogs CopyGenerationFailureLog[]
 }
 
 // One row per failed copy provider attempt (including attempts that later

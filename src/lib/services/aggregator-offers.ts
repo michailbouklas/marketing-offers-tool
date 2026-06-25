@@ -30,6 +30,7 @@ export type AggregatorOffersFilters = {
 export type CreateAggregatorOfferInput = {
   name: string;
   offer_id: string;
+  novasero_item_code: string;
   aggregator: Aggregator;
   brand_id: number;
   details: string;

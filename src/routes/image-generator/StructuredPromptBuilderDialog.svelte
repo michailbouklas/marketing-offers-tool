@@ -59,27 +59,34 @@
   const previewText = $derived(serializeStructuredPrompt(builder));
   const canUse = $derived(builder.primarySubject.trim() !== "");
 
-  // Auto-fill the builder from brand guidelines when the dialog opens with a
-  // brand selected and a description already typed. Fires only on the
-  // open-edge (not on keystrokes) and at most once per unique
-  // guidelines+description pair, so it never fights the user's manual edits or
-  // the "Suggest with AI" button.
+  // Auto-fill the builder from the selected brand's guidelines. Two triggers:
+  //  1. open-edge — when the dialog opens with a description already typed;
+  //  2. debounced description change — ~700ms after the user stops typing.
+  // Both go through handleSuggest, which records the (guidelines + description)
+  // signature, so the same input is never auto-suggested twice and the manual
+  // "Suggest with AI" button / Enter key suppress a redundant auto-fire for
+  // that text.
+  const AUTO_SUGGEST_DELAY_MS = 700;
   let wasOpen = false;
   let lastAutoSuggestSig: string | null = null;
 
+  function autoSuggestSignature(desc: string): string {
+    return `${brandGuidelines ?? ""}::${desc}`;
+  }
+
+  // Trigger 1: open-edge. untrack() keeps this from re-firing on keystrokes —
+  // only the false→true transition of `open` matters here.
   $effect(() => {
     const isOpen = open;
     untrack(() => {
       if (isOpen && !wasOpen) {
         const desc = description.trim();
-        const sig = `${brandGuidelines ?? ""}::${desc}`;
         if (
           hasGuidelines &&
           desc !== "" &&
-          sig !== lastAutoSuggestSig &&
-          !suggesting
+          !suggesting &&
+          autoSuggestSignature(desc) !== lastAutoSuggestSig
         ) {
-          lastAutoSuggestSig = sig;
           void handleSuggest();
         }
       }
@@ -87,9 +94,27 @@
     });
   });
 
+  // Trigger 2: debounced description change. Re-runs on every keystroke while
+  // the dialog is open; the cleanup clears the pending timer, so only a pause
+  // in typing (or closing the dialog) actually lets it fire.
+  $effect(() => {
+    const isOpen = open;
+    const desc = description.trim();
+    if (!isOpen || !hasGuidelines || desc === "") return;
+    if (autoSuggestSignature(desc) === lastAutoSuggestSig) return;
+    const timer = setTimeout(() => {
+      const current = description.trim();
+      if (!open || suggesting || current === "") return;
+      if (autoSuggestSignature(current) === lastAutoSuggestSig) return;
+      void handleSuggest();
+    }, AUTO_SUGGEST_DELAY_MS);
+    return () => clearTimeout(timer);
+  });
+
   async function handleSuggest() {
     const desc = description.trim();
     if (desc === "" || suggesting) return;
+    lastAutoSuggestSig = autoSuggestSignature(desc);
     suggesting = true;
     try {
       const suggestion = await suggestStructuredPrompt(

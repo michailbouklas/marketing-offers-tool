@@ -15,10 +15,10 @@ description: "Skill for the Brand-context area of marketing-offers-tool. 6 symbo
 
 ## Key Files
 
-| File | Symbols |
-|------|---------|
-| `src/lib/services/brand-context/brand-context.server.ts` | getBrandAsset, updateBrandAssetName, deleteBrandAsset |
-| `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | parseBrandId, PATCH, DELETE |
+| File                                                                | Symbols                                               |
+| ------------------------------------------------------------------- | ----------------------------------------------------- |
+| `src/lib/services/brand-context/brand-context.server.ts`            | getBrandAsset, updateBrandAssetName, deleteBrandAsset |
+| `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | parseBrandId, PATCH, DELETE                           |
 
 ## Entry Points
 
@@ -32,36 +32,36 @@ Start here when exploring this area:
 
 ## Key Symbols
 
-| Symbol | Type | File | Line |
-|--------|------|------|------|
-| `getBrandAsset` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 68 |
-| `updateBrandAssetName` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 108 |
-| `deleteBrandAsset` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 118 |
-| `PATCH` | Function | `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | 25 |
-| `DELETE` | Function | `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | 48 |
-| `parseBrandId` | Function | `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | 14 |
+| Symbol                 | Type     | File                                                                | Line |
+| ---------------------- | -------- | ------------------------------------------------------------------- | ---- |
+| `getBrandAsset`        | Function | `src/lib/services/brand-context/brand-context.server.ts`            | 68   |
+| `updateBrandAssetName` | Function | `src/lib/services/brand-context/brand-context.server.ts`            | 108  |
+| `deleteBrandAsset`     | Function | `src/lib/services/brand-context/brand-context.server.ts`            | 118  |
+| `PATCH`                | Function | `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | 25   |
+| `DELETE`               | Function | `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | 48   |
+| `parseBrandId`         | Function | `src/routes/api/admin/brands/[brandId]/assets/[assetId]/+server.ts` | 14   |
 
 ## Execution Flows
 
-| Flow | Type | Steps |
-|------|------|-------|
-| `DELETE → LoadEnvFileValues` | cross_community | 6 |
-| `DELETE → GetSupabaseClient` | cross_community | 4 |
-| `DELETE → SupabaseObjectStore` | cross_community | 4 |
-| `DELETE → LocalObjectStore` | cross_community | 4 |
-| `PATCH → RequireAuthenticatedApiUser` | cross_community | 3 |
-| `PATCH → HasPermission` | cross_community | 3 |
-| `DELETE → RequireAuthenticatedApiUser` | cross_community | 3 |
-| `DELETE → HasPermission` | cross_community | 3 |
-| `DELETE → Remove` | cross_community | 3 |
+| Flow                                   | Type            | Steps |
+| -------------------------------------- | --------------- | ----- |
+| `DELETE → LoadEnvFileValues`           | cross_community | 6     |
+| `DELETE → GetSupabaseClient`           | cross_community | 4     |
+| `DELETE → SupabaseObjectStore`         | cross_community | 4     |
+| `DELETE → LocalObjectStore`            | cross_community | 4     |
+| `PATCH → RequireAuthenticatedApiUser`  | cross_community | 3     |
+| `PATCH → HasPermission`                | cross_community | 3     |
+| `DELETE → RequireAuthenticatedApiUser` | cross_community | 3     |
+| `DELETE → HasPermission`               | cross_community | 3     |
+| `DELETE → Remove`                      | cross_community | 3     |
 
 ## Connected Areas
 
-| Area | Connections |
-|------|-------------|
-| Guidelines | 2 calls |
-| Inspiration | 1 calls |
-| Server | 1 calls |
+| Area        | Connections |
+| ----------- | ----------- |
+| Guidelines  | 2 calls     |
+| Inspiration | 1 calls     |
+| Server      | 1 calls     |
 
 ## How to Explore
 

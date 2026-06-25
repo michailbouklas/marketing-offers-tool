@@ -339,3 +339,16 @@
 {"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\StructuredPromptBuilderDialog.svelte"},"id":"event-000011","state":"stopped","ts":"2026-06-23T08:49:17Z","type":"tool.edit"}
 {"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\StructuredPromptBuilderDialog.svelte"},"id":"event-000012","state":"stopped","ts":"2026-06-23T08:49:28Z","type":"tool.edit"}
 {"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\StructuredPromptBuilderDialog.svelte"},"id":"event-000013","state":"stopped","ts":"2026-06-23T08:49:36Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\routes\\image-generator\\StructuredPromptBuilderDialog.svelte"},"id":"event-000014","state":"stopped","ts":"2026-06-23T09:18:59Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\prisma\\schema.prisma"},"id":"event-000015","state":"stopped","ts":"2026-06-25T11:45:00Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\aggregator-offers.ts"},"id":"event-000016","state":"stopped","ts":"2026-06-25T11:45:07Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\offer-editor-form.ts"},"id":"event-000017","state":"stopped","ts":"2026-06-25T11:45:13Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\offer-editor-form.ts"},"id":"event-000018","state":"stopped","ts":"2026-06-25T11:45:19Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\offer-editor-form.ts"},"id":"event-000019","state":"stopped","ts":"2026-06-25T11:45:24Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\services\\offer-editor-form.ts"},"id":"event-000020","state":"stopped","ts":"2026-06-25T11:45:30Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\offers\\offer-editor-form.svelte"},"id":"event-000021","state":"stopped","ts":"2026-06-25T11:45:39Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\offers\\offer-editor-form.svelte"},"id":"event-000022","state":"stopped","ts":"2026-06-25T11:45:45Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\offers\\offers-table.svelte"},"id":"event-000023","state":"stopped","ts":"2026-06-25T11:45:52Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\offers\\offers-table.svelte"},"id":"event-000024","state":"stopped","ts":"2026-06-25T11:45:58Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\src\\lib\\components\\offers\\offers-table.svelte"},"id":"event-000025","state":"stopped","ts":"2026-06-25T11:46:03Z","type":"tool.edit"}
+{"data":{"file_path":"C:\\work\\marketing-offers-tool\\prisma\\migrations\\20260625000000_add_novasero_item_code\\migration.sql"},"id":"event-000026","state":"stopped","ts":"2026-06-25T11:47:30Z","type":"tool.write"}
