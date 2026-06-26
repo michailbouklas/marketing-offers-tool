@@ -76,11 +76,11 @@ Start here when exploring this area:
 
 ## Connected Areas
 
-| Area       | Connections |
-| ---------- | ----------- |
-| Server     | 20 calls    |
-| Services   | 1 calls     |
-| Guidelines | 1 calls     |
+| Area        | Connections |
+| ----------- | ----------- |
+| Server      | 20 calls    |
+| Restaurants | 1 calls     |
+| Guidelines  | 1 calls     |
 
 ## How to Explore
 

@@ -63,7 +63,7 @@ Start here when exploring this area:
 | --------------- | ----------- |
 | Server          | 3 calls     |
 | Guidelines      | 2 calls     |
-| Services        | 1 calls     |
+| Restaurants     | 1 calls     |
 | Image-generator | 1 calls     |
 
 ## How to Explore

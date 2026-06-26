@@ -79,11 +79,11 @@ Start here when exploring this area:
 
 ## Connected Areas
 
-| Area          | Connections |
-| ------------- | ----------- |
-| Services      | 2 calls     |
-| Notifications | 1 calls     |
-| Guidelines    | 1 calls     |
+| Area        | Connections |
+| ----------- | ----------- |
+| Restaurants | 2 calls     |
+| Server      | 1 calls     |
+| Guidelines  | 1 calls     |
 
 ## How to Explore
 

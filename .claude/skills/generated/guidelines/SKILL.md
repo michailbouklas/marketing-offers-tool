@@ -68,7 +68,7 @@ Start here when exploring this area:
 | Area            | Connections |
 | --------------- | ----------- |
 | Server          | 4 calls     |
-| Services        | 1 calls     |
+| Restaurants     | 1 calls     |
 | Image-generator | 1 calls     |
 
 ## How to Explore

@@ -1,11 +1,11 @@
 ---
 name: server
-description: "Skill for the Server area of marketing-offers-tool. 142 symbols across 43 files."
+description: "Skill for the Server area of marketing-offers-tool. 147 symbols across 43 files."
 ---
 
 # Server
 
-142 symbols | 43 files | Cohesion: 69%
+147 symbols | 43 files | Cohesion: 69%
 
 ## When to Use
 
@@ -15,18 +15,18 @@ description: "Skill for the Server area of marketing-offers-tool. 142 symbols ac
 
 ## Key Files
 
-| File                                                       | Symbols                                                                                                  |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `src/lib/server/object-store.server.ts`                    | getText, putText, list, assertSafeKey, toPath (+24)                                                      |
-| `src/lib/server/inspiration/inspiration-storage.server.ts` | slugify, categoryMetaKey, ensureRoot, nextFreeSlug, listCategories (+8)                                  |
-| `src/lib/server/clickhouse.ts`                             | loadEnvFileValues, parseRequestTimeout, getRequiredEnv, getEnvValue, getClickHouseConfig (+5)            |
-| `src/lib/server/auth-guards.ts`                            | requireAuthenticatedApiUser, requireAdminSection, hasSuperUserRole, requireSuperUser, hasPermission (+4) |
-| `src/lib/server/env.ts`                                    | loadEnvFileValues, readEnv, loadImageGeneratorEnv, getStorageEnv, hasSupabaseStorage (+3)                |
-| `src/lib/server/brand-storage.ts`                          | brandGuidelinesKey, readBrandGuidelines, writeBrandGuidelines, ensureSafeSlug, ensureSafeAssetId (+2)    |
-| `src/lib/server/scraper-db.ts`                             | getConnectionString, getScraperPool, readQueueBatch, readPendingQueueRowsForEntities, getMaxQueueId      |
-| `src/lib/server/auth.ts`                                   | getRequiredEnv, getAuthConfig, getAuthConfigKey, createAuth, getAuth                                     |
-| `src/lib/server/reference-storage.ts`                      | ensureSafeId, extensionForContentType, referenceKey, writeReferenceFile                                  |
-| `src/lib/server/image-storage.ts`                          | ensureSafeId, imageKey, readImageBytes, writeImageBytes                                                  |
+| File                                                       | Symbols                                                                                                                     |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/server/object-store.server.ts`                    | getText, putText, list, assertSafeKey, toPath (+24)                                                                         |
+| `src/lib/server/inspiration/inspiration-storage.server.ts` | slugify, categoryMetaKey, ensureRoot, nextFreeSlug, listCategories (+8)                                                     |
+| `src/lib/server/clickhouse.ts`                             | loadEnvFileValues, parseRequestTimeout, getRequiredEnv, getEnvValue, getClickHouseConfig (+5)                               |
+| `src/lib/server/auth-guards.ts`                            | requireAuthenticatedApiUser, hasSuperUserRole, isPublicPath, isApiPath, isAdminPath (+4)                                    |
+| `src/lib/server/env.ts`                                    | loadEnvFileValues, readEnv, loadImageGeneratorEnv, getStorageEnv, hasSupabaseStorage (+3)                                   |
+| `src/lib/server/brand-storage.ts`                          | brandGuidelinesKey, readBrandGuidelines, writeBrandGuidelines, ensureSafeSlug, ensureSafeAssetId (+2)                       |
+| `src/lib/server/scraper-db.ts`                             | getConnectionString, getScraperPool, readQueueBatch, readPendingQueueRowsForEntities, countPendingQueueRowsForEntities (+2) |
+| `src/lib/server/auth.ts`                                   | getRequiredEnv, getAuthConfig, getAuthConfigKey, createAuth, getAuth                                                        |
+| `src/lib/server/reference-storage.ts`                      | ensureSafeId, extensionForContentType, referenceKey, writeReferenceFile                                                     |
+| `src/lib/server/image-storage.ts`                          | ensureSafeId, imageKey, readImageBytes, writeImageBytes                                                                     |
 
 ## Entry Points
 
@@ -82,12 +82,12 @@ Start here when exploring this area:
 
 | Area            | Connections |
 | --------------- | ----------- |
-| Services        | 13 calls    |
 | Inspiration     | 10 calls    |
-| Notifications   | 2 calls     |
+| Restaurants     | 7 calls     |
+| Services        | 7 calls     |
+| Notifications   | 3 calls     |
+| Offers          | 3 calls     |
 | Google-reviews  | 2 calls     |
-| Offers          | 1 calls     |
-| Competition     | 1 calls     |
 | Image-generator | 1 calls     |
 | Guidelines      | 1 calls     |
 

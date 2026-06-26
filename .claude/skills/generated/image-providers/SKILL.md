@@ -58,8 +58,8 @@ Start here when exploring this area:
 | `fetchImageRouterModelCaps`      | Function | `src/lib/services/image-providers/imagerouter-models.server.ts` | 57   |
 | `buildImageGeneratorConfig`      | Function | `src/lib/services/image-providers/config.server.ts`             | 66   |
 | `listPresetsForUser`             | Function | `src/lib/services/image-generator/composer-library.server.ts`   | 84   |
-| `GET`                            | Function | `src/routes/api/images/presets/+server.ts`                      | 9    |
 | `GET`                            | Function | `src/routes/api/images/config/+server.ts`                       | 5    |
+| `GET`                            | Function | `src/routes/api/images/presets/+server.ts`                      | 9    |
 | `isProviderRequestError`         | Function | `src/lib/services/image-providers/types.ts`                     | 56   |
 | `parseSize`                      | Function | `src/lib/services/image-providers/model-sizes.ts`               | 17   |
 

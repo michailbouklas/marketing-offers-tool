@@ -67,6 +67,7 @@ model brand {
   generated_images  GeneratedImage[]
   generated_copies  GeneratedCopy[]
   image_templates   ImageGeneratorTemplateBrand[]
+  brand_entities    brand_entity[]
 }
 
 model user_brand {
@@ -670,4 +671,32 @@ model notification_cursor {
   id                   Int      @id @default(1)
   lastProcessedQueueId BigInt   @default(0)
   updatedAt            DateTime @updatedAt
+}
+
+// --- Brand grouping of scraped entities. Administrators assign disjointed
+// scraped entities (a competition restaurant, or a Google reviews business)
+// to a `brand` so analytics can roll up across sections and aggregators.
+// `entityId` is the section's stable identifier as a string, matching the
+// `user_monitor` encoding: for `competitionRestaurant` it is the ClickHouse
+// composite `"${processorId}:${restaurantId}"`; for `googleReviewsBusiness`
+// it is `businesses.cid` (a numeric-looking string — never coerce to number).
+// The `@@unique([entityType, entityId])` enforces that each entity belongs to
+// at most one brand, so assigning is an upsert that moves the entity.
+enum BrandEntityType {
+  competitionRestaurant
+  googleReviewsBusiness
+}
+
+model brand_entity {
+  id         String          @id @default(cuid())
+  brandId    Int
+  brand      brand           @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  entityType BrandEntityType
+  entityId   String
+  createdBy  String? // user.id of the admin who made the assignment (audit)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@unique([entityType, entityId])
+  @@index([brandId])
 }

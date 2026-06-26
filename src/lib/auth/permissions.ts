@@ -31,9 +31,11 @@ export const ac = createAccessControl(statement);
  * additive roles so an admin can be granted exactly the powers they need:
  *
  * - `admin` is a marker role (recognised by `isAdminRole` / `adminRoles` for
- *   the coarse `/admin` gate). It deliberately grants NO resource permissions,
- *   so on permission-gated routes an admin must also hold the matching
- *   capability role.
+ *   the coarse `/admin` gate). It grants no resource permissions EXCEPT
+ *   `brand: ["manage"]`, so that admins can reach the brand-assignment tool
+ *   (and the rest of the brand-management section, which shares this
+ *   permission). For every other gated capability an admin must still hold the
+ *   matching capability role.
  * - `approver` — act on gap submissions.
  * - `usageViewer` — view cross-user image-generation usage analytics.
  * - `userManager` — manage users (Better Auth's full user/session statements,
@@ -63,6 +65,7 @@ export const roles = {
     session: [],
     imageGenerator: [],
     submission: [],
+    brand: ["manage"],
   }),
   approver: ac.newRole({
     submission: ["approve", "reject"],
