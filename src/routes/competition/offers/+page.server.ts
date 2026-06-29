@@ -1,4 +1,6 @@
 import { hasSuperUserRole, requirePermission } from "$lib/server/auth-guards";
+import { getEntityIdsForBrand } from "$lib/services/brand-entities.server";
+import { listBrands } from "$lib/services/brands.server";
 import {
   competitionSortDirections,
   offerSortFields,
@@ -44,6 +46,7 @@ const optionalDay = z.preprocess(
 const searchParamsSchema = z.object({
   page: z.coerce.number().int().positive().default(1).catch(1),
   processorId: optionalPositiveInt.catch(undefined),
+  brandId: optionalPositiveInt.catch(undefined),
   restaurant: optionalTrimmedString.catch(undefined),
   from: optionalDay.catch(undefined),
   to: optionalDay.catch(undefined),
@@ -63,10 +66,14 @@ function exclusiveUpperBound(day: string) {
 export const load: PageServerLoad = async (event) => {
   const { user } = await requirePermission(event, { competition: ["view"] });
 
-  const processors = await listProcessors();
+  const [processors, brands] = await Promise.all([
+    listProcessors(),
+    listBrands({ active: true }),
+  ]);
   const parseResult = searchParamsSchema.safeParse({
     page: event.url.searchParams.get("page") ?? 1,
     processorId: event.url.searchParams.get("processorId") ?? undefined,
+    brandId: event.url.searchParams.get("brandId") ?? undefined,
     restaurant: event.url.searchParams.get("restaurant") ?? undefined,
     from: event.url.searchParams.get("from") ?? undefined,
     to: event.url.searchParams.get("to") ?? undefined,
@@ -94,6 +101,9 @@ export const load: PageServerLoad = async (event) => {
     )
       ? parseResult.data.processorId
       : null;
+  const brandId = parseResult.success
+    ? (parseResult.data.brandId ?? null)
+    : null;
   let monitoredRestaurantKeys: string[] | null = null;
 
   if (trackedOnly) {
@@ -106,9 +116,23 @@ export const load: PageServerLoad = async (event) => {
     ];
   }
 
+  // Resolve the brand's assigned restaurant keys ("processorId:restaurantId");
+  // a non-null empty array (brand has none assigned) yields zero offers.
+  const brandRestaurantKeys =
+    brandId != null
+      ? await getEntityIdsForBrand(brandId, "competitionRestaurant")
+      : null;
+  const brandName =
+    brandId != null
+      ? (brands.find((brand) => brand.id === brandId)?.name ?? null)
+      : null;
+
   return {
     canViewScrapeSessions: await hasSuperUserRole(event),
     processors,
+    brands,
+    brandId,
+    brandName,
     restaurantQuery,
     from,
     to,
@@ -124,6 +148,7 @@ export const load: PageServerLoad = async (event) => {
       from,
       to: to ? exclusiveUpperBound(to) : null,
       monitoredRestaurantKeys,
+      brandRestaurantKeys,
       sortBy,
       sortDir,
     }),

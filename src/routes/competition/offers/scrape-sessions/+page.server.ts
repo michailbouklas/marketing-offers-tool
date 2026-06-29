@@ -1,4 +1,5 @@
 import { requireSuperUser } from "$lib/server/auth-guards";
+import { getScrapeJobSnapshot } from "$lib/services/competition/scrape-job.server";
 import { listScrapeSessionsPage } from "$lib/services/competition/scrape-sessions.server";
 import { z } from "zod";
 import type { PageServerLoad } from "./$types";
@@ -21,5 +22,6 @@ export const load: PageServerLoad = async (event) => {
       page,
       pageSize: PAGE_SIZE,
     }),
+    scrapeStatus: getScrapeJobSnapshot(),
   };
 };

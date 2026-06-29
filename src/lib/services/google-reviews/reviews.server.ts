@@ -48,6 +48,11 @@ export type ListReviewsOptions = {
   to?: string | null;
   /** Business CIDs selected from the user's Google Reviews monitor list. */
   monitoredBusinessCids?: string[] | null;
+  /**
+   * Business CIDs assigned to the selected brand. A non-null empty array means
+   * the brand has no businesses, so the result is empty.
+   */
+  brandBusinessCids?: string[] | null;
   sortBy: ReviewSortField;
   sortDir: GoogleReviewsSortDirection;
 };
@@ -106,6 +111,9 @@ function buildFilterClauses(options: ListReviewsOptions) {
     ...(options.monitoredBusinessCids?.length
       ? ["r.business_cid IN ({monitored_business_cids:Array(String)})"]
       : []),
+    ...(options.brandBusinessCids?.length
+      ? ["r.business_cid IN ({brand_business_cids:Array(String)})"]
+      : []),
     ...(options.rating != null ? ["r.rating = {rating:UInt8}"] : []),
     ...(options.categoryId != null
       ? ["r.category_id = {category_id:Int32}"]
@@ -127,6 +135,9 @@ function buildFilterParams(options: ListReviewsOptions) {
     ...(options.businessQuery ? { business_query: options.businessQuery } : {}),
     ...(options.monitoredBusinessCids?.length
       ? { monitored_business_cids: options.monitoredBusinessCids }
+      : {}),
+    ...(options.brandBusinessCids?.length
+      ? { brand_business_cids: options.brandBusinessCids }
       : {}),
     ...(options.rating != null ? { rating: options.rating } : {}),
     ...(options.categoryId != null ? { category_id: options.categoryId } : {}),
@@ -166,14 +177,20 @@ export async function listReviewsPage(
   const monitoredBusinessCids = normalizeMonitoredBusinessCids(
     options.monitoredBusinessCids,
   );
+  const brandBusinessCids = normalizeMonitoredBusinessCids(
+    options.brandBusinessCids,
+  );
 
-  if (monitoredBusinessCids?.length === 0) {
+  // A non-null but empty set (monitor list empty, or brand has no businesses)
+  // means nothing can match.
+  if (monitoredBusinessCids?.length === 0 || brandBusinessCids?.length === 0) {
     return buildEmptyReviewsPage(safePageSize);
   }
 
   const filterOptions = {
     ...options,
     monitoredBusinessCids,
+    brandBusinessCids,
   };
   const whereClause = buildWhereClause(buildFilterClauses(filterOptions));
   const filterParams = buildFilterParams(filterOptions);

@@ -71,6 +71,7 @@ export const ModelName = {
   dim_offers_staging: "dim_offers_staging",
   dim_offers_audit: "dim_offers_audit",
   subcategories: "subcategories",
+  urls_to_scrape: "urls_to_scrape",
   aggregator_offers: "aggregator_offers",
   GeneratedImage: "GeneratedImage",
   GenerationFailureLog: "GenerationFailureLog",
@@ -343,6 +344,18 @@ export const SubcategoriesScalarFieldEnum = {
 
 export type SubcategoriesScalarFieldEnum =
   (typeof SubcategoriesScalarFieldEnum)[keyof typeof SubcategoriesScalarFieldEnum];
+
+export const Urls_to_scrapeScalarFieldEnum = {
+  id: "id",
+  url: "url",
+  aggregator: "aggregator",
+  userId: "userId",
+  created_at: "created_at",
+  updated_at: "updated_at",
+} as const;
+
+export type Urls_to_scrapeScalarFieldEnum =
+  (typeof Urls_to_scrapeScalarFieldEnum)[keyof typeof Urls_to_scrapeScalarFieldEnum];
 
 export const Aggregator_offersScalarFieldEnum = {
   id: "id",

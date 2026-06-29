@@ -212,3 +212,28 @@ export function hasSupabaseStorage(): boolean {
     env.SUPABASE_STORAGE_BUCKET,
   );
 }
+
+/**
+ * Base URL of the remote competition scraper server (POST /scrape and
+ * /scrape-all). Returns `undefined` when unset so callers can surface a clear
+ * configuration error. A missing protocol defaults to HTTP (for host:port
+ * deployment values) and any trailing slash is trimmed so endpoint paths can be
+ * concatenated directly.
+ */
+export function getRemoteScraperUrl(): string | undefined {
+  const value = readEnv("REMOTE_SCRAPER_URL");
+
+  if (!value) {
+    return undefined;
+  }
+
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    return undefined;
+  }
+
+  const hasProtocol = /^[a-z][a-z\d+.-]*:\/\//i.test(trimmedValue);
+  const absoluteUrl = hasProtocol ? trimmedValue : `http://${trimmedValue}`;
+
+  return absoluteUrl.replace(/\/+$/, "");
+}

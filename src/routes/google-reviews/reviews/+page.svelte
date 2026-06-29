@@ -114,6 +114,7 @@
     rating = data.rating,
     sentiment = data.sentiment,
     categoryId = data.categoryId,
+    brandId = data.brandId,
     from = data.from,
     to = data.to,
     sortBy = data.sortBy,
@@ -126,6 +127,7 @@
     rating?: number | null;
     sentiment?: SentimentValue | null;
     categoryId?: number | null;
+    brandId?: number | null;
     from?: string | null;
     to?: string | null;
     sortBy?: ReviewSortField;
@@ -152,6 +154,10 @@
 
     if (categoryId) {
       params.set("categoryId", categoryId.toString());
+    }
+
+    if (brandId) {
+      params.set("brandId", brandId.toString());
     }
 
     if (from) {
@@ -278,7 +284,7 @@
           <form
             method="GET"
             bind:this={searchForm}
-            class="grid gap-3 lg:grid-cols-[minmax(0,15rem)_minmax(0,8rem)_minmax(0,10rem)_minmax(0,12rem)_auto_auto_auto] lg:items-end"
+            class="grid gap-3 lg:grid-cols-[minmax(0,15rem)_minmax(0,8rem)_minmax(0,10rem)_minmax(0,12rem)_minmax(0,11rem)_auto_auto_auto] lg:items-end"
           >
             <div class="space-y-2">
               <label class="text-sm font-medium" for="business">Business</label>
@@ -363,6 +369,23 @@
             </div>
 
             <div class="space-y-2">
+              <label class="text-sm font-medium" for="brandId">Brand</label>
+              <NativeSelect.Root
+                id="brandId"
+                name="brandId"
+                value={data.brandId?.toString() ?? ""}
+                onchange={handleSearchChange}
+              >
+                <NativeSelect.Option value="">All brands</NativeSelect.Option>
+                {#each data.brands as brand (brand.id)}
+                  <NativeSelect.Option value={brand.id.toString()}>
+                    {brand.name}
+                  </NativeSelect.Option>
+                {/each}
+              </NativeSelect.Root>
+            </div>
+
+            <div class="space-y-2">
               <span class="text-sm font-medium">Review date</span>
               <DateRangeFilter
                 from={data.from}
@@ -437,6 +460,18 @@
                 href={getRouteHref({ page: 1, categoryId: null })}
                 class="hover:text-foreground -mr-1 inline-flex"
                 aria-label="Clear category filter"
+              >
+                <XIcon class="size-3" />
+              </a>
+            </Badge>
+          {/if}
+          {#if data.brandId}
+            <Badge variant="outline" class="gap-1">
+              Brand: {data.brandName ?? `#${data.brandId}`}
+              <a
+                href={getRouteHref({ page: 1, brandId: null })}
+                class="hover:text-foreground -mr-1 inline-flex"
+                aria-label="Clear brand filter"
               >
                 <XIcon class="size-3" />
               </a>

@@ -132,6 +132,11 @@ export type dim_offers_audit = Prisma.dim_offers_auditModel;
  */
 export type subcategories = Prisma.subcategoriesModel;
 /**
+ * Model urls_to_scrape
+ *
+ */
+export type urls_to_scrape = Prisma.urls_to_scrapeModel;
+/**
  * Model aggregator_offers
  *
  */

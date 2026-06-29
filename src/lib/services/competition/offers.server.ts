@@ -57,6 +57,12 @@ export type ListActiveOffersOptions = {
   from?: string | null;
   to?: string | null;
   monitoredRestaurantKeys?: string[] | null;
+  /**
+   * Composite `"${processorId}:${restaurantId}"` keys assigned to the selected
+   * brand. A non-null empty array means the brand has no restaurants, so the
+   * result is empty.
+   */
+  brandRestaurantKeys?: string[] | null;
   sortBy: OfferSortField;
   sortDir: CompetitionSortDirection;
 };
@@ -105,33 +111,38 @@ function parseMonitoredRestaurantKeys(
   return [...uniquePairs.values()];
 }
 
-function buildMonitoredRestaurantClause(
-  monitoredRestaurantPairs: MonitoredRestaurantPair[],
+// Builds an OR-of-(processor AND restaurant) clause for a set of composite
+// restaurant keys. `prefix` namespaces the bound params so several such filters
+// (e.g. the monitor list and the brand selection) can coexist in one query.
+function buildRestaurantPairClause(
+  restaurantPairs: MonitoredRestaurantPair[],
+  prefix: string,
 ) {
-  if (monitoredRestaurantPairs.length === 0) {
+  if (restaurantPairs.length === 0) {
     return null;
   }
 
-  return `(${monitoredRestaurantPairs
+  return `(${restaurantPairs
     .map(
       (_, index) =>
-        `(r.aggregator_id = {monitored_processor_id_${index}:Int32} AND o.restaurant_id = {monitored_restaurant_id_${index}:Int32})`,
+        `(r.aggregator_id = {${prefix}_processor_id_${index}:Int32} AND o.restaurant_id = {${prefix}_restaurant_id_${index}:Int32})`,
     )
     .join(" OR ")})`;
 }
 
-function buildMonitoredRestaurantParams(
-  monitoredRestaurantPairs: MonitoredRestaurantPair[] | null,
+function buildRestaurantPairParams(
+  restaurantPairs: MonitoredRestaurantPair[] | null,
+  prefix: string,
 ) {
-  if (!monitoredRestaurantPairs) {
+  if (!restaurantPairs) {
     return {};
   }
 
-  return monitoredRestaurantPairs.reduce<Record<string, number>>(
+  return restaurantPairs.reduce<Record<string, number>>(
     (params, pair, index) => ({
       ...params,
-      [`monitored_processor_id_${index}`]: pair.processorId,
-      [`monitored_restaurant_id_${index}`]: pair.restaurantId,
+      [`${prefix}_processor_id_${index}`]: pair.processorId,
+      [`${prefix}_restaurant_id_${index}`]: pair.restaurantId,
     }),
     {},
   );
@@ -170,9 +181,15 @@ function getSortExpression(sortBy: OfferSortField) {
 function buildFilterClauses(
   options: ListActiveOffersOptions,
   monitoredRestaurantPairs: MonitoredRestaurantPair[] | null,
+  brandRestaurantPairs: MonitoredRestaurantPair[] | null,
 ) {
-  const monitoredRestaurantClause = buildMonitoredRestaurantClause(
+  const monitoredRestaurantClause = buildRestaurantPairClause(
     monitoredRestaurantPairs ?? [],
+    "monitored",
+  );
+  const brandRestaurantClause = buildRestaurantPairClause(
+    brandRestaurantPairs ?? [],
+    "brand",
   );
 
   return [
@@ -195,12 +212,14 @@ function buildFilterClauses(
       ? ["o.first_seen_at < parseDateTime64BestEffort({to:String}, 6)"]
       : []),
     ...(monitoredRestaurantClause ? [monitoredRestaurantClause] : []),
+    ...(brandRestaurantClause ? [brandRestaurantClause] : []),
   ];
 }
 
 function buildFilterParams(
   options: ListActiveOffersOptions,
   monitoredRestaurantPairs: MonitoredRestaurantPair[] | null,
+  brandRestaurantPairs: MonitoredRestaurantPair[] | null,
 ) {
   return {
     ...(options.processorId != null
@@ -214,7 +233,8 @@ function buildFilterParams(
       : {}),
     ...(options.from ? { from: options.from } : {}),
     ...(options.to ? { to: options.to } : {}),
-    ...buildMonitoredRestaurantParams(monitoredRestaurantPairs),
+    ...buildRestaurantPairParams(monitoredRestaurantPairs, "monitored"),
+    ...buildRestaurantPairParams(brandRestaurantPairs, "brand"),
   };
 }
 
@@ -254,15 +274,27 @@ export async function listActiveOffersPage(
   const monitoredRestaurantPairs = parseMonitoredRestaurantKeys(
     options.monitoredRestaurantKeys,
   );
+  const brandRestaurantPairs = parseMonitoredRestaurantKeys(
+    options.brandRestaurantKeys,
+  );
 
-  if (monitoredRestaurantPairs?.length === 0) {
+  // A non-null but empty set (monitor list empty, or brand has no restaurants)
+  // means nothing can match.
+  if (
+    monitoredRestaurantPairs?.length === 0 ||
+    brandRestaurantPairs?.length === 0
+  ) {
     return buildEmptyOffersPage(safePageSize);
   }
 
   const whereClause = buildWhereClause(
-    buildFilterClauses(options, monitoredRestaurantPairs),
+    buildFilterClauses(options, monitoredRestaurantPairs, brandRestaurantPairs),
   );
-  const filterParams = buildFilterParams(options, monitoredRestaurantPairs);
+  const filterParams = buildFilterParams(
+    options,
+    monitoredRestaurantPairs,
+    brandRestaurantPairs,
+  );
 
   const countResult = await clickhouse.query({
     query: `

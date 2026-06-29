@@ -686,10 +686,6 @@ export type aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput = {
     | Prisma.aggregator_offersScalarWhereInput[];
 };
 
-export type EnumAggregatorFieldUpdateOperationsInput = {
-  set?: $Enums.Aggregator;
-};
-
 export type aggregator_offersCreateWithoutBrandInput = {
   name: string;
   offer_id: string;

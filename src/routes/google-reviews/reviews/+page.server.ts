@@ -1,4 +1,6 @@
 import { requirePermission } from "$lib/server/auth-guards";
+import { getEntityIdsForBrand } from "$lib/services/brand-entities.server";
+import { listBrands } from "$lib/services/brands.server";
 import { listReviewCategories } from "$lib/services/google-reviews/categories.server";
 import {
   googleReviewsSortDirections,
@@ -53,6 +55,9 @@ const searchParamsSchema = z.object({
   categoryId: z
     .preprocess(emptyToUndefined, z.coerce.number().int().positive().optional())
     .catch(undefined),
+  brandId: z
+    .preprocess(emptyToUndefined, z.coerce.number().int().positive().optional())
+    .catch(undefined),
   from: optionalDay.catch(undefined),
   to: optionalDay.catch(undefined),
   sortBy: z.enum(reviewSortFields).default("review_date").catch("review_date"),
@@ -78,6 +83,7 @@ export const load: PageServerLoad = async (event) => {
     rating: event.url.searchParams.get("rating") ?? undefined,
     sentiment: event.url.searchParams.get("sentiment") ?? undefined,
     categoryId: event.url.searchParams.get("categoryId") ?? undefined,
+    brandId: event.url.searchParams.get("brandId") ?? undefined,
     from: event.url.searchParams.get("from") ?? undefined,
     to: event.url.searchParams.get("to") ?? undefined,
     sortBy: event.url.searchParams.get("sortBy") ?? undefined,
@@ -99,6 +105,9 @@ export const load: PageServerLoad = async (event) => {
   const categoryId = parseResult.success
     ? (parseResult.data.categoryId ?? null)
     : null;
+  const brandId = parseResult.success
+    ? (parseResult.data.brandId ?? null)
+    : null;
   const from = parseResult.success ? (parseResult.data.from ?? null) : null;
   const to = parseResult.success ? (parseResult.data.to ?? null) : null;
   const sortBy = parseResult.success ? parseResult.data.sortBy : "review_date";
@@ -118,11 +127,25 @@ export const load: PageServerLoad = async (event) => {
     ];
   }
 
-  const reviewCategories = await listReviewCategories();
+  const [reviewCategories, brands] = await Promise.all([
+    listReviewCategories(),
+    listBrands({ active: true }),
+  ]);
   const categoryName =
     categoryId != null
       ? (reviewCategories.find((category) => category.id === categoryId)
           ?.category ?? null)
+      : null;
+
+  // Resolve the brand's assigned Google-business cids; a non-null empty array
+  // (brand has none assigned) yields zero reviews.
+  const brandBusinessCids =
+    brandId != null
+      ? await getEntityIdsForBrand(brandId, "googleReviewsBusiness")
+      : null;
+  const brandName =
+    brandId != null
+      ? (brands.find((brand) => brand.id === brandId)?.name ?? null)
       : null;
 
   return {
@@ -133,6 +156,9 @@ export const load: PageServerLoad = async (event) => {
     categoryId,
     categoryName,
     reviewCategories,
+    brandId,
+    brandName,
+    brands,
     from,
     to,
     sortBy,
@@ -149,6 +175,7 @@ export const load: PageServerLoad = async (event) => {
       from,
       to: to ? exclusiveUpperBound(to) : null,
       monitoredBusinessCids,
+      brandBusinessCids,
       sortBy,
       sortDir,
     }),

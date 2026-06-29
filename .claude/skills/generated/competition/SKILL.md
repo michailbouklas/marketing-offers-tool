@@ -1,11 +1,11 @@
 ---
 name: competition
-description: "Skill for the Competition area of marketing-offers-tool. 40 symbols across 9 files."
+description: "Skill for the Competition area of marketing-offers-tool. 52 symbols across 11 files."
 ---
 
 # Competition
 
-40 symbols | 9 files | Cohesion: 72%
+52 symbols | 11 files | Cohesion: 70%
 
 ## When to Use
 
@@ -15,17 +15,18 @@ description: "Skill for the Competition area of marketing-offers-tool. 40 symbol
 
 ## Key Files
 
-| File                                                                       | Symbols                                                                                                                                    |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/lib/services/competition/restaurants.server.ts`                       | fetchActiveOfferCounts, items, groupMenuRows, computeTransitions, groupTimeSeriesRows (+6)                                                 |
-| `src/lib/services/competition/offers.server.ts`                            | fetchLatestPrices, parseMonitoredRestaurantKeys, buildMonitoredRestaurantClause, buildMonitoredRestaurantParams, buildEmptyOffersPage (+4) |
-| `src/lib/server/competition-db.ts`                                         | getCompetitionDatabase, getCompetitionCurrency, competitionTable, parseCount, utcIsoExpression (+3)                                        |
-| `src/lib/services/competition/active-offers-timeseries.server.ts`          | toUtcDayKey, getLastUtcDayKeys, buildSeries, getActiveOffersByDayByAggregator                                                              |
-| `src/lib/services/competition/dashboard.server.ts`                         | getDashboardStats, activeOffersByProcessor, recentChanges                                                                                  |
-| `src/lib/services/competition/scrape-sessions.server.ts`                   | getSafePagination, listScrapeSessionsPage                                                                                                  |
-| `src/routes/competition/+page.server.ts`                                   | load                                                                                                                                       |
-| `src/routes/api/competition/active-offers-by-day-by-aggregator/+server.ts` | GET                                                                                                                                        |
-| `src/routes/competition/restaurants/[id]/+page.server.ts`                  | load                                                                                                                                       |
+| File | Symbols |
+|------|---------|
+| `src/lib/services/competition/restaurants.server.ts` | fetchActiveOfferCounts, items, groupMenuRows, computeTransitions, groupTimeSeriesRows (+6) |
+| `src/lib/services/competition/scrape-job.server.ts` | ScrapeAlreadyRunningError, ScrapeConfigError, startScrape, getJob, isScrapeRunning (+6) |
+| `src/lib/services/competition/offers.server.ts` | fetchLatestPrices, parseMonitoredRestaurantKeys, buildRestaurantPairClause, buildRestaurantPairParams, buildEmptyOffersPage (+4) |
+| `src/lib/server/competition-db.ts` | getCompetitionDatabase, getCompetitionCurrency, competitionTable, parseCount, utcIsoExpression (+3) |
+| `src/lib/services/competition/active-offers-timeseries.server.ts` | toUtcDayKey, getLastUtcDayKeys, buildSeries, getActiveOffersByDayByAggregator |
+| `src/lib/services/competition/dashboard.server.ts` | getDashboardStats, activeOffersByProcessor, recentChanges |
+| `src/lib/services/competition/scrape-sessions.server.ts` | getSafePagination, listScrapeSessionsPage |
+| `src/routes/competition/+page.server.ts` | load |
+| `src/routes/api/competition/active-offers-by-day-by-aggregator/+server.ts` | GET |
+| `src/routes/competition/restaurants/[id]/+page.server.ts` | load |
 
 ## Entry Points
 
@@ -39,51 +40,51 @@ Start here when exploring this area:
 
 ## Key Symbols
 
-| Symbol                             | Type     | File                                                                       | Line |
-| ---------------------------------- | -------- | -------------------------------------------------------------------------- | ---- |
-| `load`                             | Function | `src/routes/competition/+page.server.ts`                                   | 5    |
-| `getCompetitionDatabase`           | Function | `src/lib/server/competition-db.ts`                                         | 31   |
-| `getCompetitionCurrency`           | Function | `src/lib/server/competition-db.ts`                                         | 57   |
-| `competitionTable`                 | Function | `src/lib/server/competition-db.ts`                                         | 73   |
-| `parseCount`                       | Function | `src/lib/server/competition-db.ts`                                         | 120  |
-| `utcIsoExpression`                 | Function | `src/lib/server/competition-db.ts`                                         | 144  |
-| `listScrapeSessionsPage`           | Function | `src/lib/services/competition/scrape-sessions.server.ts`                   | 75   |
-| `getDashboardStats`                | Function | `src/lib/services/competition/dashboard.server.ts`                         | 41   |
-| `activeOffersByProcessor`          | Function | `src/lib/services/competition/dashboard.server.ts`                         | 116  |
-| `getActiveOffersByDayByAggregator` | Function | `src/lib/services/competition/active-offers-timeseries.server.ts`          | 52   |
-| `GET`                              | Function | `src/routes/api/competition/active-offers-by-day-by-aggregator/+server.ts` | 5    |
-| `latestProductPriceSubquery`       | Function | `src/lib/server/competition-db.ts`                                         | 90   |
-| `parseNullableNumber`              | Function | `src/lib/server/competition-db.ts`                                         | 100  |
-| `items`                            | Function | `src/lib/services/competition/restaurants.server.ts`                       | 215  |
-| `getRestaurantDetail`              | Function | `src/lib/services/competition/restaurants.server.ts`                       | 334  |
-| `activeOffers`                     | Function | `src/lib/services/competition/restaurants.server.ts`                       | 475  |
-| `recentChanges`                    | Function | `src/lib/services/competition/dashboard.server.ts`                         | 125  |
-| `load`                             | Function | `src/routes/competition/restaurants/[id]/+page.server.ts`                  | 8    |
-| `listActiveOffersPage`             | Function | `src/lib/services/competition/offers.server.ts`                            | 242  |
-| `buildWhereClause`                 | Function | `src/lib/server/competition-db.ts`                                         | 134  |
+| Symbol | Type | File | Line |
+|--------|------|------|------|
+| `ScrapeAlreadyRunningError` | Class | `src/lib/services/competition/scrape-job.server.ts` | 71 |
+| `ScrapeConfigError` | Class | `src/lib/services/competition/scrape-job.server.ts` | 78 |
+| `load` | Function | `src/routes/competition/+page.server.ts` | 5 |
+| `getCompetitionDatabase` | Function | `src/lib/server/competition-db.ts` | 31 |
+| `getCompetitionCurrency` | Function | `src/lib/server/competition-db.ts` | 57 |
+| `competitionTable` | Function | `src/lib/server/competition-db.ts` | 73 |
+| `parseCount` | Function | `src/lib/server/competition-db.ts` | 120 |
+| `utcIsoExpression` | Function | `src/lib/server/competition-db.ts` | 144 |
+| `listScrapeSessionsPage` | Function | `src/lib/services/competition/scrape-sessions.server.ts` | 75 |
+| `getDashboardStats` | Function | `src/lib/services/competition/dashboard.server.ts` | 41 |
+| `activeOffersByProcessor` | Function | `src/lib/services/competition/dashboard.server.ts` | 116 |
+| `getActiveOffersByDayByAggregator` | Function | `src/lib/services/competition/active-offers-timeseries.server.ts` | 52 |
+| `GET` | Function | `src/routes/api/competition/active-offers-by-day-by-aggregator/+server.ts` | 5 |
+| `latestProductPriceSubquery` | Function | `src/lib/server/competition-db.ts` | 90 |
+| `parseNullableNumber` | Function | `src/lib/server/competition-db.ts` | 100 |
+| `items` | Function | `src/lib/services/competition/restaurants.server.ts` | 215 |
+| `getRestaurantDetail` | Function | `src/lib/services/competition/restaurants.server.ts` | 334 |
+| `activeOffers` | Function | `src/lib/services/competition/restaurants.server.ts` | 475 |
+| `recentChanges` | Function | `src/lib/services/competition/dashboard.server.ts` | 125 |
+| `load` | Function | `src/routes/competition/restaurants/[id]/+page.server.ts` | 8 |
 
 ## Execution Flows
 
-| Flow                            | Type            | Steps |
-| ------------------------------- | --------------- | ----- |
-| `Load → LoadEnvFileValues`      | cross_community | 9     |
-| `Load → GetCompetitionDatabase` | cross_community | 5     |
-| `Load → GetCompetitionDatabase` | cross_community | 4     |
-| `Load → GetCompetitionDatabase` | cross_community | 4     |
-| `Load → GetCompetitionDatabase` | intra_community | 4     |
-| `Load → GetCompetitionDatabase` | cross_community | 4     |
-| `GET → ToUtcDayKey`             | intra_community | 4     |
-| `GET → GetCompetitionDatabase`  | intra_community | 4     |
-| `Load → BuildWhereClause`       | cross_community | 3     |
-| `Load → BuildFilterClauses`     | cross_community | 3     |
+| Flow | Type | Steps |
+|------|------|-------|
+| `Load → LoadEnvFileValues` | cross_community | 9 |
+| `Load → GetCompetitionDatabase` | cross_community | 5 |
+| `Load → GetCompetitionDatabase` | cross_community | 5 |
+| `Load → GetCompetitionDatabase` | cross_community | 5 |
+| `GET → GetCompetitionDatabase` | cross_community | 5 |
+| `POST → LoadEnvFileValues` | cross_community | 5 |
+| `Load → GetCompetitionDatabase` | cross_community | 4 |
+| `Load → GetCompetitionDatabase` | cross_community | 4 |
+| `Load → GetCompetitionDatabase` | intra_community | 4 |
+| `Load → GetCompetitionDatabase` | cross_community | 4 |
 
 ## Connected Areas
 
-| Area        | Connections |
-| ----------- | ----------- |
-| Restaurants | 2 calls     |
-| Server      | 1 calls     |
-| Guidelines  | 1 calls     |
+| Area | Connections |
+|------|-------------|
+| Services | 5 calls |
+| Notifications | 1 calls |
+| Server | 1 calls |
 
 ## How to Explore
 

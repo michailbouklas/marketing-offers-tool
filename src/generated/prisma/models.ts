@@ -24,6 +24,7 @@ export type * from "./models/dq_missing_offers_pricing";
 export type * from "./models/dim_offers_staging";
 export type * from "./models/dim_offers_audit";
 export type * from "./models/subcategories";
+export type * from "./models/urls_to_scrape";
 export type * from "./models/aggregator_offers";
 export type * from "./models/GeneratedImage";
 export type * from "./models/GenerationFailureLog";

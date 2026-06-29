@@ -3,11 +3,26 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
+  import ScrapeNowDialog from "$lib/components/competition/scrape-now-dialog.svelte";
   import { formatCompetitionDateTime } from "$lib/services/competition/competition";
+  import { scrapeStream } from "$lib/state/scrape-stream.svelte";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+  import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
+
+  let scrapeDialogOpen = $state(false);
+
+  // Seed the global store from the SSR snapshot, then connect if a run is
+  // already underway. Browser-only and idempotent (see store.init).
+  $effect(() => {
+    void scrapeStream.init(data.scrapeStatus);
+  });
+
+  function openScrapeDialog() {
+    scrapeDialogOpen = true;
+  }
 
   const rows = $derived(data.sessionsPage.items);
   const page = $derived(data.sessionsPage.page);
@@ -119,10 +134,42 @@
         </p>
       </div>
 
-      <Button href="/competition/offers" variant="outline"
-        >Back to offers</Button
-      >
+      <div class="flex flex-wrap items-center gap-2">
+        <Button
+          onclick={openScrapeDialog}
+          disabled={scrapeStream.status === "running"}
+        >
+          {#if scrapeStream.status === "running"}
+            <LoaderCircleIcon class="size-4 animate-spin" />
+            Scraping…
+          {:else}
+            Scrape now
+          {/if}
+        </Button>
+        <Button href="/competition/offers" variant="outline"
+          >Back to offers</Button
+        >
+      </div>
     </section>
+
+    {#if scrapeStream.status === "running"}
+      <div
+        class="border-border/70 bg-muted/40 flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div class="flex items-center gap-3">
+          <LoaderCircleIcon
+            class="text-muted-foreground size-4 shrink-0 animate-spin"
+          />
+          <p class="text-sm">
+            A scrape session is under way. It keeps running on the server even
+            if you close the dialog or leave this page.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onclick={openScrapeDialog}>
+          View progress
+        </Button>
+      </div>
+    {/if}
 
     <Card.Root
       class="border-border/70 bg-background/90 overflow-hidden shadow-sm backdrop-blur"
@@ -303,3 +350,5 @@
     </Card.Root>
   </main>
 </div>
+
+<ScrapeNowDialog bind:open={scrapeDialogOpen} />

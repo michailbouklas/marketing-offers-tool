@@ -247,6 +247,7 @@ export type userWhereInput = {
   google_reviews_business_prefs?: Prisma.Google_reviews_user_business_prefListRelationFilter;
   google_reviews_dashboard_widgets?: Prisma.Google_reviews_dashboard_widgetListRelationFilter;
   monitor_entries?: Prisma.User_monitorListRelationFilter;
+  urls_to_scrape?: Prisma.Urls_to_scrapeListRelationFilter;
 };
 
 export type userOrderByWithRelationInput = {
@@ -275,6 +276,7 @@ export type userOrderByWithRelationInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefOrderByRelationAggregateInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetOrderByRelationAggregateInput;
   monitor_entries?: Prisma.user_monitorOrderByRelationAggregateInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeOrderByRelationAggregateInput;
 };
 
 export type userWhereUniqueInput = Prisma.AtLeast<
@@ -307,6 +309,7 @@ export type userWhereUniqueInput = Prisma.AtLeast<
     google_reviews_business_prefs?: Prisma.Google_reviews_user_business_prefListRelationFilter;
     google_reviews_dashboard_widgets?: Prisma.Google_reviews_dashboard_widgetListRelationFilter;
     monitor_entries?: Prisma.User_monitorListRelationFilter;
+    urls_to_scrape?: Prisma.Urls_to_scrapeListRelationFilter;
   },
   "id" | "email"
 >;
@@ -379,6 +382,7 @@ export type userCreateInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateInput = {
@@ -407,6 +411,7 @@ export type userUncheckedCreateInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userUpdateInput = {
@@ -439,6 +444,7 @@ export type userUpdateInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateInput = {
@@ -471,6 +477,7 @@ export type userUncheckedUpdateInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateManyInput = {
@@ -682,6 +689,32 @@ export type userUpdateOneWithoutDim_offers_auditsNestedInput = {
       Prisma.userUpdateWithoutDim_offers_auditsInput
     >,
     Prisma.userUncheckedUpdateWithoutDim_offers_auditsInput
+  >;
+};
+
+export type userCreateNestedOneWithoutUrls_to_scrapeInput = {
+  create?: Prisma.XOR<
+    Prisma.userCreateWithoutUrls_to_scrapeInput,
+    Prisma.userUncheckedCreateWithoutUrls_to_scrapeInput
+  >;
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutUrls_to_scrapeInput;
+  connect?: Prisma.userWhereUniqueInput;
+};
+
+export type userUpdateOneRequiredWithoutUrls_to_scrapeNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.userCreateWithoutUrls_to_scrapeInput,
+    Prisma.userUncheckedCreateWithoutUrls_to_scrapeInput
+  >;
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutUrls_to_scrapeInput;
+  upsert?: Prisma.userUpsertWithoutUrls_to_scrapeInput;
+  connect?: Prisma.userWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.userUpdateToOneWithWhereWithoutUrls_to_scrapeInput,
+      Prisma.userUpdateWithoutUrls_to_scrapeInput
+    >,
+    Prisma.userUncheckedUpdateWithoutUrls_to_scrapeInput
   >;
 };
 
@@ -974,6 +1007,7 @@ export type userCreateWithoutBrand_assignmentsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutBrand_assignmentsInput = {
@@ -1001,6 +1035,7 @@ export type userUncheckedCreateWithoutBrand_assignmentsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutBrand_assignmentsInput = {
@@ -1060,6 +1095,7 @@ export type userUpdateWithoutBrand_assignmentsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutBrand_assignmentsInput = {
@@ -1091,6 +1127,7 @@ export type userUncheckedUpdateWithoutBrand_assignmentsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutSessionsInput = {
@@ -1118,6 +1155,7 @@ export type userCreateWithoutSessionsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutSessionsInput = {
@@ -1145,6 +1183,7 @@ export type userUncheckedCreateWithoutSessionsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutSessionsInput = {
@@ -1204,6 +1243,7 @@ export type userUpdateWithoutSessionsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutSessionsInput = {
@@ -1235,6 +1275,7 @@ export type userUncheckedUpdateWithoutSessionsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutAccountsInput = {
@@ -1262,6 +1303,7 @@ export type userCreateWithoutAccountsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutAccountsInput = {
@@ -1289,6 +1331,7 @@ export type userUncheckedCreateWithoutAccountsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutAccountsInput = {
@@ -1348,6 +1391,7 @@ export type userUpdateWithoutAccountsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutAccountsInput = {
@@ -1379,6 +1423,7 @@ export type userUncheckedUpdateWithoutAccountsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutDim_offers_auditsInput = {
@@ -1406,6 +1451,7 @@ export type userCreateWithoutDim_offers_auditsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutDim_offers_auditsInput = {
@@ -1433,6 +1479,7 @@ export type userUncheckedCreateWithoutDim_offers_auditsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutDim_offers_auditsInput = {
@@ -1492,6 +1539,7 @@ export type userUpdateWithoutDim_offers_auditsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutDim_offers_auditsInput = {
@@ -1513,6 +1561,155 @@ export type userUncheckedUpdateWithoutDim_offers_auditsInput = {
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput;
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput;
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput;
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutUserNestedInput;
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedUpdateManyWithoutUserNestedInput;
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput;
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedUpdateManyWithoutUserNestedInput;
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
+  monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
+};
+
+export type userCreateWithoutUrls_to_scrapeInput = {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string | null;
+  role?: string | null;
+  banned?: boolean | null;
+  banReason?: string | null;
+  banExpires?: Date | string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  sessions?: Prisma.sessionCreateNestedManyWithoutUserInput;
+  accounts?: Prisma.accountCreateNestedManyWithoutUserInput;
+  brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput;
+  dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput;
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutUserInput;
+  image_presets?: Prisma.ImageGeneratorPresetCreateNestedManyWithoutUserInput;
+  image_templates?: Prisma.ImageGeneratorTemplateCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput;
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefCreateNestedManyWithoutUserInput;
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetCreateNestedManyWithoutUserInput;
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
+  monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+};
+
+export type userUncheckedCreateWithoutUrls_to_scrapeInput = {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string | null;
+  role?: string | null;
+  banned?: boolean | null;
+  banReason?: string | null;
+  banExpires?: Date | string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput;
+  accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput;
+  brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput;
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput;
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutUserInput;
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedCreateNestedManyWithoutUserInput;
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedCreateNestedManyWithoutUserInput;
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput;
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedCreateNestedManyWithoutUserInput;
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
+  monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+};
+
+export type userCreateOrConnectWithoutUrls_to_scrapeInput = {
+  where: Prisma.userWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.userCreateWithoutUrls_to_scrapeInput,
+    Prisma.userUncheckedCreateWithoutUrls_to_scrapeInput
+  >;
+};
+
+export type userUpsertWithoutUrls_to_scrapeInput = {
+  update: Prisma.XOR<
+    Prisma.userUpdateWithoutUrls_to_scrapeInput,
+    Prisma.userUncheckedUpdateWithoutUrls_to_scrapeInput
+  >;
+  create: Prisma.XOR<
+    Prisma.userCreateWithoutUrls_to_scrapeInput,
+    Prisma.userUncheckedCreateWithoutUrls_to_scrapeInput
+  >;
+  where?: Prisma.userWhereInput;
+};
+
+export type userUpdateToOneWithWhereWithoutUrls_to_scrapeInput = {
+  where?: Prisma.userWhereInput;
+  data: Prisma.XOR<
+    Prisma.userUpdateWithoutUrls_to_scrapeInput,
+    Prisma.userUncheckedUpdateWithoutUrls_to_scrapeInput
+  >;
+};
+
+export type userUpdateWithoutUrls_to_scrapeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banExpires?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput;
+  accounts?: Prisma.accountUpdateManyWithoutUserNestedInput;
+  brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput;
+  dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput;
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutUserNestedInput;
+  image_presets?: Prisma.ImageGeneratorPresetUpdateManyWithoutUserNestedInput;
+  image_templates?: Prisma.ImageGeneratorTemplateUpdateManyWithoutUserNestedInput;
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput;
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUpdateManyWithoutUserNestedInput;
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUpdateManyWithoutUserNestedInput;
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
+  monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+};
+
+export type userUncheckedUpdateWithoutUrls_to_scrapeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  banExpires?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput;
+  accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput;
+  brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput;
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput;
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput;
   generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutUserNestedInput;
   image_presets?: Prisma.ImageGeneratorPresetUncheckedUpdateManyWithoutUserNestedInput;
@@ -1550,6 +1747,7 @@ export type userCreateWithoutGenerated_imagesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutGenerated_imagesInput = {
@@ -1577,6 +1775,7 @@ export type userUncheckedCreateWithoutGenerated_imagesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutGenerated_imagesInput = {
@@ -1636,6 +1835,7 @@ export type userUpdateWithoutGenerated_imagesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutGenerated_imagesInput = {
@@ -1667,6 +1867,7 @@ export type userUncheckedUpdateWithoutGenerated_imagesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutReference_imagesInput = {
@@ -1694,6 +1895,7 @@ export type userCreateWithoutReference_imagesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutReference_imagesInput = {
@@ -1721,6 +1923,7 @@ export type userUncheckedCreateWithoutReference_imagesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutReference_imagesInput = {
@@ -1780,6 +1983,7 @@ export type userUpdateWithoutReference_imagesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutReference_imagesInput = {
@@ -1811,6 +2015,7 @@ export type userUncheckedUpdateWithoutReference_imagesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutImage_presetsInput = {
@@ -1838,6 +2043,7 @@ export type userCreateWithoutImage_presetsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutImage_presetsInput = {
@@ -1865,6 +2071,7 @@ export type userUncheckedCreateWithoutImage_presetsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutImage_presetsInput = {
@@ -1924,6 +2131,7 @@ export type userUpdateWithoutImage_presetsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutImage_presetsInput = {
@@ -1955,6 +2163,7 @@ export type userUncheckedUpdateWithoutImage_presetsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutImage_templatesInput = {
@@ -1982,6 +2191,7 @@ export type userCreateWithoutImage_templatesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutImage_templatesInput = {
@@ -2009,6 +2219,7 @@ export type userUncheckedCreateWithoutImage_templatesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutImage_templatesInput = {
@@ -2068,6 +2279,7 @@ export type userUpdateWithoutImage_templatesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutImage_templatesInput = {
@@ -2099,6 +2311,7 @@ export type userUncheckedUpdateWithoutImage_templatesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutGenerated_copiesInput = {
@@ -2126,6 +2339,7 @@ export type userCreateWithoutGenerated_copiesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutGenerated_copiesInput = {
@@ -2153,6 +2367,7 @@ export type userUncheckedCreateWithoutGenerated_copiesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutGenerated_copiesInput = {
@@ -2212,6 +2427,7 @@ export type userUpdateWithoutGenerated_copiesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutGenerated_copiesInput = {
@@ -2243,6 +2459,7 @@ export type userUncheckedUpdateWithoutGenerated_copiesInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutCompetition_restaurant_prefsInput = {
@@ -2270,6 +2487,7 @@ export type userCreateWithoutCompetition_restaurant_prefsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutCompetition_restaurant_prefsInput = {
@@ -2297,6 +2515,7 @@ export type userUncheckedCreateWithoutCompetition_restaurant_prefsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutCompetition_restaurant_prefsInput = {
@@ -2356,6 +2575,7 @@ export type userUpdateWithoutCompetition_restaurant_prefsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutCompetition_restaurant_prefsInput = {
@@ -2387,6 +2607,7 @@ export type userUncheckedUpdateWithoutCompetition_restaurant_prefsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutCompetition_dashboard_widgetsInput = {
@@ -2414,6 +2635,7 @@ export type userCreateWithoutCompetition_dashboard_widgetsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutCompetition_dashboard_widgetsInput = {
@@ -2441,6 +2663,7 @@ export type userUncheckedCreateWithoutCompetition_dashboard_widgetsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutCompetition_dashboard_widgetsInput = {
@@ -2501,6 +2724,7 @@ export type userUpdateWithoutCompetition_dashboard_widgetsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutCompetition_dashboard_widgetsInput = {
@@ -2532,6 +2756,7 @@ export type userUncheckedUpdateWithoutCompetition_dashboard_widgetsInput = {
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutGoogle_reviews_business_prefsInput = {
@@ -2559,6 +2784,7 @@ export type userCreateWithoutGoogle_reviews_business_prefsInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutGoogle_reviews_business_prefsInput = {
@@ -2586,6 +2812,7 @@ export type userUncheckedCreateWithoutGoogle_reviews_business_prefsInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutGoogle_reviews_business_prefsInput = {
@@ -2646,6 +2873,7 @@ export type userUpdateWithoutGoogle_reviews_business_prefsInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutGoogle_reviews_business_prefsInput = {
@@ -2677,6 +2905,7 @@ export type userUncheckedUpdateWithoutGoogle_reviews_business_prefsInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -2704,6 +2933,7 @@ export type userCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetCreateNestedManyWithoutUserInput;
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -2731,6 +2961,7 @@ export type userUncheckedCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -2791,6 +3022,7 @@ export type userUpdateWithoutGoogle_reviews_dashboard_widgetsInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUpdateManyWithoutUserNestedInput;
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -2822,6 +3054,7 @@ export type userUncheckedUpdateWithoutGoogle_reviews_dashboard_widgetsInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 export type userCreateWithoutMonitor_entriesInput = {
@@ -2849,6 +3082,7 @@ export type userCreateWithoutMonitor_entriesInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetCreateNestedManyWithoutUserInput;
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput;
 };
 
 export type userUncheckedCreateWithoutMonitor_entriesInput = {
@@ -2876,6 +3110,7 @@ export type userUncheckedCreateWithoutMonitor_entriesInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput;
 };
 
 export type userCreateOrConnectWithoutMonitor_entriesInput = {
@@ -2935,6 +3170,7 @@ export type userUpdateWithoutMonitor_entriesInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUpdateManyWithoutUserNestedInput;
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput;
 };
 
 export type userUncheckedUpdateWithoutMonitor_entriesInput = {
@@ -2966,6 +3202,7 @@ export type userUncheckedUpdateWithoutMonitor_entriesInput = {
   competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput;
   google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput;
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput;
 };
 
 /**
@@ -2987,6 +3224,7 @@ export type UserCountOutputType = {
   google_reviews_business_prefs: number;
   google_reviews_dashboard_widgets: number;
   monitor_entries: number;
+  urls_to_scrape: number;
 };
 
 export type UserCountOutputTypeSelect<
@@ -3015,6 +3253,7 @@ export type UserCountOutputTypeSelect<
     | boolean
     | UserCountOutputTypeCountGoogle_reviews_dashboard_widgetsArgs;
   monitor_entries?: boolean | UserCountOutputTypeCountMonitor_entriesArgs;
+  urls_to_scrape?: boolean | UserCountOutputTypeCountUrls_to_scrapeArgs;
 };
 
 /**
@@ -3170,6 +3409,16 @@ export type UserCountOutputTypeCountMonitor_entriesArgs<
   where?: Prisma.user_monitorWhereInput;
 };
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountUrls_to_scrapeArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.urls_to_scrapeWhereInput;
+};
+
 export type userSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
@@ -3208,6 +3457,7 @@ export type userSelect<
       | boolean
       | Prisma.user$google_reviews_dashboard_widgetsArgs<ExtArgs>;
     monitor_entries?: boolean | Prisma.user$monitor_entriesArgs<ExtArgs>;
+    urls_to_scrape?: boolean | Prisma.user$urls_to_scrapeArgs<ExtArgs>;
     _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["user"]
@@ -3310,6 +3560,7 @@ export type userInclude<
     | boolean
     | Prisma.user$google_reviews_dashboard_widgetsArgs<ExtArgs>;
   monitor_entries?: boolean | Prisma.user$monitor_entriesArgs<ExtArgs>;
+  urls_to_scrape?: boolean | Prisma.user$urls_to_scrapeArgs<ExtArgs>;
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type userIncludeCreateManyAndReturn<
@@ -3341,6 +3592,7 @@ export type $userPayload<
     google_reviews_business_prefs: Prisma.$google_reviews_user_business_prefPayload<ExtArgs>[];
     google_reviews_dashboard_widgets: Prisma.$google_reviews_dashboard_widgetPayload<ExtArgs>[];
     monitor_entries: Prisma.$user_monitorPayload<ExtArgs>[];
+    urls_to_scrape: Prisma.$urls_to_scrapePayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -4073,6 +4325,17 @@ export interface Prisma__userClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$user_monitorPayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  urls_to_scrape<T extends Prisma.user$urls_to_scrapeArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.user$urls_to_scrapeArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$urls_to_scrapePayload<ExtArgs>,
         T,
         "findMany",
         GlobalOmitOptions
@@ -5000,6 +5263,37 @@ export type user$monitor_entriesArgs<
   distinct?:
     | Prisma.User_monitorScalarFieldEnum
     | Prisma.User_monitorScalarFieldEnum[];
+};
+
+/**
+ * user.urls_to_scrape
+ */
+export type user$urls_to_scrapeArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the urls_to_scrape
+   */
+  select?: Prisma.urls_to_scrapeSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the urls_to_scrape
+   */
+  omit?: Prisma.urls_to_scrapeOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.urls_to_scrapeInclude<ExtArgs> | null;
+  where?: Prisma.urls_to_scrapeWhereInput;
+  orderBy?:
+    | Prisma.urls_to_scrapeOrderByWithRelationInput
+    | Prisma.urls_to_scrapeOrderByWithRelationInput[];
+  cursor?: Prisma.urls_to_scrapeWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.Urls_to_scrapeScalarFieldEnum
+    | Prisma.Urls_to_scrapeScalarFieldEnum[];
 };
 
 /**

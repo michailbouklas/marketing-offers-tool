@@ -429,6 +429,7 @@ export const ModelName = {
   dim_offers_staging: "dim_offers_staging",
   dim_offers_audit: "dim_offers_audit",
   subcategories: "subcategories",
+  urls_to_scrape: "urls_to_scrape",
   aggregator_offers: "aggregator_offers",
   GeneratedImage: "GeneratedImage",
   GenerationFailureLog: "GenerationFailureLog",
@@ -488,6 +489,7 @@ export type TypeMap<
       | "dim_offers_staging"
       | "dim_offers_audit"
       | "subcategories"
+      | "urls_to_scrape"
       | "aggregator_offers"
       | "generatedImage"
       | "generationFailureLog"
@@ -1799,6 +1801,82 @@ export type TypeMap<
           args: Prisma.subcategoriesCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.SubcategoriesCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    urls_to_scrape: {
+      payload: Prisma.$urls_to_scrapePayload<ExtArgs>;
+      fields: Prisma.urls_to_scrapeFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.urls_to_scrapeFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$urls_to_scrapePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.urls_to_scrapeFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$urls_to_scrapePayload>;
+        };
+        findFirst: {
+          args: Prisma.urls_to_scrapeFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$urls_to_scrapePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.urls_to_scrapeFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$urls_to_scrapePayload>;
+        };
+        findMany: {
+          args: Prisma.urls_to_scrapeFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$urls_to_scrapePayload>[];
+        };
+        create: {
+          args: Prisma.urls_to_scrapeCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$urls_to_scrapePayload>;
+        };
+        createMany: {
+          args: Prisma.urls_to_scrapeCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.urls_to_scrapeCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$urls_to_scrapePayload>[];
+        };
+        delete: {
+          args: Prisma.urls_to_scrapeDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$urls_to_scrapePayload>;
+        };
+        update: {
+          args: Prisma.urls_to_scrapeUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$urls_to_scrapePayload>;
+        };
+        deleteMany: {
+          args: Prisma.urls_to_scrapeDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.urls_to_scrapeUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.urls_to_scrapeUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$urls_to_scrapePayload>[];
+        };
+        upsert: {
+          args: Prisma.urls_to_scrapeUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$urls_to_scrapePayload>;
+        };
+        aggregate: {
+          args: Prisma.Urls_to_scrapeAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUrls_to_scrape>;
+        };
+        groupBy: {
+          args: Prisma.urls_to_scrapeGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Urls_to_scrapeGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.urls_to_scrapeCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Urls_to_scrapeCountAggregateOutputType>
             | number;
         };
       };
@@ -3597,6 +3675,18 @@ export const SubcategoriesScalarFieldEnum = {
 export type SubcategoriesScalarFieldEnum =
   (typeof SubcategoriesScalarFieldEnum)[keyof typeof SubcategoriesScalarFieldEnum];
 
+export const Urls_to_scrapeScalarFieldEnum = {
+  id: "id",
+  url: "url",
+  aggregator: "aggregator",
+  userId: "userId",
+  created_at: "created_at",
+  updated_at: "updated_at",
+} as const;
+
+export type Urls_to_scrapeScalarFieldEnum =
+  (typeof Urls_to_scrapeScalarFieldEnum)[keyof typeof Urls_to_scrapeScalarFieldEnum];
+
 export const Aggregator_offersScalarFieldEnum = {
   id: "id",
   name: "name",
@@ -4362,6 +4452,7 @@ export type GlobalOmitConfig = {
   dim_offers_staging?: Prisma.dim_offers_stagingOmit;
   dim_offers_audit?: Prisma.dim_offers_auditOmit;
   subcategories?: Prisma.subcategoriesOmit;
+  urls_to_scrape?: Prisma.urls_to_scrapeOmit;
   aggregator_offers?: Prisma.aggregator_offersOmit;
   generatedImage?: Prisma.GeneratedImageOmit;
   generationFailureLog?: Prisma.GenerationFailureLogOmit;

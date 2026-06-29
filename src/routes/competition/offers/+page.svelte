@@ -19,6 +19,7 @@
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import FilterIcon from "@lucide/svelte/icons/filter";
   import SearchIcon from "@lucide/svelte/icons/search";
+  import XIcon from "@lucide/svelte/icons/x";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -95,6 +96,7 @@
   function getRouteHref({
     page,
     processorId = data.selectedProcessorId,
+    brandId = data.brandId,
     restaurant = data.restaurantQuery,
     from = data.from,
     to = data.to,
@@ -104,6 +106,7 @@
   }: {
     page?: number;
     processorId?: number | null;
+    brandId?: number | null;
     restaurant?: string | null;
     from?: string | null;
     to?: string | null;
@@ -115,6 +118,10 @@
 
     if (processorId) {
       params.set("processorId", processorId.toString());
+    }
+
+    if (brandId) {
+      params.set("brandId", brandId.toString());
     }
 
     if (restaurant) {
@@ -263,7 +270,7 @@
           <form
             method="GET"
             bind:this={searchForm}
-            class="grid gap-3 lg:grid-cols-[minmax(0,16rem)_minmax(0,13rem)_auto_auto_auto] lg:items-end"
+            class="grid gap-3 lg:grid-cols-[minmax(0,16rem)_minmax(0,13rem)_minmax(0,13rem)_auto_auto_auto] lg:items-end"
           >
             <div class="space-y-2">
               <label class="text-sm font-medium" for="restaurant"
@@ -310,6 +317,23 @@
                   {/each}
                 </NativeSelect.Root>
               </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium" for="brandId">Brand</label>
+              <NativeSelect.Root
+                id="brandId"
+                name="brandId"
+                value={data.brandId?.toString() ?? ""}
+                onchange={handleSearchChange}
+              >
+                <NativeSelect.Option value="">All brands</NativeSelect.Option>
+                {#each data.brands as brand (brand.id)}
+                  <NativeSelect.Option value={brand.id.toString()}>
+                    {brand.name}
+                  </NativeSelect.Option>
+                {/each}
+              </NativeSelect.Root>
             </div>
 
             <div class="space-y-2">
@@ -367,6 +391,18 @@
           >
           {#if data.restaurantQuery}
             <Badge variant="outline">Restaurant: {data.restaurantQuery}</Badge>
+          {/if}
+          {#if data.brandId}
+            <Badge variant="outline" class="gap-1">
+              Brand: {data.brandName ?? `#${data.brandId}`}
+              <a
+                href={getRouteHref({ page: 1, brandId: null })}
+                class="hover:text-foreground -mr-1 inline-flex"
+                aria-label="Clear brand filter"
+              >
+                <XIcon class="size-3" />
+              </a>
+            </Badge>
           {/if}
           {#if data.from || data.to}
             <Badge variant="outline">

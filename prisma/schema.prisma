@@ -132,6 +132,7 @@ model user {
   google_reviews_business_prefs    google_reviews_user_business_pref[]
   google_reviews_dashboard_widgets google_reviews_dashboard_widget[]
   monitor_entries                  user_monitor[]
+  urls_to_scrape                   urls_to_scrape[]
 }
 
 model session {
@@ -263,6 +264,18 @@ enum Aggregator {
   bolt
   wolt
   efood
+}
+
+model urls_to_scrape {
+  id         Int        @id @default(autoincrement())
+  url        String
+  aggregator Aggregator
+  userId     String
+  user       user       @relation(fields: [userId], references: [id])
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  @@index([userId])
 }
 
 enum DqGapStatus {

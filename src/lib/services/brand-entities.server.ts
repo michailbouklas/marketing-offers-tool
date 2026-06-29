@@ -189,6 +189,23 @@ export async function getBrandRefsByEntityIds(
   return refs;
 }
 
+/**
+ * Returns the `entityId`s of one type assigned to a brand. Used to filter the
+ * competition / google-reviews sections by brand (e.g. the brand → business
+ * cids for the reviews filter).
+ */
+export async function getEntityIdsForBrand(
+  brandId: number,
+  entityType: BrandEntityType,
+): Promise<string[]> {
+  const rows = await prisma.brand_entity.findMany({
+    where: { brandId, entityType },
+    select: { entityId: true },
+  });
+
+  return rows.map((row) => row.entityId);
+}
+
 type ResolvedName = { displayName: string | null; subLabel: string | null };
 
 type CompetitionNameRow = {

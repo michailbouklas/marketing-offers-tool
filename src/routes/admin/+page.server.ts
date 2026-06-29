@@ -12,6 +12,7 @@ export const load: PageServerLoad = async (event) => {
     imageUsage,
     metrics,
     promptGallery,
+    urlsToScrape,
   ] = await Promise.all([
     hasPermission(event, { submission: ["approve"] }),
     hasPermission(event, { submission: ["approve"] }),
@@ -20,6 +21,7 @@ export const load: PageServerLoad = async (event) => {
     hasPermission(event, { imageGenerator: ["view-usage"] }),
     hasPermission(event, { metrics: ["view"] }),
     hasPermission(event, { promptGallery: ["manage"] }),
+    hasPermission(event, { urlsToScrape: ["manage"] }),
   ]);
 
   return {
@@ -31,6 +33,7 @@ export const load: PageServerLoad = async (event) => {
       imageUsage,
       metrics,
       promptGallery,
+      urlsToScrape,
     },
   };
 };
