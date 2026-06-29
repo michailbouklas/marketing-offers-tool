@@ -13,10 +13,18 @@
     type ScrapeMode,
   } from "$lib/state/scrape-stream.svelte";
 
-  let { open = $bindable(false) }: { open?: boolean } = $props();
+  let {
+    open = $bindable(false),
+    presetUrl,
+  }: { open?: boolean; presetUrl?: string } = $props();
 
-  let mode = $state<ScrapeMode>("all");
-  let url = $state("");
+  // When a preset URL is supplied (e.g. from a restaurant detail page) the
+  // dialog is locked to single-URL mode for that restaurant: the scope picker
+  // is hidden and the URL is fixed.
+  const isSingleUrlPreset = $derived(presetUrl !== undefined);
+
+  let mode = $state<ScrapeMode>(presetUrl !== undefined ? "single" : "all");
+  let url = $state(presetUrl ?? "");
   let language = $state<ScrapeLanguage>("en");
 
   const isRunning = $derived(scrapeStream.status === "running");
@@ -41,7 +49,9 @@
     return scrapeModeOptions.some((option) => option.value === value);
   }
 
-  function isScrapeLanguage(value: string | undefined): value is ScrapeLanguage {
+  function isScrapeLanguage(
+    value: string | undefined,
+  ): value is ScrapeLanguage {
     if (!value) return false;
 
     return scrapeLanguageOptions.some((option) => option.value === value);
@@ -118,19 +128,25 @@
 
     {#if showForm}
       <div class="grid gap-4">
-        <div class="grid gap-2">
-          <Label for="scrape-mode">Scope</Label>
-          <Select.Root type="single" value={mode} onValueChange={updateScrapeMode}>
-            <Select.Trigger id="scrape-mode" class="w-full">
-              {getScrapeModeLabel(mode)}
-            </Select.Trigger>
-            <Select.Content>
-              {#each scrapeModeOptions as option (option.value)}
-                <Select.Item value={option.value}>{option.label}</Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
-        </div>
+        {#if !isSingleUrlPreset}
+          <div class="grid gap-2">
+            <Label for="scrape-mode">Scope</Label>
+            <Select.Root
+              type="single"
+              value={mode}
+              onValueChange={updateScrapeMode}
+            >
+              <Select.Trigger id="scrape-mode" class="w-full">
+                {getScrapeModeLabel(mode)}
+              </Select.Trigger>
+              <Select.Content>
+                {#each scrapeModeOptions as option (option.value)}
+                  <Select.Item value={option.value}>{option.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
+        {/if}
 
         {#if mode === "single"}
           <div class="grid gap-2">
@@ -140,6 +156,7 @@
               type="url"
               placeholder="https://www.foody.com.cy/delivery/menu/..."
               bind:value={url}
+              readonly={isSingleUrlPreset}
             />
           </div>
           <div class="grid gap-2">

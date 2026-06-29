@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-29T10:30:27Z",
-  "changed_file": "src/lib/state/scrape-stream.svelte.ts",
+  "timestamp": "2026-06-29T13:11:13Z",
+  "changed_file": "src/routes/competition/restaurants/[id]/+page.server.ts",
   "test_command": "npx vitest run --reporter=verbose",
   "related_test": "",
   "recommendation": "テストの実行を推奨します"

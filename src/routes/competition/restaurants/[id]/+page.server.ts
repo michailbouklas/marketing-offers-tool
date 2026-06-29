@@ -1,5 +1,6 @@
-import { requirePermission } from "$lib/server/auth-guards";
+import { hasPermission, requirePermission } from "$lib/server/auth-guards";
 import { getRestaurantDetail } from "$lib/services/competition/restaurants.server";
+import { getScrapeJobSnapshot } from "$lib/services/competition/scrape-job.server";
 import { error } from "@sveltejs/kit";
 import { z } from "zod";
 import type { PageServerLoad } from "./$types";
@@ -24,5 +25,9 @@ export const load: PageServerLoad = async (event) => {
     error(404, "Restaurant not found");
   }
 
-  return { detail };
+  return {
+    detail,
+    scrapeStatus: getScrapeJobSnapshot(),
+    canScrape: await hasPermission(event, { urlsToScrape: ["manage"] }),
+  };
 };

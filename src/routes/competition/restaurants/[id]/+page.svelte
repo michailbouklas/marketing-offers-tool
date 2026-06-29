@@ -1,17 +1,29 @@
 <script lang="ts">
   import OfferPriceHistoryChart from "$lib/components/competition/offer-price-history-chart.svelte";
+  import ScrapeNowDialog from "$lib/components/competition/scrape-now-dialog.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import {
     formatCompetitionDateTime,
     formatCompetitionMoney,
   } from "$lib/services/competition/competition";
+  import { scrapeStream } from "$lib/state/scrape-stream.svelte";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+  import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import StarIcon from "@lucide/svelte/icons/star";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
+
+  let scrapeDialogOpen = $state(false);
+
+  // Seed the global scrape store from the SSR snapshot, then reconnect if a run
+  // is already underway. Browser-only and idempotent (see store.init).
+  $effect(() => {
+    void scrapeStream.init(data.scrapeStatus);
+  });
 
   const restaurant = $derived(data.detail.restaurant);
   const activeOffers = $derived(data.detail.activeOffers);
@@ -137,6 +149,20 @@
             >
               View on {restaurant.processorName ?? "aggregator"} →
             </a>
+          {/if}
+          {#if data.canScrape && restaurant.sourceUrl}
+            <Button
+              class="mt-4 w-full"
+              onclick={() => (scrapeDialogOpen = true)}
+              disabled={scrapeStream.status === "running"}
+            >
+              {#if scrapeStream.status === "running"}
+                <LoaderCircleIcon class="size-4 animate-spin" />
+                Scraping…
+              {:else}
+                Scrape now
+              {/if}
+            </Button>
           {/if}
         </Card.Content>
       </Card.Root>
@@ -327,3 +353,10 @@
     </section>
   </main>
 </div>
+
+{#if restaurant.sourceUrl}
+  <ScrapeNowDialog
+    bind:open={scrapeDialogOpen}
+    presetUrl={restaurant.sourceUrl}
+  />
+{/if}

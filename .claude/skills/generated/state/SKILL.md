@@ -15,19 +15,19 @@ description: "Skill for the State area of marketing-offers-tool. 5 symbols acros
 
 ## Key Files
 
-| File | Symbols |
-|------|---------|
+| File                                    | Symbols                                      |
+| --------------------------------------- | -------------------------------------------- |
 | `src/lib/state/scrape-stream.svelte.ts` | hydrate, init, start, refreshStatus, connect |
 
 ## Key Symbols
 
-| Symbol | Type | File | Line |
-|--------|------|------|------|
-| `hydrate` | Method | `src/lib/state/scrape-stream.svelte.ts` | 53 |
-| `init` | Method | `src/lib/state/scrape-stream.svelte.ts` | 77 |
-| `start` | Method | `src/lib/state/scrape-stream.svelte.ts` | 106 |
-| `refreshStatus` | Method | `src/lib/state/scrape-stream.svelte.ts` | 144 |
-| `connect` | Method | `src/lib/state/scrape-stream.svelte.ts` | 156 |
+| Symbol          | Type   | File                                    | Line |
+| --------------- | ------ | --------------------------------------- | ---- |
+| `hydrate`       | Method | `src/lib/state/scrape-stream.svelte.ts` | 53   |
+| `init`          | Method | `src/lib/state/scrape-stream.svelte.ts` | 77   |
+| `start`         | Method | `src/lib/state/scrape-stream.svelte.ts` | 106  |
+| `refreshStatus` | Method | `src/lib/state/scrape-stream.svelte.ts` | 144  |
+| `connect`       | Method | `src/lib/state/scrape-stream.svelte.ts` | 156  |
 
 ## How to Explore
 

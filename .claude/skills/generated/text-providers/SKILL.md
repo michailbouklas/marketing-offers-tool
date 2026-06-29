@@ -15,13 +15,13 @@ description: "Skill for the Text-providers area of marketing-offers-tool. 10 sym
 
 ## Key Files
 
-| File | Symbols |
-|------|---------|
-| `src/lib/services/text-providers/openai.server.ts` | OpenAITextProvider, OpenAITextProviderError, generateText, safeJson |
-| `src/lib/services/text-providers/types.ts` | TextProvider, FakeTextProvider |
-| `src/lib/services/text-providers/openai.server.test.ts` | jsonResponse, fetchMock |
-| `src/lib/services/text-providers/factory.server.ts` | getTextProvider |
-| `src/lib/services/image-providers/types.ts` | ProviderRequestError |
+| File                                                    | Symbols                                                             |
+| ------------------------------------------------------- | ------------------------------------------------------------------- |
+| `src/lib/services/text-providers/openai.server.ts`      | OpenAITextProvider, OpenAITextProviderError, generateText, safeJson |
+| `src/lib/services/text-providers/types.ts`              | TextProvider, FakeTextProvider                                      |
+| `src/lib/services/text-providers/openai.server.test.ts` | jsonResponse, fetchMock                                             |
+| `src/lib/services/text-providers/factory.server.ts`     | getTextProvider                                                     |
+| `src/lib/services/image-providers/types.ts`             | ProviderRequestError                                                |
 
 ## Entry Points
 
@@ -35,32 +35,32 @@ Start here when exploring this area:
 
 ## Key Symbols
 
-| Symbol | Type | File | Line |
-|--------|------|------|------|
-| `FakeTextProvider` | Class | `src/lib/services/text-providers/types.ts` | 41 |
-| `OpenAITextProvider` | Class | `src/lib/services/text-providers/openai.server.ts` | 43 |
-| `OpenAITextProviderError` | Class | `src/lib/services/text-providers/openai.server.ts` | 11 |
-| `getTextProvider` | Function | `src/lib/services/text-providers/factory.server.ts` | 4 |
-| `TextProvider` | Interface | `src/lib/services/text-providers/types.ts` | 30 |
-| `ProviderRequestError` | Interface | `src/lib/services/image-providers/types.ts` | 50 |
-| `generateText` | Method | `src/lib/services/text-providers/openai.server.ts` | 52 |
-| `safeJson` | Function | `src/lib/services/text-providers/openai.server.ts` | 161 |
-| `jsonResponse` | Function | `src/lib/services/text-providers/openai.server.test.ts` | 22 |
-| `fetchMock` | Function | `src/lib/services/text-providers/openai.server.test.ts` | 31 |
+| Symbol                    | Type      | File                                                    | Line |
+| ------------------------- | --------- | ------------------------------------------------------- | ---- |
+| `FakeTextProvider`        | Class     | `src/lib/services/text-providers/types.ts`              | 41   |
+| `OpenAITextProvider`      | Class     | `src/lib/services/text-providers/openai.server.ts`      | 43   |
+| `OpenAITextProviderError` | Class     | `src/lib/services/text-providers/openai.server.ts`      | 11   |
+| `getTextProvider`         | Function  | `src/lib/services/text-providers/factory.server.ts`     | 4    |
+| `TextProvider`            | Interface | `src/lib/services/text-providers/types.ts`              | 30   |
+| `ProviderRequestError`    | Interface | `src/lib/services/image-providers/types.ts`             | 50   |
+| `generateText`            | Method    | `src/lib/services/text-providers/openai.server.ts`      | 52   |
+| `safeJson`                | Function  | `src/lib/services/text-providers/openai.server.ts`      | 161  |
+| `jsonResponse`            | Function  | `src/lib/services/text-providers/openai.server.test.ts` | 22   |
+| `fetchMock`               | Function  | `src/lib/services/text-providers/openai.server.test.ts` | 31   |
 
 ## Execution Flows
 
-| Flow | Type | Steps |
-|------|------|-------|
-| `POST → FetchFn` | cross_community | 4 |
-| `POST → OpenAITextProviderError` | cross_community | 4 |
-| `POST → SafeJson` | cross_community | 4 |
+| Flow                             | Type            | Steps |
+| -------------------------------- | --------------- | ----- |
+| `POST → FetchFn`                 | cross_community | 4     |
+| `POST → OpenAITextProviderError` | cross_community | 4     |
+| `POST → SafeJson`                | cross_community | 4     |
 
 ## Connected Areas
 
-| Area | Connections |
-|------|-------------|
-| Server | 1 calls |
+| Area   | Connections |
+| ------ | ----------- |
+| Server | 1 calls     |
 
 ## How to Explore
 

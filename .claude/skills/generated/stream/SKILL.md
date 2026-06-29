@@ -15,8 +15,8 @@ description: "Skill for the Stream area of marketing-offers-tool. 5 symbols acro
 
 ## Key Files
 
-| File | Symbols |
-|------|---------|
+| File                                                  | Symbols                                          |
+| ----------------------------------------------------- | ------------------------------------------------ |
 | `src/routes/api/competition/scrape/stream/+server.ts` | frame, start, safeEnqueue, cleanup, emitTerminal |
 
 ## Entry Points
@@ -30,26 +30,26 @@ Start here when exploring this area:
 
 ## Key Symbols
 
-| Symbol | Type | File | Line |
-|--------|------|------|------|
-| `safeEnqueue` | Function | `src/routes/api/competition/scrape/stream/+server.ts` | 46 |
-| `cleanup` | Function | `src/routes/api/competition/scrape/stream/+server.ts` | 57 |
-| `emitTerminal` | Function | `src/routes/api/competition/scrape/stream/+server.ts` | 84 |
-| `start` | Method | `src/routes/api/competition/scrape/stream/+server.ts` | 41 |
-| `frame` | Function | `src/routes/api/competition/scrape/stream/+server.ts` | 13 |
+| Symbol         | Type     | File                                                  | Line |
+| -------------- | -------- | ----------------------------------------------------- | ---- |
+| `safeEnqueue`  | Function | `src/routes/api/competition/scrape/stream/+server.ts` | 46   |
+| `cleanup`      | Function | `src/routes/api/competition/scrape/stream/+server.ts` | 57   |
+| `emitTerminal` | Function | `src/routes/api/competition/scrape/stream/+server.ts` | 84   |
+| `start`        | Method   | `src/routes/api/competition/scrape/stream/+server.ts` | 41   |
+| `frame`        | Function | `src/routes/api/competition/scrape/stream/+server.ts` | 13   |
 
 ## Execution Flows
 
-| Flow | Type | Steps |
-|------|------|-------|
-| `Start → GetJob` | cross_community | 3 |
+| Flow             | Type            | Steps |
+| ---------------- | --------------- | ----- |
+| `Start → GetJob` | cross_community | 3     |
 
 ## Connected Areas
 
-| Area | Connections |
-|------|-------------|
-| Competition | 2 calls |
-| Services | 1 calls |
+| Area        | Connections |
+| ----------- | ----------- |
+| Competition | 2 calls     |
+| Services    | 1 calls     |
 
 ## How to Explore
 
