@@ -91,3 +91,18 @@ export type EntityBrandRef = {
   brandId: number;
   brandName: string;
 };
+
+/**
+ * A searchable entity the admin can assign to a brand, annotated with its
+ * current assignment (if any) so the picker can show "already assigned" /
+ * "will move from brand X".
+ */
+export type EntityCandidateRow = {
+  entityType: BrandEntityType;
+  entityId: string; // encoded ("processorId:restaurantId") or cid
+  displayName: string;
+  /** Aggregator name (competition) or category (google reviews). */
+  subLabel: string | null;
+  assignedBrandId: number | null;
+  assignedBrandName: string | null;
+};

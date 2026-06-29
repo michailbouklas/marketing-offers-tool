@@ -1,7 +1,3 @@
-{"file":"src/routes/api/images/[id]/file/+server.ts","action":"Write","timestamp":"2026-05-26T10:08:39Z","important":false}
-{"file":"src/routes/api/images/[id]/file/server.test.ts","action":"Write","timestamp":"2026-05-26T10:08:54Z","important":true}
-{"file":"src/lib/services/image-providers/factory.server.ts","action":"Write","timestamp":"2026-05-26T10:09:40Z","important":false}
-{"file":"src/lib/services/image-generator/orchestrate.server.ts","action":"Write","timestamp":"2026-05-26T10:09:49Z","important":false}
 {"file":"src/lib/services/image-generator/orchestrate.server.test.ts","action":"Write","timestamp":"2026-05-26T10:10:35Z","important":true}
 {"file":"src/lib/components/navigation/top-nav.svelte","action":"Edit","timestamp":"2026-05-26T10:11:59Z","important":false}
 {"file":"src/routes/image-generator/+page.server.ts","action":"Write","timestamp":"2026-05-26T10:13:01Z","important":false}
@@ -499,3 +495,7 @@
 {"file":"src/routes/admin/brand-assignments/+page.server.ts","action":"Write","timestamp":"2026-06-26T08:54:17Z","important":false}
 {"file":"src/routes/admin/brand-assignments/+page.svelte","action":"Write","timestamp":"2026-06-26T08:54:44Z","important":false}
 {"file":"src/lib/services/brand-entities.test.ts","action":"Write","timestamp":"2026-06-26T08:54:58Z","important":true}
+{"file":"src/routes/api/admin/brand-entities/search/+server.ts","action":"Write","timestamp":"2026-06-26T09:17:12Z","important":false}
+{"file":"src/lib/components/admin/assign-entities-dialog.svelte","action":"Write","timestamp":"2026-06-26T09:18:13Z","important":false}
+{"file":"src/routes/admin/brands/[id]/+page.server.ts","action":"Edit","timestamp":"2026-06-26T09:18:23Z","important":false}
+{"file":"src/routes/admin/brands/[id]/+page.svelte","action":"Edit","timestamp":"2026-06-26T09:18:45Z","important":false}

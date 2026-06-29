@@ -5,6 +5,7 @@ import {
   getBrandGuidelines,
   listBrandAssets,
 } from "$lib/services/brand-context/brand-context.server";
+import { listBrandAssignments } from "$lib/services/brand-entities.server";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
@@ -23,13 +24,15 @@ export const load: PageServerLoad = async (event) => {
     error(404, "Brand not found");
   }
 
-  const [assets, guidelines] = await Promise.all([
+  const [assets, guidelines, assignments] = await Promise.all([
     listBrandAssets(brand.id),
     brand.slug ? getBrandGuidelines(brand.slug) : Promise.resolve(null),
+    listBrandAssignments({ brandId: brand.id }),
   ]);
 
   return {
     brand,
+    assignments,
     assets: assets.map((asset) => ({
       id: asset.id,
       name: asset.name,

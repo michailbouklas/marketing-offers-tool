@@ -2,7 +2,9 @@ import {
   type BrandAssignmentRow,
   type BrandEntityType,
   type EntityBrandRef,
+  type EntityCandidateRow,
   decodeCompetitionEntityId,
+  encodeCompetitionEntityId,
 } from "$lib/services/brand-entities";
 import { clickhouse } from "$lib/server/clickhouse";
 import { competitionTable } from "$lib/server/competition-db";
@@ -32,9 +34,62 @@ export async function assignEntityToBrand(input: AssignEntityInput) {
   });
 }
 
+type AssignEntitiesInput = {
+  brandId: number;
+  entityType: BrandEntityType;
+  entityIds: string[];
+  createdBy?: string | null;
+};
+
+/**
+ * Assigns several entities of one type to a brand in a single transaction.
+ * Each is an upsert keyed on `entityType_entityId`, so entities already linked
+ * to another brand are **moved**. Returns the number of entities processed.
+ */
+export async function assignEntitiesToBrand(
+  input: AssignEntitiesInput,
+): Promise<number> {
+  const { brandId, entityType } = input;
+  const createdBy = input.createdBy ?? null;
+  const entityIds = [...new Set(input.entityIds)];
+
+  if (entityIds.length === 0) {
+    return 0;
+  }
+
+  await prisma.$transaction(
+    entityIds.map((entityId) =>
+      prisma.brand_entity.upsert({
+        where: { entityType_entityId: { entityType, entityId } },
+        create: { brandId, entityType, entityId, createdBy },
+        update: { brandId, createdBy },
+      }),
+    ),
+  );
+
+  return entityIds.length;
+}
+
 /** Removes a single assignment by its id. No-op if it does not exist. */
 export async function unassignEntity(id: string) {
   await prisma.brand_entity.deleteMany({ where: { id } });
+}
+
+/**
+ * Removes several assignments by id in one statement. Returns how many rows
+ * were actually deleted (ids that no longer exist are silently ignored).
+ */
+export async function unassignEntities(ids: string[]): Promise<number> {
+  const uniqueIds = [...new Set(ids)];
+  if (uniqueIds.length === 0) {
+    return 0;
+  }
+
+  const result = await prisma.brand_entity.deleteMany({
+    where: { id: { in: uniqueIds } },
+  });
+
+  return result.count;
 }
 
 type ListBrandAssignmentsFilters = {
@@ -231,4 +286,134 @@ async function resolveGoogleBusinessNames(
   }
 
   return names;
+}
+
+// --- Candidate search (for the brand-assignment admin picker) ---
+
+/** Number of candidates returned by a single search; refine the query for more. */
+const CANDIDATE_SEARCH_LIMIT = 50;
+
+/**
+ * Annotates candidate entities with their current brand assignment (if any),
+ * preserving the input order. Shared by both search functions.
+ */
+async function annotateWithAssignment(
+  entityType: BrandEntityType,
+  rows: Array<{
+    entityId: string;
+    displayName: string;
+    subLabel: string | null;
+  }>,
+): Promise<EntityCandidateRow[]> {
+  const refs = await getBrandRefsByEntityIds(
+    entityType,
+    rows.map((row) => row.entityId),
+  );
+
+  return rows.map((row) => {
+    const ref = refs.get(row.entityId);
+    return {
+      entityType,
+      entityId: row.entityId,
+      displayName: row.displayName,
+      subLabel: row.subLabel,
+      assignedBrandId: ref?.brandId ?? null,
+      assignedBrandName: ref?.brandName ?? null,
+    };
+  });
+}
+
+type CompetitionCandidateQueryRow = {
+  id: number;
+  aggregator_id: number;
+  name: string | null;
+  processor_name: string | null;
+};
+
+/**
+ * Fuzzy-searches competition restaurants by name (case-insensitive substring,
+ * matching the codebase convention `positionCaseInsensitiveUTF8`). Returns up
+ * to `CANDIDATE_SEARCH_LIMIT` rows annotated with their current brand.
+ */
+export async function searchCompetitionRestaurantCandidates(
+  query: string,
+): Promise<EntityCandidateRow[]> {
+  const trimmed = query.trim();
+  if (!trimmed) {
+    return [];
+  }
+
+  const result = await clickhouse.query({
+    query: `
+      SELECT
+        r.id AS id,
+        r.aggregator_id AS aggregator_id,
+        r.name AS name,
+        coalesce(nullIf(a.display_name, ''), a.name) AS processor_name
+      FROM ${competitionTable("restaurant")} AS r FINAL
+      LEFT JOIN ${competitionTable("aggregator")} AS a FINAL ON a.id = r.aggregator_id
+      WHERE positionCaseInsensitiveUTF8(r.name, {query:String}) > 0
+      ORDER BY r.name ASC, r.id ASC
+      LIMIT {limit:UInt32}
+    `,
+    query_params: { query: trimmed, limit: CANDIDATE_SEARCH_LIMIT },
+    format: "JSONEachRow",
+  });
+
+  const rows = await result.json<CompetitionCandidateQueryRow>();
+
+  return annotateWithAssignment(
+    "competitionRestaurant",
+    rows.map((row) => ({
+      entityId: encodeCompetitionEntityId(row.aggregator_id, row.id),
+      displayName: row.name ?? "(unnamed)",
+      subLabel: row.processor_name,
+    })),
+  );
+}
+
+type GoogleBusinessCandidateQueryRow = {
+  cid: string;
+  title: string | null;
+  category: string | null;
+};
+
+/**
+ * Fuzzy-searches Google reviews businesses by title (case-insensitive
+ * substring). Returns up to `CANDIDATE_SEARCH_LIMIT` rows annotated with their
+ * current brand. cid stays a string throughout.
+ */
+export async function searchGoogleBusinessCandidates(
+  query: string,
+): Promise<EntityCandidateRow[]> {
+  const trimmed = query.trim();
+  if (!trimmed) {
+    return [];
+  }
+
+  const result = await clickhouse.query({
+    query: `
+      SELECT
+        b.cid AS cid,
+        b.title AS title,
+        b.category AS category
+      FROM ${googleReviewsTable("businesses")} AS b FINAL
+      WHERE positionCaseInsensitiveUTF8(b.title, {query:String}) > 0
+      ORDER BY b.title ASC, b.cid ASC
+      LIMIT {limit:UInt32}
+    `,
+    query_params: { query: trimmed, limit: CANDIDATE_SEARCH_LIMIT },
+    format: "JSONEachRow",
+  });
+
+  const rows = await result.json<GoogleBusinessCandidateQueryRow>();
+
+  return annotateWithAssignment(
+    "googleReviewsBusiness",
+    rows.map((row) => ({
+      entityId: row.cid,
+      displayName: row.title ?? "(untitled)",
+      subLabel: row.category,
+    })),
+  );
 }

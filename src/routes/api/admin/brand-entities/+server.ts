@@ -6,8 +6,9 @@ import {
   type BrandEntityType,
 } from "$lib/services/brand-entities";
 import {
-  assignEntityToBrand,
+  assignEntitiesToBrand,
   listBrandAssignments,
+  unassignEntities,
 } from "$lib/services/brand-entities.server";
 import { requireApiPermission } from "$lib/server/auth-guards";
 import { prisma } from "$lib/server/prisma";
@@ -16,7 +17,11 @@ import type { RequestHandler } from "./$types";
 const postBodySchema = z.object({
   brandId: z.number().int().positive(),
   entityType: z.enum(brandEntityTypes),
-  entityId: z.string().trim().min(1),
+  entityIds: z.array(z.string().trim().min(1)).min(1),
+});
+
+const deleteBodySchema = z.object({
+  ids: z.array(z.string().trim().min(1)).min(1),
 });
 
 /** GET /api/admin/brand-entities?brandId=&entityType= — list assignments. */
@@ -46,7 +51,10 @@ export const GET: RequestHandler = async (event) => {
   return json({ items });
 };
 
-/** POST /api/admin/brand-entities — assign (or move) an entity to a brand. */
+/**
+ * POST /api/admin/brand-entities — assign (or move) one or more entities of a
+ * single type to a brand. Entities already linked to another brand are moved.
+ */
 export const POST: RequestHandler = async (event) => {
   const { user } = await requireApiPermission(event, { brand: ["manage"] });
 
@@ -62,10 +70,11 @@ export const POST: RequestHandler = async (event) => {
     error(400, parsed.error.issues.map((issue) => issue.message).join("; "));
   }
 
-  const { brandId, entityType, entityId } = parsed.data;
+  const { brandId, entityType, entityIds } = parsed.data;
 
-  if (!isValidEntityId(entityType, entityId)) {
-    error(400, `Invalid entityId for entityType "${entityType}"`);
+  const invalid = entityIds.find((id) => !isValidEntityId(entityType, id));
+  if (invalid !== undefined) {
+    error(400, `Invalid entityId for entityType "${entityType}": ${invalid}`);
   }
 
   const brand = await prisma.brand.findUnique({
@@ -76,12 +85,35 @@ export const POST: RequestHandler = async (event) => {
     error(404, "Brand not found");
   }
 
-  const assignment = await assignEntityToBrand({
+  const count = await assignEntitiesToBrand({
     brandId,
     entityType,
-    entityId,
+    entityIds,
     createdBy: user.id,
   });
 
-  return json({ assignment }, { status: 201 });
+  return json({ count }, { status: 201 });
+};
+
+/**
+ * DELETE /api/admin/brand-entities — bulk-remove assignments by id. Body:
+ * `{ ids: string[] }`. (Single-id removal also lives at `[id]`.)
+ */
+export const DELETE: RequestHandler = async (event) => {
+  await requireApiPermission(event, { brand: ["manage"] });
+
+  let raw: unknown;
+  try {
+    raw = await event.request.json();
+  } catch {
+    error(400, "Expected JSON body");
+  }
+
+  const parsed = deleteBodySchema.safeParse(raw);
+  if (!parsed.success) {
+    error(400, parsed.error.issues.map((issue) => issue.message).join("; "));
+  }
+
+  const count = await unassignEntities(parsed.data.ids);
+  return json({ count });
 };
