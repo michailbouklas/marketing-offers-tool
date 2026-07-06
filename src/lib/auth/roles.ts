@@ -59,6 +59,20 @@ export const googleReviewsRoles: UserRole[] = [
   superUserRole,
 ];
 
+/**
+ * Roles that may access the `/aggregator-kpis` section (aggregator merchant
+ * performance KPIs sourced from the merchant-scrapes Postgres database).
+ * Unlike the other analytics sections, `admin` is included explicitly — the
+ * marker admin role is granted the matching `aggregatorKpis: ["view"]`
+ * permission in `permissions.ts`. `superUser` is the admin-equivalent that
+ * holds every resource permission.
+ */
+export const aggregatorKpisRoles: UserRole[] = [
+  "analyticsViewer",
+  adminUserRole,
+  superUserRole,
+];
+
 export const roleLabels: Record<UserRole, string> = {
   user: "User",
   admin: "Admin",

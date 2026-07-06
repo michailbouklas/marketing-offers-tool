@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  aggregatorKpisRoles,
   canAccessAdminSection,
   competitionRoles,
   googleReviewsRoles,
@@ -119,5 +120,17 @@ describe("googleReviewsRoles", () => {
     expect(hasAnyRole("admin", googleReviewsRoles)).toBe(false);
     expect(hasAnyRole("user", googleReviewsRoles)).toBe(false);
     expect(hasAnyRole(null, googleReviewsRoles)).toBe(false);
+  });
+});
+
+describe("aggregatorKpisRoles", () => {
+  it("grants the aggregator-kpis section to analyticsViewer, admin, and superUser", () => {
+    expect(hasAnyRole("analyticsViewer", aggregatorKpisRoles)).toBe(true);
+    expect(hasAnyRole("admin", aggregatorKpisRoles)).toBe(true);
+    expect(hasAnyRole("superUser", aggregatorKpisRoles)).toBe(true);
+    expect(hasAnyRole("user,analyticsViewer", aggregatorKpisRoles)).toBe(true);
+    expect(hasAnyRole("user", aggregatorKpisRoles)).toBe(false);
+    expect(hasAnyRole("offerEditor", aggregatorKpisRoles)).toBe(false);
+    expect(hasAnyRole(null, aggregatorKpisRoles)).toBe(false);
   });
 });

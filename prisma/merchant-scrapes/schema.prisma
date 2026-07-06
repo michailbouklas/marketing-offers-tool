@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/generated/merchant-scrapes-prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Aggregator {
+  FOODY
+  WOLT
+}
+
+enum SectionStatus {
+  OK
+  PARTIAL
+  FAILED
+  SKIPPED
+}
+
+model Store {
+  id         Int        @id @default(autoincrement())
+  aggregator Aggregator
+  externalId String
+  slug       String?
+  name       String?
+  url        String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  snapshots ScrapeSnapshot[]
+  reviews   Review[]
+
+  @@unique([aggregator, externalId])
+  @@index([aggregator, name])
+}
+
+model ScrapeSnapshot {
+  id          Int       @id @default(autoincrement())
+  storeId     Int
+  store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  scrapedAt   DateTime
+  runId       String?
+  periodStart DateTime? @db.Date
+  periodEnd   DateTime? @db.Date
+  sourceFile  String?
+  raw         Json
+  createdAt   DateTime  @default(now())
+
+  sections    SectionResult[]
+  metrics     MetricsSnapshot?
+  rating      RatingSnapshot?
+  closures    ClosuresSnapshot?
+  punctuality PunctualitySnapshot?
+  rejections  OrderRejectionsSnapshot?
+
+  @@unique([storeId, scrapedAt])
+  @@index([scrapedAt])
+}
+
+model SectionResult {
+  id            Int            @id @default(autoincrement())
+  snapshotId    Int
+  snapshot      ScrapeSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  key           String
+  status        SectionStatus
+  error         String?
+  missingFields String[]
+  durationMs    Int?
+
+  @@unique([snapshotId, key])
+  @@index([status])
+}
+
+model MetricsSnapshot {
+  id         Int            @id @default(autoincrement())
+  snapshotId Int            @unique
+  snapshot   ScrapeSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  status     SectionStatus
+
+  sales         Decimal? @db.Decimal(12, 2)
+  orders        Int?
+  avgBasketSize Decimal? @db.Decimal(10, 2)
+
+  avgBasketItems  Decimal? @db.Decimal(8, 2)
+  completedOrders Int?
+
+  salesDeltaPct          Decimal? @db.Decimal(8, 2)
+  ordersDeltaPct         Decimal? @db.Decimal(8, 2)
+  avgBasketSizeDeltaPct  Decimal? @db.Decimal(8, 2)
+  avgBasketItemsDeltaPct Decimal? @db.Decimal(8, 2)
+  comparisonWindow       String?
+}
+
+model RatingSnapshot {
+  id           Int            @id @default(autoincrement())
+  snapshotId   Int            @unique
+  snapshot     ScrapeSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  status       SectionStatus
+  storeRating  Decimal?       @db.Decimal(4, 2)
+  totalReviews Int?
+
+  buckets RatingStarBucket[]
+}
+
+model RatingStarBucket {
+  id               Int            @id @default(autoincrement())
+  ratingSnapshotId Int
+  ratingSnapshot   RatingSnapshot @relation(fields: [ratingSnapshotId], references: [id], onDelete: Cascade)
+  stars            Int
+  count            Int?
+  percent          Decimal?       @db.Decimal(6, 2)
+
+  @@unique([ratingSnapshotId, stars])
+}
+
+model ClosuresSnapshot {
+  id                  Int            @id @default(autoincrement())
+  snapshotId          Int            @unique
+  snapshot            ScrapeSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  status              SectionStatus
+  offlineOpenHoursPct Decimal?       @db.Decimal(6, 2)
+  unreachableSeconds  Int?
+  unreachableRaw      String?
+}
+
+model PunctualitySnapshot {
+  id                      Int            @id @default(autoincrement())
+  snapshotId              Int            @unique
+  snapshot                ScrapeSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  status                  SectionStatus
+  avoidableWaitOrdersPct  Decimal?       @db.Decimal(6, 2)
+  deliveredOrders         Int?
+  totalOrders             Int?
+  avgAvoidableWaitSeconds Int?
+  avgAvoidableWaitRaw     String?
+}
+
+model OrderRejectionsSnapshot {
+  id                 Int            @id @default(autoincrement())
+  snapshotId         Int            @unique
+  snapshot           ScrapeSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  status             SectionStatus
+  cancellationsPct   Decimal?       @db.Decimal(6, 2)
+  lostSales          Decimal?       @db.Decimal(12, 2)
+  reasonUnknownCount Int?
+}
+
+model Review {
+  id              Int       @id @default(autoincrement())
+  storeId         Int
+  store           Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  externalOrderId BigInt?
+  dedupeKey       String
+  rating          Int
+  comment         String
+  reviewedAt      DateTime?
+  reviewedAtRaw   String?
+  firstSeenAt     DateTime  @default(now())
+  lastSeenAt      DateTime
+
+  @@unique([storeId, dedupeKey])
+  @@index([storeId, rating])
+  @@index([reviewedAt])
+}

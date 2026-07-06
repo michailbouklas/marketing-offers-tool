@@ -21,6 +21,7 @@ export const statement = {
   promptGallery: ["manage"],
   competition: ["view"],
   googleReviews: ["view"],
+  aggregatorKpis: ["view"],
   notifications: ["run"],
   urlsToScrape: ["manage"],
 } as const;
@@ -68,6 +69,7 @@ export const roles = {
     submission: [],
     brand: ["manage"],
     urlsToScrape: ["manage"],
+    aggregatorKpis: ["view"],
   }),
   approver: ac.newRole({
     submission: ["approve", "reject"],
@@ -95,6 +97,7 @@ export const roles = {
   analyticsViewer: ac.newRole({
     competition: ["view"],
     googleReviews: ["view"],
+    aggregatorKpis: ["view"],
   }),
   superUser: ac.newRole({
     ...adminAc.statements,
@@ -107,6 +110,7 @@ export const roles = {
     promptGallery: ["manage"],
     competition: ["view"],
     googleReviews: ["view"],
+    aggregatorKpis: ["view"],
     notifications: ["run"],
     urlsToScrape: ["manage"],
   }),

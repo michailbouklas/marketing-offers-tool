@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import {
+    aggregatorKpisRoles,
     canAccessAdminSection,
     competitionRoles,
     googleReviewsRoles,
@@ -18,6 +19,7 @@
   import ShieldIcon from "@lucide/svelte/icons/shield";
   import TrendingUpIcon from "@lucide/svelte/icons/trending-up";
   import StarIcon from "@lucide/svelte/icons/star";
+  import GaugeIcon from "@lucide/svelte/icons/gauge";
   import type { Component } from "svelte";
 
   // `roles` lists the role(s) that may see the item. Omit it for items visible
@@ -123,6 +125,23 @@
           href: "/google-reviews/negative-reviews-categories",
           label: "Negative review categories",
         },
+      ],
+    },
+    {
+      href: "/aggregator-kpis",
+      label: "Aggregator KPIs",
+      icon: GaugeIcon,
+      roles: aggregatorKpisRoles,
+      children: [
+        { href: "/aggregator-kpis", label: "Overview" },
+        { href: "/aggregator-kpis/closures", label: "Closures" },
+        {
+          href: "/aggregator-kpis/order-rejections",
+          label: "Order Rejections",
+        },
+        { href: "/aggregator-kpis/punctuality", label: "Punctuality" },
+        { href: "/aggregator-kpis/ratings", label: "Ratings" },
+        { href: "/aggregator-kpis/reviews", label: "Reviews" },
       ],
     },
   ];

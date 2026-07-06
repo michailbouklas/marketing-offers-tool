@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "prisma:merchant-scrapes:generate": "prisma generate --config=prisma/merchant-scrapes/prisma.config.ts",
+    "prisma:merchant-scrapes:validate": "prisma validate --config=prisma/merchant-scrapes/prisma.config.ts",
     "svelte-autofixer": "prettier --write .",
     "test": "vitest run",
     "digest": "vite-node --config vite.config.script.ts scripts/run-digest.ts --"
