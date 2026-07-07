@@ -194,7 +194,7 @@ export type Notification_cursorGroupByOutputType = {
   _max: Notification_cursorMaxAggregateOutputType | null;
 };
 
-type GetNotification_cursorGroupByPayload<
+export type GetNotification_cursorGroupByPayload<
   T extends notification_cursorGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1251,6 +1251,11 @@ export type notification_cursorFindManyArgs<
    * Skip the first `n` notification_cursors.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of notification_cursors.
+   */
   distinct?:
     | Prisma.Notification_cursorScalarFieldEnum
     | Prisma.Notification_cursorScalarFieldEnum[];

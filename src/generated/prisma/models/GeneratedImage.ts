@@ -358,19 +358,19 @@ export type GeneratedImageGroupByOutputType = {
   _max: GeneratedImageMaxAggregateOutputType | null;
 };
 
-type GetGeneratedImageGroupByPayload<T extends GeneratedImageGroupByArgs> =
-  Prisma.PrismaPromise<
-    Array<
-      Prisma.PickEnumerable<GeneratedImageGroupByOutputType, T["by"]> & {
-        [P in keyof T &
-          keyof GeneratedImageGroupByOutputType]: P extends "_count"
-          ? T[P] extends boolean
-            ? number
-            : Prisma.GetScalarType<T[P], GeneratedImageGroupByOutputType[P]>
-          : Prisma.GetScalarType<T[P], GeneratedImageGroupByOutputType[P]>;
-      }
-    >
-  >;
+export type GetGeneratedImageGroupByPayload<
+  T extends GeneratedImageGroupByArgs,
+> = Prisma.PrismaPromise<
+  Array<
+    Prisma.PickEnumerable<GeneratedImageGroupByOutputType, T["by"]> & {
+      [P in keyof T & keyof GeneratedImageGroupByOutputType]: P extends "_count"
+        ? T[P] extends boolean
+          ? number
+          : Prisma.GetScalarType<T[P], GeneratedImageGroupByOutputType[P]>
+        : Prisma.GetScalarType<T[P], GeneratedImageGroupByOutputType[P]>;
+    }
+  >
+>;
 
 export type GeneratedImageWhereInput = {
   AND?: Prisma.GeneratedImageWhereInput | Prisma.GeneratedImageWhereInput[];
@@ -3056,6 +3056,11 @@ export type GeneratedImageFindManyArgs<
    * Skip the first `n` GeneratedImages.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of GeneratedImages.
+   */
   distinct?:
     | Prisma.GeneratedImageScalarFieldEnum
     | Prisma.GeneratedImageScalarFieldEnum[];

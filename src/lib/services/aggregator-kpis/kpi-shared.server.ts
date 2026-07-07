@@ -7,6 +7,7 @@ import {
   aggregators,
   type AggregatorValue,
   type KpiFilters,
+  type KpiStoreDetail,
   type StoreRef,
   type TimeseriesPoint,
 } from "$lib/services/aggregator-kpis/aggregator-kpis";
@@ -150,6 +151,40 @@ export function parseKpiFilters(searchParams: URLSearchParams): KpiFilters {
     storeId: data.storeId ?? null,
     from: data.from ?? null,
     to: data.to ?? null,
+  };
+}
+
+/** Full detail for one store, or null when it doesn't exist. */
+export async function getKpiStore(
+  storeId: number,
+): Promise<KpiStoreDetail | null> {
+  const store = await merchantScrapesPrisma.store.findUnique({
+    where: { id: storeId },
+    select: {
+      id: true,
+      name: true,
+      aggregator: true,
+      externalId: true,
+      slug: true,
+      url: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!store) {
+    return null;
+  }
+
+  return {
+    id: store.id,
+    name: store.name,
+    aggregator: store.aggregator as AggregatorValue,
+    externalId: store.externalId,
+    slug: store.slug,
+    url: store.url,
+    createdAt: store.createdAt.toISOString(),
+    updatedAt: store.updatedAt.toISOString(),
   };
 }
 

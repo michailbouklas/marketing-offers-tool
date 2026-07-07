@@ -12,12 +12,23 @@ import { storeWhere } from "$lib/services/aggregator-kpis/kpi-shared.server";
 export type ReviewsQuery = KpiFilters & {
   page: number;
   pageSize: number;
-  /** Exact star rating filter (1–5); null for all. */
+  /** Exact star rating filter (1-5); null for all. */
   rating: number | null;
   /** Free-text search over the review comment. */
   query: string | null;
   sortBy: ReviewSortField;
   sortDir: KpiSortDirection;
+};
+
+export type ReviewStoreDetail = {
+  id: number;
+  name: string | null;
+  aggregator: AggregatorValue;
+  externalId: string;
+  slug: string | null;
+  url: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 /** `where.reviewedAt` fragment for the filter's inclusive date range. */
@@ -50,6 +61,70 @@ function orderByFor(sortBy: ReviewSortField, sortDir: KpiSortDirection) {
   return [{ reviewedAt: { sort: sortDir, nulls: "last" as const } }];
 }
 
+type ReviewQueryRow = {
+  id: number;
+  storeId: number;
+  externalOrderId: bigint | null;
+  dedupeKey: string;
+  rating: number;
+  comment: string;
+  reviewedAt: Date | null;
+  reviewedAtRaw: string | null;
+  firstSeenAt: Date;
+  lastSeenAt: Date;
+  store: { name: string | null; aggregator: string };
+};
+
+function mapReviewRow(row: ReviewQueryRow): ReviewRow {
+  return {
+    id: row.id,
+    storeId: row.storeId,
+    storeName: row.store.name,
+    aggregator: row.store.aggregator as AggregatorValue,
+    externalOrderId: row.externalOrderId?.toString() ?? null,
+    dedupeKey: row.dedupeKey,
+    rating: row.rating,
+    comment: row.comment,
+    reviewedAt: row.reviewedAt ? row.reviewedAt.toISOString() : null,
+    reviewedAtRaw: row.reviewedAtRaw,
+    firstSeenAt: row.firstSeenAt.toISOString(),
+    lastSeenAt: row.lastSeenAt.toISOString(),
+  };
+}
+
+export async function getReviewStore(
+  storeId: number,
+): Promise<ReviewStoreDetail | null> {
+  const store = await merchantScrapesPrisma.store.findUnique({
+    where: { id: storeId },
+    select: {
+      id: true,
+      name: true,
+      aggregator: true,
+      externalId: true,
+      slug: true,
+      url: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!store) {
+    return null;
+  }
+
+  return {
+    id: store.id,
+    name: store.name,
+    aggregator: store.aggregator as AggregatorValue,
+    externalId: store.externalId,
+    slug: store.slug,
+    url: store.url,
+    createdAt: store.createdAt.toISOString(),
+    updatedAt: store.updatedAt.toISOString(),
+  };
+}
+
 /** Paginated list of individual reviews, filtered by store/rating/date/text. */
 export async function listReviews(
   params: ReviewsQuery,
@@ -76,26 +151,21 @@ export async function listReviews(
       select: {
         id: true,
         storeId: true,
+        externalOrderId: true,
+        dedupeKey: true,
         rating: true,
         comment: true,
         reviewedAt: true,
+        reviewedAtRaw: true,
+        firstSeenAt: true,
+        lastSeenAt: true,
         store: { select: { name: true, aggregator: true } },
       },
     }),
   ]);
 
-  const items: ReviewRow[] = rows.map((row) => ({
-    id: row.id,
-    storeId: row.storeId,
-    storeName: row.store.name,
-    aggregator: row.store.aggregator as AggregatorValue,
-    rating: row.rating,
-    comment: row.comment,
-    reviewedAt: row.reviewedAt ? row.reviewedAt.toISOString() : null,
-  }));
-
   return {
-    items,
+    items: rows.map(mapReviewRow),
     page,
     pageSize,
     totalItems,

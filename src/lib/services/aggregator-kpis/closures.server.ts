@@ -2,6 +2,7 @@ import { merchantScrapesPrisma } from "$lib/server/merchant-scrapes-prisma";
 import type {
   AggregatorValue,
   ClosureRow,
+  ClosuresStoreView,
   ClosuresView,
   KpiFilters,
   TimeseriesPoint,
@@ -82,6 +83,42 @@ export async function getClosuresTrend(
       value: toNumber(row.offlineOpenHoursPct),
     })),
   );
+}
+
+/**
+ * Full closures history for one store (every captured snapshot, newest first)
+ * plus a daily-average offline-open-hours trend derived from that same history.
+ * Querying `closuresSnapshot` directly means only snapshots that actually have
+ * closures data are returned — a missing snapshot is "no data", never a real 0.
+ */
+export async function getClosuresStoreView(
+  storeId: number,
+): Promise<ClosuresStoreView> {
+  const rows = await merchantScrapesPrisma.closuresSnapshot.findMany({
+    where: { snapshot: { store: { id: storeId } } },
+    select: {
+      offlineOpenHoursPct: true,
+      unreachableSeconds: true,
+      snapshot: { select: { scrapedAt: true, runId: true } },
+    },
+    orderBy: { snapshot: { scrapedAt: "desc" } },
+  });
+
+  const points = rows.map((row) => ({
+    scrapedAt: row.snapshot.scrapedAt.toISOString(),
+    offlineOpenHoursPct: toNumber(row.offlineOpenHoursPct),
+    unreachableSeconds: toNumber(row.unreachableSeconds),
+    runId: row.snapshot.runId,
+  }));
+
+  const trend = averageByDay(
+    rows.map((row) => ({
+      scrapedAt: row.snapshot.scrapedAt,
+      value: toNumber(row.offlineOpenHoursPct),
+    })),
+  );
+
+  return { points, trend };
 }
 
 export async function getClosuresView(

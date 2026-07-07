@@ -87,6 +87,6 @@
       data={trend}
     />
 
-    <ClosuresTable data={rows} />
+    <ClosuresTable data={rows} linkStores />
   </main>
 </div>

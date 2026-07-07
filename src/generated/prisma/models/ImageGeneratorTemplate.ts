@@ -187,7 +187,7 @@ export type ImageGeneratorTemplateGroupByOutputType = {
   _max: ImageGeneratorTemplateMaxAggregateOutputType | null;
 };
 
-type GetImageGeneratorTemplateGroupByPayload<
+export type GetImageGeneratorTemplateGroupByPayload<
   T extends ImageGeneratorTemplateGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1836,6 +1836,11 @@ export type ImageGeneratorTemplateFindManyArgs<
    * Skip the first `n` ImageGeneratorTemplates.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of ImageGeneratorTemplates.
+   */
   distinct?:
     | Prisma.ImageGeneratorTemplateScalarFieldEnum
     | Prisma.ImageGeneratorTemplateScalarFieldEnum[];

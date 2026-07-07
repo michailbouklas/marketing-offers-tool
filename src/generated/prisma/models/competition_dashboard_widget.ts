@@ -214,7 +214,7 @@ export type Competition_dashboard_widgetGroupByOutputType = {
   _max: Competition_dashboard_widgetMaxAggregateOutputType | null;
 };
 
-type GetCompetition_dashboard_widgetGroupByPayload<
+export type GetCompetition_dashboard_widgetGroupByPayload<
   T extends competition_dashboard_widgetGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1712,6 +1712,11 @@ export type competition_dashboard_widgetFindManyArgs<
    * Skip the first `n` competition_dashboard_widgets.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of competition_dashboard_widgets.
+   */
   distinct?:
     | Prisma.Competition_dashboard_widgetScalarFieldEnum
     | Prisma.Competition_dashboard_widgetScalarFieldEnum[];

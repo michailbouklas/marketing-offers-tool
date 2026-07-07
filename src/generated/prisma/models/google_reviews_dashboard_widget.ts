@@ -214,7 +214,7 @@ export type Google_reviews_dashboard_widgetGroupByOutputType = {
   _max: Google_reviews_dashboard_widgetMaxAggregateOutputType | null;
 };
 
-type GetGoogle_reviews_dashboard_widgetGroupByPayload<
+export type GetGoogle_reviews_dashboard_widgetGroupByPayload<
   T extends google_reviews_dashboard_widgetGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1718,6 +1718,11 @@ export type google_reviews_dashboard_widgetFindManyArgs<
    * Skip the first `n` google_reviews_dashboard_widgets.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of google_reviews_dashboard_widgets.
+   */
   distinct?:
     | Prisma.Google_reviews_dashboard_widgetScalarFieldEnum
     | Prisma.Google_reviews_dashboard_widgetScalarFieldEnum[];

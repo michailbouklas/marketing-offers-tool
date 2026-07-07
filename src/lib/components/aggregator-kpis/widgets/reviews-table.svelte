@@ -11,8 +11,10 @@
 
   let {
     data,
+    linkStores = false,
   }: {
     data: ReviewRow[];
+    linkStores?: boolean;
   } = $props();
 
   let reviewDialogOpen = $state(false);
@@ -21,6 +23,19 @@
   function openReview(review: ReviewRow) {
     selectedReview = review;
     reviewDialogOpen = true;
+  }
+
+  function handleRowKeydown(event: KeyboardEvent, review: ReviewRow) {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    openReview(review);
+  }
+
+  function stopRowClick(event: MouseEvent) {
+    event.stopPropagation();
   }
 </script>
 
@@ -47,12 +62,28 @@
         </Table.Row>
       {:else}
         {#each data as row (row.id)}
-          <Table.Row>
+          <Table.Row
+            class="hover:bg-muted/50 cursor-pointer"
+            role="button"
+            tabindex={0}
+            onclick={() => openReview(row)}
+            onkeydown={(event) => handleRowKeydown(event, row)}
+          >
             <Table.Cell class="text-muted-foreground whitespace-nowrap">
               {formatKpiDateTime(row.reviewedAt)}
             </Table.Cell>
             <Table.Cell class="max-w-48 truncate font-medium">
-              {row.storeName ?? `Store #${row.storeId}`}
+              {#if linkStores}
+                <a
+                  href={`/aggregator-kpis/reviews/${row.storeId}`}
+                  class="hover:text-primary hover:underline"
+                  onclick={stopRowClick}
+                >
+                  {row.storeName ?? `Store #${row.storeId}`}
+                </a>
+              {:else}
+                {row.storeName ?? `Store #${row.storeId}`}
+              {/if}
             </Table.Cell>
             <Table.Cell>{aggregatorLabel(row.aggregator)}</Table.Cell>
             <Table.Cell>
@@ -62,18 +93,11 @@
               </span>
             </Table.Cell>
             <Table.Cell class="max-w-md">
-              <button
-                type="button"
-                class="hover:text-foreground block w-full cursor-pointer text-left"
-                onclick={() => openReview(row)}
-                title="Read full review"
+              <span
+                class="text-muted-foreground line-clamp-2 text-sm whitespace-normal"
               >
-                <span
-                  class="text-muted-foreground line-clamp-2 text-sm whitespace-normal"
-                >
-                  {row.comment || "—"}
-                </span>
-              </button>
+                {row.comment || "-"}
+              </span>
             </Table.Cell>
           </Table.Row>
         {/each}
@@ -98,11 +122,17 @@
         </Dialog.Description>
       </Dialog.Header>
 
-      <dl class="grid grid-cols-[8rem_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
+      <dl class="grid grid-cols-[9rem_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
+        <dt class="text-muted-foreground">Review id</dt>
+        <dd class="font-mono text-xs">{selectedReview.id}</dd>
+
         <dt class="text-muted-foreground">Store</dt>
         <dd>
           {selectedReview.storeName ?? `Store #${selectedReview.storeId}`}
         </dd>
+
+        <dt class="text-muted-foreground">Store id</dt>
+        <dd class="font-mono text-xs">{selectedReview.storeId}</dd>
 
         <dt class="text-muted-foreground">Platform</dt>
         <dd>
@@ -114,8 +144,25 @@
         <dt class="text-muted-foreground">Rating</dt>
         <dd class="tabular-nums">{selectedReview.rating} / 5</dd>
 
-        <dt class="text-muted-foreground">Date</dt>
+        <dt class="text-muted-foreground">Review date</dt>
         <dd>{formatKpiDateTime(selectedReview.reviewedAt)}</dd>
+
+        <dt class="text-muted-foreground">Raw date</dt>
+        <dd>{selectedReview.reviewedAtRaw ?? "-"}</dd>
+
+        <dt class="text-muted-foreground">External order</dt>
+        <dd class="font-mono text-xs break-all">
+          {selectedReview.externalOrderId ?? "-"}
+        </dd>
+
+        <dt class="text-muted-foreground">Dedupe key</dt>
+        <dd class="font-mono text-xs break-all">{selectedReview.dedupeKey}</dd>
+
+        <dt class="text-muted-foreground">First seen</dt>
+        <dd>{formatKpiDateTime(selectedReview.firstSeenAt)}</dd>
+
+        <dt class="text-muted-foreground">Last seen</dt>
+        <dd>{formatKpiDateTime(selectedReview.lastSeenAt)}</dd>
       </dl>
 
       <div class="space-y-2">

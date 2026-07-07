@@ -12,6 +12,7 @@ enum Aggregator {
   WOLT
 }
 
+/// Mirrors SectionStatus in src/foody/types.ts ("ok"|"partial"|"failed"|"skipped").
 enum SectionStatus {
   OK
   PARTIAL
@@ -19,11 +20,14 @@ enum SectionStatus {
   SKIPPED
 }
 
+/// One merchant store on one aggregator. Identity = (aggregator, externalId):
+///   FOODY: full vendor id "FY_CY;493"
+///   WOLT:  venue slug from the merchant URL, e.g. "pizza-hut-strovolos"
 model Store {
   id         Int        @id @default(autoincrement())
   aggregator Aggregator
   externalId String
-  slug       String?
+  slug       String? // result-file slug, e.g. "kfc-dali-493"
   name       String?
   url        String?
   createdAt  DateTime   @default(now())
@@ -36,6 +40,9 @@ model Store {
   @@index([aggregator, name])
 }
 
+/// One scrape of one store at one point in time. Foody: periodStart/End null
+/// (live "current" snapshot). Wolt: periodStart/End from the requested
+/// "YYYY-MM-DD--YYYY-MM-DD" range.
 model ScrapeSnapshot {
   id          Int       @id @default(autoincrement())
   storeId     Int
@@ -44,8 +51,8 @@ model ScrapeSnapshot {
   runId       String?
   periodStart DateTime? @db.Date
   periodEnd   DateTime? @db.Date
-  sourceFile  String?
-  raw         Json
+  sourceFile  String? // provenance, e.g. "data/foody-results/kfc-dali-493.json"
+  raw         Json // entire source payload, verbatim
   createdAt   DateTime  @default(now())
 
   sections    SectionResult[]
@@ -57,8 +64,12 @@ model ScrapeSnapshot {
 
   @@unique([storeId, scrapedAt])
   @@index([scrapedAt])
+  @@index([runId])
 }
 
+/// Per-section outcome bookkeeping. `key` is a free string ("metrics",
+/// "rating", "reviews", "operations", future Wolt keys) — intentionally not
+/// an enum so a new section never needs a migration.
 model SectionResult {
   id            Int            @id @default(autoincrement())
   snapshotId    Int
@@ -73,6 +84,8 @@ model SectionResult {
   @@index([status])
 }
 
+/// Sales/order headline metrics (Foody "metrics" section; Wolt home + insights
+/// KPIs). Delta* columns and comparisonWindow are Wolt-only for now.
 model MetricsSnapshot {
   id         Int            @id @default(autoincrement())
   snapshotId Int            @unique
@@ -90,9 +103,12 @@ model MetricsSnapshot {
   ordersDeltaPct         Decimal? @db.Decimal(8, 2)
   avgBasketSizeDeltaPct  Decimal? @db.Decimal(8, 2)
   avgBasketItemsDeltaPct Decimal? @db.Decimal(8, 2)
-  comparisonWindow       String?
+  comparisonWindow       String? // e.g. "8w, 4d"
 }
 
+/// Store-rating snapshot. The star distribution is a child row table (not
+/// 5+5 columns) so a different scale needs no migration and missing buckets
+/// are absent rows rather than ambiguous nulls.
 model RatingSnapshot {
   id           Int            @id @default(autoincrement())
   snapshotId   Int            @unique
@@ -115,16 +131,18 @@ model RatingStarBucket {
   @@unique([ratingSnapshotId, stars])
 }
 
+/// KPI: Closures. From Foody's operations tab; carries that section's status.
 model ClosuresSnapshot {
   id                  Int            @id @default(autoincrement())
   snapshotId          Int            @unique
   snapshot            ScrapeSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
   status              SectionStatus
   offlineOpenHoursPct Decimal?       @db.Decimal(6, 2)
-  unreachableSeconds  Int?
-  unreachableRaw      String?
+  unreachableSeconds  Int? // "20m" -> 1200
+  unreachableRaw      String? // original display string
 }
 
+/// KPI: Punctuality. From Foody's operations tab.
 model PunctualitySnapshot {
   id                      Int            @id @default(autoincrement())
   snapshotId              Int            @unique
@@ -133,10 +151,11 @@ model PunctualitySnapshot {
   avoidableWaitOrdersPct  Decimal?       @db.Decimal(6, 2)
   deliveredOrders         Int?
   totalOrders             Int?
-  avgAvoidableWaitSeconds Int?
-  avgAvoidableWaitRaw     String?
+  avgAvoidableWaitSeconds Int? // "5:17" -> 317
+  avgAvoidableWaitRaw     String? // "5:17"
 }
 
+/// KPI: Order rejections. From Foody's operations tab.
 model OrderRejectionsSnapshot {
   id                 Int            @id @default(autoincrement())
   snapshotId         Int            @unique
@@ -147,6 +166,11 @@ model OrderRejectionsSnapshot {
   reasonUnknownCount Int?
 }
 
+/// KPI: Reviews. A durable entity (NOT a snapshot): a review exists once per
+/// store and is upserted across runs. `dedupeKey` is always non-null:
+///   with an order id: "o:<orderId>"
+///   without:          "h:" + sha256(rating|rawDate|comment)
+/// which sidesteps Postgres treating NULLs as distinct in unique indexes.
 model Review {
   id              Int       @id @default(autoincrement())
   storeId         Int
@@ -155,7 +179,7 @@ model Review {
   dedupeKey       String
   rating          Int
   comment         String
-  reviewedAt      DateTime?
+  reviewedAt      DateTime? // parsed from "06/28/2026 • 03:07 PM" (portal wall time, stored as UTC face value)
   reviewedAtRaw   String?
   firstSeenAt     DateTime  @default(now())
   lastSeenAt      DateTime

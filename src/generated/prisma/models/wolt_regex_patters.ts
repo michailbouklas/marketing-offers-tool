@@ -197,7 +197,7 @@ export type Wolt_regex_pattersGroupByOutputType = {
   _max: Wolt_regex_pattersMaxAggregateOutputType | null;
 };
 
-type GetWolt_regex_pattersGroupByPayload<
+export type GetWolt_regex_pattersGroupByPayload<
   T extends wolt_regex_pattersGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1238,6 +1238,11 @@ export type wolt_regex_pattersFindManyArgs<
    * Skip the first `n` wolt_regex_patters.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of wolt_regex_patters.
+   */
   distinct?:
     | Prisma.Wolt_regex_pattersScalarFieldEnum
     | Prisma.Wolt_regex_pattersScalarFieldEnum[];

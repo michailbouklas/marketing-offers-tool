@@ -88,6 +88,6 @@
       data={trend}
     />
 
-    <OrderRejectionsTable data={rows} />
+    <OrderRejectionsTable data={rows} linkStores />
   </main>
 </div>

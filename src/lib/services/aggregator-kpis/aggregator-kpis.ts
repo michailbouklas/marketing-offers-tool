@@ -66,10 +66,43 @@ export type ClosureRow = StoreKpiBase & {
   unreachableSeconds: number | null;
 };
 
+/** One historical closures snapshot for a single store. */
+export type ClosureHistoryPoint = {
+  /** When the snapshot was captured (UTC ISO). */
+  scrapedAt: string;
+  offlineOpenHoursPct: number | null;
+  unreachableSeconds: number | null;
+  /** Scraper run id; null for legacy pre-2026-07-06 rows. */
+  runId: string | null;
+};
+
+/** Full store-detail record, shared across per-store KPI detail pages. */
+export type KpiStoreDetail = {
+  id: number;
+  name: string | null;
+  aggregator: AggregatorValue;
+  externalId: string;
+  slug: string | null;
+  url: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type RejectionRow = StoreKpiBase & {
   cancellationsPct: number | null;
   lostSales: number | null;
   reasonUnknownCount: number | null;
+};
+
+/** One historical order-rejections snapshot for a single store. */
+export type RejectionHistoryPoint = {
+  /** When the snapshot was captured (UTC ISO). */
+  scrapedAt: string;
+  cancellationsPct: number | null;
+  lostSales: number | null;
+  reasonUnknownCount: number | null;
+  /** Scraper run id; null for legacy pre-2026-07-06 rows. */
+  runId: string | null;
 };
 
 export type PunctualityRow = StoreKpiBase & {
@@ -79,9 +112,31 @@ export type PunctualityRow = StoreKpiBase & {
   totalOrders: number | null;
 };
 
+/** One historical punctuality snapshot for a single store. */
+export type PunctualityHistoryPoint = {
+  /** When the snapshot was captured (UTC ISO). */
+  scrapedAt: string;
+  avoidableWaitOrdersPct: number | null;
+  avgAvoidableWaitSeconds: number | null;
+  deliveredOrders: number | null;
+  totalOrders: number | null;
+  /** Scraper run id; null for legacy pre-2026-07-06 rows. */
+  runId: string | null;
+};
+
 export type RatingRow = StoreKpiBase & {
   storeRating: number | null;
   totalReviews: number | null;
+};
+
+/** One historical rating snapshot for a single store. */
+export type RatingHistoryPoint = {
+  /** When the snapshot was captured (UTC ISO). */
+  scrapedAt: string;
+  storeRating: number | null;
+  totalReviews: number | null;
+  /** Scraper run id; null for legacy pre-2026-07-06 rows. */
+  runId: string | null;
 };
 
 export type StarBucket = {
@@ -94,9 +149,14 @@ export type ReviewRow = {
   storeId: number;
   storeName: string | null;
   aggregator: AggregatorValue;
+  externalOrderId: string | null;
+  dedupeKey: string;
   rating: number;
   comment: string;
   reviewedAt: string | null;
+  reviewedAtRaw: string | null;
+  firstSeenAt: string;
+  lastSeenAt: string;
 };
 
 // --- Per-KPI view payloads ---
@@ -106,8 +166,20 @@ export type ClosuresView = {
   trend: TimeseriesPoint[];
 };
 
+/** Per-store closures detail payload: full history + trend derived from it. */
+export type ClosuresStoreView = {
+  points: ClosureHistoryPoint[];
+  trend: TimeseriesPoint[];
+};
+
 export type RejectionsView = {
   rows: RejectionRow[];
+  trend: TimeseriesPoint[];
+};
+
+/** Per-store order-rejections detail payload: full history + trend from it. */
+export type RejectionsStoreView = {
+  points: RejectionHistoryPoint[];
   trend: TimeseriesPoint[];
 };
 
@@ -116,8 +188,24 @@ export type PunctualityView = {
   trend: TimeseriesPoint[];
 };
 
+/** Per-store punctuality detail payload: full history + trend from it. */
+export type PunctualityStoreView = {
+  points: PunctualityHistoryPoint[];
+  trend: TimeseriesPoint[];
+};
+
 export type RatingsView = {
   rows: RatingRow[];
+  trend: TimeseriesPoint[];
+  distribution: StarBucket[];
+};
+
+/**
+ * Per-store ratings detail payload: full history, a rating trend derived from
+ * it, and the star distribution of the store's latest rating snapshot.
+ */
+export type RatingsStoreView = {
+  points: RatingHistoryPoint[];
   trend: TimeseriesPoint[];
   distribution: StarBucket[];
 };

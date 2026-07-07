@@ -232,7 +232,7 @@ export type Dq_missing_offers_pricingGroupByOutputType = {
   _max: Dq_missing_offers_pricingMaxAggregateOutputType | null;
 };
 
-type GetDq_missing_offers_pricingGroupByPayload<
+export type GetDq_missing_offers_pricingGroupByPayload<
   T extends dq_missing_offers_pricingGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1902,6 +1902,11 @@ export type dq_missing_offers_pricingFindManyArgs<
    * Skip the first `n` dq_missing_offers_pricings.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of dq_missing_offers_pricings.
+   */
   distinct?:
     | Prisma.Dq_missing_offers_pricingScalarFieldEnum
     | Prisma.Dq_missing_offers_pricingScalarFieldEnum[];

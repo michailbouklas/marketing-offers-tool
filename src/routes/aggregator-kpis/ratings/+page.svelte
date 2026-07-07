@@ -88,6 +88,6 @@
       <RatingsDistribution data={distribution} />
     </section>
 
-    <RatingsTable data={rows} />
+    <RatingsTable data={rows} linkStores />
   </main>
 </div>

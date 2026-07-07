@@ -183,7 +183,7 @@ export type ImageGeneratorTemplateBrandGroupByOutputType = {
   _max: ImageGeneratorTemplateBrandMaxAggregateOutputType | null;
 };
 
-type GetImageGeneratorTemplateBrandGroupByPayload<
+export type GetImageGeneratorTemplateBrandGroupByPayload<
   T extends ImageGeneratorTemplateBrandGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1714,6 +1714,11 @@ export type ImageGeneratorTemplateBrandFindManyArgs<
    * Skip the first `n` ImageGeneratorTemplateBrands.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of ImageGeneratorTemplateBrands.
+   */
   distinct?:
     | Prisma.ImageGeneratorTemplateBrandScalarFieldEnum
     | Prisma.ImageGeneratorTemplateBrandScalarFieldEnum[];

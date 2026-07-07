@@ -165,7 +165,7 @@ export type User_monitorGroupByOutputType = {
   _max: User_monitorMaxAggregateOutputType | null;
 };
 
-type GetUser_monitorGroupByPayload<T extends user_monitorGroupByArgs> =
+export type GetUser_monitorGroupByPayload<T extends user_monitorGroupByArgs> =
   Prisma.PrismaPromise<
     Array<
       Prisma.PickEnumerable<User_monitorGroupByOutputType, T["by"]> & {
@@ -1506,6 +1506,11 @@ export type user_monitorFindManyArgs<
    * Skip the first `n` user_monitors.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of user_monitors.
+   */
   distinct?:
     | Prisma.User_monitorScalarFieldEnum
     | Prisma.User_monitorScalarFieldEnum[];

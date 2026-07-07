@@ -283,7 +283,7 @@ export type GeneratedCopyGroupByOutputType = {
   _max: GeneratedCopyMaxAggregateOutputType | null;
 };
 
-type GetGeneratedCopyGroupByPayload<T extends GeneratedCopyGroupByArgs> =
+export type GetGeneratedCopyGroupByPayload<T extends GeneratedCopyGroupByArgs> =
   Prisma.PrismaPromise<
     Array<
       Prisma.PickEnumerable<GeneratedCopyGroupByOutputType, T["by"]> & {
@@ -2519,6 +2519,11 @@ export type GeneratedCopyFindManyArgs<
    * Skip the first `n` GeneratedCopies.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of GeneratedCopies.
+   */
   distinct?:
     | Prisma.GeneratedCopyScalarFieldEnum
     | Prisma.GeneratedCopyScalarFieldEnum[];

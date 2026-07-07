@@ -253,7 +253,7 @@ export type CopyGenerationFailureLogGroupByOutputType = {
   _max: CopyGenerationFailureLogMaxAggregateOutputType | null;
 };
 
-type GetCopyGenerationFailureLogGroupByPayload<
+export type GetCopyGenerationFailureLogGroupByPayload<
   T extends CopyGenerationFailureLogGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1904,6 +1904,11 @@ export type CopyGenerationFailureLogFindManyArgs<
    * Skip the first `n` CopyGenerationFailureLogs.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of CopyGenerationFailureLogs.
+   */
   distinct?:
     | Prisma.CopyGenerationFailureLogScalarFieldEnum
     | Prisma.CopyGenerationFailureLogScalarFieldEnum[];

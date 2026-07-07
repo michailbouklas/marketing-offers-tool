@@ -201,7 +201,7 @@ export type Error_logGroupByOutputType = {
   _max: Error_logMaxAggregateOutputType | null;
 };
 
-type GetError_logGroupByPayload<T extends error_logGroupByArgs> =
+export type GetError_logGroupByPayload<T extends error_logGroupByArgs> =
   Prisma.PrismaPromise<
     Array<
       Prisma.PickEnumerable<Error_logGroupByOutputType, T["by"]> & {
@@ -1250,6 +1250,11 @@ export type error_logFindManyArgs<
    * Skip the first `n` error_logs.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of error_logs.
+   */
   distinct?:
     | Prisma.Error_logScalarFieldEnum
     | Prisma.Error_logScalarFieldEnum[];

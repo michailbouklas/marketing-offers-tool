@@ -257,7 +257,7 @@ export type Aggregator_offersGroupByOutputType = {
   _max: Aggregator_offersMaxAggregateOutputType | null;
 };
 
-type GetAggregator_offersGroupByPayload<
+export type GetAggregator_offersGroupByPayload<
   T extends aggregator_offersGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1841,6 +1841,11 @@ export type aggregator_offersFindManyArgs<
    * Skip the first `n` aggregator_offers.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of aggregator_offers.
+   */
   distinct?:
     | Prisma.Aggregator_offersScalarFieldEnum
     | Prisma.Aggregator_offersScalarFieldEnum[];

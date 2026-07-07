@@ -168,19 +168,19 @@ export type ReferenceImageGroupByOutputType = {
   _max: ReferenceImageMaxAggregateOutputType | null;
 };
 
-type GetReferenceImageGroupByPayload<T extends ReferenceImageGroupByArgs> =
-  Prisma.PrismaPromise<
-    Array<
-      Prisma.PickEnumerable<ReferenceImageGroupByOutputType, T["by"]> & {
-        [P in keyof T &
-          keyof ReferenceImageGroupByOutputType]: P extends "_count"
-          ? T[P] extends boolean
-            ? number
-            : Prisma.GetScalarType<T[P], ReferenceImageGroupByOutputType[P]>
-          : Prisma.GetScalarType<T[P], ReferenceImageGroupByOutputType[P]>;
-      }
-    >
-  >;
+export type GetReferenceImageGroupByPayload<
+  T extends ReferenceImageGroupByArgs,
+> = Prisma.PrismaPromise<
+  Array<
+    Prisma.PickEnumerable<ReferenceImageGroupByOutputType, T["by"]> & {
+      [P in keyof T & keyof ReferenceImageGroupByOutputType]: P extends "_count"
+        ? T[P] extends boolean
+          ? number
+          : Prisma.GetScalarType<T[P], ReferenceImageGroupByOutputType[P]>
+        : Prisma.GetScalarType<T[P], ReferenceImageGroupByOutputType[P]>;
+    }
+  >
+>;
 
 export type ReferenceImageWhereInput = {
   AND?: Prisma.ReferenceImageWhereInput | Prisma.ReferenceImageWhereInput[];
@@ -1483,6 +1483,11 @@ export type ReferenceImageFindManyArgs<
    * Skip the first `n` ReferenceImages.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of ReferenceImages.
+   */
   distinct?:
     | Prisma.ReferenceImageScalarFieldEnum
     | Prisma.ReferenceImageScalarFieldEnum[];

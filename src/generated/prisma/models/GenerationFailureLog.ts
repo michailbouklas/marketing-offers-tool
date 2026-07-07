@@ -253,7 +253,7 @@ export type GenerationFailureLogGroupByOutputType = {
   _max: GenerationFailureLogMaxAggregateOutputType | null;
 };
 
-type GetGenerationFailureLogGroupByPayload<
+export type GetGenerationFailureLogGroupByPayload<
   T extends GenerationFailureLogGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1848,6 +1848,11 @@ export type GenerationFailureLogFindManyArgs<
    * Skip the first `n` GenerationFailureLogs.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of GenerationFailureLogs.
+   */
   distinct?:
     | Prisma.GenerationFailureLogScalarFieldEnum
     | Prisma.GenerationFailureLogScalarFieldEnum[];

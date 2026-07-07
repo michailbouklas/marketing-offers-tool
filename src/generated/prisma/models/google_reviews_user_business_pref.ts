@@ -180,7 +180,7 @@ export type Google_reviews_user_business_prefGroupByOutputType = {
   _max: Google_reviews_user_business_prefMaxAggregateOutputType | null;
 };
 
-type GetGoogle_reviews_user_business_prefGroupByPayload<
+export type GetGoogle_reviews_user_business_prefGroupByPayload<
   T extends google_reviews_user_business_prefGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1685,6 +1685,11 @@ export type google_reviews_user_business_prefFindManyArgs<
    * Skip the first `n` google_reviews_user_business_prefs.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of google_reviews_user_business_prefs.
+   */
   distinct?:
     | Prisma.Google_reviews_user_business_prefScalarFieldEnum
     | Prisma.Google_reviews_user_business_prefScalarFieldEnum[];

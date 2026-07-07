@@ -301,7 +301,7 @@ export type Dim_offers_stagingGroupByOutputType = {
   _max: Dim_offers_stagingMaxAggregateOutputType | null;
 };
 
-type GetDim_offers_stagingGroupByPayload<
+export type GetDim_offers_stagingGroupByPayload<
   T extends dim_offers_stagingGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -2586,6 +2586,11 @@ export type dim_offers_stagingFindManyArgs<
    * Skip the first `n` dim_offers_stagings.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of dim_offers_stagings.
+   */
   distinct?:
     | Prisma.Dim_offers_stagingScalarFieldEnum
     | Prisma.Dim_offers_stagingScalarFieldEnum[];

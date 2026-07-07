@@ -222,7 +222,7 @@ export type Competition_user_restaurant_prefGroupByOutputType = {
   _max: Competition_user_restaurant_prefMaxAggregateOutputType | null;
 };
 
-type GetCompetition_user_restaurant_prefGroupByPayload<
+export type GetCompetition_user_restaurant_prefGroupByPayload<
   T extends competition_user_restaurant_prefGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1773,6 +1773,11 @@ export type competition_user_restaurant_prefFindManyArgs<
    * Skip the first `n` competition_user_restaurant_prefs.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of competition_user_restaurant_prefs.
+   */
   distinct?:
     | Prisma.Competition_user_restaurant_prefScalarFieldEnum
     | Prisma.Competition_user_restaurant_prefScalarFieldEnum[];

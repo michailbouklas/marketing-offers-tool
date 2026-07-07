@@ -267,3 +267,27 @@
 - （必要に応じて追記）
 
 ---
+
+## セッション: 2026-07-06T12:20:58Z
+
+- session_id: `session-1783337831781131200`
+- project: `marketing-offers-tool`
+- branch: `master`
+- started_at: `2026-07-06T11:37:11Z`
+- ended_at: `2026-07-06T12:20:58Z`
+- duration_minutes: 43
+- changes: 0
+
+### 変更ファイル
+
+- （なし）
+
+### 重要な変更（important=true）
+
+- （なし）
+
+### 次回への引き継ぎ（任意）
+
+- （必要に応じて追記）
+
+---

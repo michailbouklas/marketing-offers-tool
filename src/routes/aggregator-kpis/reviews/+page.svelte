@@ -349,7 +349,7 @@
           </span>
         </div>
 
-        <ReviewsTable data={rows} />
+        <ReviewsTable data={rows} linkStores />
 
         {#if totalItems > 0}
           <div

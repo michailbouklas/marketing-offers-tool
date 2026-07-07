@@ -226,17 +226,18 @@ export type BrandGroupByOutputType = {
   _max: BrandMaxAggregateOutputType | null;
 };
 
-type GetBrandGroupByPayload<T extends brandGroupByArgs> = Prisma.PrismaPromise<
-  Array<
-    Prisma.PickEnumerable<BrandGroupByOutputType, T["by"]> & {
-      [P in keyof T & keyof BrandGroupByOutputType]: P extends "_count"
-        ? T[P] extends boolean
-          ? number
-          : Prisma.GetScalarType<T[P], BrandGroupByOutputType[P]>
-        : Prisma.GetScalarType<T[P], BrandGroupByOutputType[P]>;
-    }
-  >
->;
+export type GetBrandGroupByPayload<T extends brandGroupByArgs> =
+  Prisma.PrismaPromise<
+    Array<
+      Prisma.PickEnumerable<BrandGroupByOutputType, T["by"]> & {
+        [P in keyof T & keyof BrandGroupByOutputType]: P extends "_count"
+          ? T[P] extends boolean
+            ? number
+            : Prisma.GetScalarType<T[P], BrandGroupByOutputType[P]>
+          : Prisma.GetScalarType<T[P], BrandGroupByOutputType[P]>;
+      }
+    >
+  >;
 
 export type brandWhereInput = {
   AND?: Prisma.brandWhereInput | Prisma.brandWhereInput[];
@@ -2522,6 +2523,11 @@ export type brandFindManyArgs<
    * Skip the first `n` brands.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of brands.
+   */
   distinct?: Prisma.BrandScalarFieldEnum | Prisma.BrandScalarFieldEnum[];
 };
 

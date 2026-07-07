@@ -3,6 +3,7 @@ import type {
   AggregatorValue,
   KpiFilters,
   RejectionRow,
+  RejectionsStoreView,
   RejectionsView,
   TimeseriesPoint,
 } from "$lib/services/aggregator-kpis/aggregator-kpis";
@@ -87,6 +88,45 @@ export async function getRejectionsTrend(
       value: toNumber(row.cancellationsPct),
     })),
   );
+}
+
+/**
+ * Full order-rejections history for one store (every captured snapshot, newest
+ * first) plus a daily-average cancellation trend derived from that same
+ * history. Querying `orderRejectionsSnapshot` directly means only snapshots
+ * that actually have rejections data are returned — a missing snapshot is "no
+ * data", never a real 0.
+ */
+export async function getRejectionsStoreView(
+  storeId: number,
+): Promise<RejectionsStoreView> {
+  const rows = await merchantScrapesPrisma.orderRejectionsSnapshot.findMany({
+    where: { snapshot: { store: { id: storeId } } },
+    select: {
+      cancellationsPct: true,
+      lostSales: true,
+      reasonUnknownCount: true,
+      snapshot: { select: { scrapedAt: true, runId: true } },
+    },
+    orderBy: { snapshot: { scrapedAt: "desc" } },
+  });
+
+  const points = rows.map((row) => ({
+    scrapedAt: row.snapshot.scrapedAt.toISOString(),
+    cancellationsPct: toNumber(row.cancellationsPct),
+    lostSales: toNumber(row.lostSales),
+    reasonUnknownCount: toNumber(row.reasonUnknownCount),
+    runId: row.snapshot.runId,
+  }));
+
+  const trend = averageByDay(
+    rows.map((row) => ({
+      scrapedAt: row.snapshot.scrapedAt,
+      value: toNumber(row.cancellationsPct),
+    })),
+  );
+
+  return { points, trend };
 }
 
 export async function getRejectionsView(

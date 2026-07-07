@@ -240,19 +240,20 @@ export type Dim_offers_auditGroupByOutputType = {
   _max: Dim_offers_auditMaxAggregateOutputType | null;
 };
 
-type GetDim_offers_auditGroupByPayload<T extends dim_offers_auditGroupByArgs> =
-  Prisma.PrismaPromise<
-    Array<
-      Prisma.PickEnumerable<Dim_offers_auditGroupByOutputType, T["by"]> & {
-        [P in keyof T &
-          keyof Dim_offers_auditGroupByOutputType]: P extends "_count"
-          ? T[P] extends boolean
-            ? number
-            : Prisma.GetScalarType<T[P], Dim_offers_auditGroupByOutputType[P]>
-          : Prisma.GetScalarType<T[P], Dim_offers_auditGroupByOutputType[P]>;
-      }
-    >
-  >;
+export type GetDim_offers_auditGroupByPayload<
+  T extends dim_offers_auditGroupByArgs,
+> = Prisma.PrismaPromise<
+  Array<
+    Prisma.PickEnumerable<Dim_offers_auditGroupByOutputType, T["by"]> & {
+      [P in keyof T &
+        keyof Dim_offers_auditGroupByOutputType]: P extends "_count"
+        ? T[P] extends boolean
+          ? number
+          : Prisma.GetScalarType<T[P], Dim_offers_auditGroupByOutputType[P]>
+        : Prisma.GetScalarType<T[P], Dim_offers_auditGroupByOutputType[P]>;
+    }
+  >
+>;
 
 export type dim_offers_auditWhereInput = {
   AND?: Prisma.dim_offers_auditWhereInput | Prisma.dim_offers_auditWhereInput[];
@@ -2395,6 +2396,11 @@ export type dim_offers_auditFindManyArgs<
    * Skip the first `n` dim_offers_audits.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of dim_offers_audits.
+   */
   distinct?:
     | Prisma.Dim_offers_auditScalarFieldEnum
     | Prisma.Dim_offers_auditScalarFieldEnum[];

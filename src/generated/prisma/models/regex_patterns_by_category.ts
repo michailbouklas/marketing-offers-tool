@@ -197,7 +197,7 @@ export type Regex_patterns_by_categoryGroupByOutputType = {
   _max: Regex_patterns_by_categoryMaxAggregateOutputType | null;
 };
 
-type GetRegex_patterns_by_categoryGroupByPayload<
+export type GetRegex_patterns_by_categoryGroupByPayload<
   T extends regex_patterns_by_categoryGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1282,6 +1282,11 @@ export type regex_patterns_by_categoryFindManyArgs<
    * Skip the first `n` regex_patterns_by_categories.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of regex_patterns_by_categories.
+   */
   distinct?:
     | Prisma.Regex_patterns_by_categoryScalarFieldEnum
     | Prisma.Regex_patterns_by_categoryScalarFieldEnum[];

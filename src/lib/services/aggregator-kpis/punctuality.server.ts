@@ -3,6 +3,7 @@ import type {
   AggregatorValue,
   KpiFilters,
   PunctualityRow,
+  PunctualityStoreView,
   PunctualityView,
   TimeseriesPoint,
 } from "$lib/services/aggregator-kpis/aggregator-kpis";
@@ -89,6 +90,47 @@ export async function getPunctualityTrend(
       value: toNumber(row.avoidableWaitOrdersPct),
     })),
   );
+}
+
+/**
+ * Full punctuality history for one store (every captured snapshot, newest
+ * first) plus a daily-average avoidable-wait-orders trend derived from that
+ * same history. Querying `punctualitySnapshot` directly means only snapshots
+ * that actually have punctuality data are returned — a missing snapshot is "no
+ * data", never a real 0.
+ */
+export async function getPunctualityStoreView(
+  storeId: number,
+): Promise<PunctualityStoreView> {
+  const rows = await merchantScrapesPrisma.punctualitySnapshot.findMany({
+    where: { snapshot: { store: { id: storeId } } },
+    select: {
+      avoidableWaitOrdersPct: true,
+      avgAvoidableWaitSeconds: true,
+      deliveredOrders: true,
+      totalOrders: true,
+      snapshot: { select: { scrapedAt: true, runId: true } },
+    },
+    orderBy: { snapshot: { scrapedAt: "desc" } },
+  });
+
+  const points = rows.map((row) => ({
+    scrapedAt: row.snapshot.scrapedAt.toISOString(),
+    avoidableWaitOrdersPct: toNumber(row.avoidableWaitOrdersPct),
+    avgAvoidableWaitSeconds: toNumber(row.avgAvoidableWaitSeconds),
+    deliveredOrders: toNumber(row.deliveredOrders),
+    totalOrders: toNumber(row.totalOrders),
+    runId: row.snapshot.runId,
+  }));
+
+  const trend = averageByDay(
+    rows.map((row) => ({
+      scrapedAt: row.snapshot.scrapedAt,
+      value: toNumber(row.avoidableWaitOrdersPct),
+    })),
+  );
+
+  return { points, trend };
 }
 
 export async function getPunctualityView(

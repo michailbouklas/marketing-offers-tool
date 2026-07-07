@@ -3,6 +3,7 @@ import type {
   AggregatorValue,
   KpiFilters,
   RatingRow,
+  RatingsStoreView,
   RatingsView,
   StarBucket,
   TimeseriesPoint,
@@ -136,6 +137,68 @@ export async function getRatingsDistribution(
   return [...totals.entries()]
     .sort(([a], [b]) => a - b)
     .map(([stars, count]) => ({ stars, count }));
+}
+
+/**
+ * Full ratings history for one store (every captured snapshot, newest first),
+ * a daily-average store-rating trend derived from that same history, and the
+ * star distribution of the store's latest rating snapshot. Querying
+ * `ratingSnapshot` directly means only snapshots that actually have rating data
+ * are returned — a missing snapshot is "no data", never a real 0.
+ */
+export async function getRatingsStoreView(
+  storeId: number,
+): Promise<RatingsStoreView> {
+  const rows = await merchantScrapesPrisma.ratingSnapshot.findMany({
+    where: { snapshot: { store: { id: storeId } } },
+    select: {
+      storeRating: true,
+      totalReviews: true,
+      buckets: { select: { stars: true, count: true } },
+      snapshot: { select: { scrapedAt: true, runId: true } },
+    },
+    orderBy: { snapshot: { scrapedAt: "desc" } },
+  });
+
+  const points = rows.map((row) => ({
+    scrapedAt: row.snapshot.scrapedAt.toISOString(),
+    storeRating: toNumber(row.storeRating),
+    totalReviews: toNumber(row.totalReviews),
+    runId: row.snapshot.runId,
+  }));
+
+  const trend = averageByDay(
+    rows.map((row) => ({
+      scrapedAt: row.snapshot.scrapedAt,
+      value: toNumber(row.storeRating),
+    })),
+  );
+
+  // Star distribution of the newest snapshot; always stars 1..5 for a stable axis.
+  const totals = new Map<number, number>([
+    [1, 0],
+    [2, 0],
+    [3, 0],
+    [4, 0],
+    [5, 0],
+  ]);
+
+  for (const bucket of rows[0]?.buckets ?? []) {
+    if (!totals.has(bucket.stars)) {
+      continue;
+    }
+
+    totals.set(
+      bucket.stars,
+      (totals.get(bucket.stars) ?? 0) + (bucket.count ?? 0),
+    );
+  }
+
+  const distribution: StarBucket[] = [...totals.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([stars, count]) => ({ stars, count }));
+
+  return { points, trend, distribution };
 }
 
 export async function getRatingsView(

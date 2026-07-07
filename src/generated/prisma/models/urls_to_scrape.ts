@@ -209,19 +209,19 @@ export type Urls_to_scrapeGroupByOutputType = {
   _max: Urls_to_scrapeMaxAggregateOutputType | null;
 };
 
-type GetUrls_to_scrapeGroupByPayload<T extends urls_to_scrapeGroupByArgs> =
-  Prisma.PrismaPromise<
-    Array<
-      Prisma.PickEnumerable<Urls_to_scrapeGroupByOutputType, T["by"]> & {
-        [P in keyof T &
-          keyof Urls_to_scrapeGroupByOutputType]: P extends "_count"
-          ? T[P] extends boolean
-            ? number
-            : Prisma.GetScalarType<T[P], Urls_to_scrapeGroupByOutputType[P]>
-          : Prisma.GetScalarType<T[P], Urls_to_scrapeGroupByOutputType[P]>;
-      }
-    >
-  >;
+export type GetUrls_to_scrapeGroupByPayload<
+  T extends urls_to_scrapeGroupByArgs,
+> = Prisma.PrismaPromise<
+  Array<
+    Prisma.PickEnumerable<Urls_to_scrapeGroupByOutputType, T["by"]> & {
+      [P in keyof T & keyof Urls_to_scrapeGroupByOutputType]: P extends "_count"
+        ? T[P] extends boolean
+          ? number
+          : Prisma.GetScalarType<T[P], Urls_to_scrapeGroupByOutputType[P]>
+        : Prisma.GetScalarType<T[P], Urls_to_scrapeGroupByOutputType[P]>;
+    }
+  >
+>;
 
 export type urls_to_scrapeWhereInput = {
   AND?: Prisma.urls_to_scrapeWhereInput | Prisma.urls_to_scrapeWhereInput[];
@@ -1586,6 +1586,11 @@ export type urls_to_scrapeFindManyArgs<
    * Skip the first `n` urls_to_scrapes.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of urls_to_scrapes.
+   */
   distinct?:
     | Prisma.Urls_to_scrapeScalarFieldEnum
     | Prisma.Urls_to_scrapeScalarFieldEnum[];

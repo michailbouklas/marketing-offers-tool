@@ -86,6 +86,6 @@
       data={trend}
     />
 
-    <PunctualityTable data={rows} />
+    <PunctualityTable data={rows} linkStores />
   </main>
 </div>

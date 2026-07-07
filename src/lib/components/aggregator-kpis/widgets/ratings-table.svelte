@@ -13,9 +13,12 @@
   let {
     title = "Ratings by store",
     data,
+    linkStores = false,
   }: {
     title?: string;
     data: RatingRow[];
+    /** When true, link each store name to its ratings history page. */
+    linkStores?: boolean;
   } = $props();
 </script>
 
@@ -47,7 +50,16 @@
             {#each data as row (row.storeId)}
               <Table.Row>
                 <Table.Cell class="font-medium">
-                  {row.storeName ?? `Store #${row.storeId}`}
+                  {#if linkStores}
+                    <a
+                      href={`/aggregator-kpis/ratings/${row.storeId}`}
+                      class="hover:text-primary hover:underline"
+                    >
+                      {row.storeName ?? `Store #${row.storeId}`}
+                    </a>
+                  {:else}
+                    {row.storeName ?? `Store #${row.storeId}`}
+                  {/if}
                 </Table.Cell>
                 <Table.Cell>{aggregatorLabel(row.aggregator)}</Table.Cell>
                 <Table.Cell class="text-right">

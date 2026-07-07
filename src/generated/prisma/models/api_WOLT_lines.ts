@@ -242,19 +242,19 @@ export type Api_WOLT_linesGroupByOutputType = {
   _max: Api_WOLT_linesMaxAggregateOutputType | null;
 };
 
-type GetApi_WOLT_linesGroupByPayload<T extends api_WOLT_linesGroupByArgs> =
-  Prisma.PrismaPromise<
-    Array<
-      Prisma.PickEnumerable<Api_WOLT_linesGroupByOutputType, T["by"]> & {
-        [P in keyof T &
-          keyof Api_WOLT_linesGroupByOutputType]: P extends "_count"
-          ? T[P] extends boolean
-            ? number
-            : Prisma.GetScalarType<T[P], Api_WOLT_linesGroupByOutputType[P]>
-          : Prisma.GetScalarType<T[P], Api_WOLT_linesGroupByOutputType[P]>;
-      }
-    >
-  >;
+export type GetApi_WOLT_linesGroupByPayload<
+  T extends api_WOLT_linesGroupByArgs,
+> = Prisma.PrismaPromise<
+  Array<
+    Prisma.PickEnumerable<Api_WOLT_linesGroupByOutputType, T["by"]> & {
+      [P in keyof T & keyof Api_WOLT_linesGroupByOutputType]: P extends "_count"
+        ? T[P] extends boolean
+          ? number
+          : Prisma.GetScalarType<T[P], Api_WOLT_linesGroupByOutputType[P]>
+        : Prisma.GetScalarType<T[P], Api_WOLT_linesGroupByOutputType[P]>;
+    }
+  >
+>;
 
 export type api_WOLT_linesWhereInput = {
   AND?: Prisma.api_WOLT_linesWhereInput | Prisma.api_WOLT_linesWhereInput[];
@@ -1944,6 +1944,11 @@ export type api_WOLT_linesFindManyArgs<
    * Skip the first `n` api_WOLT_lines.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of api_WOLT_lines.
+   */
   distinct?:
     | Prisma.Api_WOLT_linesScalarFieldEnum
     | Prisma.Api_WOLT_linesScalarFieldEnum[];

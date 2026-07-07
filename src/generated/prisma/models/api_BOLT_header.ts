@@ -308,19 +308,20 @@ export type Api_BOLT_headerGroupByOutputType = {
   _max: Api_BOLT_headerMaxAggregateOutputType | null;
 };
 
-type GetApi_BOLT_headerGroupByPayload<T extends api_BOLT_headerGroupByArgs> =
-  Prisma.PrismaPromise<
-    Array<
-      Prisma.PickEnumerable<Api_BOLT_headerGroupByOutputType, T["by"]> & {
-        [P in keyof T &
-          keyof Api_BOLT_headerGroupByOutputType]: P extends "_count"
-          ? T[P] extends boolean
-            ? number
-            : Prisma.GetScalarType<T[P], Api_BOLT_headerGroupByOutputType[P]>
-          : Prisma.GetScalarType<T[P], Api_BOLT_headerGroupByOutputType[P]>;
-      }
-    >
-  >;
+export type GetApi_BOLT_headerGroupByPayload<
+  T extends api_BOLT_headerGroupByArgs,
+> = Prisma.PrismaPromise<
+  Array<
+    Prisma.PickEnumerable<Api_BOLT_headerGroupByOutputType, T["by"]> & {
+      [P in keyof T &
+        keyof Api_BOLT_headerGroupByOutputType]: P extends "_count"
+        ? T[P] extends boolean
+          ? number
+          : Prisma.GetScalarType<T[P], Api_BOLT_headerGroupByOutputType[P]>
+        : Prisma.GetScalarType<T[P], Api_BOLT_headerGroupByOutputType[P]>;
+    }
+  >
+>;
 
 export type api_BOLT_headerWhereInput = {
   AND?: Prisma.api_BOLT_headerWhereInput | Prisma.api_BOLT_headerWhereInput[];
@@ -2284,6 +2285,11 @@ export type api_BOLT_headerFindManyArgs<
    * Skip the first `n` api_BOLT_headers.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of api_BOLT_headers.
+   */
   distinct?:
     | Prisma.Api_BOLT_headerScalarFieldEnum
     | Prisma.Api_BOLT_headerScalarFieldEnum[];
