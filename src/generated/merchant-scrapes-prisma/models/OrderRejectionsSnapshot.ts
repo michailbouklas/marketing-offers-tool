@@ -13,7 +13,8 @@ import type * as Prisma from "../internal/prismaNamespace";
 
 /**
  * Model OrderRejectionsSnapshot
- *
+ * KPI: Order rejections. From Foody's operations tab. The reason breakdown
+ * is a child row table (see ClosuresSnapshot for the carousel semantics).
  */
 export type OrderRejectionsSnapshotModel =
   runtime.Types.Result.DefaultSelection<Prisma.$OrderRejectionsSnapshotPayload>;
@@ -30,6 +31,7 @@ export type OrderRejectionsSnapshotAvgAggregateOutputType = {
   id: number | null;
   snapshotId: number | null;
   cancellationsPct: runtime.Decimal | null;
+  cancellationsCount: number | null;
   lostSales: runtime.Decimal | null;
   reasonUnknownCount: number | null;
 };
@@ -38,6 +40,7 @@ export type OrderRejectionsSnapshotSumAggregateOutputType = {
   id: number | null;
   snapshotId: number | null;
   cancellationsPct: runtime.Decimal | null;
+  cancellationsCount: number | null;
   lostSales: runtime.Decimal | null;
   reasonUnknownCount: number | null;
 };
@@ -47,6 +50,7 @@ export type OrderRejectionsSnapshotMinAggregateOutputType = {
   snapshotId: number | null;
   status: $Enums.SectionStatus | null;
   cancellationsPct: runtime.Decimal | null;
+  cancellationsCount: number | null;
   lostSales: runtime.Decimal | null;
   reasonUnknownCount: number | null;
 };
@@ -56,6 +60,7 @@ export type OrderRejectionsSnapshotMaxAggregateOutputType = {
   snapshotId: number | null;
   status: $Enums.SectionStatus | null;
   cancellationsPct: runtime.Decimal | null;
+  cancellationsCount: number | null;
   lostSales: runtime.Decimal | null;
   reasonUnknownCount: number | null;
 };
@@ -65,6 +70,7 @@ export type OrderRejectionsSnapshotCountAggregateOutputType = {
   snapshotId: number;
   status: number;
   cancellationsPct: number;
+  cancellationsCount: number;
   lostSales: number;
   reasonUnknownCount: number;
   _all: number;
@@ -74,6 +80,7 @@ export type OrderRejectionsSnapshotAvgAggregateInputType = {
   id?: true;
   snapshotId?: true;
   cancellationsPct?: true;
+  cancellationsCount?: true;
   lostSales?: true;
   reasonUnknownCount?: true;
 };
@@ -82,6 +89,7 @@ export type OrderRejectionsSnapshotSumAggregateInputType = {
   id?: true;
   snapshotId?: true;
   cancellationsPct?: true;
+  cancellationsCount?: true;
   lostSales?: true;
   reasonUnknownCount?: true;
 };
@@ -91,6 +99,7 @@ export type OrderRejectionsSnapshotMinAggregateInputType = {
   snapshotId?: true;
   status?: true;
   cancellationsPct?: true;
+  cancellationsCount?: true;
   lostSales?: true;
   reasonUnknownCount?: true;
 };
@@ -100,6 +109,7 @@ export type OrderRejectionsSnapshotMaxAggregateInputType = {
   snapshotId?: true;
   status?: true;
   cancellationsPct?: true;
+  cancellationsCount?: true;
   lostSales?: true;
   reasonUnknownCount?: true;
 };
@@ -109,6 +119,7 @@ export type OrderRejectionsSnapshotCountAggregateInputType = {
   snapshotId?: true;
   status?: true;
   cancellationsPct?: true;
+  cancellationsCount?: true;
   lostSales?: true;
   reasonUnknownCount?: true;
   _all?: true;
@@ -218,6 +229,7 @@ export type OrderRejectionsSnapshotGroupByOutputType = {
   snapshotId: number;
   status: $Enums.SectionStatus;
   cancellationsPct: runtime.Decimal | null;
+  cancellationsCount: number | null;
   lostSales: runtime.Decimal | null;
   reasonUnknownCount: number | null;
   _count: OrderRejectionsSnapshotCountAggregateOutputType | null;
@@ -227,7 +239,7 @@ export type OrderRejectionsSnapshotGroupByOutputType = {
   _max: OrderRejectionsSnapshotMaxAggregateOutputType | null;
 };
 
-type GetOrderRejectionsSnapshotGroupByPayload<
+export type GetOrderRejectionsSnapshotGroupByPayload<
   T extends OrderRejectionsSnapshotGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -268,6 +280,10 @@ export type OrderRejectionsSnapshotWhereInput = {
     | number
     | string
     | null;
+  cancellationsCount?:
+    | Prisma.IntNullableFilter<"OrderRejectionsSnapshot">
+    | number
+    | null;
   lostSales?:
     | Prisma.DecimalNullableFilter<"OrderRejectionsSnapshot">
     | runtime.Decimal
@@ -283,6 +299,7 @@ export type OrderRejectionsSnapshotWhereInput = {
     Prisma.ScrapeSnapshotScalarRelationFilter,
     Prisma.ScrapeSnapshotWhereInput
   >;
+  reasons?: Prisma.CancellationReasonListRelationFilter;
 };
 
 export type OrderRejectionsSnapshotOrderByWithRelationInput = {
@@ -290,9 +307,11 @@ export type OrderRejectionsSnapshotOrderByWithRelationInput = {
   snapshotId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   cancellationsPct?: Prisma.SortOrderInput | Prisma.SortOrder;
+  cancellationsCount?: Prisma.SortOrderInput | Prisma.SortOrder;
   lostSales?: Prisma.SortOrderInput | Prisma.SortOrder;
   reasonUnknownCount?: Prisma.SortOrderInput | Prisma.SortOrder;
   snapshot?: Prisma.ScrapeSnapshotOrderByWithRelationInput;
+  reasons?: Prisma.CancellationReasonOrderByRelationAggregateInput;
 };
 
 export type OrderRejectionsSnapshotWhereUniqueInput = Prisma.AtLeast<
@@ -316,6 +335,10 @@ export type OrderRejectionsSnapshotWhereUniqueInput = Prisma.AtLeast<
       | number
       | string
       | null;
+    cancellationsCount?:
+      | Prisma.IntNullableFilter<"OrderRejectionsSnapshot">
+      | number
+      | null;
     lostSales?:
       | Prisma.DecimalNullableFilter<"OrderRejectionsSnapshot">
       | runtime.Decimal
@@ -331,6 +354,7 @@ export type OrderRejectionsSnapshotWhereUniqueInput = Prisma.AtLeast<
       Prisma.ScrapeSnapshotScalarRelationFilter,
       Prisma.ScrapeSnapshotWhereInput
     >;
+    reasons?: Prisma.CancellationReasonListRelationFilter;
   },
   "id" | "snapshotId"
 >;
@@ -340,6 +364,7 @@ export type OrderRejectionsSnapshotOrderByWithAggregationInput = {
   snapshotId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   cancellationsPct?: Prisma.SortOrderInput | Prisma.SortOrder;
+  cancellationsCount?: Prisma.SortOrderInput | Prisma.SortOrder;
   lostSales?: Prisma.SortOrderInput | Prisma.SortOrder;
   reasonUnknownCount?: Prisma.SortOrderInput | Prisma.SortOrder;
   _count?: Prisma.OrderRejectionsSnapshotCountOrderByAggregateInput;
@@ -371,6 +396,10 @@ export type OrderRejectionsSnapshotScalarWhereWithAggregatesInput = {
     | number
     | string
     | null;
+  cancellationsCount?:
+    | Prisma.IntNullableWithAggregatesFilter<"OrderRejectionsSnapshot">
+    | number
+    | null;
   lostSales?:
     | Prisma.DecimalNullableWithAggregatesFilter<"OrderRejectionsSnapshot">
     | runtime.Decimal
@@ -392,9 +421,11 @@ export type OrderRejectionsSnapshotCreateInput = {
     | number
     | string
     | null;
+  cancellationsCount?: number | null;
   lostSales?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   reasonUnknownCount?: number | null;
   snapshot: Prisma.ScrapeSnapshotCreateNestedOneWithoutRejectionsInput;
+  reasons?: Prisma.CancellationReasonCreateNestedManyWithoutOrderRejectionsSnapshotInput;
 };
 
 export type OrderRejectionsSnapshotUncheckedCreateInput = {
@@ -407,8 +438,10 @@ export type OrderRejectionsSnapshotUncheckedCreateInput = {
     | number
     | string
     | null;
+  cancellationsCount?: number | null;
   lostSales?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   reasonUnknownCount?: number | null;
+  reasons?: Prisma.CancellationReasonUncheckedCreateNestedManyWithoutOrderRejectionsSnapshotInput;
 };
 
 export type OrderRejectionsSnapshotUpdateInput = {
@@ -422,6 +455,10 @@ export type OrderRejectionsSnapshotUpdateInput = {
     | number
     | string
     | null;
+  cancellationsCount?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   lostSales?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -434,6 +471,7 @@ export type OrderRejectionsSnapshotUpdateInput = {
     | number
     | null;
   snapshot?: Prisma.ScrapeSnapshotUpdateOneRequiredWithoutRejectionsNestedInput;
+  reasons?: Prisma.CancellationReasonUpdateManyWithoutOrderRejectionsSnapshotNestedInput;
 };
 
 export type OrderRejectionsSnapshotUncheckedUpdateInput = {
@@ -449,6 +487,10 @@ export type OrderRejectionsSnapshotUncheckedUpdateInput = {
     | number
     | string
     | null;
+  cancellationsCount?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   lostSales?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -460,6 +502,7 @@ export type OrderRejectionsSnapshotUncheckedUpdateInput = {
     | Prisma.NullableIntFieldUpdateOperationsInput
     | number
     | null;
+  reasons?: Prisma.CancellationReasonUncheckedUpdateManyWithoutOrderRejectionsSnapshotNestedInput;
 };
 
 export type OrderRejectionsSnapshotCreateManyInput = {
@@ -472,6 +515,7 @@ export type OrderRejectionsSnapshotCreateManyInput = {
     | number
     | string
     | null;
+  cancellationsCount?: number | null;
   lostSales?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   reasonUnknownCount?: number | null;
 };
@@ -486,6 +530,10 @@ export type OrderRejectionsSnapshotUpdateManyMutationInput = {
     | runtime.DecimalJsLike
     | number
     | string
+    | null;
+  cancellationsCount?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
     | null;
   lostSales?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
@@ -513,6 +561,10 @@ export type OrderRejectionsSnapshotUncheckedUpdateManyInput = {
     | number
     | string
     | null;
+  cancellationsCount?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   lostSales?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -536,6 +588,7 @@ export type OrderRejectionsSnapshotCountOrderByAggregateInput = {
   snapshotId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   cancellationsPct?: Prisma.SortOrder;
+  cancellationsCount?: Prisma.SortOrder;
   lostSales?: Prisma.SortOrder;
   reasonUnknownCount?: Prisma.SortOrder;
 };
@@ -544,6 +597,7 @@ export type OrderRejectionsSnapshotAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   snapshotId?: Prisma.SortOrder;
   cancellationsPct?: Prisma.SortOrder;
+  cancellationsCount?: Prisma.SortOrder;
   lostSales?: Prisma.SortOrder;
   reasonUnknownCount?: Prisma.SortOrder;
 };
@@ -553,6 +607,7 @@ export type OrderRejectionsSnapshotMaxOrderByAggregateInput = {
   snapshotId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   cancellationsPct?: Prisma.SortOrder;
+  cancellationsCount?: Prisma.SortOrder;
   lostSales?: Prisma.SortOrder;
   reasonUnknownCount?: Prisma.SortOrder;
 };
@@ -562,6 +617,7 @@ export type OrderRejectionsSnapshotMinOrderByAggregateInput = {
   snapshotId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   cancellationsPct?: Prisma.SortOrder;
+  cancellationsCount?: Prisma.SortOrder;
   lostSales?: Prisma.SortOrder;
   reasonUnknownCount?: Prisma.SortOrder;
 };
@@ -570,8 +626,14 @@ export type OrderRejectionsSnapshotSumOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   snapshotId?: Prisma.SortOrder;
   cancellationsPct?: Prisma.SortOrder;
+  cancellationsCount?: Prisma.SortOrder;
   lostSales?: Prisma.SortOrder;
   reasonUnknownCount?: Prisma.SortOrder;
+};
+
+export type OrderRejectionsSnapshotScalarRelationFilter = {
+  is?: Prisma.OrderRejectionsSnapshotWhereInput;
+  isNot?: Prisma.OrderRejectionsSnapshotWhereInput;
 };
 
 export type OrderRejectionsSnapshotCreateNestedOneWithoutSnapshotInput = {
@@ -632,6 +694,33 @@ export type OrderRejectionsSnapshotUncheckedUpdateOneWithoutSnapshotNestedInput 
     >;
   };
 
+export type OrderRejectionsSnapshotCreateNestedOneWithoutReasonsInput = {
+  create?: Prisma.XOR<
+    Prisma.OrderRejectionsSnapshotCreateWithoutReasonsInput,
+    Prisma.OrderRejectionsSnapshotUncheckedCreateWithoutReasonsInput
+  >;
+  connectOrCreate?: Prisma.OrderRejectionsSnapshotCreateOrConnectWithoutReasonsInput;
+  connect?: Prisma.OrderRejectionsSnapshotWhereUniqueInput;
+};
+
+export type OrderRejectionsSnapshotUpdateOneRequiredWithoutReasonsNestedInput =
+  {
+    create?: Prisma.XOR<
+      Prisma.OrderRejectionsSnapshotCreateWithoutReasonsInput,
+      Prisma.OrderRejectionsSnapshotUncheckedCreateWithoutReasonsInput
+    >;
+    connectOrCreate?: Prisma.OrderRejectionsSnapshotCreateOrConnectWithoutReasonsInput;
+    upsert?: Prisma.OrderRejectionsSnapshotUpsertWithoutReasonsInput;
+    connect?: Prisma.OrderRejectionsSnapshotWhereUniqueInput;
+    update?: Prisma.XOR<
+      Prisma.XOR<
+        Prisma.OrderRejectionsSnapshotUpdateToOneWithWhereWithoutReasonsInput,
+        Prisma.OrderRejectionsSnapshotUpdateWithoutReasonsInput
+      >,
+      Prisma.OrderRejectionsSnapshotUncheckedUpdateWithoutReasonsInput
+    >;
+  };
+
 export type OrderRejectionsSnapshotCreateWithoutSnapshotInput = {
   status: $Enums.SectionStatus;
   cancellationsPct?:
@@ -640,8 +729,10 @@ export type OrderRejectionsSnapshotCreateWithoutSnapshotInput = {
     | number
     | string
     | null;
+  cancellationsCount?: number | null;
   lostSales?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   reasonUnknownCount?: number | null;
+  reasons?: Prisma.CancellationReasonCreateNestedManyWithoutOrderRejectionsSnapshotInput;
 };
 
 export type OrderRejectionsSnapshotUncheckedCreateWithoutSnapshotInput = {
@@ -653,8 +744,10 @@ export type OrderRejectionsSnapshotUncheckedCreateWithoutSnapshotInput = {
     | number
     | string
     | null;
+  cancellationsCount?: number | null;
   lostSales?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   reasonUnknownCount?: number | null;
+  reasons?: Prisma.CancellationReasonUncheckedCreateNestedManyWithoutOrderRejectionsSnapshotInput;
 };
 
 export type OrderRejectionsSnapshotCreateOrConnectWithoutSnapshotInput = {
@@ -696,6 +789,10 @@ export type OrderRejectionsSnapshotUpdateWithoutSnapshotInput = {
     | number
     | string
     | null;
+  cancellationsCount?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   lostSales?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -707,6 +804,7 @@ export type OrderRejectionsSnapshotUpdateWithoutSnapshotInput = {
     | Prisma.NullableIntFieldUpdateOperationsInput
     | number
     | null;
+  reasons?: Prisma.CancellationReasonUpdateManyWithoutOrderRejectionsSnapshotNestedInput;
 };
 
 export type OrderRejectionsSnapshotUncheckedUpdateWithoutSnapshotInput = {
@@ -721,6 +819,127 @@ export type OrderRejectionsSnapshotUncheckedUpdateWithoutSnapshotInput = {
     | number
     | string
     | null;
+  cancellationsCount?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  lostSales?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  reasonUnknownCount?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  reasons?: Prisma.CancellationReasonUncheckedUpdateManyWithoutOrderRejectionsSnapshotNestedInput;
+};
+
+export type OrderRejectionsSnapshotCreateWithoutReasonsInput = {
+  status: $Enums.SectionStatus;
+  cancellationsPct?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  cancellationsCount?: number | null;
+  lostSales?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  reasonUnknownCount?: number | null;
+  snapshot: Prisma.ScrapeSnapshotCreateNestedOneWithoutRejectionsInput;
+};
+
+export type OrderRejectionsSnapshotUncheckedCreateWithoutReasonsInput = {
+  id?: number;
+  snapshotId: number;
+  status: $Enums.SectionStatus;
+  cancellationsPct?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  cancellationsCount?: number | null;
+  lostSales?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  reasonUnknownCount?: number | null;
+};
+
+export type OrderRejectionsSnapshotCreateOrConnectWithoutReasonsInput = {
+  where: Prisma.OrderRejectionsSnapshotWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.OrderRejectionsSnapshotCreateWithoutReasonsInput,
+    Prisma.OrderRejectionsSnapshotUncheckedCreateWithoutReasonsInput
+  >;
+};
+
+export type OrderRejectionsSnapshotUpsertWithoutReasonsInput = {
+  update: Prisma.XOR<
+    Prisma.OrderRejectionsSnapshotUpdateWithoutReasonsInput,
+    Prisma.OrderRejectionsSnapshotUncheckedUpdateWithoutReasonsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.OrderRejectionsSnapshotCreateWithoutReasonsInput,
+    Prisma.OrderRejectionsSnapshotUncheckedCreateWithoutReasonsInput
+  >;
+  where?: Prisma.OrderRejectionsSnapshotWhereInput;
+};
+
+export type OrderRejectionsSnapshotUpdateToOneWithWhereWithoutReasonsInput = {
+  where?: Prisma.OrderRejectionsSnapshotWhereInput;
+  data: Prisma.XOR<
+    Prisma.OrderRejectionsSnapshotUpdateWithoutReasonsInput,
+    Prisma.OrderRejectionsSnapshotUncheckedUpdateWithoutReasonsInput
+  >;
+};
+
+export type OrderRejectionsSnapshotUpdateWithoutReasonsInput = {
+  status?:
+    | Prisma.EnumSectionStatusFieldUpdateOperationsInput
+    | $Enums.SectionStatus;
+  cancellationsPct?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  cancellationsCount?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  lostSales?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  reasonUnknownCount?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  snapshot?: Prisma.ScrapeSnapshotUpdateOneRequiredWithoutRejectionsNestedInput;
+};
+
+export type OrderRejectionsSnapshotUncheckedUpdateWithoutReasonsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number;
+  snapshotId?: Prisma.IntFieldUpdateOperationsInput | number;
+  status?:
+    | Prisma.EnumSectionStatusFieldUpdateOperationsInput
+    | $Enums.SectionStatus;
+  cancellationsPct?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  cancellationsCount?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   lostSales?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -734,6 +953,44 @@ export type OrderRejectionsSnapshotUncheckedUpdateWithoutSnapshotInput = {
     | null;
 };
 
+/**
+ * Count Type OrderRejectionsSnapshotCountOutputType
+ */
+
+export type OrderRejectionsSnapshotCountOutputType = {
+  reasons: number;
+};
+
+export type OrderRejectionsSnapshotCountOutputTypeSelect<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  reasons?: boolean | OrderRejectionsSnapshotCountOutputTypeCountReasonsArgs;
+};
+
+/**
+ * OrderRejectionsSnapshotCountOutputType without action
+ */
+export type OrderRejectionsSnapshotCountOutputTypeDefaultArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the OrderRejectionsSnapshotCountOutputType
+   */
+  select?: Prisma.OrderRejectionsSnapshotCountOutputTypeSelect<ExtArgs> | null;
+};
+
+/**
+ * OrderRejectionsSnapshotCountOutputType without action
+ */
+export type OrderRejectionsSnapshotCountOutputTypeCountReasonsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.CancellationReasonWhereInput;
+};
+
 export type OrderRejectionsSnapshotSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
@@ -743,9 +1000,14 @@ export type OrderRejectionsSnapshotSelect<
     snapshotId?: boolean;
     status?: boolean;
     cancellationsPct?: boolean;
+    cancellationsCount?: boolean;
     lostSales?: boolean;
     reasonUnknownCount?: boolean;
     snapshot?: boolean | Prisma.ScrapeSnapshotDefaultArgs<ExtArgs>;
+    reasons?: boolean | Prisma.OrderRejectionsSnapshot$reasonsArgs<ExtArgs>;
+    _count?:
+      | boolean
+      | Prisma.OrderRejectionsSnapshotCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["orderRejectionsSnapshot"]
 >;
@@ -759,6 +1021,7 @@ export type OrderRejectionsSnapshotSelectCreateManyAndReturn<
     snapshotId?: boolean;
     status?: boolean;
     cancellationsPct?: boolean;
+    cancellationsCount?: boolean;
     lostSales?: boolean;
     reasonUnknownCount?: boolean;
     snapshot?: boolean | Prisma.ScrapeSnapshotDefaultArgs<ExtArgs>;
@@ -775,6 +1038,7 @@ export type OrderRejectionsSnapshotSelectUpdateManyAndReturn<
     snapshotId?: boolean;
     status?: boolean;
     cancellationsPct?: boolean;
+    cancellationsCount?: boolean;
     lostSales?: boolean;
     reasonUnknownCount?: boolean;
     snapshot?: boolean | Prisma.ScrapeSnapshotDefaultArgs<ExtArgs>;
@@ -787,6 +1051,7 @@ export type OrderRejectionsSnapshotSelectScalar = {
   snapshotId?: boolean;
   status?: boolean;
   cancellationsPct?: boolean;
+  cancellationsCount?: boolean;
   lostSales?: boolean;
   reasonUnknownCount?: boolean;
 };
@@ -799,6 +1064,7 @@ export type OrderRejectionsSnapshotOmit<
   | "snapshotId"
   | "status"
   | "cancellationsPct"
+  | "cancellationsCount"
   | "lostSales"
   | "reasonUnknownCount",
   ExtArgs["result"]["orderRejectionsSnapshot"]
@@ -808,6 +1074,10 @@ export type OrderRejectionsSnapshotInclude<
     runtime.Types.Extensions.DefaultArgs,
 > = {
   snapshot?: boolean | Prisma.ScrapeSnapshotDefaultArgs<ExtArgs>;
+  reasons?: boolean | Prisma.OrderRejectionsSnapshot$reasonsArgs<ExtArgs>;
+  _count?:
+    | boolean
+    | Prisma.OrderRejectionsSnapshotCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type OrderRejectionsSnapshotIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
@@ -829,6 +1099,7 @@ export type $OrderRejectionsSnapshotPayload<
   name: "OrderRejectionsSnapshot";
   objects: {
     snapshot: Prisma.$ScrapeSnapshotPayload<ExtArgs>;
+    reasons: Prisma.$CancellationReasonPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -836,6 +1107,7 @@ export type $OrderRejectionsSnapshotPayload<
       snapshotId: number;
       status: $Enums.SectionStatus;
       cancellationsPct: runtime.Decimal | null;
+      cancellationsCount: number | null;
       lostSales: runtime.Decimal | null;
       reasonUnknownCount: number | null;
     },
@@ -1439,6 +1711,20 @@ export interface Prisma__OrderRejectionsSnapshotClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  reasons<T extends Prisma.OrderRejectionsSnapshot$reasonsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<
+      T,
+      Prisma.OrderRejectionsSnapshot$reasonsArgs<ExtArgs>
+    >,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$CancellationReasonPayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1487,6 +1773,10 @@ export interface OrderRejectionsSnapshotFieldRefs {
   readonly cancellationsPct: Prisma.FieldRef<
     "OrderRejectionsSnapshot",
     "Decimal"
+  >;
+  readonly cancellationsCount: Prisma.FieldRef<
+    "OrderRejectionsSnapshot",
+    "Int"
   >;
   readonly lostSales: Prisma.FieldRef<"OrderRejectionsSnapshot", "Decimal">;
   readonly reasonUnknownCount: Prisma.FieldRef<
@@ -1713,6 +2003,11 @@ export type OrderRejectionsSnapshotFindManyArgs<
    * Skip the first `n` OrderRejectionsSnapshots.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of OrderRejectionsSnapshots.
+   */
   distinct?:
     | Prisma.OrderRejectionsSnapshotScalarFieldEnum
     | Prisma.OrderRejectionsSnapshotScalarFieldEnum[];
@@ -1961,6 +2256,37 @@ export type OrderRejectionsSnapshotDeleteManyArgs<
    * Limit how many OrderRejectionsSnapshots to delete.
    */
   limit?: number;
+};
+
+/**
+ * OrderRejectionsSnapshot.reasons
+ */
+export type OrderRejectionsSnapshot$reasonsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the CancellationReason
+   */
+  select?: Prisma.CancellationReasonSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the CancellationReason
+   */
+  omit?: Prisma.CancellationReasonOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CancellationReasonInclude<ExtArgs> | null;
+  where?: Prisma.CancellationReasonWhereInput;
+  orderBy?:
+    | Prisma.CancellationReasonOrderByWithRelationInput
+    | Prisma.CancellationReasonOrderByWithRelationInput[];
+  cursor?: Prisma.CancellationReasonWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.CancellationReasonScalarFieldEnum
+    | Prisma.CancellationReasonScalarFieldEnum[];
 };
 
 /**

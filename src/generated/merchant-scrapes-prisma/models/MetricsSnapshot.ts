@@ -13,7 +13,8 @@ import type * as Prisma from "../internal/prismaNamespace";
 
 /**
  * Model MetricsSnapshot
- *
+ * Sales/order headline metrics (Foody "metrics" section; Wolt home + insights
+ * KPIs). Delta* columns and comparisonWindow are Wolt-only for now.
  */
 export type MetricsSnapshotModel =
   runtime.Types.Result.DefaultSelection<Prisma.$MetricsSnapshotPayload>;
@@ -298,19 +299,20 @@ export type MetricsSnapshotGroupByOutputType = {
   _max: MetricsSnapshotMaxAggregateOutputType | null;
 };
 
-type GetMetricsSnapshotGroupByPayload<T extends MetricsSnapshotGroupByArgs> =
-  Prisma.PrismaPromise<
-    Array<
-      Prisma.PickEnumerable<MetricsSnapshotGroupByOutputType, T["by"]> & {
-        [P in keyof T &
-          keyof MetricsSnapshotGroupByOutputType]: P extends "_count"
-          ? T[P] extends boolean
-            ? number
-            : Prisma.GetScalarType<T[P], MetricsSnapshotGroupByOutputType[P]>
-          : Prisma.GetScalarType<T[P], MetricsSnapshotGroupByOutputType[P]>;
-      }
-    >
-  >;
+export type GetMetricsSnapshotGroupByPayload<
+  T extends MetricsSnapshotGroupByArgs,
+> = Prisma.PrismaPromise<
+  Array<
+    Prisma.PickEnumerable<MetricsSnapshotGroupByOutputType, T["by"]> & {
+      [P in keyof T &
+        keyof MetricsSnapshotGroupByOutputType]: P extends "_count"
+        ? T[P] extends boolean
+          ? number
+          : Prisma.GetScalarType<T[P], MetricsSnapshotGroupByOutputType[P]>
+        : Prisma.GetScalarType<T[P], MetricsSnapshotGroupByOutputType[P]>;
+    }
+  >
+>;
 
 export type MetricsSnapshotWhereInput = {
   AND?: Prisma.MetricsSnapshotWhereInput | Prisma.MetricsSnapshotWhereInput[];
@@ -2361,6 +2363,11 @@ export type MetricsSnapshotFindManyArgs<
    * Skip the first `n` MetricsSnapshots.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of MetricsSnapshots.
+   */
   distinct?:
     | Prisma.MetricsSnapshotScalarFieldEnum
     | Prisma.MetricsSnapshotScalarFieldEnum[];

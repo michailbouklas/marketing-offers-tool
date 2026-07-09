@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ClosureReasonsList from "$lib/components/aggregator-kpis/widgets/closure-reasons-list.svelte";
   import ClosuresHistoryTable from "$lib/components/aggregator-kpis/widgets/closures-history-table.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
   import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
@@ -8,6 +9,7 @@
     aggregatorLabel,
     averageValues,
     formatDuration,
+    formatDurationDHM,
     formatKpiDateTime,
     formatPct,
     sumValues,
@@ -21,12 +23,17 @@
   const storeTitle = $derived(store.name ?? `Store #${store.id}`);
   const points = $derived(data.view.points);
   const trend = $derived(data.view.trend);
+  const reasonBreakdown = $derived(data.view.reasonBreakdown);
 
   const statCards = $derived([
     { label: "Snapshots", value: points.length.toString() },
     {
-      label: "Latest offline in open hours",
-      value: formatPct(points[0]?.offlineOpenHoursPct),
+      label: "Latest offline",
+      value: formatDurationDHM(
+        points[0]?.offlineDurationSeconds,
+        points[0]?.offlineDurationRaw,
+      ),
+      hint: `${formatPct(points[0]?.offlineOpenHoursPct)} in open hours`,
     },
     {
       label: "Avg offline in open hours",
@@ -156,6 +163,18 @@
 
       <div class="flex flex-col gap-6">
         <KpiStatCards data={statCards} />
+
+        {#if reasonBreakdown && reasonBreakdown.reasons.length > 0}
+          <Card.Root>
+            <Card.Header>
+              <Card.Title>Offline breakdown</Card.Title>
+              <Card.Description>Latest snapshot, by reason.</Card.Description>
+            </Card.Header>
+            <Card.Content>
+              <ClosureReasonsList breakdown={reasonBreakdown} />
+            </Card.Content>
+          </Card.Root>
+        {/if}
 
         <KpiTrendChart
           title="Offline in open hours over time"

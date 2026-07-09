@@ -218,19 +218,20 @@ export type RatingStarBucketGroupByOutputType = {
   _max: RatingStarBucketMaxAggregateOutputType | null;
 };
 
-type GetRatingStarBucketGroupByPayload<T extends RatingStarBucketGroupByArgs> =
-  Prisma.PrismaPromise<
-    Array<
-      Prisma.PickEnumerable<RatingStarBucketGroupByOutputType, T["by"]> & {
-        [P in keyof T &
-          keyof RatingStarBucketGroupByOutputType]: P extends "_count"
-          ? T[P] extends boolean
-            ? number
-            : Prisma.GetScalarType<T[P], RatingStarBucketGroupByOutputType[P]>
-          : Prisma.GetScalarType<T[P], RatingStarBucketGroupByOutputType[P]>;
-      }
-    >
-  >;
+export type GetRatingStarBucketGroupByPayload<
+  T extends RatingStarBucketGroupByArgs,
+> = Prisma.PrismaPromise<
+  Array<
+    Prisma.PickEnumerable<RatingStarBucketGroupByOutputType, T["by"]> & {
+      [P in keyof T &
+        keyof RatingStarBucketGroupByOutputType]: P extends "_count"
+        ? T[P] extends boolean
+          ? number
+          : Prisma.GetScalarType<T[P], RatingStarBucketGroupByOutputType[P]>
+        : Prisma.GetScalarType<T[P], RatingStarBucketGroupByOutputType[P]>;
+    }
+  >
+>;
 
 export type RatingStarBucketWhereInput = {
   AND?: Prisma.RatingStarBucketWhereInput | Prisma.RatingStarBucketWhereInput[];
@@ -1642,6 +1643,11 @@ export type RatingStarBucketFindManyArgs<
    * Skip the first `n` RatingStarBuckets.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of RatingStarBuckets.
+   */
   distinct?:
     | Prisma.RatingStarBucketScalarFieldEnum
     | Prisma.RatingStarBucketScalarFieldEnum[];

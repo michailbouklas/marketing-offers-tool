@@ -23,3 +23,14 @@ export const SectionStatus = {
 } as const;
 
 export type SectionStatus = (typeof SectionStatus)[keyof typeof SectionStatus];
+
+export const ScrapeRunStatus = {
+  RUNNING: "RUNNING",
+  COMPLETED: "COMPLETED",
+  INTERRUPTED: "INTERRUPTED",
+  SYSTEMIC_BREAKAGE: "SYSTEMIC_BREAKAGE",
+  CRASHED: "CRASHED",
+} as const;
+
+export type ScrapeRunStatus =
+  (typeof ScrapeRunStatus)[keyof typeof ScrapeRunStatus];

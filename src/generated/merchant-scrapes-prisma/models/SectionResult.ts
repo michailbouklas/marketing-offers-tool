@@ -13,7 +13,9 @@ import type * as Prisma from "../internal/prismaNamespace";
 
 /**
  * Model SectionResult
- *
+ * Per-section outcome bookkeeping. `key` is a free string ("metrics",
+ * "rating", "reviews", "operations", future Wolt keys) — intentionally not
+ * an enum so a new section never needs a migration.
  */
 export type SectionResultModel =
   runtime.Types.Result.DefaultSelection<Prisma.$SectionResultPayload>;
@@ -220,7 +222,7 @@ export type SectionResultGroupByOutputType = {
   _max: SectionResultMaxAggregateOutputType | null;
 };
 
-type GetSectionResultGroupByPayload<T extends SectionResultGroupByArgs> =
+export type GetSectionResultGroupByPayload<T extends SectionResultGroupByArgs> =
   Prisma.PrismaPromise<
     Array<
       Prisma.PickEnumerable<SectionResultGroupByOutputType, T["by"]> & {
@@ -411,14 +413,6 @@ export type SectionResultOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder;
 };
 
-export type StringNullableListFilter<$PrismaModel = never> = {
-  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null;
-  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null;
-  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
-  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
-  isEmpty?: boolean;
-};
-
 export type SectionResultSnapshotIdKeyCompoundUniqueInput = {
   snapshotId: number;
   key: string;
@@ -585,14 +579,6 @@ export type EnumSectionStatusFieldUpdateOperationsInput = {
 export type SectionResultUpdatemissingFieldsInput = {
   set?: string[];
   push?: string | string[];
-};
-
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null;
-  increment?: number;
-  decrement?: number;
-  multiply?: number;
-  divide?: number;
 };
 
 export type SectionResultCreateWithoutSnapshotInput = {
@@ -1667,6 +1653,11 @@ export type SectionResultFindManyArgs<
    * Skip the first `n` SectionResults.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of SectionResults.
+   */
   distinct?:
     | Prisma.SectionResultScalarFieldEnum
     | Prisma.SectionResultScalarFieldEnum[];

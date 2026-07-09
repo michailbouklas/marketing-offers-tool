@@ -54,6 +54,7 @@ export const JsonNull = runtime.JsonNull;
 export const AnyNull = runtime.AnyNull;
 
 export const ModelName = {
+  ScrapeRun: "ScrapeRun",
   Store: "Store",
   ScrapeSnapshot: "ScrapeSnapshot",
   SectionResult: "SectionResult",
@@ -61,8 +62,10 @@ export const ModelName = {
   RatingSnapshot: "RatingSnapshot",
   RatingStarBucket: "RatingStarBucket",
   ClosuresSnapshot: "ClosuresSnapshot",
+  ClosureReason: "ClosureReason",
   PunctualitySnapshot: "PunctualitySnapshot",
   OrderRejectionsSnapshot: "OrderRejectionsSnapshot",
+  CancellationReason: "CancellationReason",
   Review: "Review",
 } as const;
 
@@ -81,6 +84,30 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 
 export type TransactionIsolationLevel =
   (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel];
+
+export const ScrapeRunScalarFieldEnum = {
+  id: "id",
+  aggregator: "aggregator",
+  sessionId: "sessionId",
+  runId: "runId",
+  shard: "shard",
+  argv: "argv",
+  fresh: "fresh",
+  startedAt: "startedAt",
+  endedAt: "endedAt",
+  status: "status",
+  restarts: "restarts",
+  totalStores: "totalStores",
+  okStores: "okStores",
+  partialStores: "partialStores",
+  failedStores: "failedStores",
+  skippedStores: "skippedStores",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type ScrapeRunScalarFieldEnum =
+  (typeof ScrapeRunScalarFieldEnum)[keyof typeof ScrapeRunScalarFieldEnum];
 
 export const StoreScalarFieldEnum = {
   id: "id",
@@ -170,12 +197,25 @@ export const ClosuresSnapshotScalarFieldEnum = {
   snapshotId: "snapshotId",
   status: "status",
   offlineOpenHoursPct: "offlineOpenHoursPct",
+  offlineDurationSeconds: "offlineDurationSeconds",
+  offlineDurationRaw: "offlineDurationRaw",
   unreachableSeconds: "unreachableSeconds",
   unreachableRaw: "unreachableRaw",
 } as const;
 
 export type ClosuresSnapshotScalarFieldEnum =
   (typeof ClosuresSnapshotScalarFieldEnum)[keyof typeof ClosuresSnapshotScalarFieldEnum];
+
+export const ClosureReasonScalarFieldEnum = {
+  id: "id",
+  closuresSnapshotId: "closuresSnapshotId",
+  reason: "reason",
+  durationSeconds: "durationSeconds",
+  durationRaw: "durationRaw",
+} as const;
+
+export type ClosureReasonScalarFieldEnum =
+  (typeof ClosureReasonScalarFieldEnum)[keyof typeof ClosureReasonScalarFieldEnum];
 
 export const PunctualitySnapshotScalarFieldEnum = {
   id: "id",
@@ -196,12 +236,25 @@ export const OrderRejectionsSnapshotScalarFieldEnum = {
   snapshotId: "snapshotId",
   status: "status",
   cancellationsPct: "cancellationsPct",
+  cancellationsCount: "cancellationsCount",
   lostSales: "lostSales",
   reasonUnknownCount: "reasonUnknownCount",
 } as const;
 
 export type OrderRejectionsSnapshotScalarFieldEnum =
   (typeof OrderRejectionsSnapshotScalarFieldEnum)[keyof typeof OrderRejectionsSnapshotScalarFieldEnum];
+
+export const CancellationReasonScalarFieldEnum = {
+  id: "id",
+  orderRejectionsSnapshotId: "orderRejectionsSnapshotId",
+  reason: "reason",
+  cancellations: "cancellations",
+  salesLoss: "salesLoss",
+  salesLossRaw: "salesLossRaw",
+} as const;
+
+export type CancellationReasonScalarFieldEnum =
+  (typeof CancellationReasonScalarFieldEnum)[keyof typeof CancellationReasonScalarFieldEnum];
 
 export const ReviewScalarFieldEnum = {
   id: "id",

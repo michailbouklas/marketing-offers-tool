@@ -13,7 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace";
 
 /**
  * Model PunctualitySnapshot
- *
+ * KPI: Punctuality. From Foody's operations tab.
  */
 export type PunctualitySnapshotModel =
   runtime.Types.Result.DefaultSelection<Prisma.$PunctualitySnapshotPayload>;
@@ -245,7 +245,7 @@ export type PunctualitySnapshotGroupByOutputType = {
   _max: PunctualitySnapshotMaxAggregateOutputType | null;
 };
 
-type GetPunctualitySnapshotGroupByPayload<
+export type GetPunctualitySnapshotGroupByPayload<
   T extends PunctualitySnapshotGroupByArgs,
 > = Prisma.PrismaPromise<
   Array<
@@ -1769,6 +1769,11 @@ export type PunctualitySnapshotFindManyArgs<
    * Skip the first `n` PunctualitySnapshots.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of PunctualitySnapshots.
+   */
   distinct?:
     | Prisma.PunctualitySnapshotScalarFieldEnum
     | Prisma.PunctualitySnapshotScalarFieldEnum[];

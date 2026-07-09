@@ -13,7 +13,10 @@ import type * as Prisma from "../internal/prismaNamespace";
 
 /**
  * Model ClosuresSnapshot
- *
+ * KPI: Closures. From Foody's operations tab; carries that section's status.
+ * The reason breakdown is a child row table (like RatingStarBucket): the
+ * portal's carousel shows one slide per reason that occurred, so absent rows
+ * mean "didn't happen in the window", not "missing".
  */
 export type ClosuresSnapshotModel =
   runtime.Types.Result.DefaultSelection<Prisma.$ClosuresSnapshotPayload>;
@@ -30,6 +33,7 @@ export type ClosuresSnapshotAvgAggregateOutputType = {
   id: number | null;
   snapshotId: number | null;
   offlineOpenHoursPct: runtime.Decimal | null;
+  offlineDurationSeconds: number | null;
   unreachableSeconds: number | null;
 };
 
@@ -37,6 +41,7 @@ export type ClosuresSnapshotSumAggregateOutputType = {
   id: number | null;
   snapshotId: number | null;
   offlineOpenHoursPct: runtime.Decimal | null;
+  offlineDurationSeconds: number | null;
   unreachableSeconds: number | null;
 };
 
@@ -45,6 +50,8 @@ export type ClosuresSnapshotMinAggregateOutputType = {
   snapshotId: number | null;
   status: $Enums.SectionStatus | null;
   offlineOpenHoursPct: runtime.Decimal | null;
+  offlineDurationSeconds: number | null;
+  offlineDurationRaw: string | null;
   unreachableSeconds: number | null;
   unreachableRaw: string | null;
 };
@@ -54,6 +61,8 @@ export type ClosuresSnapshotMaxAggregateOutputType = {
   snapshotId: number | null;
   status: $Enums.SectionStatus | null;
   offlineOpenHoursPct: runtime.Decimal | null;
+  offlineDurationSeconds: number | null;
+  offlineDurationRaw: string | null;
   unreachableSeconds: number | null;
   unreachableRaw: string | null;
 };
@@ -63,6 +72,8 @@ export type ClosuresSnapshotCountAggregateOutputType = {
   snapshotId: number;
   status: number;
   offlineOpenHoursPct: number;
+  offlineDurationSeconds: number;
+  offlineDurationRaw: number;
   unreachableSeconds: number;
   unreachableRaw: number;
   _all: number;
@@ -72,6 +83,7 @@ export type ClosuresSnapshotAvgAggregateInputType = {
   id?: true;
   snapshotId?: true;
   offlineOpenHoursPct?: true;
+  offlineDurationSeconds?: true;
   unreachableSeconds?: true;
 };
 
@@ -79,6 +91,7 @@ export type ClosuresSnapshotSumAggregateInputType = {
   id?: true;
   snapshotId?: true;
   offlineOpenHoursPct?: true;
+  offlineDurationSeconds?: true;
   unreachableSeconds?: true;
 };
 
@@ -87,6 +100,8 @@ export type ClosuresSnapshotMinAggregateInputType = {
   snapshotId?: true;
   status?: true;
   offlineOpenHoursPct?: true;
+  offlineDurationSeconds?: true;
+  offlineDurationRaw?: true;
   unreachableSeconds?: true;
   unreachableRaw?: true;
 };
@@ -96,6 +111,8 @@ export type ClosuresSnapshotMaxAggregateInputType = {
   snapshotId?: true;
   status?: true;
   offlineOpenHoursPct?: true;
+  offlineDurationSeconds?: true;
+  offlineDurationRaw?: true;
   unreachableSeconds?: true;
   unreachableRaw?: true;
 };
@@ -105,6 +122,8 @@ export type ClosuresSnapshotCountAggregateInputType = {
   snapshotId?: true;
   status?: true;
   offlineOpenHoursPct?: true;
+  offlineDurationSeconds?: true;
+  offlineDurationRaw?: true;
   unreachableSeconds?: true;
   unreachableRaw?: true;
   _all?: true;
@@ -212,6 +231,8 @@ export type ClosuresSnapshotGroupByOutputType = {
   snapshotId: number;
   status: $Enums.SectionStatus;
   offlineOpenHoursPct: runtime.Decimal | null;
+  offlineDurationSeconds: number | null;
+  offlineDurationRaw: string | null;
   unreachableSeconds: number | null;
   unreachableRaw: string | null;
   _count: ClosuresSnapshotCountAggregateOutputType | null;
@@ -221,19 +242,20 @@ export type ClosuresSnapshotGroupByOutputType = {
   _max: ClosuresSnapshotMaxAggregateOutputType | null;
 };
 
-type GetClosuresSnapshotGroupByPayload<T extends ClosuresSnapshotGroupByArgs> =
-  Prisma.PrismaPromise<
-    Array<
-      Prisma.PickEnumerable<ClosuresSnapshotGroupByOutputType, T["by"]> & {
-        [P in keyof T &
-          keyof ClosuresSnapshotGroupByOutputType]: P extends "_count"
-          ? T[P] extends boolean
-            ? number
-            : Prisma.GetScalarType<T[P], ClosuresSnapshotGroupByOutputType[P]>
-          : Prisma.GetScalarType<T[P], ClosuresSnapshotGroupByOutputType[P]>;
-      }
-    >
-  >;
+export type GetClosuresSnapshotGroupByPayload<
+  T extends ClosuresSnapshotGroupByArgs,
+> = Prisma.PrismaPromise<
+  Array<
+    Prisma.PickEnumerable<ClosuresSnapshotGroupByOutputType, T["by"]> & {
+      [P in keyof T &
+        keyof ClosuresSnapshotGroupByOutputType]: P extends "_count"
+        ? T[P] extends boolean
+          ? number
+          : Prisma.GetScalarType<T[P], ClosuresSnapshotGroupByOutputType[P]>
+        : Prisma.GetScalarType<T[P], ClosuresSnapshotGroupByOutputType[P]>;
+    }
+  >
+>;
 
 export type ClosuresSnapshotWhereInput = {
   AND?: Prisma.ClosuresSnapshotWhereInput | Prisma.ClosuresSnapshotWhereInput[];
@@ -251,6 +273,14 @@ export type ClosuresSnapshotWhereInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?:
+    | Prisma.IntNullableFilter<"ClosuresSnapshot">
+    | number
+    | null;
+  offlineDurationRaw?:
+    | Prisma.StringNullableFilter<"ClosuresSnapshot">
+    | string
+    | null;
   unreachableSeconds?:
     | Prisma.IntNullableFilter<"ClosuresSnapshot">
     | number
@@ -263,6 +293,7 @@ export type ClosuresSnapshotWhereInput = {
     Prisma.ScrapeSnapshotScalarRelationFilter,
     Prisma.ScrapeSnapshotWhereInput
   >;
+  reasons?: Prisma.ClosureReasonListRelationFilter;
 };
 
 export type ClosuresSnapshotOrderByWithRelationInput = {
@@ -270,9 +301,12 @@ export type ClosuresSnapshotOrderByWithRelationInput = {
   snapshotId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   offlineOpenHoursPct?: Prisma.SortOrderInput | Prisma.SortOrder;
+  offlineDurationSeconds?: Prisma.SortOrderInput | Prisma.SortOrder;
+  offlineDurationRaw?: Prisma.SortOrderInput | Prisma.SortOrder;
   unreachableSeconds?: Prisma.SortOrderInput | Prisma.SortOrder;
   unreachableRaw?: Prisma.SortOrderInput | Prisma.SortOrder;
   snapshot?: Prisma.ScrapeSnapshotOrderByWithRelationInput;
+  reasons?: Prisma.ClosureReasonOrderByRelationAggregateInput;
 };
 
 export type ClosuresSnapshotWhereUniqueInput = Prisma.AtLeast<
@@ -296,6 +330,14 @@ export type ClosuresSnapshotWhereUniqueInput = Prisma.AtLeast<
       | number
       | string
       | null;
+    offlineDurationSeconds?:
+      | Prisma.IntNullableFilter<"ClosuresSnapshot">
+      | number
+      | null;
+    offlineDurationRaw?:
+      | Prisma.StringNullableFilter<"ClosuresSnapshot">
+      | string
+      | null;
     unreachableSeconds?:
       | Prisma.IntNullableFilter<"ClosuresSnapshot">
       | number
@@ -308,6 +350,7 @@ export type ClosuresSnapshotWhereUniqueInput = Prisma.AtLeast<
       Prisma.ScrapeSnapshotScalarRelationFilter,
       Prisma.ScrapeSnapshotWhereInput
     >;
+    reasons?: Prisma.ClosureReasonListRelationFilter;
   },
   "id" | "snapshotId"
 >;
@@ -317,6 +360,8 @@ export type ClosuresSnapshotOrderByWithAggregationInput = {
   snapshotId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   offlineOpenHoursPct?: Prisma.SortOrderInput | Prisma.SortOrder;
+  offlineDurationSeconds?: Prisma.SortOrderInput | Prisma.SortOrder;
+  offlineDurationRaw?: Prisma.SortOrderInput | Prisma.SortOrder;
   unreachableSeconds?: Prisma.SortOrderInput | Prisma.SortOrder;
   unreachableRaw?: Prisma.SortOrderInput | Prisma.SortOrder;
   _count?: Prisma.ClosuresSnapshotCountOrderByAggregateInput;
@@ -346,6 +391,14 @@ export type ClosuresSnapshotScalarWhereWithAggregatesInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?:
+    | Prisma.IntNullableWithAggregatesFilter<"ClosuresSnapshot">
+    | number
+    | null;
+  offlineDurationRaw?:
+    | Prisma.StringNullableWithAggregatesFilter<"ClosuresSnapshot">
+    | string
+    | null;
   unreachableSeconds?:
     | Prisma.IntNullableWithAggregatesFilter<"ClosuresSnapshot">
     | number
@@ -364,9 +417,12 @@ export type ClosuresSnapshotCreateInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?: number | null;
+  offlineDurationRaw?: string | null;
   unreachableSeconds?: number | null;
   unreachableRaw?: string | null;
   snapshot: Prisma.ScrapeSnapshotCreateNestedOneWithoutClosuresInput;
+  reasons?: Prisma.ClosureReasonCreateNestedManyWithoutClosuresSnapshotInput;
 };
 
 export type ClosuresSnapshotUncheckedCreateInput = {
@@ -379,8 +435,11 @@ export type ClosuresSnapshotUncheckedCreateInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?: number | null;
+  offlineDurationRaw?: string | null;
   unreachableSeconds?: number | null;
   unreachableRaw?: string | null;
+  reasons?: Prisma.ClosureReasonUncheckedCreateNestedManyWithoutClosuresSnapshotInput;
 };
 
 export type ClosuresSnapshotUpdateInput = {
@@ -394,6 +453,14 @@ export type ClosuresSnapshotUpdateInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  offlineDurationRaw?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   unreachableSeconds?:
     | Prisma.NullableIntFieldUpdateOperationsInput
     | number
@@ -403,6 +470,7 @@ export type ClosuresSnapshotUpdateInput = {
     | string
     | null;
   snapshot?: Prisma.ScrapeSnapshotUpdateOneRequiredWithoutClosuresNestedInput;
+  reasons?: Prisma.ClosureReasonUpdateManyWithoutClosuresSnapshotNestedInput;
 };
 
 export type ClosuresSnapshotUncheckedUpdateInput = {
@@ -418,6 +486,14 @@ export type ClosuresSnapshotUncheckedUpdateInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  offlineDurationRaw?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   unreachableSeconds?:
     | Prisma.NullableIntFieldUpdateOperationsInput
     | number
@@ -426,6 +502,7 @@ export type ClosuresSnapshotUncheckedUpdateInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  reasons?: Prisma.ClosureReasonUncheckedUpdateManyWithoutClosuresSnapshotNestedInput;
 };
 
 export type ClosuresSnapshotCreateManyInput = {
@@ -438,6 +515,8 @@ export type ClosuresSnapshotCreateManyInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?: number | null;
+  offlineDurationRaw?: string | null;
   unreachableSeconds?: number | null;
   unreachableRaw?: string | null;
 };
@@ -451,6 +530,14 @@ export type ClosuresSnapshotUpdateManyMutationInput = {
     | runtime.Decimal
     | runtime.DecimalJsLike
     | number
+    | string
+    | null;
+  offlineDurationSeconds?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  offlineDurationRaw?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
   unreachableSeconds?:
@@ -476,6 +563,14 @@ export type ClosuresSnapshotUncheckedUpdateManyInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  offlineDurationRaw?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   unreachableSeconds?:
     | Prisma.NullableIntFieldUpdateOperationsInput
     | number
@@ -496,6 +591,8 @@ export type ClosuresSnapshotCountOrderByAggregateInput = {
   snapshotId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   offlineOpenHoursPct?: Prisma.SortOrder;
+  offlineDurationSeconds?: Prisma.SortOrder;
+  offlineDurationRaw?: Prisma.SortOrder;
   unreachableSeconds?: Prisma.SortOrder;
   unreachableRaw?: Prisma.SortOrder;
 };
@@ -504,6 +601,7 @@ export type ClosuresSnapshotAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   snapshotId?: Prisma.SortOrder;
   offlineOpenHoursPct?: Prisma.SortOrder;
+  offlineDurationSeconds?: Prisma.SortOrder;
   unreachableSeconds?: Prisma.SortOrder;
 };
 
@@ -512,6 +610,8 @@ export type ClosuresSnapshotMaxOrderByAggregateInput = {
   snapshotId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   offlineOpenHoursPct?: Prisma.SortOrder;
+  offlineDurationSeconds?: Prisma.SortOrder;
+  offlineDurationRaw?: Prisma.SortOrder;
   unreachableSeconds?: Prisma.SortOrder;
   unreachableRaw?: Prisma.SortOrder;
 };
@@ -521,6 +621,8 @@ export type ClosuresSnapshotMinOrderByAggregateInput = {
   snapshotId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   offlineOpenHoursPct?: Prisma.SortOrder;
+  offlineDurationSeconds?: Prisma.SortOrder;
+  offlineDurationRaw?: Prisma.SortOrder;
   unreachableSeconds?: Prisma.SortOrder;
   unreachableRaw?: Prisma.SortOrder;
 };
@@ -529,7 +631,13 @@ export type ClosuresSnapshotSumOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   snapshotId?: Prisma.SortOrder;
   offlineOpenHoursPct?: Prisma.SortOrder;
+  offlineDurationSeconds?: Prisma.SortOrder;
   unreachableSeconds?: Prisma.SortOrder;
+};
+
+export type ClosuresSnapshotScalarRelationFilter = {
+  is?: Prisma.ClosuresSnapshotWhereInput;
+  isNot?: Prisma.ClosuresSnapshotWhereInput;
 };
 
 export type ClosuresSnapshotCreateNestedOneWithoutSnapshotInput = {
@@ -588,6 +696,32 @@ export type ClosuresSnapshotUncheckedUpdateOneWithoutSnapshotNestedInput = {
   >;
 };
 
+export type ClosuresSnapshotCreateNestedOneWithoutReasonsInput = {
+  create?: Prisma.XOR<
+    Prisma.ClosuresSnapshotCreateWithoutReasonsInput,
+    Prisma.ClosuresSnapshotUncheckedCreateWithoutReasonsInput
+  >;
+  connectOrCreate?: Prisma.ClosuresSnapshotCreateOrConnectWithoutReasonsInput;
+  connect?: Prisma.ClosuresSnapshotWhereUniqueInput;
+};
+
+export type ClosuresSnapshotUpdateOneRequiredWithoutReasonsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ClosuresSnapshotCreateWithoutReasonsInput,
+    Prisma.ClosuresSnapshotUncheckedCreateWithoutReasonsInput
+  >;
+  connectOrCreate?: Prisma.ClosuresSnapshotCreateOrConnectWithoutReasonsInput;
+  upsert?: Prisma.ClosuresSnapshotUpsertWithoutReasonsInput;
+  connect?: Prisma.ClosuresSnapshotWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ClosuresSnapshotUpdateToOneWithWhereWithoutReasonsInput,
+      Prisma.ClosuresSnapshotUpdateWithoutReasonsInput
+    >,
+    Prisma.ClosuresSnapshotUncheckedUpdateWithoutReasonsInput
+  >;
+};
+
 export type ClosuresSnapshotCreateWithoutSnapshotInput = {
   status: $Enums.SectionStatus;
   offlineOpenHoursPct?:
@@ -596,8 +730,11 @@ export type ClosuresSnapshotCreateWithoutSnapshotInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?: number | null;
+  offlineDurationRaw?: string | null;
   unreachableSeconds?: number | null;
   unreachableRaw?: string | null;
+  reasons?: Prisma.ClosureReasonCreateNestedManyWithoutClosuresSnapshotInput;
 };
 
 export type ClosuresSnapshotUncheckedCreateWithoutSnapshotInput = {
@@ -609,8 +746,11 @@ export type ClosuresSnapshotUncheckedCreateWithoutSnapshotInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?: number | null;
+  offlineDurationRaw?: string | null;
   unreachableSeconds?: number | null;
   unreachableRaw?: string | null;
+  reasons?: Prisma.ClosureReasonUncheckedCreateNestedManyWithoutClosuresSnapshotInput;
 };
 
 export type ClosuresSnapshotCreateOrConnectWithoutSnapshotInput = {
@@ -652,6 +792,14 @@ export type ClosuresSnapshotUpdateWithoutSnapshotInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  offlineDurationRaw?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   unreachableSeconds?:
     | Prisma.NullableIntFieldUpdateOperationsInput
     | number
@@ -660,6 +808,7 @@ export type ClosuresSnapshotUpdateWithoutSnapshotInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  reasons?: Prisma.ClosureReasonUpdateManyWithoutClosuresSnapshotNestedInput;
 };
 
 export type ClosuresSnapshotUncheckedUpdateWithoutSnapshotInput = {
@@ -674,6 +823,14 @@ export type ClosuresSnapshotUncheckedUpdateWithoutSnapshotInput = {
     | number
     | string
     | null;
+  offlineDurationSeconds?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  offlineDurationRaw?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   unreachableSeconds?:
     | Prisma.NullableIntFieldUpdateOperationsInput
     | number
@@ -682,6 +839,165 @@ export type ClosuresSnapshotUncheckedUpdateWithoutSnapshotInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  reasons?: Prisma.ClosureReasonUncheckedUpdateManyWithoutClosuresSnapshotNestedInput;
+};
+
+export type ClosuresSnapshotCreateWithoutReasonsInput = {
+  status: $Enums.SectionStatus;
+  offlineOpenHoursPct?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  offlineDurationSeconds?: number | null;
+  offlineDurationRaw?: string | null;
+  unreachableSeconds?: number | null;
+  unreachableRaw?: string | null;
+  snapshot: Prisma.ScrapeSnapshotCreateNestedOneWithoutClosuresInput;
+};
+
+export type ClosuresSnapshotUncheckedCreateWithoutReasonsInput = {
+  id?: number;
+  snapshotId: number;
+  status: $Enums.SectionStatus;
+  offlineOpenHoursPct?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  offlineDurationSeconds?: number | null;
+  offlineDurationRaw?: string | null;
+  unreachableSeconds?: number | null;
+  unreachableRaw?: string | null;
+};
+
+export type ClosuresSnapshotCreateOrConnectWithoutReasonsInput = {
+  where: Prisma.ClosuresSnapshotWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ClosuresSnapshotCreateWithoutReasonsInput,
+    Prisma.ClosuresSnapshotUncheckedCreateWithoutReasonsInput
+  >;
+};
+
+export type ClosuresSnapshotUpsertWithoutReasonsInput = {
+  update: Prisma.XOR<
+    Prisma.ClosuresSnapshotUpdateWithoutReasonsInput,
+    Prisma.ClosuresSnapshotUncheckedUpdateWithoutReasonsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ClosuresSnapshotCreateWithoutReasonsInput,
+    Prisma.ClosuresSnapshotUncheckedCreateWithoutReasonsInput
+  >;
+  where?: Prisma.ClosuresSnapshotWhereInput;
+};
+
+export type ClosuresSnapshotUpdateToOneWithWhereWithoutReasonsInput = {
+  where?: Prisma.ClosuresSnapshotWhereInput;
+  data: Prisma.XOR<
+    Prisma.ClosuresSnapshotUpdateWithoutReasonsInput,
+    Prisma.ClosuresSnapshotUncheckedUpdateWithoutReasonsInput
+  >;
+};
+
+export type ClosuresSnapshotUpdateWithoutReasonsInput = {
+  status?:
+    | Prisma.EnumSectionStatusFieldUpdateOperationsInput
+    | $Enums.SectionStatus;
+  offlineOpenHoursPct?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  offlineDurationSeconds?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  offlineDurationRaw?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  unreachableSeconds?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  unreachableRaw?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  snapshot?: Prisma.ScrapeSnapshotUpdateOneRequiredWithoutClosuresNestedInput;
+};
+
+export type ClosuresSnapshotUncheckedUpdateWithoutReasonsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number;
+  snapshotId?: Prisma.IntFieldUpdateOperationsInput | number;
+  status?:
+    | Prisma.EnumSectionStatusFieldUpdateOperationsInput
+    | $Enums.SectionStatus;
+  offlineOpenHoursPct?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  offlineDurationSeconds?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  offlineDurationRaw?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  unreachableSeconds?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  unreachableRaw?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+};
+
+/**
+ * Count Type ClosuresSnapshotCountOutputType
+ */
+
+export type ClosuresSnapshotCountOutputType = {
+  reasons: number;
+};
+
+export type ClosuresSnapshotCountOutputTypeSelect<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  reasons?: boolean | ClosuresSnapshotCountOutputTypeCountReasonsArgs;
+};
+
+/**
+ * ClosuresSnapshotCountOutputType without action
+ */
+export type ClosuresSnapshotCountOutputTypeDefaultArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ClosuresSnapshotCountOutputType
+   */
+  select?: Prisma.ClosuresSnapshotCountOutputTypeSelect<ExtArgs> | null;
+};
+
+/**
+ * ClosuresSnapshotCountOutputType without action
+ */
+export type ClosuresSnapshotCountOutputTypeCountReasonsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.ClosureReasonWhereInput;
 };
 
 export type ClosuresSnapshotSelect<
@@ -693,9 +1009,15 @@ export type ClosuresSnapshotSelect<
     snapshotId?: boolean;
     status?: boolean;
     offlineOpenHoursPct?: boolean;
+    offlineDurationSeconds?: boolean;
+    offlineDurationRaw?: boolean;
     unreachableSeconds?: boolean;
     unreachableRaw?: boolean;
     snapshot?: boolean | Prisma.ScrapeSnapshotDefaultArgs<ExtArgs>;
+    reasons?: boolean | Prisma.ClosuresSnapshot$reasonsArgs<ExtArgs>;
+    _count?:
+      | boolean
+      | Prisma.ClosuresSnapshotCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["closuresSnapshot"]
 >;
@@ -709,6 +1031,8 @@ export type ClosuresSnapshotSelectCreateManyAndReturn<
     snapshotId?: boolean;
     status?: boolean;
     offlineOpenHoursPct?: boolean;
+    offlineDurationSeconds?: boolean;
+    offlineDurationRaw?: boolean;
     unreachableSeconds?: boolean;
     unreachableRaw?: boolean;
     snapshot?: boolean | Prisma.ScrapeSnapshotDefaultArgs<ExtArgs>;
@@ -725,6 +1049,8 @@ export type ClosuresSnapshotSelectUpdateManyAndReturn<
     snapshotId?: boolean;
     status?: boolean;
     offlineOpenHoursPct?: boolean;
+    offlineDurationSeconds?: boolean;
+    offlineDurationRaw?: boolean;
     unreachableSeconds?: boolean;
     unreachableRaw?: boolean;
     snapshot?: boolean | Prisma.ScrapeSnapshotDefaultArgs<ExtArgs>;
@@ -737,6 +1063,8 @@ export type ClosuresSnapshotSelectScalar = {
   snapshotId?: boolean;
   status?: boolean;
   offlineOpenHoursPct?: boolean;
+  offlineDurationSeconds?: boolean;
+  offlineDurationRaw?: boolean;
   unreachableSeconds?: boolean;
   unreachableRaw?: boolean;
 };
@@ -749,6 +1077,8 @@ export type ClosuresSnapshotOmit<
   | "snapshotId"
   | "status"
   | "offlineOpenHoursPct"
+  | "offlineDurationSeconds"
+  | "offlineDurationRaw"
   | "unreachableSeconds"
   | "unreachableRaw",
   ExtArgs["result"]["closuresSnapshot"]
@@ -758,6 +1088,8 @@ export type ClosuresSnapshotInclude<
     runtime.Types.Extensions.DefaultArgs,
 > = {
   snapshot?: boolean | Prisma.ScrapeSnapshotDefaultArgs<ExtArgs>;
+  reasons?: boolean | Prisma.ClosuresSnapshot$reasonsArgs<ExtArgs>;
+  _count?: boolean | Prisma.ClosuresSnapshotCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type ClosuresSnapshotIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
@@ -779,6 +1111,7 @@ export type $ClosuresSnapshotPayload<
   name: "ClosuresSnapshot";
   objects: {
     snapshot: Prisma.$ScrapeSnapshotPayload<ExtArgs>;
+    reasons: Prisma.$ClosureReasonPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -786,6 +1119,8 @@ export type $ClosuresSnapshotPayload<
       snapshotId: number;
       status: $Enums.SectionStatus;
       offlineOpenHoursPct: runtime.Decimal | null;
+      offlineDurationSeconds: number | null;
+      offlineDurationRaw: string | null;
       unreachableSeconds: number | null;
       unreachableRaw: string | null;
     },
@@ -1374,6 +1709,17 @@ export interface Prisma__ClosuresSnapshotClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  reasons<T extends Prisma.ClosuresSnapshot$reasonsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.ClosuresSnapshot$reasonsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$ClosureReasonPayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1420,6 +1766,8 @@ export interface ClosuresSnapshotFieldRefs {
   readonly snapshotId: Prisma.FieldRef<"ClosuresSnapshot", "Int">;
   readonly status: Prisma.FieldRef<"ClosuresSnapshot", "SectionStatus">;
   readonly offlineOpenHoursPct: Prisma.FieldRef<"ClosuresSnapshot", "Decimal">;
+  readonly offlineDurationSeconds: Prisma.FieldRef<"ClosuresSnapshot", "Int">;
+  readonly offlineDurationRaw: Prisma.FieldRef<"ClosuresSnapshot", "String">;
   readonly unreachableSeconds: Prisma.FieldRef<"ClosuresSnapshot", "Int">;
   readonly unreachableRaw: Prisma.FieldRef<"ClosuresSnapshot", "String">;
 }
@@ -1642,6 +1990,11 @@ export type ClosuresSnapshotFindManyArgs<
    * Skip the first `n` ClosuresSnapshots.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of ClosuresSnapshots.
+   */
   distinct?:
     | Prisma.ClosuresSnapshotScalarFieldEnum
     | Prisma.ClosuresSnapshotScalarFieldEnum[];
@@ -1890,6 +2243,37 @@ export type ClosuresSnapshotDeleteManyArgs<
    * Limit how many ClosuresSnapshots to delete.
    */
   limit?: number;
+};
+
+/**
+ * ClosuresSnapshot.reasons
+ */
+export type ClosuresSnapshot$reasonsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ClosureReason
+   */
+  select?: Prisma.ClosureReasonSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the ClosureReason
+   */
+  omit?: Prisma.ClosureReasonOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClosureReasonInclude<ExtArgs> | null;
+  where?: Prisma.ClosureReasonWhereInput;
+  orderBy?:
+    | Prisma.ClosureReasonOrderByWithRelationInput
+    | Prisma.ClosureReasonOrderByWithRelationInput[];
+  cursor?: Prisma.ClosureReasonWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.ClosureReasonScalarFieldEnum
+    | Prisma.ClosureReasonScalarFieldEnum[];
 };
 
 /**

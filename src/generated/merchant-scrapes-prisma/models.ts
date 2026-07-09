@@ -7,6 +7,7 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from "./models/ScrapeRun";
 export type * from "./models/Store";
 export type * from "./models/ScrapeSnapshot";
 export type * from "./models/SectionResult";
@@ -14,7 +15,9 @@ export type * from "./models/MetricsSnapshot";
 export type * from "./models/RatingSnapshot";
 export type * from "./models/RatingStarBucket";
 export type * from "./models/ClosuresSnapshot";
+export type * from "./models/ClosureReason";
 export type * from "./models/PunctualitySnapshot";
 export type * from "./models/OrderRejectionsSnapshot";
+export type * from "./models/CancellationReason";
 export type * from "./models/Review";
 export type * from "./commonInputTypes";

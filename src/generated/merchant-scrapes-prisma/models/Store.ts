@@ -13,7 +13,9 @@ import type * as Prisma from "../internal/prismaNamespace";
 
 /**
  * Model Store
- *
+ * One merchant store on one aggregator. Identity = (aggregator, externalId):
+ * FOODY: full vendor id "FY_CY;493"
+ * WOLT:  venue slug from the merchant URL, e.g. "pizza-hut-strovolos"
  */
 export type StoreModel =
   runtime.Types.Result.DefaultSelection<Prisma.$StorePayload>;
@@ -219,17 +221,18 @@ export type StoreGroupByOutputType = {
   _max: StoreMaxAggregateOutputType | null;
 };
 
-type GetStoreGroupByPayload<T extends StoreGroupByArgs> = Prisma.PrismaPromise<
-  Array<
-    Prisma.PickEnumerable<StoreGroupByOutputType, T["by"]> & {
-      [P in keyof T & keyof StoreGroupByOutputType]: P extends "_count"
-        ? T[P] extends boolean
-          ? number
-          : Prisma.GetScalarType<T[P], StoreGroupByOutputType[P]>
-        : Prisma.GetScalarType<T[P], StoreGroupByOutputType[P]>;
-    }
-  >
->;
+export type GetStoreGroupByPayload<T extends StoreGroupByArgs> =
+  Prisma.PrismaPromise<
+    Array<
+      Prisma.PickEnumerable<StoreGroupByOutputType, T["by"]> & {
+        [P in keyof T & keyof StoreGroupByOutputType]: P extends "_count"
+          ? T[P] extends boolean
+            ? number
+            : Prisma.GetScalarType<T[P], StoreGroupByOutputType[P]>
+          : Prisma.GetScalarType<T[P], StoreGroupByOutputType[P]>;
+      }
+    >
+  >;
 
 export type StoreWhereInput = {
   AND?: Prisma.StoreWhereInput | Prisma.StoreWhereInput[];
@@ -455,30 +458,6 @@ export type StoreSumOrderByAggregateInput = {
 export type StoreScalarRelationFilter = {
   is?: Prisma.StoreWhereInput;
   isNot?: Prisma.StoreWhereInput;
-};
-
-export type EnumAggregatorFieldUpdateOperationsInput = {
-  set?: $Enums.Aggregator;
-};
-
-export type StringFieldUpdateOperationsInput = {
-  set?: string;
-};
-
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null;
-};
-
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string;
-};
-
-export type IntFieldUpdateOperationsInput = {
-  set?: number;
-  increment?: number;
-  decrement?: number;
-  multiply?: number;
-  divide?: number;
 };
 
 export type StoreCreateNestedOneWithoutSnapshotsInput = {
@@ -1692,6 +1671,11 @@ export type StoreFindManyArgs<
    * Skip the first `n` Stores.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of Stores.
+   */
   distinct?: Prisma.StoreScalarFieldEnum | Prisma.StoreScalarFieldEnum[];
 };
 

@@ -30,8 +30,8 @@ export * from "./enums";
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more Stores
- * const stores = await prisma.store.findMany()
+ * // Fetch zero or more ScrapeRuns
+ * const scrapeRuns = await prisma.scrapeRun.findMany()
  * ```
  *
  * Read more in our [docs](https://pris.ly/d/client).
@@ -47,28 +47,48 @@ export type PrismaClient<
 export { Prisma };
 
 /**
+ * Model ScrapeRun
+ * One scrape *session* = one supervisor invocation (foody:scrape:start or
+ * :fresh). Survives the supervisor's crash-restarts: the row is created
+ * RUNNING at startup, updated in place after every child exit (so progress
+ * survives a later hard-kill), and finalized with a terminal status on a clean
+ * end. `sessionId` is supervisor-minted and stable across restarts; `runId` is
+ * the child batch id (ties to ScrapeSnapshot.runId) and stays null until a
+ * child has scraped something. Counts are a pure rollup of the run manifest.
+ */
+export type ScrapeRun = Prisma.ScrapeRunModel;
+/**
  * Model Store
- *
+ * One merchant store on one aggregator. Identity = (aggregator, externalId):
+ * FOODY: full vendor id "FY_CY;493"
+ * WOLT:  venue slug from the merchant URL, e.g. "pizza-hut-strovolos"
  */
 export type Store = Prisma.StoreModel;
 /**
  * Model ScrapeSnapshot
- *
+ * One scrape of one store at one point in time. Foody: periodStart/End null
+ * (live "current" snapshot). Wolt: periodStart/End from the requested
+ * "YYYY-MM-DD--YYYY-MM-DD" range.
  */
 export type ScrapeSnapshot = Prisma.ScrapeSnapshotModel;
 /**
  * Model SectionResult
- *
+ * Per-section outcome bookkeeping. `key` is a free string ("metrics",
+ * "rating", "reviews", "operations", future Wolt keys) — intentionally not
+ * an enum so a new section never needs a migration.
  */
 export type SectionResult = Prisma.SectionResultModel;
 /**
  * Model MetricsSnapshot
- *
+ * Sales/order headline metrics (Foody "metrics" section; Wolt home + insights
+ * KPIs). Delta* columns and comparisonWindow are Wolt-only for now.
  */
 export type MetricsSnapshot = Prisma.MetricsSnapshotModel;
 /**
  * Model RatingSnapshot
- *
+ * Store-rating snapshot. The star distribution is a child row table (not
+ * 5+5 columns) so a different scale needs no migration and missing buckets
+ * are absent rows rather than ambiguous nulls.
  */
 export type RatingSnapshot = Prisma.RatingSnapshotModel;
 /**
@@ -78,21 +98,39 @@ export type RatingSnapshot = Prisma.RatingSnapshotModel;
 export type RatingStarBucket = Prisma.RatingStarBucketModel;
 /**
  * Model ClosuresSnapshot
- *
+ * KPI: Closures. From Foody's operations tab; carries that section's status.
+ * The reason breakdown is a child row table (like RatingStarBucket): the
+ * portal's carousel shows one slide per reason that occurred, so absent rows
+ * mean "didn't happen in the window", not "missing".
  */
 export type ClosuresSnapshot = Prisma.ClosuresSnapshotModel;
 /**
+ * Model ClosureReason
+ * One slide of the closures reason carousel ("Closed", "Unreachable", …).
+ */
+export type ClosureReason = Prisma.ClosureReasonModel;
+/**
  * Model PunctualitySnapshot
- *
+ * KPI: Punctuality. From Foody's operations tab.
  */
 export type PunctualitySnapshot = Prisma.PunctualitySnapshotModel;
 /**
  * Model OrderRejectionsSnapshot
- *
+ * KPI: Order rejections. From Foody's operations tab. The reason breakdown
+ * is a child row table (see ClosuresSnapshot for the carousel semantics).
  */
 export type OrderRejectionsSnapshot = Prisma.OrderRejectionsSnapshotModel;
 /**
+ * Model CancellationReason
+ * One slide of the cancellations reason carousel ("Items Unavailable", …).
+ */
+export type CancellationReason = Prisma.CancellationReasonModel;
+/**
  * Model Review
- *
+ * KPI: Reviews. A durable entity (NOT a snapshot): a review exists once per
+ * store and is upserted across runs. `dedupeKey` is always non-null:
+ * with an order id: "o:<orderId>"
+ * without:          "h:" + sha256(rating|rawDate|comment)
+ * which sidesteps Postgres treating NULLs as distinct in unique indexes.
  */
 export type Review = Prisma.ReviewModel;

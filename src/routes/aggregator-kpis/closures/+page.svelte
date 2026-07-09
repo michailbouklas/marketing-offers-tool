@@ -6,6 +6,7 @@
   import {
     averageValues,
     formatDuration,
+    formatDurationDHM,
     formatPct,
     sumValues,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
@@ -23,6 +24,12 @@
       label: "Avg offline in open hours",
       value: formatPct(
         averageValues(rows.map((row) => row.offlineOpenHoursPct)),
+      ),
+    },
+    {
+      label: "Total offline",
+      value: formatDurationDHM(
+        sumValues(rows.map((row) => row.offlineDurationSeconds)),
       ),
     },
     {

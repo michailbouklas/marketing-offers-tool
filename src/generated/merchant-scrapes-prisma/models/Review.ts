@@ -13,7 +13,11 @@ import type * as Prisma from "../internal/prismaNamespace";
 
 /**
  * Model Review
- *
+ * KPI: Reviews. A durable entity (NOT a snapshot): a review exists once per
+ * store and is upserted across runs. `dedupeKey` is always non-null:
+ * with an order id: "o:<orderId>"
+ * without:          "h:" + sha256(rating|rawDate|comment)
+ * which sidesteps Postgres treating NULLs as distinct in unique indexes.
  */
 export type ReviewModel =
   runtime.Types.Result.DefaultSelection<Prisma.$ReviewPayload>;
@@ -245,7 +249,7 @@ export type ReviewGroupByOutputType = {
   _max: ReviewMaxAggregateOutputType | null;
 };
 
-type GetReviewGroupByPayload<T extends ReviewGroupByArgs> =
+export type GetReviewGroupByPayload<T extends ReviewGroupByArgs> =
   Prisma.PrismaPromise<
     Array<
       Prisma.PickEnumerable<ReviewGroupByOutputType, T["by"]> & {
@@ -1787,6 +1791,11 @@ export type ReviewFindManyArgs<
    * Skip the first `n` Reviews.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of Reviews.
+   */
   distinct?: Prisma.ReviewScalarFieldEnum | Prisma.ReviewScalarFieldEnum[];
 };
 

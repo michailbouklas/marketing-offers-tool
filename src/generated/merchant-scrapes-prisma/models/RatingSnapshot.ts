@@ -13,7 +13,9 @@ import type * as Prisma from "../internal/prismaNamespace";
 
 /**
  * Model RatingSnapshot
- *
+ * Store-rating snapshot. The star distribution is a child row table (not
+ * 5+5 columns) so a different scale needs no migration and missing buckets
+ * are absent rows rather than ambiguous nulls.
  */
 export type RatingSnapshotModel =
   runtime.Types.Result.DefaultSelection<Prisma.$RatingSnapshotPayload>;
@@ -214,19 +216,19 @@ export type RatingSnapshotGroupByOutputType = {
   _max: RatingSnapshotMaxAggregateOutputType | null;
 };
 
-type GetRatingSnapshotGroupByPayload<T extends RatingSnapshotGroupByArgs> =
-  Prisma.PrismaPromise<
-    Array<
-      Prisma.PickEnumerable<RatingSnapshotGroupByOutputType, T["by"]> & {
-        [P in keyof T &
-          keyof RatingSnapshotGroupByOutputType]: P extends "_count"
-          ? T[P] extends boolean
-            ? number
-            : Prisma.GetScalarType<T[P], RatingSnapshotGroupByOutputType[P]>
-          : Prisma.GetScalarType<T[P], RatingSnapshotGroupByOutputType[P]>;
-      }
-    >
-  >;
+export type GetRatingSnapshotGroupByPayload<
+  T extends RatingSnapshotGroupByArgs,
+> = Prisma.PrismaPromise<
+  Array<
+    Prisma.PickEnumerable<RatingSnapshotGroupByOutputType, T["by"]> & {
+      [P in keyof T & keyof RatingSnapshotGroupByOutputType]: P extends "_count"
+        ? T[P] extends boolean
+          ? number
+          : Prisma.GetScalarType<T[P], RatingSnapshotGroupByOutputType[P]>
+        : Prisma.GetScalarType<T[P], RatingSnapshotGroupByOutputType[P]>;
+    }
+  >
+>;
 
 export type RatingSnapshotWhereInput = {
   AND?: Prisma.RatingSnapshotWhereInput | Prisma.RatingSnapshotWhereInput[];
@@ -1720,6 +1722,11 @@ export type RatingSnapshotFindManyArgs<
    * Skip the first `n` RatingSnapshots.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of RatingSnapshots.
+   */
   distinct?:
     | Prisma.RatingSnapshotScalarFieldEnum
     | Prisma.RatingSnapshotScalarFieldEnum[];

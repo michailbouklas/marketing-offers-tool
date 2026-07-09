@@ -93,12 +93,12 @@ export type PrismaVersion = {
 };
 
 /**
- * Prisma Client JS version: 7.4.2
- * Query Engine version: 94a226be1cf2967af2541cca5529f0f7ba866919
+ * Prisma Client JS version: 7.8.0
+ * Query Engine version: 3c6e192761c0362d496ed980de936e2f3cebcd3a
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.4.2",
-  engine: "94a226be1cf2967af2541cca5529f0f7ba866919",
+  client: "7.8.0",
+  engine: "3c6e192761c0362d496ed980de936e2f3cebcd3a",
 };
 
 /**
@@ -412,6 +412,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never
   : FieldRef<Model, FieldType>;
 
 export const ModelName = {
+  ScrapeRun: "ScrapeRun",
   Store: "Store",
   ScrapeSnapshot: "ScrapeSnapshot",
   SectionResult: "SectionResult",
@@ -419,8 +420,10 @@ export const ModelName = {
   RatingSnapshot: "RatingSnapshot",
   RatingStarBucket: "RatingStarBucket",
   ClosuresSnapshot: "ClosuresSnapshot",
+  ClosureReason: "ClosureReason",
   PunctualitySnapshot: "PunctualitySnapshot",
   OrderRejectionsSnapshot: "OrderRejectionsSnapshot",
+  CancellationReason: "CancellationReason",
   Review: "Review",
 } as const;
 
@@ -444,6 +447,7 @@ export type TypeMap<
   };
   meta: {
     modelProps:
+      | "scrapeRun"
       | "store"
       | "scrapeSnapshot"
       | "sectionResult"
@@ -451,12 +455,90 @@ export type TypeMap<
       | "ratingSnapshot"
       | "ratingStarBucket"
       | "closuresSnapshot"
+      | "closureReason"
       | "punctualitySnapshot"
       | "orderRejectionsSnapshot"
+      | "cancellationReason"
       | "review";
     txIsolationLevel: TransactionIsolationLevel;
   };
   model: {
+    ScrapeRun: {
+      payload: Prisma.$ScrapeRunPayload<ExtArgs>;
+      fields: Prisma.ScrapeRunFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ScrapeRunFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScrapeRunPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ScrapeRunFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScrapeRunPayload>;
+        };
+        findFirst: {
+          args: Prisma.ScrapeRunFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScrapeRunPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ScrapeRunFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScrapeRunPayload>;
+        };
+        findMany: {
+          args: Prisma.ScrapeRunFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScrapeRunPayload>[];
+        };
+        create: {
+          args: Prisma.ScrapeRunCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScrapeRunPayload>;
+        };
+        createMany: {
+          args: Prisma.ScrapeRunCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ScrapeRunCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScrapeRunPayload>[];
+        };
+        delete: {
+          args: Prisma.ScrapeRunDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScrapeRunPayload>;
+        };
+        update: {
+          args: Prisma.ScrapeRunUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScrapeRunPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ScrapeRunDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ScrapeRunUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ScrapeRunUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScrapeRunPayload>[];
+        };
+        upsert: {
+          args: Prisma.ScrapeRunUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScrapeRunPayload>;
+        };
+        aggregate: {
+          args: Prisma.ScrapeRunAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScrapeRun>;
+        };
+        groupBy: {
+          args: Prisma.ScrapeRunGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ScrapeRunGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ScrapeRunCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ScrapeRunCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     Store: {
       payload: Prisma.$StorePayload<ExtArgs>;
       fields: Prisma.StoreFieldRefs;
@@ -989,6 +1071,82 @@ export type TypeMap<
         };
       };
     };
+    ClosureReason: {
+      payload: Prisma.$ClosureReasonPayload<ExtArgs>;
+      fields: Prisma.ClosureReasonFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ClosureReasonFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosureReasonPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ClosureReasonFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosureReasonPayload>;
+        };
+        findFirst: {
+          args: Prisma.ClosureReasonFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosureReasonPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ClosureReasonFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosureReasonPayload>;
+        };
+        findMany: {
+          args: Prisma.ClosureReasonFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosureReasonPayload>[];
+        };
+        create: {
+          args: Prisma.ClosureReasonCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosureReasonPayload>;
+        };
+        createMany: {
+          args: Prisma.ClosureReasonCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ClosureReasonCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosureReasonPayload>[];
+        };
+        delete: {
+          args: Prisma.ClosureReasonDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosureReasonPayload>;
+        };
+        update: {
+          args: Prisma.ClosureReasonUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosureReasonPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ClosureReasonDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ClosureReasonUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ClosureReasonUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosureReasonPayload>[];
+        };
+        upsert: {
+          args: Prisma.ClosureReasonUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClosureReasonPayload>;
+        };
+        aggregate: {
+          args: Prisma.ClosureReasonAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateClosureReason>;
+        };
+        groupBy: {
+          args: Prisma.ClosureReasonGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ClosureReasonGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ClosureReasonCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ClosureReasonCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     PunctualitySnapshot: {
       payload: Prisma.$PunctualitySnapshotPayload<ExtArgs>;
       fields: Prisma.PunctualitySnapshotFieldRefs;
@@ -1141,6 +1299,82 @@ export type TypeMap<
         };
       };
     };
+    CancellationReason: {
+      payload: Prisma.$CancellationReasonPayload<ExtArgs>;
+      fields: Prisma.CancellationReasonFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.CancellationReasonFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CancellationReasonPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.CancellationReasonFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CancellationReasonPayload>;
+        };
+        findFirst: {
+          args: Prisma.CancellationReasonFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CancellationReasonPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.CancellationReasonFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CancellationReasonPayload>;
+        };
+        findMany: {
+          args: Prisma.CancellationReasonFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CancellationReasonPayload>[];
+        };
+        create: {
+          args: Prisma.CancellationReasonCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CancellationReasonPayload>;
+        };
+        createMany: {
+          args: Prisma.CancellationReasonCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.CancellationReasonCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CancellationReasonPayload>[];
+        };
+        delete: {
+          args: Prisma.CancellationReasonDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CancellationReasonPayload>;
+        };
+        update: {
+          args: Prisma.CancellationReasonUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CancellationReasonPayload>;
+        };
+        deleteMany: {
+          args: Prisma.CancellationReasonDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.CancellationReasonUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.CancellationReasonUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CancellationReasonPayload>[];
+        };
+        upsert: {
+          args: Prisma.CancellationReasonUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CancellationReasonPayload>;
+        };
+        aggregate: {
+          args: Prisma.CancellationReasonAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCancellationReason>;
+        };
+        groupBy: {
+          args: Prisma.CancellationReasonGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.CancellationReasonGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.CancellationReasonCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.CancellationReasonCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     Review: {
       payload: Prisma.$ReviewPayload<ExtArgs>;
       fields: Prisma.ReviewFieldRefs;
@@ -1256,6 +1490,30 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel =
   (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel];
 
+export const ScrapeRunScalarFieldEnum = {
+  id: "id",
+  aggregator: "aggregator",
+  sessionId: "sessionId",
+  runId: "runId",
+  shard: "shard",
+  argv: "argv",
+  fresh: "fresh",
+  startedAt: "startedAt",
+  endedAt: "endedAt",
+  status: "status",
+  restarts: "restarts",
+  totalStores: "totalStores",
+  okStores: "okStores",
+  partialStores: "partialStores",
+  failedStores: "failedStores",
+  skippedStores: "skippedStores",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type ScrapeRunScalarFieldEnum =
+  (typeof ScrapeRunScalarFieldEnum)[keyof typeof ScrapeRunScalarFieldEnum];
+
 export const StoreScalarFieldEnum = {
   id: "id",
   aggregator: "aggregator",
@@ -1344,12 +1602,25 @@ export const ClosuresSnapshotScalarFieldEnum = {
   snapshotId: "snapshotId",
   status: "status",
   offlineOpenHoursPct: "offlineOpenHoursPct",
+  offlineDurationSeconds: "offlineDurationSeconds",
+  offlineDurationRaw: "offlineDurationRaw",
   unreachableSeconds: "unreachableSeconds",
   unreachableRaw: "unreachableRaw",
 } as const;
 
 export type ClosuresSnapshotScalarFieldEnum =
   (typeof ClosuresSnapshotScalarFieldEnum)[keyof typeof ClosuresSnapshotScalarFieldEnum];
+
+export const ClosureReasonScalarFieldEnum = {
+  id: "id",
+  closuresSnapshotId: "closuresSnapshotId",
+  reason: "reason",
+  durationSeconds: "durationSeconds",
+  durationRaw: "durationRaw",
+} as const;
+
+export type ClosureReasonScalarFieldEnum =
+  (typeof ClosureReasonScalarFieldEnum)[keyof typeof ClosureReasonScalarFieldEnum];
 
 export const PunctualitySnapshotScalarFieldEnum = {
   id: "id",
@@ -1370,12 +1641,25 @@ export const OrderRejectionsSnapshotScalarFieldEnum = {
   snapshotId: "snapshotId",
   status: "status",
   cancellationsPct: "cancellationsPct",
+  cancellationsCount: "cancellationsCount",
   lostSales: "lostSales",
   reasonUnknownCount: "reasonUnknownCount",
 } as const;
 
 export type OrderRejectionsSnapshotScalarFieldEnum =
   (typeof OrderRejectionsSnapshotScalarFieldEnum)[keyof typeof OrderRejectionsSnapshotScalarFieldEnum];
+
+export const CancellationReasonScalarFieldEnum = {
+  id: "id",
+  orderRejectionsSnapshotId: "orderRejectionsSnapshotId",
+  reason: "reason",
+  cancellations: "cancellations",
+  salesLoss: "salesLoss",
+  salesLossRaw: "salesLossRaw",
+} as const;
+
+export type CancellationReasonScalarFieldEnum =
+  (typeof CancellationReasonScalarFieldEnum)[keyof typeof CancellationReasonScalarFieldEnum];
 
 export const ReviewScalarFieldEnum = {
   id: "id",
@@ -1483,6 +1767,14 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<
 >;
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  "Boolean"
+>;
+
+/**
  * Reference to a field of type 'DateTime'
  */
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -1497,6 +1789,20 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   "DateTime[]"
 >;
+
+/**
+ * Reference to a field of type 'ScrapeRunStatus'
+ */
+export type EnumScrapeRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  "ScrapeRunStatus"
+>;
+
+/**
+ * Reference to a field of type 'ScrapeRunStatus[]'
+ */
+export type ListEnumScrapeRunStatusFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "ScrapeRunStatus[]">;
 
 /**
  * Reference to a field of type 'Json'
@@ -1677,8 +1983,24 @@ export type PrismaClientOptions = (
    * ```
    */
   comments?: runtime.SqlCommenterPlugin[];
+  /**
+   * Optional maximum size for the query plan cache. If not provided, a default size will be used.
+   * A value of `0` can be used to disable the cache entirely. A higher cache size can improve
+   * performance for applications that execute a large number of unique queries, while a smaller
+   * cache size can reduce memory usage.
+   *
+   * @example
+   * ```
+   * const prisma = new PrismaClient({
+   *   adapter,
+   *   queryPlanCacheMaxSize: 100,
+   * })
+   * ```
+   */
+  queryPlanCacheMaxSize?: number;
 };
 export type GlobalOmitConfig = {
+  scrapeRun?: Prisma.ScrapeRunOmit;
   store?: Prisma.StoreOmit;
   scrapeSnapshot?: Prisma.ScrapeSnapshotOmit;
   sectionResult?: Prisma.SectionResultOmit;
@@ -1686,8 +2008,10 @@ export type GlobalOmitConfig = {
   ratingSnapshot?: Prisma.RatingSnapshotOmit;
   ratingStarBucket?: Prisma.RatingStarBucketOmit;
   closuresSnapshot?: Prisma.ClosuresSnapshotOmit;
+  closureReason?: Prisma.ClosureReasonOmit;
   punctualitySnapshot?: Prisma.PunctualitySnapshotOmit;
   orderRejectionsSnapshot?: Prisma.OrderRejectionsSnapshotOmit;
+  cancellationReason?: Prisma.CancellationReasonOmit;
   review?: Prisma.ReviewOmit;
 };
 

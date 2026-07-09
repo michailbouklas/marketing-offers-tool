@@ -34,6 +34,15 @@
     value: { label, color: "var(--chart-1)" },
   } satisfies Chart.ChartConfig);
 
+  // One tick per data point (data is daily), subsampled so longer ranges
+  // don't crowd the axis. Without explicit ticks, the time scale emits
+  // sub-day ticks that all render the same day label (e.g. "Jul 3" repeated).
+  const MAX_AXIS_TICKS = 8;
+  const axisTicks = $derived.by(() => {
+    const step = Math.max(1, Math.ceil(chartData.length / MAX_AXIS_TICKS));
+    return chartData.filter((_, i) => i % step === 0).map((d) => d.date);
+  });
+
   const formatAxis = (v: Date) =>
     v.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
@@ -74,7 +83,7 @@
             },
           ]}
           props={{
-            xAxis: { format: formatAxis },
+            xAxis: { format: formatAxis, ticks: axisTicks },
             yAxis: { format: formatValue },
           }}
         >

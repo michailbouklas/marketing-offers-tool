@@ -13,7 +13,9 @@ import type * as Prisma from "../internal/prismaNamespace";
 
 /**
  * Model ScrapeSnapshot
- *
+ * One scrape of one store at one point in time. Foody: periodStart/End null
+ * (live "current" snapshot). Wolt: periodStart/End from the requested
+ * "YYYY-MM-DD--YYYY-MM-DD" range.
  */
 export type ScrapeSnapshotModel =
   runtime.Types.Result.DefaultSelection<Prisma.$ScrapeSnapshotPayload>;
@@ -230,19 +232,19 @@ export type ScrapeSnapshotGroupByOutputType = {
   _max: ScrapeSnapshotMaxAggregateOutputType | null;
 };
 
-type GetScrapeSnapshotGroupByPayload<T extends ScrapeSnapshotGroupByArgs> =
-  Prisma.PrismaPromise<
-    Array<
-      Prisma.PickEnumerable<ScrapeSnapshotGroupByOutputType, T["by"]> & {
-        [P in keyof T &
-          keyof ScrapeSnapshotGroupByOutputType]: P extends "_count"
-          ? T[P] extends boolean
-            ? number
-            : Prisma.GetScalarType<T[P], ScrapeSnapshotGroupByOutputType[P]>
-          : Prisma.GetScalarType<T[P], ScrapeSnapshotGroupByOutputType[P]>;
-      }
-    >
-  >;
+export type GetScrapeSnapshotGroupByPayload<
+  T extends ScrapeSnapshotGroupByArgs,
+> = Prisma.PrismaPromise<
+  Array<
+    Prisma.PickEnumerable<ScrapeSnapshotGroupByOutputType, T["by"]> & {
+      [P in keyof T & keyof ScrapeSnapshotGroupByOutputType]: P extends "_count"
+        ? T[P] extends boolean
+          ? number
+          : Prisma.GetScalarType<T[P], ScrapeSnapshotGroupByOutputType[P]>
+        : Prisma.GetScalarType<T[P], ScrapeSnapshotGroupByOutputType[P]>;
+    }
+  >
+>;
 
 export type ScrapeSnapshotWhereInput = {
   AND?: Prisma.ScrapeSnapshotWhereInput | Prisma.ScrapeSnapshotWhereInput[];
@@ -724,10 +726,6 @@ export type ScrapeSnapshotUncheckedUpdateManyWithoutStoreNestedInput = {
   deleteMany?:
     | Prisma.ScrapeSnapshotScalarWhereInput
     | Prisma.ScrapeSnapshotScalarWhereInput[];
-};
-
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null;
 };
 
 export type ScrapeSnapshotCreateNestedOneWithoutSectionsInput = {
@@ -2831,6 +2829,11 @@ export type ScrapeSnapshotFindManyArgs<
    * Skip the first `n` ScrapeSnapshots.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of ScrapeSnapshots.
+   */
   distinct?:
     | Prisma.ScrapeSnapshotScalarFieldEnum
     | Prisma.ScrapeSnapshotScalarFieldEnum[];

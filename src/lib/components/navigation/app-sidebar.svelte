@@ -142,6 +142,11 @@
         { href: "/aggregator-kpis/punctuality", label: "Punctuality" },
         { href: "/aggregator-kpis/ratings", label: "Ratings" },
         { href: "/aggregator-kpis/reviews", label: "Reviews" },
+        {
+          href: "/aggregator-kpis/sessions",
+          label: "Sessions",
+          roles: ["admin", "superUser"],
+        },
       ],
     },
   ];

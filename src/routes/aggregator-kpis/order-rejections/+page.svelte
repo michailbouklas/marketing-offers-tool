@@ -2,6 +2,7 @@
   import KpiFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-filter-bar.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
   import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
+  import LostSalesByReasonWidget from "$lib/components/aggregator-kpis/widgets/lost-sales-by-reason-widget.svelte";
   import OrderRejectionsTable from "$lib/components/aggregator-kpis/widgets/order-rejections-table.svelte";
   import {
     averageValues,
@@ -17,9 +18,14 @@
 
   const rows = $derived(data.view.rows);
   const trend = $derived(data.view.trend);
+  const lostSalesByReason = $derived(data.view.lostSalesByReason);
 
   const statCards = $derived([
     { label: "Stores with data", value: rows.length.toString() },
+    {
+      label: "Total cancellations",
+      value: formatNumber(sumValues(rows.map((row) => row.cancellationsCount))),
+    },
     {
       label: "Avg cancellations",
       value: formatPct(averageValues(rows.map((row) => row.cancellationsPct))),
@@ -27,10 +33,6 @@
     {
       label: "Total lost sales",
       value: formatMoney(sumValues(rows.map((row) => row.lostSales))),
-    },
-    {
-      label: "Reason unknown",
-      value: formatNumber(sumValues(rows.map((row) => row.reasonUnknownCount))),
     },
   ]);
 </script>
@@ -87,6 +89,8 @@
       unit="%"
       data={trend}
     />
+
+    <LostSalesByReasonWidget data={lostSalesByReason} />
 
     <OrderRejectionsTable data={rows} linkStores />
   </main>

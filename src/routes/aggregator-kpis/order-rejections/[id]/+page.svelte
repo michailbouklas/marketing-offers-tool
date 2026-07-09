@@ -1,7 +1,9 @@
 <script lang="ts">
+  import CancellationReasonsCard from "$lib/components/aggregator-kpis/widgets/cancellation-reasons-card.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
   import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
   import OrderRejectionsHistoryTable from "$lib/components/aggregator-kpis/widgets/order-rejections-history-table.svelte";
+  import ReasonTrendChart from "$lib/components/aggregator-kpis/widgets/reason-trend-chart.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import {
@@ -22,12 +24,15 @@
   const storeTitle = $derived(store.name ?? `Store #${store.id}`);
   const points = $derived(data.view.points);
   const trend = $derived(data.view.trend);
+  const reasonBreakdown = $derived(data.view.reasonBreakdown);
+  const reasonTrend = $derived(data.view.reasonTrend);
 
   const statCards = $derived([
     { label: "Snapshots", value: points.length.toString() },
     {
       label: "Latest cancellations",
-      value: formatPct(points[0]?.cancellationsPct),
+      value: formatNumber(points[0]?.cancellationsCount),
+      hint: formatPct(points[0]?.cancellationsPct),
     },
     {
       label: "Avg cancellations",
@@ -164,6 +169,18 @@
           unit="%"
           data={trend}
         />
+
+        {#if reasonBreakdown && reasonBreakdown.cancellationsCount !== null}
+          <CancellationReasonsCard breakdown={reasonBreakdown} />
+        {/if}
+
+        {#if reasonTrend.series.length > 0}
+          <ReasonTrendChart
+            trend={reasonTrend}
+            title="Cancellation reasons over time"
+            description="Cancellations per reason, by snapshot."
+          />
+        {/if}
 
         <OrderRejectionsHistoryTable data={points} />
       </div>

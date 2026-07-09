@@ -1,6 +1,7 @@
 import { merchantScrapesPrisma } from "$lib/server/merchant-scrapes-prisma";
 import type {
   AggregatorValue,
+  ClosureReasonBreakdown,
   ClosureRow,
   ClosuresStoreView,
   ClosuresView,
@@ -31,7 +32,12 @@ export async function getClosuresLatestByStore(
         select: {
           scrapedAt: true,
           closures: {
-            select: { offlineOpenHoursPct: true, unreachableSeconds: true },
+            select: {
+              offlineOpenHoursPct: true,
+              unreachableSeconds: true,
+              offlineDurationSeconds: true,
+              offlineDurationRaw: true,
+            },
           },
         },
       },
@@ -52,6 +58,8 @@ export async function getClosuresLatestByStore(
         scrapedAt: snapshot ? snapshot.scrapedAt.toISOString() : null,
         offlineOpenHoursPct: toNumber(closures?.offlineOpenHoursPct),
         unreachableSeconds: toNumber(closures?.unreachableSeconds),
+        offlineDurationSeconds: toNumber(closures?.offlineDurationSeconds),
+        offlineDurationRaw: closures?.offlineDurationRaw ?? null,
       };
     });
 }
@@ -86,28 +94,80 @@ export async function getClosuresTrend(
 }
 
 /**
- * Full closures history for one store (every captured snapshot, newest first)
- * plus a daily-average offline-open-hours trend derived from that same history.
- * Querying `closuresSnapshot` directly means only snapshots that actually have
- * closures data are returned — a missing snapshot is "no data", never a real 0.
+ * Latest-snapshot offline reason breakdown for one store. Uses the latest
+ * closures snapshot that exists (rows are written only for ok/partial sections,
+ * so `findFirst` here is inherently "latest where the child exists"). Headline
+ * offline duration comes from the snapshot columns, the per-reason durations
+ * from the child rows (sorted by duration desc). Returns null when the store has
+ * no closures snapshot at all.
+ */
+export async function getClosureReasonBreakdown(
+  storeId: number,
+): Promise<ClosureReasonBreakdown | null> {
+  const snapshot = await merchantScrapesPrisma.closuresSnapshot.findFirst({
+    where: { snapshot: { store: { id: storeId } } },
+    orderBy: { snapshot: { scrapedAt: "desc" } },
+    select: {
+      offlineDurationSeconds: true,
+      offlineDurationRaw: true,
+      snapshot: { select: { scrapedAt: true } },
+      reasons: {
+        select: { reason: true, durationSeconds: true, durationRaw: true },
+      },
+    },
+  });
+
+  if (!snapshot) {
+    return null;
+  }
+
+  const reasons = snapshot.reasons
+    .map((row) => ({
+      reason: row.reason,
+      durationSeconds: toNumber(row.durationSeconds),
+      durationRaw: row.durationRaw ?? null,
+    }))
+    .sort((a, b) => (b.durationSeconds ?? 0) - (a.durationSeconds ?? 0));
+
+  return {
+    scrapedAt: snapshot.snapshot.scrapedAt.toISOString(),
+    offlineDurationSeconds: toNumber(snapshot.offlineDurationSeconds),
+    offlineDurationRaw: snapshot.offlineDurationRaw ?? null,
+    reasons,
+  };
+}
+
+/**
+ * Full closures history for one store (every captured snapshot, newest first),
+ * a daily-average offline-open-hours trend derived from that same history, and
+ * the latest-snapshot offline reason breakdown. Querying `closuresSnapshot`
+ * directly means only snapshots that actually have closures data are returned —
+ * a missing snapshot is "no data", never a real 0.
  */
 export async function getClosuresStoreView(
   storeId: number,
 ): Promise<ClosuresStoreView> {
-  const rows = await merchantScrapesPrisma.closuresSnapshot.findMany({
-    where: { snapshot: { store: { id: storeId } } },
-    select: {
-      offlineOpenHoursPct: true,
-      unreachableSeconds: true,
-      snapshot: { select: { scrapedAt: true, runId: true } },
-    },
-    orderBy: { snapshot: { scrapedAt: "desc" } },
-  });
+  const [rows, reasonBreakdown] = await Promise.all([
+    merchantScrapesPrisma.closuresSnapshot.findMany({
+      where: { snapshot: { store: { id: storeId } } },
+      select: {
+        offlineOpenHoursPct: true,
+        unreachableSeconds: true,
+        offlineDurationSeconds: true,
+        offlineDurationRaw: true,
+        snapshot: { select: { scrapedAt: true, runId: true } },
+      },
+      orderBy: { snapshot: { scrapedAt: "desc" } },
+    }),
+    getClosureReasonBreakdown(storeId),
+  ]);
 
   const points = rows.map((row) => ({
     scrapedAt: row.snapshot.scrapedAt.toISOString(),
     offlineOpenHoursPct: toNumber(row.offlineOpenHoursPct),
     unreachableSeconds: toNumber(row.unreachableSeconds),
+    offlineDurationSeconds: toNumber(row.offlineDurationSeconds),
+    offlineDurationRaw: row.offlineDurationRaw ?? null,
     runId: row.snapshot.runId,
   }));
 
@@ -118,7 +178,7 @@ export async function getClosuresStoreView(
     })),
   );
 
-  return { points, trend };
+  return { points, trend, reasonBreakdown };
 }
 
 export async function getClosuresView(
