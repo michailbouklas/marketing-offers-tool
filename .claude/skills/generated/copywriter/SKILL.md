@@ -70,7 +70,7 @@ Start here when exploring this area:
 | Area            | Connections |
 | --------------- | ----------- |
 | Text-providers  | 2 calls     |
-| Services        | 2 calls     |
+| Guidelines      | 2 calls     |
 | Brand-context   | 1 calls     |
 | Image-providers | 1 calls     |
 

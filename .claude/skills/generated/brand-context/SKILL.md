@@ -68,9 +68,11 @@ Start here when exploring this area:
 
 | Area        | Connections |
 | ----------- | ----------- |
-| Server      | 6 calls     |
-| Services    | 4 calls     |
+| Server      | 5 calls     |
+| Guidelines  | 3 calls     |
 | Inspiration | 1 calls     |
+| [id]        | 1 calls     |
+| Services    | 1 calls     |
 
 ## How to Explore
 

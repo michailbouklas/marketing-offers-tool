@@ -56,6 +56,12 @@ model ScrapeRun {
   failedStores  Int @default(0)
   skippedStores Int @default(0)
 
+  /// End-of-session per-section diagnosis (ManifestDiagnostics from
+  /// src/foody/diagnostics.ts): per-section ok/partial/failed/skipped tallies +
+  /// dominant missing fields/errors. Null for sessions finalized before this
+  /// existed, or that scraped nothing.
+  sectionDiagnostics Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -122,6 +128,7 @@ model SectionResult {
   error         String?
   missingFields String[]
   durationMs    Int?
+  attempts      Int            @default(1) // times this section was extracted (>1 after a retry pass)
 
   @@unique([snapshotId, key])
   @@index([status])

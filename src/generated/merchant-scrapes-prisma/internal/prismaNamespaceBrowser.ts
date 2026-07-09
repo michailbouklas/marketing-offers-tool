@@ -102,6 +102,7 @@ export const ScrapeRunScalarFieldEnum = {
   partialStores: "partialStores",
   failedStores: "failedStores",
   skippedStores: "skippedStores",
+  sectionDiagnostics: "sectionDiagnostics",
   createdAt: "createdAt",
   updatedAt: "updatedAt",
 } as const;
@@ -146,6 +147,7 @@ export const SectionResultScalarFieldEnum = {
   error: "error",
   missingFields: "missingFields",
   durationMs: "durationMs",
+  attempts: "attempts",
 } as const;
 
 export type SectionResultScalarFieldEnum =
@@ -279,6 +281,14 @@ export const SortOrder = {
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
 
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+} as const;
+
+export type NullableJsonNullValueInput =
+  (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput];
+
 export const JsonNullValueInput = {
   JsonNull: JsonNull,
 } as const;
@@ -293,13 +303,6 @@ export const QueryMode = {
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode];
 
-export const NullsOrder = {
-  first: "first",
-  last: "last",
-} as const;
-
-export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
-
 export const JsonNullValueFilter = {
   DbNull: DbNull,
   JsonNull: JsonNull,
@@ -308,3 +311,10 @@ export const JsonNullValueFilter = {
 
 export type JsonNullValueFilter =
   (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter];
+
+export const NullsOrder = {
+  first: "first",
+  last: "last",
+} as const;
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];

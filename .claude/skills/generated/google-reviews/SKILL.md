@@ -1,16 +1,16 @@
 ---
 name: google-reviews
-description: "Skill for the Google-reviews area of marketing-offers-tool. 37 symbols across 10 files."
+description: "Skill for the Google-reviews area of marketing-offers-tool. 36 symbols across 9 files."
 ---
 
 # Google-reviews
 
-37 symbols | 10 files | Cohesion: 62%
+36 symbols | 9 files | Cohesion: 62%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how buildWhereClause, load, listNegativeReviewCategories work
+- Understanding how buildWhereClause, listBusinessesPage, listReviewsPage work
 - Modifying google-reviews-related functionality
 
 ## Key Files
@@ -23,7 +23,6 @@ description: "Skill for the Google-reviews area of marketing-offers-tool. 37 sym
 | `src/lib/services/google-reviews/categories.server.ts`                                  | getSortExpression, buildFilterClauses, buildFilterParams, listNegativeReviewCategories                               |
 | `src/lib/services/google-reviews/dashboard.server.ts`                                   | getDashboardStats, mapTimeseries, topBusinesses                                                                      |
 | `src/routes/google-reviews/negative-reviews-categories/+page.server.ts`                 | exclusiveUpperBound, load                                                                                            |
-| `src/routes/google-reviews/businesses/+page.server.ts`                                  | load                                                                                                                 |
 | `src/routes/google-reviews/businesses/[cid]/categories/[categoryId]/reviews/+server.ts` | GET                                                                                                                  |
 | `src/routes/google-reviews/+page.server.ts`                                             | load                                                                                                                 |
 | `src/routes/google-reviews/businesses/[cid]/+page.server.ts`                            | load                                                                                                                 |
@@ -33,19 +32,16 @@ description: "Skill for the Google-reviews area of marketing-offers-tool. 37 sym
 Start here when exploring this area:
 
 - **`buildWhereClause`** (Function) — `src/lib/server/google-reviews-db.ts:86`
-- **`load`** (Function) — `src/routes/google-reviews/negative-reviews-categories/+page.server.ts:62`
-- **`listNegativeReviewCategories`** (Function) — `src/lib/services/google-reviews/categories.server.ts:95`
-- **`load`** (Function) — `src/routes/google-reviews/businesses/+page.server.ts:59`
 - **`listBusinessesPage`** (Function) — `src/lib/services/google-reviews/businesses.server.ts:221`
+- **`listReviewsPage`** (Function) — `src/lib/services/google-reviews/reviews.server.ts:165`
+- **`GET`** (Function) — `src/routes/google-reviews/businesses/[cid]/categories/[categoryId]/reviews/+server.ts:17`
+- **`load`** (Function) — `src/routes/google-reviews/+page.server.ts:4`
 
 ## Key Symbols
 
 | Symbol                         | Type     | File                                                                                    | Line |
 | ------------------------------ | -------- | --------------------------------------------------------------------------------------- | ---- |
 | `buildWhereClause`             | Function | `src/lib/server/google-reviews-db.ts`                                                   | 86   |
-| `load`                         | Function | `src/routes/google-reviews/negative-reviews-categories/+page.server.ts`                 | 62   |
-| `listNegativeReviewCategories` | Function | `src/lib/services/google-reviews/categories.server.ts`                                  | 95   |
-| `load`                         | Function | `src/routes/google-reviews/businesses/+page.server.ts`                                  | 59   |
 | `listBusinessesPage`           | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 221  |
 | `listReviewsPage`              | Function | `src/lib/services/google-reviews/reviews.server.ts`                                     | 165  |
 | `GET`                          | Function | `src/routes/google-reviews/businesses/[cid]/categories/[categoryId]/reviews/+server.ts` | 17   |
@@ -61,14 +57,17 @@ Start here when exploring this area:
 | `categories`                   | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 552  |
 | `reviewsPerDay`                | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 561  |
 | `sentimentPerDay`              | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 571  |
+| `load`                         | Function | `src/routes/google-reviews/negative-reviews-categories/+page.server.ts`                 | 62   |
+| `listNegativeReviewCategories` | Function | `src/lib/services/google-reviews/categories.server.ts`                                  | 95   |
 | `utcIsoExpression`             | Function | `src/lib/server/google-reviews-db.ts`                                                   | 96   |
+| `getBusinessDetail`            | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 303  |
 
 ## Execution Flows
 
 | Flow                              | Type            | Steps |
 | --------------------------------- | --------------- | ----- |
 | `Load → GetGoogleReviewsDatabase` | cross_community | 4     |
-| `Load → BuildSentimentClause`     | intra_community | 4     |
+| `Load → BuildSentimentClause`     | cross_community | 4     |
 | `Load → GetGoogleReviewsDatabase` | cross_community | 4     |
 | `Load → GetGoogleReviewsDatabase` | cross_community | 4     |
 | `Load → ParseNullableNumber`      | intra_community | 4     |
@@ -76,14 +75,16 @@ Start here when exploring this area:
 | `Load → ParseCount`               | cross_community | 3     |
 | `Load → RequireAuthenticatedUser` | cross_community | 3     |
 | `Load → HasPermission`            | cross_community | 3     |
-| `Load → BuildWhereClause`         | intra_community | 3     |
+| `Load → BuildWhereClause`         | cross_community | 3     |
 
 ## Connected Areas
 
-| Area     | Connections |
-| -------- | ----------- |
-| Services | 7 calls     |
-| Server   | 5 calls     |
+| Area       | Connections |
+| ---------- | ----------- |
+| Server     | 5 calls     |
+| Services   | 3 calls     |
+| Offers     | 1 calls     |
+| Guidelines | 1 calls     |
 
 ## How to Explore
 

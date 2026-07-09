@@ -1,6 +1,7 @@
 <script lang="ts">
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
   import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
+  import SectionHealthTrendChart from "$lib/components/aggregator-kpis/widgets/section-health-trend-chart.svelte";
   import SessionFilterBar from "$lib/components/aggregator-kpis/widgets/session-filter-bar.svelte";
   import SessionsTable from "$lib/components/aggregator-kpis/widgets/sessions-table.svelte";
   import { formatNumber } from "$lib/services/aggregator-kpis/aggregator-kpis";
@@ -11,6 +12,7 @@
 
   const rows = $derived(data.view.rows);
   const trend = $derived(data.view.trend);
+  const sectionHealthTrend = $derived(data.view.sectionHealthTrend);
   const totals = $derived(data.view.totals);
 
   const statCards = $derived([
@@ -23,6 +25,16 @@
     },
     { label: "Failed", value: formatNumber(totals.failed) },
     { label: "Stores scraped", value: formatNumber(totals.storesScraped) },
+    {
+      label: "Stores retried",
+      value: formatNumber(totals.retriedStores),
+      hint: "extracted more than once",
+    },
+    {
+      label: "Switch failures",
+      value: formatNumber(totals.switchFailedStores),
+      hint: "store switch failed — nothing scraped",
+    },
   ]);
 </script>
 
@@ -75,6 +87,8 @@
       decimals={0}
       data={trend}
     />
+
+    <SectionHealthTrendChart trend={sectionHealthTrend} />
 
     <SessionsTable data={rows} />
   </main>

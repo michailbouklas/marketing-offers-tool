@@ -1,11 +1,11 @@
 ---
 name: competition
-description: "Skill for the Competition area of marketing-offers-tool. 52 symbols across 11 files."
+description: "Skill for the Competition area of marketing-offers-tool. 56 symbols across 14 files."
 ---
 
 # Competition
 
-52 symbols | 11 files | Cohesion: 70%
+56 symbols | 14 files | Cohesion: 68%
 
 ## When to Use
 
@@ -17,8 +17,8 @@ description: "Skill for the Competition area of marketing-offers-tool. 52 symbol
 
 | File                                                                       | Symbols                                                                                                                          |
 | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/services/competition/scrape-job.server.ts`                        | ScrapeAlreadyRunningError, ScrapeConfigError, startScrape, getJob, isScrapeRunning (+7)                                          |
 | `src/lib/services/competition/restaurants.server.ts`                       | fetchActiveOfferCounts, items, groupMenuRows, computeTransitions, groupTimeSeriesRows (+6)                                       |
-| `src/lib/services/competition/scrape-job.server.ts`                        | ScrapeAlreadyRunningError, ScrapeConfigError, startScrape, getJob, isScrapeRunning (+6)                                          |
 | `src/lib/services/competition/offers.server.ts`                            | fetchLatestPrices, parseMonitoredRestaurantKeys, buildRestaurantPairClause, buildRestaurantPairParams, buildEmptyOffersPage (+4) |
 | `src/lib/server/competition-db.ts`                                         | getCompetitionDatabase, getCompetitionCurrency, competitionTable, parseCount, utcIsoExpression (+3)                              |
 | `src/lib/services/competition/active-offers-timeseries.server.ts`          | toUtcDayKey, getLastUtcDayKeys, buildSeries, getActiveOffersByDayByAggregator                                                    |
@@ -26,7 +26,7 @@ description: "Skill for the Competition area of marketing-offers-tool. 52 symbol
 | `src/lib/services/competition/scrape-sessions.server.ts`                   | getSafePagination, listScrapeSessionsPage                                                                                        |
 | `src/routes/competition/+page.server.ts`                                   | load                                                                                                                             |
 | `src/routes/api/competition/active-offers-by-day-by-aggregator/+server.ts` | GET                                                                                                                              |
-| `src/routes/competition/restaurants/[id]/+page.server.ts`                  | load                                                                                                                             |
+| `src/lib/server/env.ts`                                                    | getRemoteScraperUrl                                                                                                              |
 
 ## Entry Points
 
@@ -61,7 +61,7 @@ Start here when exploring this area:
 | `getRestaurantDetail`              | Function | `src/lib/services/competition/restaurants.server.ts`                       | 334  |
 | `activeOffers`                     | Function | `src/lib/services/competition/restaurants.server.ts`                       | 475  |
 | `recentChanges`                    | Function | `src/lib/services/competition/dashboard.server.ts`                         | 125  |
-| `load`                             | Function | `src/routes/competition/restaurants/[id]/+page.server.ts`                  | 8    |
+| `listActiveOffersPage`             | Function | `src/lib/services/competition/offers.server.ts`                            | 262  |
 
 ## Execution Flows
 
@@ -80,11 +80,11 @@ Start here when exploring this area:
 
 ## Connected Areas
 
-| Area          | Connections |
-| ------------- | ----------- |
-| Services      | 5 calls     |
-| Notifications | 1 calls     |
-| Server        | 1 calls     |
+| Area       | Connections |
+| ---------- | ----------- |
+| Guidelines | 4 calls     |
+| Server     | 3 calls     |
+| Services   | 2 calls     |
 
 ## How to Explore
 

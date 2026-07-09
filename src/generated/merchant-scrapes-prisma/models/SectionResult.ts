@@ -32,12 +32,14 @@ export type SectionResultAvgAggregateOutputType = {
   id: number | null;
   snapshotId: number | null;
   durationMs: number | null;
+  attempts: number | null;
 };
 
 export type SectionResultSumAggregateOutputType = {
   id: number | null;
   snapshotId: number | null;
   durationMs: number | null;
+  attempts: number | null;
 };
 
 export type SectionResultMinAggregateOutputType = {
@@ -47,6 +49,7 @@ export type SectionResultMinAggregateOutputType = {
   status: $Enums.SectionStatus | null;
   error: string | null;
   durationMs: number | null;
+  attempts: number | null;
 };
 
 export type SectionResultMaxAggregateOutputType = {
@@ -56,6 +59,7 @@ export type SectionResultMaxAggregateOutputType = {
   status: $Enums.SectionStatus | null;
   error: string | null;
   durationMs: number | null;
+  attempts: number | null;
 };
 
 export type SectionResultCountAggregateOutputType = {
@@ -66,6 +70,7 @@ export type SectionResultCountAggregateOutputType = {
   error: number;
   missingFields: number;
   durationMs: number;
+  attempts: number;
   _all: number;
 };
 
@@ -73,12 +78,14 @@ export type SectionResultAvgAggregateInputType = {
   id?: true;
   snapshotId?: true;
   durationMs?: true;
+  attempts?: true;
 };
 
 export type SectionResultSumAggregateInputType = {
   id?: true;
   snapshotId?: true;
   durationMs?: true;
+  attempts?: true;
 };
 
 export type SectionResultMinAggregateInputType = {
@@ -88,6 +95,7 @@ export type SectionResultMinAggregateInputType = {
   status?: true;
   error?: true;
   durationMs?: true;
+  attempts?: true;
 };
 
 export type SectionResultMaxAggregateInputType = {
@@ -97,6 +105,7 @@ export type SectionResultMaxAggregateInputType = {
   status?: true;
   error?: true;
   durationMs?: true;
+  attempts?: true;
 };
 
 export type SectionResultCountAggregateInputType = {
@@ -107,6 +116,7 @@ export type SectionResultCountAggregateInputType = {
   error?: true;
   missingFields?: true;
   durationMs?: true;
+  attempts?: true;
   _all?: true;
 };
 
@@ -215,6 +225,7 @@ export type SectionResultGroupByOutputType = {
   error: string | null;
   missingFields: string[];
   durationMs: number | null;
+  attempts: number;
   _count: SectionResultCountAggregateOutputType | null;
   _avg: SectionResultAvgAggregateOutputType | null;
   _sum: SectionResultSumAggregateOutputType | null;
@@ -249,6 +260,7 @@ export type SectionResultWhereInput = {
   error?: Prisma.StringNullableFilter<"SectionResult"> | string | null;
   missingFields?: Prisma.StringNullableListFilter<"SectionResult">;
   durationMs?: Prisma.IntNullableFilter<"SectionResult"> | number | null;
+  attempts?: Prisma.IntFilter<"SectionResult"> | number;
   snapshot?: Prisma.XOR<
     Prisma.ScrapeSnapshotScalarRelationFilter,
     Prisma.ScrapeSnapshotWhereInput
@@ -263,6 +275,7 @@ export type SectionResultOrderByWithRelationInput = {
   error?: Prisma.SortOrderInput | Prisma.SortOrder;
   missingFields?: Prisma.SortOrder;
   durationMs?: Prisma.SortOrderInput | Prisma.SortOrder;
+  attempts?: Prisma.SortOrder;
   snapshot?: Prisma.ScrapeSnapshotOrderByWithRelationInput;
 };
 
@@ -281,6 +294,7 @@ export type SectionResultWhereUniqueInput = Prisma.AtLeast<
     error?: Prisma.StringNullableFilter<"SectionResult"> | string | null;
     missingFields?: Prisma.StringNullableListFilter<"SectionResult">;
     durationMs?: Prisma.IntNullableFilter<"SectionResult"> | number | null;
+    attempts?: Prisma.IntFilter<"SectionResult"> | number;
     snapshot?: Prisma.XOR<
       Prisma.ScrapeSnapshotScalarRelationFilter,
       Prisma.ScrapeSnapshotWhereInput
@@ -297,6 +311,7 @@ export type SectionResultOrderByWithAggregationInput = {
   error?: Prisma.SortOrderInput | Prisma.SortOrder;
   missingFields?: Prisma.SortOrder;
   durationMs?: Prisma.SortOrderInput | Prisma.SortOrder;
+  attempts?: Prisma.SortOrder;
   _count?: Prisma.SectionResultCountOrderByAggregateInput;
   _avg?: Prisma.SectionResultAvgOrderByAggregateInput;
   _max?: Prisma.SectionResultMaxOrderByAggregateInput;
@@ -327,6 +342,7 @@ export type SectionResultScalarWhereWithAggregatesInput = {
     | Prisma.IntNullableWithAggregatesFilter<"SectionResult">
     | number
     | null;
+  attempts?: Prisma.IntWithAggregatesFilter<"SectionResult"> | number;
 };
 
 export type SectionResultCreateInput = {
@@ -335,6 +351,7 @@ export type SectionResultCreateInput = {
   error?: string | null;
   missingFields?: Prisma.SectionResultCreatemissingFieldsInput | string[];
   durationMs?: number | null;
+  attempts?: number;
   snapshot: Prisma.ScrapeSnapshotCreateNestedOneWithoutSectionsInput;
 };
 
@@ -346,6 +363,7 @@ export type SectionResultUncheckedCreateInput = {
   error?: string | null;
   missingFields?: Prisma.SectionResultCreatemissingFieldsInput | string[];
   durationMs?: number | null;
+  attempts?: number;
 };
 
 export type SectionResultUpdateInput = {
@@ -356,6 +374,7 @@ export type SectionResultUpdateInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   missingFields?: Prisma.SectionResultUpdatemissingFieldsInput | string[];
   durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number;
   snapshot?: Prisma.ScrapeSnapshotUpdateOneRequiredWithoutSectionsNestedInput;
 };
 
@@ -369,6 +388,7 @@ export type SectionResultUncheckedUpdateInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   missingFields?: Prisma.SectionResultUpdatemissingFieldsInput | string[];
   durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number;
 };
 
 export type SectionResultCreateManyInput = {
@@ -379,6 +399,7 @@ export type SectionResultCreateManyInput = {
   error?: string | null;
   missingFields?: Prisma.SectionResultCreatemissingFieldsInput | string[];
   durationMs?: number | null;
+  attempts?: number;
 };
 
 export type SectionResultUpdateManyMutationInput = {
@@ -389,6 +410,7 @@ export type SectionResultUpdateManyMutationInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   missingFields?: Prisma.SectionResultUpdatemissingFieldsInput | string[];
   durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number;
 };
 
 export type SectionResultUncheckedUpdateManyInput = {
@@ -401,6 +423,7 @@ export type SectionResultUncheckedUpdateManyInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   missingFields?: Prisma.SectionResultUpdatemissingFieldsInput | string[];
   durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number;
 };
 
 export type SectionResultListRelationFilter = {
@@ -426,12 +449,14 @@ export type SectionResultCountOrderByAggregateInput = {
   error?: Prisma.SortOrder;
   missingFields?: Prisma.SortOrder;
   durationMs?: Prisma.SortOrder;
+  attempts?: Prisma.SortOrder;
 };
 
 export type SectionResultAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   snapshotId?: Prisma.SortOrder;
   durationMs?: Prisma.SortOrder;
+  attempts?: Prisma.SortOrder;
 };
 
 export type SectionResultMaxOrderByAggregateInput = {
@@ -441,6 +466,7 @@ export type SectionResultMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder;
   error?: Prisma.SortOrder;
   durationMs?: Prisma.SortOrder;
+  attempts?: Prisma.SortOrder;
 };
 
 export type SectionResultMinOrderByAggregateInput = {
@@ -450,12 +476,14 @@ export type SectionResultMinOrderByAggregateInput = {
   status?: Prisma.SortOrder;
   error?: Prisma.SortOrder;
   durationMs?: Prisma.SortOrder;
+  attempts?: Prisma.SortOrder;
 };
 
 export type SectionResultSumOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   snapshotId?: Prisma.SortOrder;
   durationMs?: Prisma.SortOrder;
+  attempts?: Prisma.SortOrder;
 };
 
 export type SectionResultCreateNestedManyWithoutSnapshotInput = {
@@ -587,6 +615,7 @@ export type SectionResultCreateWithoutSnapshotInput = {
   error?: string | null;
   missingFields?: Prisma.SectionResultCreatemissingFieldsInput | string[];
   durationMs?: number | null;
+  attempts?: number;
 };
 
 export type SectionResultUncheckedCreateWithoutSnapshotInput = {
@@ -596,6 +625,7 @@ export type SectionResultUncheckedCreateWithoutSnapshotInput = {
   error?: string | null;
   missingFields?: Prisma.SectionResultCreatemissingFieldsInput | string[];
   durationMs?: number | null;
+  attempts?: number;
 };
 
 export type SectionResultCreateOrConnectWithoutSnapshotInput = {
@@ -658,6 +688,7 @@ export type SectionResultScalarWhereInput = {
   error?: Prisma.StringNullableFilter<"SectionResult"> | string | null;
   missingFields?: Prisma.StringNullableListFilter<"SectionResult">;
   durationMs?: Prisma.IntNullableFilter<"SectionResult"> | number | null;
+  attempts?: Prisma.IntFilter<"SectionResult"> | number;
 };
 
 export type SectionResultCreateManySnapshotInput = {
@@ -667,6 +698,7 @@ export type SectionResultCreateManySnapshotInput = {
   error?: string | null;
   missingFields?: Prisma.SectionResultCreatemissingFieldsInput | string[];
   durationMs?: number | null;
+  attempts?: number;
 };
 
 export type SectionResultUpdateWithoutSnapshotInput = {
@@ -677,6 +709,7 @@ export type SectionResultUpdateWithoutSnapshotInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   missingFields?: Prisma.SectionResultUpdatemissingFieldsInput | string[];
   durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number;
 };
 
 export type SectionResultUncheckedUpdateWithoutSnapshotInput = {
@@ -688,6 +721,7 @@ export type SectionResultUncheckedUpdateWithoutSnapshotInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   missingFields?: Prisma.SectionResultUpdatemissingFieldsInput | string[];
   durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number;
 };
 
 export type SectionResultUncheckedUpdateManyWithoutSnapshotInput = {
@@ -699,6 +733,7 @@ export type SectionResultUncheckedUpdateManyWithoutSnapshotInput = {
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   missingFields?: Prisma.SectionResultUpdatemissingFieldsInput | string[];
   durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number;
 };
 
 export type SectionResultSelect<
@@ -713,6 +748,7 @@ export type SectionResultSelect<
     error?: boolean;
     missingFields?: boolean;
     durationMs?: boolean;
+    attempts?: boolean;
     snapshot?: boolean | Prisma.ScrapeSnapshotDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["sectionResult"]
@@ -730,6 +766,7 @@ export type SectionResultSelectCreateManyAndReturn<
     error?: boolean;
     missingFields?: boolean;
     durationMs?: boolean;
+    attempts?: boolean;
     snapshot?: boolean | Prisma.ScrapeSnapshotDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["sectionResult"]
@@ -747,6 +784,7 @@ export type SectionResultSelectUpdateManyAndReturn<
     error?: boolean;
     missingFields?: boolean;
     durationMs?: boolean;
+    attempts?: boolean;
     snapshot?: boolean | Prisma.ScrapeSnapshotDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["sectionResult"]
@@ -760,6 +798,7 @@ export type SectionResultSelectScalar = {
   error?: boolean;
   missingFields?: boolean;
   durationMs?: boolean;
+  attempts?: boolean;
 };
 
 export type SectionResultOmit<
@@ -772,7 +811,8 @@ export type SectionResultOmit<
   | "status"
   | "error"
   | "missingFields"
-  | "durationMs",
+  | "durationMs"
+  | "attempts",
   ExtArgs["result"]["sectionResult"]
 >;
 export type SectionResultInclude<
@@ -811,6 +851,7 @@ export type $SectionResultPayload<
       error: string | null;
       missingFields: string[];
       durationMs: number | null;
+      attempts: number;
     },
     ExtArgs["result"]["sectionResult"]
   >;
@@ -1433,6 +1474,7 @@ export interface SectionResultFieldRefs {
   readonly error: Prisma.FieldRef<"SectionResult", "String">;
   readonly missingFields: Prisma.FieldRef<"SectionResult", "String[]">;
   readonly durationMs: Prisma.FieldRef<"SectionResult", "Int">;
+  readonly attempts: Prisma.FieldRef<"SectionResult", "Int">;
 }
 
 // Custom InputTypes

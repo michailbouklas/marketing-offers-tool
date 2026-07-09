@@ -65,26 +65,27 @@ Start here when exploring this area:
 
 ## Execution Flows
 
-| Flow                                           | Type            | Steps |
-| ---------------------------------------------- | --------------- | ----- |
-| `POST → LoadEnvFileValues`                     | cross_community | 6     |
-| `POST → AssertSafeKey`                         | cross_community | 6     |
-| `POST → From`                                  | cross_community | 6     |
-| `CreatePendingGenerations → LoadEnvFileValues` | cross_community | 6     |
-| `Load → GetDateRange`                          | cross_community | 5     |
-| `POST → ToModelList`                           | cross_community | 5     |
-| `POST → StringArray`                           | cross_community | 5     |
-| `POST → GetSupabaseClient`                     | cross_community | 5     |
-| `POST → SupabaseObjectStore`                   | cross_community | 5     |
-| `POST → LocalObjectStore`                      | cross_community | 5     |
+| Flow                                 | Type            | Steps |
+| ------------------------------------ | --------------- | ----- |
+| `POST → LoadEnvFileValues`           | cross_community | 6     |
+| `POST → AssertSafeKey`               | cross_community | 6     |
+| `POST → From`                        | cross_community | 6     |
+| `Load → GetDateRange`                | cross_community | 5     |
+| `POST → ToModelList`                 | cross_community | 5     |
+| `POST → StringArray`                 | cross_community | 5     |
+| `POST → GetSupabaseClient`           | cross_community | 5     |
+| `POST → SupabaseObjectStore`         | cross_community | 5     |
+| `POST → LocalObjectStore`            | cross_community | 5     |
+| `GenerateOneRow → LoadEnvFileValues` | cross_community | 5     |
 
 ## Connected Areas
 
 | Area            | Connections |
 | --------------- | ----------- |
-| Server          | 15 calls    |
-| Services        | 5 calls     |
+| Server          | 9 calls     |
+| [id]            | 8 calls     |
 | Image-providers | 4 calls     |
+| Services        | 3 calls     |
 | Brand-context   | 1 calls     |
 
 ## How to Explore

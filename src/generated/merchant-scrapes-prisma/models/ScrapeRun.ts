@@ -109,6 +109,7 @@ export type ScrapeRunCountAggregateOutputType = {
   partialStores: number;
   failedStores: number;
   skippedStores: number;
+  sectionDiagnostics: number;
   createdAt: number;
   updatedAt: number;
   _all: number;
@@ -191,6 +192,7 @@ export type ScrapeRunCountAggregateInputType = {
   partialStores?: true;
   failedStores?: true;
   skippedStores?: true;
+  sectionDiagnostics?: true;
   createdAt?: true;
   updatedAt?: true;
   _all?: true;
@@ -306,6 +308,7 @@ export type ScrapeRunGroupByOutputType = {
   partialStores: number;
   failedStores: number;
   skippedStores: number;
+  sectionDiagnostics: runtime.JsonValue | null;
   createdAt: Date;
   updatedAt: Date;
   _count: ScrapeRunCountAggregateOutputType | null;
@@ -350,6 +353,7 @@ export type ScrapeRunWhereInput = {
   partialStores?: Prisma.IntFilter<"ScrapeRun"> | number;
   failedStores?: Prisma.IntFilter<"ScrapeRun"> | number;
   skippedStores?: Prisma.IntFilter<"ScrapeRun"> | number;
+  sectionDiagnostics?: Prisma.JsonNullableFilter<"ScrapeRun">;
   createdAt?: Prisma.DateTimeFilter<"ScrapeRun"> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<"ScrapeRun"> | Date | string;
 };
@@ -371,6 +375,7 @@ export type ScrapeRunOrderByWithRelationInput = {
   partialStores?: Prisma.SortOrder;
   failedStores?: Prisma.SortOrder;
   skippedStores?: Prisma.SortOrder;
+  sectionDiagnostics?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -398,6 +403,7 @@ export type ScrapeRunWhereUniqueInput = Prisma.AtLeast<
     partialStores?: Prisma.IntFilter<"ScrapeRun"> | number;
     failedStores?: Prisma.IntFilter<"ScrapeRun"> | number;
     skippedStores?: Prisma.IntFilter<"ScrapeRun"> | number;
+    sectionDiagnostics?: Prisma.JsonNullableFilter<"ScrapeRun">;
     createdAt?: Prisma.DateTimeFilter<"ScrapeRun"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"ScrapeRun"> | Date | string;
   },
@@ -421,6 +427,7 @@ export type ScrapeRunOrderByWithAggregationInput = {
   partialStores?: Prisma.SortOrder;
   failedStores?: Prisma.SortOrder;
   skippedStores?: Prisma.SortOrder;
+  sectionDiagnostics?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   _count?: Prisma.ScrapeRunCountOrderByAggregateInput;
@@ -471,6 +478,7 @@ export type ScrapeRunScalarWhereWithAggregatesInput = {
   partialStores?: Prisma.IntWithAggregatesFilter<"ScrapeRun"> | number;
   failedStores?: Prisma.IntWithAggregatesFilter<"ScrapeRun"> | number;
   skippedStores?: Prisma.IntWithAggregatesFilter<"ScrapeRun"> | number;
+  sectionDiagnostics?: Prisma.JsonNullableWithAggregatesFilter<"ScrapeRun">;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ScrapeRun"> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ScrapeRun"> | Date | string;
 };
@@ -491,6 +499,9 @@ export type ScrapeRunCreateInput = {
   partialStores?: number;
   failedStores?: number;
   skippedStores?: number;
+  sectionDiagnostics?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -512,6 +523,9 @@ export type ScrapeRunUncheckedCreateInput = {
   partialStores?: number;
   failedStores?: number;
   skippedStores?: number;
+  sectionDiagnostics?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -540,6 +554,9 @@ export type ScrapeRunUpdateInput = {
   partialStores?: Prisma.IntFieldUpdateOperationsInput | number;
   failedStores?: Prisma.IntFieldUpdateOperationsInput | number;
   skippedStores?: Prisma.IntFieldUpdateOperationsInput | number;
+  sectionDiagnostics?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -569,6 +586,9 @@ export type ScrapeRunUncheckedUpdateInput = {
   partialStores?: Prisma.IntFieldUpdateOperationsInput | number;
   failedStores?: Prisma.IntFieldUpdateOperationsInput | number;
   skippedStores?: Prisma.IntFieldUpdateOperationsInput | number;
+  sectionDiagnostics?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -590,6 +610,9 @@ export type ScrapeRunCreateManyInput = {
   partialStores?: number;
   failedStores?: number;
   skippedStores?: number;
+  sectionDiagnostics?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -618,6 +641,9 @@ export type ScrapeRunUpdateManyMutationInput = {
   partialStores?: Prisma.IntFieldUpdateOperationsInput | number;
   failedStores?: Prisma.IntFieldUpdateOperationsInput | number;
   skippedStores?: Prisma.IntFieldUpdateOperationsInput | number;
+  sectionDiagnostics?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -647,6 +673,9 @@ export type ScrapeRunUncheckedUpdateManyInput = {
   partialStores?: Prisma.IntFieldUpdateOperationsInput | number;
   failedStores?: Prisma.IntFieldUpdateOperationsInput | number;
   skippedStores?: Prisma.IntFieldUpdateOperationsInput | number;
+  sectionDiagnostics?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -676,6 +705,7 @@ export type ScrapeRunCountOrderByAggregateInput = {
   partialStores?: Prisma.SortOrder;
   failedStores?: Prisma.SortOrder;
   skippedStores?: Prisma.SortOrder;
+  sectionDiagnostics?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -814,6 +844,7 @@ export type ScrapeRunSelect<
     partialStores?: boolean;
     failedStores?: boolean;
     skippedStores?: boolean;
+    sectionDiagnostics?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
   },
@@ -841,6 +872,7 @@ export type ScrapeRunSelectCreateManyAndReturn<
     partialStores?: boolean;
     failedStores?: boolean;
     skippedStores?: boolean;
+    sectionDiagnostics?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
   },
@@ -868,6 +900,7 @@ export type ScrapeRunSelectUpdateManyAndReturn<
     partialStores?: boolean;
     failedStores?: boolean;
     skippedStores?: boolean;
+    sectionDiagnostics?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
   },
@@ -891,6 +924,7 @@ export type ScrapeRunSelectScalar = {
   partialStores?: boolean;
   failedStores?: boolean;
   skippedStores?: boolean;
+  sectionDiagnostics?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
 };
@@ -915,6 +949,7 @@ export type ScrapeRunOmit<
   | "partialStores"
   | "failedStores"
   | "skippedStores"
+  | "sectionDiagnostics"
   | "createdAt"
   | "updatedAt",
   ExtArgs["result"]["scrapeRun"]
@@ -944,6 +979,13 @@ export type $ScrapeRunPayload<
       partialStores: number;
       failedStores: number;
       skippedStores: number;
+      /**
+       * End-of-session per-section diagnosis (ManifestDiagnostics from
+       * src/foody/diagnostics.ts): per-section ok/partial/failed/skipped tallies +
+       * dominant missing fields/errors. Null for sessions finalized before this
+       * existed, or that scraped nothing.
+       */
+      sectionDiagnostics: runtime.JsonValue | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -1554,6 +1596,7 @@ export interface ScrapeRunFieldRefs {
   readonly partialStores: Prisma.FieldRef<"ScrapeRun", "Int">;
   readonly failedStores: Prisma.FieldRef<"ScrapeRun", "Int">;
   readonly skippedStores: Prisma.FieldRef<"ScrapeRun", "Int">;
+  readonly sectionDiagnostics: Prisma.FieldRef<"ScrapeRun", "Json">;
   readonly createdAt: Prisma.FieldRef<"ScrapeRun", "DateTime">;
   readonly updatedAt: Prisma.FieldRef<"ScrapeRun", "DateTime">;
 }

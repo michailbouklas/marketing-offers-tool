@@ -48,8 +48,7 @@ Start here when exploring this area:
 
 | Area        | Connections |
 | ----------- | ----------- |
-| Competition | 2 calls     |
-| Services    | 1 calls     |
+| Competition | 3 calls     |
 
 ## How to Explore
 

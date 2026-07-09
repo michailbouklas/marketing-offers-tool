@@ -65,24 +65,25 @@ Start here when exploring this area:
 
 ## Execution Flows
 
-| Flow                                           | Type            | Steps |
-| ---------------------------------------------- | --------------- | ----- |
-| `Load → LoadEnvFileValues`                     | cross_community | 6     |
-| `GET → LoadEnvFileValues`                      | cross_community | 6     |
-| `CreatePendingGenerations → LoadEnvFileValues` | cross_community | 6     |
-| `POST → FetchFn`                               | cross_community | 5     |
-| `POST → SafeJson`                              | cross_community | 5     |
-| `POST → PromptEnhancerError`                   | cross_community | 5     |
-| `POST → NormalizeClarifyingQuestions`          | cross_community | 5     |
-| `POST → LoadEnvFileValues`                     | cross_community | 5     |
-| `POST → ToModelList`                           | cross_community | 5     |
-| `POST → StringArray`                           | cross_community | 5     |
+| Flow                                  | Type            | Steps |
+| ------------------------------------- | --------------- | ----- |
+| `Load → LoadEnvFileValues`            | cross_community | 6     |
+| `GET → LoadEnvFileValues`             | cross_community | 6     |
+| `POST → FetchFn`                      | cross_community | 5     |
+| `POST → SafeJson`                     | cross_community | 5     |
+| `POST → PromptEnhancerError`          | cross_community | 5     |
+| `POST → NormalizeClarifyingQuestions` | cross_community | 5     |
+| `POST → LoadEnvFileValues`            | cross_community | 5     |
+| `POST → ToModelList`                  | cross_community | 5     |
+| `POST → StringArray`                  | cross_community | 5     |
+| `Load → ToModelList`                  | intra_community | 4     |
 
 ## Connected Areas
 
 | Area            | Connections |
 | --------------- | ----------- |
-| Server          | 9 calls     |
+| Server          | 5 calls     |
+| [id]            | 4 calls     |
 | Services        | 2 calls     |
 | Image-generator | 1 calls     |
 
