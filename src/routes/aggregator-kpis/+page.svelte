@@ -2,6 +2,7 @@
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import {
+    formatMoney,
     formatNumber,
     formatPct,
     formatRating,
@@ -24,6 +25,11 @@
 
   function metricFor(key: KpiSubRouteKey): { value: string; label: string } {
     switch (key) {
+      case "metrics":
+        return {
+          value: formatMoney(stats.latestFoodyWeeklySales),
+          label: "latest week sales (Foody)",
+        };
       case "closures":
         return {
           value: formatPct(stats.avgOfflineOpenHoursPct),
@@ -38,6 +44,11 @@
         return {
           value: formatPct(stats.avgAvoidableWaitOrdersPct),
           label: "avg avoidable-wait orders",
+        };
+      case "pro-growth":
+        return {
+          value: formatPct(stats.proOrderSharePct),
+          label: "Foody Pro order share",
         };
       case "ratings":
         return {
@@ -88,8 +99,14 @@
           Aggregator KPIs
         </h1>
         <p class="text-muted-foreground max-w-3xl text-base leading-7">
-          Merchant performance across Foody and Wolt — how often stores go
-          offline, get orders rejected, run late, and how customers rate them.
+          Merchant performance by completed week or month — sales, how often
+          stores go offline, get orders rejected, run late, and how customers
+          rate them.
+        </p>
+        <p class="text-muted-foreground/80 max-w-3xl text-sm leading-6">
+          Metrics, closures, rejections, punctuality, and ratings are currently
+          <span class="font-medium">Foody-only</span>; a store missing from a
+          period means that section produced no data that scrape, not a zero.
         </p>
       </div>
     </section>

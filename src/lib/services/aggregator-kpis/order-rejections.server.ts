@@ -1,12 +1,18 @@
 import { merchantScrapesPrisma } from "$lib/server/merchant-scrapes-prisma";
+import { Prisma } from "../../../generated/merchant-scrapes-prisma/client";
 import type {
   AggregatorValue,
   CancellationReasonBreakdown,
   KpiFilters,
   LostSalesByReasonRow,
+  PeriodFilters,
+  PeriodKind,
+  PeriodPoint,
   ReasonSlice,
   ReasonTrend,
   RejectionRow,
+  RejectionsPeriodStoreView,
+  RejectionsPeriodView,
   RejectionsStoreView,
   RejectionsView,
   TimeseriesPoint,
@@ -17,6 +23,11 @@ import {
   storeWhere,
   toNumber,
 } from "$lib/services/aggregator-kpis/kpi-shared.server";
+import {
+  PERIOD_TREND_LIMIT,
+  periodDaysSql,
+  storeFilterSql,
+} from "$lib/services/aggregator-kpis/period-shared.server";
 
 /** Reason rows -> value slices (count or €), non-null only, sorted desc. */
 function toReasonSlices(
@@ -321,4 +332,197 @@ export async function getRejectionsView(
   ]);
 
   return { rows, trend, lostSalesByReason };
+}
+
+// --- Period-based reads (Foody foody_rejections_by_period view) ---
+
+/** Raw shape of a rejections period row. */
+type RejectionPeriodRawRow = {
+  storeId: number;
+  storeName: string | null;
+  periodStart: string;
+  periodEnd: string;
+  periodDays: number;
+  scrapedAt: string | null;
+  cancellationsPct: unknown;
+  cancellationsCount: unknown;
+  lostSales: unknown;
+  reasonUnknownCount: unknown;
+};
+
+function mapRejectionPeriodRow(row: RejectionPeriodRawRow): RejectionRow {
+  return {
+    storeId: row.storeId,
+    storeName: row.storeName,
+    aggregator: "FOODY",
+    scrapedAt: row.scrapedAt,
+    periodStart: row.periodStart,
+    periodEnd: row.periodEnd,
+    periodDays: row.periodDays,
+    cancellationsPct: toNumber(row.cancellationsPct),
+    cancellationsCount: toNumber(row.cancellationsCount),
+    lostSales: toNumber(row.lostSales),
+    reasonUnknownCount: toNumber(row.reasonUnknownCount),
+  };
+}
+
+const rejectionColumnsSql = Prisma.sql`
+  "periodStart"::text  AS "periodStart",
+  "periodEnd"::text    AS "periodEnd",
+  period_days          AS "periodDays",
+  "scrapedAt"::text    AS "scrapedAt",
+  "cancellationsPct"   AS "cancellationsPct",
+  "cancellationsCount" AS "cancellationsCount",
+  "lostSales"          AS "lostSales",
+  "reasonUnknownCount" AS "reasonUnknownCount"`;
+
+/** Total lost sales (€) per period across the scope (a summable flow). */
+async function getRejectionsPeriodTrend(
+  period: PeriodKind,
+  storeId: number | null,
+): Promise<PeriodPoint[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<
+    {
+      periodStart: string;
+      periodEnd: string;
+      periodDays: number;
+      lost: unknown;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT "periodStart", "periodEnd", "periodDays", lost
+      FROM (
+        SELECT "periodStart"::text AS "periodStart",
+               "periodEnd"::text   AS "periodEnd",
+               period_days         AS "periodDays",
+               SUM("lostSales")    AS lost
+        FROM foody_rejections_by_period
+        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+          AND "lostSales" IS NOT NULL
+        GROUP BY "periodStart", "periodEnd", period_days
+        ORDER BY "periodStart" DESC
+        LIMIT ${PERIOD_TREND_LIMIT[period]}
+      ) t
+      ORDER BY "periodStart" ASC`,
+  );
+
+  return rows
+    .map((row) => {
+      const value = toNumber(row.lost);
+      return value === null
+        ? null
+        : {
+            periodStart: row.periodStart,
+            periodEnd: row.periodEnd,
+            periodDays: row.periodDays,
+            value,
+          };
+    })
+    .filter((point): point is PeriodPoint => point !== null);
+}
+
+/** Latest completed period's rejections per store within the scope. */
+async function getRejectionsLatestPeriodRows(
+  period: PeriodKind,
+  storeId: number | null,
+): Promise<RejectionRow[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<RejectionPeriodRawRow[]>(
+    Prisma.sql`
+      WITH latest AS (
+        SELECT MAX("periodStart") AS ps
+        FROM foody_rejections_by_period
+        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      )
+      SELECT v."storeId" AS "storeId", v.name AS "storeName", ${rejectionColumnsSql}
+      FROM foody_rejections_by_period v
+      JOIN latest ON v."periodStart" = latest.ps
+      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      ORDER BY v.name ASC`,
+  );
+
+  return rows.map(mapRejectionPeriodRow);
+}
+
+/** Full rejections period history for one store, newest first. */
+async function getRejectionsPeriodHistory(
+  period: PeriodKind,
+  storeId: number,
+): Promise<RejectionRow[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<RejectionPeriodRawRow[]>(
+    Prisma.sql`
+      SELECT "storeId" AS "storeId", name AS "storeName", ${rejectionColumnsSql}
+      FROM foody_rejections_by_period
+      WHERE ${periodDaysSql(period)} AND "storeId" = ${storeId}
+      ORDER BY "periodStart" DESC
+      LIMIT ${PERIOD_TREND_LIMIT[period]}`,
+  );
+
+  return rows.map(mapRejectionPeriodRow);
+}
+
+/**
+ * Cross-store lost sales grouped by reason for the latest completed period,
+ * joining `CancellationReason` on the view's `rejections_snapshot_id`.
+ */
+async function getRejectionsLostSalesByReasonPeriod(
+  period: PeriodKind,
+  storeId: number | null,
+): Promise<LostSalesByReasonRow[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<
+    { reason: string; salesLoss: unknown; storeCount: unknown }[]
+  >(
+    Prisma.sql`
+      WITH latest AS (
+        SELECT MAX("periodStart") AS ps
+        FROM foody_rejections_by_period
+        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      )
+      SELECT cr.reason                      AS reason,
+             SUM(cr."salesLoss")            AS "salesLoss",
+             COUNT(DISTINCT v."storeId")    AS "storeCount"
+      FROM foody_rejections_by_period v
+      JOIN latest ON v."periodStart" = latest.ps
+      JOIN "CancellationReason" cr
+        ON cr."orderRejectionsSnapshotId" = v.rejections_snapshot_id
+      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        AND cr."salesLoss" IS NOT NULL AND cr."salesLoss" > 0
+      GROUP BY cr.reason
+      ORDER BY "salesLoss" DESC`,
+  );
+
+  return rows
+    .map((row) => ({
+      reason: row.reason,
+      salesLoss: toNumber(row.salesLoss) ?? 0,
+      storeCount: toNumber(row.storeCount) ?? 0,
+    }))
+    .filter((row) => row.salesLoss > 0);
+}
+
+/** Rejections period view: latest-period rows + lost-sales trend + reasons. */
+export async function getRejectionsPeriodView(
+  filters: PeriodFilters,
+): Promise<RejectionsPeriodView> {
+  const [rows, trend, lostSalesByReason] = await Promise.all([
+    getRejectionsLatestPeriodRows(filters.period, filters.storeId),
+    getRejectionsPeriodTrend(filters.period, filters.storeId),
+    getRejectionsLostSalesByReasonPeriod(filters.period, filters.storeId),
+  ]);
+
+  return { period: filters.period, rows, trend, lostSalesByReason };
+}
+
+/** Per-store rejections period history, a trend from it, and reason breakdown. */
+export async function getRejectionsPeriodStoreView(
+  storeId: number,
+  period: PeriodKind,
+): Promise<RejectionsPeriodStoreView> {
+  const [rows, trend, reasonBreakdown, reasonTrend] = await Promise.all([
+    getRejectionsPeriodHistory(period, storeId),
+    getRejectionsPeriodTrend(period, storeId),
+    getCancellationReasonBreakdown(storeId),
+    getCancellationReasonTrend(storeId),
+  ]);
+
+  return { period, rows, trend, reasonBreakdown, reasonTrend };
 }

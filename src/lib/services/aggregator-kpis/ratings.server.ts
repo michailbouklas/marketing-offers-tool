@@ -1,4 +1,5 @@
 import { merchantScrapesPrisma } from "$lib/server/merchant-scrapes-prisma";
+import { Prisma } from "../../../generated/merchant-scrapes-prisma/client";
 import type {
   AggregatorValue,
   KpiFilters,
@@ -14,6 +15,7 @@ import {
   storeWhere,
   toNumber,
 } from "$lib/services/aggregator-kpis/kpi-shared.server";
+import { storeFilterSql } from "$lib/services/aggregator-kpis/period-shared.server";
 
 /** Latest rating snapshot per store, filtered by aggregator/store. */
 export async function getRatingsLatestByStore(
@@ -208,6 +210,105 @@ export async function getRatingsView(
     getRatingsLatestByStore(filters),
     getRatingsTrend(filters),
     getRatingsDistribution(filters),
+  ]);
+
+  return { rows, trend, distribution };
+}
+
+// --- Foody current ratings (foody_rating_latest view) ---
+//
+// Ratings are cumulative all-time values (spec rule 3): take the latest per
+// store, never sum across periods. The view gives one row per store; the
+// distribution joins the latest snapshot's star buckets. There is no week/month
+// lane — the trend below is a level plotted by scrapedAt.
+
+/** Current Foody store ratings from the view, one row per store. */
+async function getFoodyRatingRows(
+  storeId: number | null,
+): Promise<RatingRow[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<
+    {
+      storeId: number;
+      storeName: string | null;
+      scrapedAt: string | null;
+      storeRating: unknown;
+      totalReviews: unknown;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT "storeId"       AS "storeId",
+             name            AS "storeName",
+             "scrapedAt"::text AS "scrapedAt",
+             "storeRating"   AS "storeRating",
+             "totalReviews"  AS "totalReviews"
+      FROM foody_rating_latest
+      WHERE TRUE ${storeFilterSql(storeId)}
+      ORDER BY name ASC`,
+  );
+
+  return rows.map((row) => ({
+    storeId: row.storeId,
+    storeName: row.storeName,
+    aggregator: "FOODY",
+    scrapedAt: row.scrapedAt,
+    storeRating: toNumber(row.storeRating),
+    totalReviews: toNumber(row.totalReviews),
+  }));
+}
+
+/** Star distribution summed across the latest Foody rating snapshot per store. */
+async function getFoodyRatingDistribution(
+  storeId: number | null,
+): Promise<StarBucket[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<
+    { stars: number; count: unknown }[]
+  >(
+    Prisma.sql`
+      SELECT b.stars AS stars, SUM(b.count) AS count
+      FROM foody_rating_latest v
+      JOIN "RatingStarBucket" b ON b."ratingSnapshotId" = v.rating_snapshot_id
+      WHERE TRUE ${storeFilterSql(storeId)}
+      GROUP BY b.stars`,
+  );
+
+  const totals = new Map<number, number>([
+    [1, 0],
+    [2, 0],
+    [3, 0],
+    [4, 0],
+    [5, 0],
+  ]);
+
+  for (const row of rows) {
+    if (totals.has(row.stars)) {
+      totals.set(row.stars, toNumber(row.count) ?? 0);
+    }
+  }
+
+  return [...totals.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([stars, count]) => ({ stars, count }));
+}
+
+/**
+ * Foody ratings view: current values + star distribution from
+ * `foody_rating_latest`, plus a store-rating level trend plotted by scrapedAt
+ * (a level, not a per-period flow — see spec rule 3).
+ */
+export async function getRatingsFoodyView(
+  storeId: number | null,
+): Promise<RatingsView> {
+  const foodyFilters: KpiFilters = {
+    aggregator: "FOODY",
+    storeId,
+    from: null,
+    to: null,
+  };
+
+  const [rows, distribution, trend] = await Promise.all([
+    getFoodyRatingRows(storeId),
+    getFoodyRatingDistribution(storeId),
+    getRatingsTrend(foodyFilters),
   ]);
 
   return { rows, trend, distribution };

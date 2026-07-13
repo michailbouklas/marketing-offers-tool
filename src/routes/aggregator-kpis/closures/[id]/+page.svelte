@@ -1,8 +1,9 @@
 <script lang="ts">
   import ClosureReasonsList from "$lib/components/aggregator-kpis/widgets/closure-reasons-list.svelte";
-  import ClosuresHistoryTable from "$lib/components/aggregator-kpis/widgets/closures-history-table.svelte";
+  import ClosuresTable from "$lib/components/aggregator-kpis/widgets/closures-table.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
-  import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
+  import PeriodToggle from "$lib/components/aggregator-kpis/widgets/period-toggle.svelte";
+  import PeriodTrendChart from "$lib/components/aggregator-kpis/widgets/period-trend-chart.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import {
@@ -12,6 +13,7 @@
     formatDurationDHM,
     formatKpiDateTime,
     formatPct,
+    periodKindLabel,
     sumValues,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
@@ -21,30 +23,31 @@
 
   const store = $derived(data.store);
   const storeTitle = $derived(store.name ?? `Store #${store.id}`);
-  const points = $derived(data.view.points);
+  const period = $derived(data.period);
+  const rows = $derived(data.view.rows);
   const trend = $derived(data.view.trend);
   const reasonBreakdown = $derived(data.view.reasonBreakdown);
 
   const statCards = $derived([
-    { label: "Snapshots", value: points.length.toString() },
+    { label: "Periods", value: rows.length.toString() },
     {
       label: "Latest offline",
       value: formatDurationDHM(
-        points[0]?.offlineDurationSeconds,
-        points[0]?.offlineDurationRaw,
+        rows[0]?.offlineDurationSeconds,
+        rows[0]?.offlineDurationRaw,
       ),
-      hint: `${formatPct(points[0]?.offlineOpenHoursPct)} in open hours`,
+      hint: `${formatPct(rows[0]?.offlineOpenHoursPct)} in open hours`,
     },
     {
       label: "Avg offline in open hours",
       value: formatPct(
-        averageValues(points.map((point) => point.offlineOpenHoursPct)),
+        averageValues(rows.map((row) => row.offlineOpenHoursPct)),
       ),
     },
     {
       label: "Total unreachable",
       value: formatDuration(
-        sumValues(points.map((point) => point.unreachableSeconds)),
+        sumValues(rows.map((row) => row.unreachableSeconds)),
       ),
     },
   ]);
@@ -55,7 +58,7 @@
   >
   <meta
     name="description"
-    content="Full closures history for {storeTitle} from aggregator KPI scraping."
+    content="Closures history for {storeTitle} per completed period."
   />
 </svelte:head>
 
@@ -96,12 +99,13 @@
         </h1>
       </div>
       <p class="text-muted-foreground max-w-3xl text-base leading-7">
-        {points.length} captured closures snapshot{points.length === 1
-          ? ""
-          : "s"} for this store, showing how often it went offline during its advertised
-        open hours over time.
+        Offline time during advertised open hours, per completed {periodKindLabel(
+          period,
+        ).toLowerCase()} period.
       </p>
     </section>
+
+    <PeriodToggle {period} basePath={`/aggregator-kpis/closures/${store.id}`} />
 
     <section class="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
       <Card.Root class="h-fit">
@@ -124,20 +128,6 @@
               <dt class="text-muted-foreground shrink-0">External id</dt>
               <dd class="text-right font-mono text-xs break-all">
                 {store.externalId}
-              </dd>
-            </div>
-            {#if store.slug}
-              <div class="flex justify-between gap-4">
-                <dt class="text-muted-foreground shrink-0">Slug</dt>
-                <dd class="text-right font-mono text-xs break-all">
-                  {store.slug}
-                </dd>
-              </div>
-            {/if}
-            <div class="flex justify-between gap-4">
-              <dt class="text-muted-foreground shrink-0">First scraped</dt>
-              <dd class="text-right font-medium">
-                {formatKpiDateTime(store.createdAt)}
               </dd>
             </div>
             <div class="flex justify-between gap-4">
@@ -176,15 +166,23 @@
           </Card.Root>
         {/if}
 
-        <KpiTrendChart
-          title="Offline in open hours over time"
-          description="Daily average share of open hours this store was offline."
-          label="Offline %"
-          unit="%"
+        <PeriodTrendChart
+          title="Offline time over time"
+          description="Total offline hours per completed period for this store."
+          label="Offline hours"
+          unit="h"
+          decimals={1}
+          {period}
           data={trend}
         />
 
-        <ClosuresHistoryTable data={points} />
+        <ClosuresTable
+          title="Period history"
+          description="Every completed period captured for this store."
+          data={rows}
+          {period}
+          hideStore
+        />
       </div>
     </section>
   </main>

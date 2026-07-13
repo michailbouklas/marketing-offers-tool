@@ -53,6 +53,109 @@ export type TimeseriesPoint = {
   value: number;
 };
 
+// --- Period model (Foody `foody_*_by_period` views) ---
+//
+// Foody KPI snapshots are labeled with the closed reporting period they cover.
+// `period_days` discriminates the period kind: 7 = week, >= 28 = month. Week and
+// month rows overlap, so a query must always pick one lane (never mix them).
+
+/** Period kind selector for the Foody period views. */
+export const periodKinds = ["week", "month"] as const;
+
+export type PeriodKind = (typeof periodKinds)[number];
+
+/** Filters for the Foody period views, parsed from URL search params. */
+export type PeriodFilters = {
+  /** Single store to scope to; null = all Foody stores. */
+  storeId: number | null;
+  /** Week or month lane; defaults to "week". */
+  period: PeriodKind;
+};
+
+/** One point in a per-period trend: a closed period and one aggregated value. */
+export type PeriodPoint = {
+  /** Period start (inclusive), "YYYY-MM-DD". */
+  periodStart: string;
+  /** Period end (inclusive), "YYYY-MM-DD". */
+  periodEnd: string;
+  /** 7 = week, 28..31 = month. */
+  periodDays: number;
+  value: number;
+};
+
+/** Human label for a period kind, e.g. "Weekly". */
+export function periodKindLabel(period: PeriodKind): string {
+  return period === "month" ? "Monthly" : "Weekly";
+}
+
+/**
+ * Labels a period for an axis tick, e.g. week → "Jun 1", month → "Jun 2026".
+ * `periodStart` is a "YYYY-MM-DD" day string parsed as UTC.
+ */
+export function formatPeriodShort(
+  periodStart: string,
+  period: PeriodKind,
+): string {
+  const date = new Date(`${periodStart}T00:00:00Z`);
+
+  if (Number.isNaN(date.getTime())) {
+    return periodStart;
+  }
+
+  if (period === "month") {
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(date);
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+/**
+ * Labels a full period for a tooltip, e.g. week → "Week of Jun 1 – Jun 7, 2026",
+ * month → "June 2026". Both bounds are inclusive "YYYY-MM-DD" day strings.
+ */
+export function formatPeriodLong(
+  periodStart: string,
+  periodEnd: string,
+  period: PeriodKind,
+): string {
+  const start = new Date(`${periodStart}T00:00:00Z`);
+  const end = new Date(`${periodEnd}T00:00:00Z`);
+
+  if (Number.isNaN(start.getTime())) {
+    return periodStart;
+  }
+
+  if (period === "month") {
+    return new Intl.DateTimeFormat("en-US", {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(start);
+  }
+
+  const startLabel = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(start);
+  const endLabel = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(Number.isNaN(end.getTime()) ? start : end);
+
+  return `Week of ${startLabel} – ${endLabel}`;
+}
+
 /** Fields shared by every latest-per-store KPI row. */
 type StoreKpiBase = {
   storeId: number;
@@ -60,6 +163,13 @@ type StoreKpiBase = {
   aggregator: AggregatorValue;
   /** When the latest snapshot with this KPI was captured. */
   scrapedAt: string | null;
+  /**
+   * Reporting period the row covers, present only on rows sourced from the
+   * Foody `foody_*_by_period` views. Absent on legacy latest-by-scrapedAt rows.
+   */
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  periodDays?: number | null;
 };
 
 export type ClosureRow = StoreKpiBase & {
@@ -296,6 +406,226 @@ export type RatingsStoreView = {
   distribution: StarBucket[];
 };
 
+// --- Foody period views for the operations KPIs (week/month lanes) ---
+//
+// These reuse the existing *Row shapes (now carrying periodStart/periodEnd),
+// but source one exact row per closed period from the foody_*_by_period views
+// instead of the latest-by-scrapedAt snapshot. Trends are per-period.
+
+/** Closures for the latest completed period, plus a per-period trend. */
+export type ClosuresPeriodView = {
+  period: PeriodKind;
+  rows: ClosureRow[];
+  /** Per-period total offline hours across the scope (a summable flow). */
+  trend: PeriodPoint[];
+};
+
+/** Per-store closures period history + a trend derived from it. */
+export type ClosuresPeriodStoreView = {
+  period: PeriodKind;
+  rows: ClosureRow[];
+  trend: PeriodPoint[];
+  reasonBreakdown: ClosureReasonBreakdown | null;
+};
+
+/** Order rejections for the latest completed period, plus a per-period trend. */
+export type RejectionsPeriodView = {
+  period: PeriodKind;
+  rows: RejectionRow[];
+  /** Per-period total lost sales (€) across the scope. */
+  trend: PeriodPoint[];
+  lostSalesByReason: LostSalesByReasonRow[];
+};
+
+/** Per-store order-rejections period history + a trend derived from it. */
+export type RejectionsPeriodStoreView = {
+  period: PeriodKind;
+  rows: RejectionRow[];
+  trend: PeriodPoint[];
+  reasonBreakdown: CancellationReasonBreakdown | null;
+  reasonTrend: ReasonTrend;
+};
+
+/** Punctuality for the latest completed period, plus a per-period trend. */
+export type PunctualityPeriodView = {
+  period: PeriodKind;
+  rows: PunctualityRow[];
+  /** Per-period order-weighted avoidable-wait order % across the scope. */
+  trend: PeriodPoint[];
+};
+
+/** Per-store punctuality period history + a trend derived from it. */
+export type PunctualityPeriodStoreView = {
+  period: PeriodKind;
+  rows: PunctualityRow[];
+  trend: PeriodPoint[];
+};
+
+/**
+ * One store's Foody Pro growth for one closed period. Two independent blocks:
+ * Pro subscription (`proOrders`/`nonProOrders`) and new-vs-returning
+ * (`newCustomerOrders`/`returningCustomerOrders`), each with its own denominator.
+ * `proBoxFound = false` (with OK status) means the store is not on Foody Pro —
+ * its counts are null and the UI shows "Not on Pro", never 0. Likewise
+ * `newVsReturningFound = false` means that block produced no data.
+ */
+export type ProGrowthRow = StoreKpiBase & {
+  proBoxFound: boolean | null;
+  proOrders: number | null;
+  nonProOrders: number | null;
+  newVsReturningFound: boolean | null;
+  newCustomerOrders: number | null;
+  returningCustomerOrders: number | null;
+};
+
+/** Pro growth for the latest completed period, plus per-period share trends. */
+export type ProGrowthPeriodView = {
+  period: PeriodKind;
+  rows: ProGrowthRow[];
+  /** Per-period Pro order share (%) across the scope, recomputed from sums. */
+  proShareTrend: PeriodPoint[];
+  /** Per-period new-customer order share (%) across the scope, from sums. */
+  newShareTrend: PeriodPoint[];
+};
+
+/** Per-store pro growth period history + share trends derived from it. */
+export type ProGrowthPeriodStoreView = {
+  period: PeriodKind;
+  rows: ProGrowthRow[];
+  proShareTrend: PeriodPoint[];
+  newShareTrend: PeriodPoint[];
+};
+
+/**
+ * Order-weighted avoidable-wait order percentage across rows (rule 2): weight
+ * each store's percentage by its `totalOrders` rather than a flat average.
+ * Returns null when no row carries both a percentage and an order count.
+ */
+export function weightedAvoidableWaitPct(
+  rows: { avoidableWaitOrdersPct: number | null; totalOrders: number | null }[],
+): number | null {
+  let weightedSum = 0;
+  let totalOrders = 0;
+
+  for (const row of rows) {
+    if (row.avoidableWaitOrdersPct === null || row.totalOrders === null) {
+      continue;
+    }
+    weightedSum += (row.avoidableWaitOrdersPct / 100) * row.totalOrders;
+    totalOrders += row.totalOrders;
+  }
+
+  return totalOrders > 0 ? (weightedSum / totalOrders) * 100 : null;
+}
+
+/**
+ * Company-wide (or scoped) Foody Pro order share (%) recomputed from sums
+ * (rule 2): 100 * SUM(proOrders) / SUM(proOrders + nonProOrders). Rows not on
+ * Pro carry null counts and drop out naturally. Returns null when the summed
+ * denominator is 0 (no store on Pro in scope).
+ */
+export function proOrderShare(
+  rows: { proOrders: number | null; nonProOrders: number | null }[],
+): number | null {
+  let numerator = 0;
+  let denominator = 0;
+
+  for (const row of rows) {
+    if (row.proOrders === null || row.nonProOrders === null) {
+      continue;
+    }
+    numerator += row.proOrders;
+    denominator += row.proOrders + row.nonProOrders;
+  }
+
+  return denominator > 0 ? (numerator / denominator) * 100 : null;
+}
+
+/**
+ * Company-wide (or scoped) new-customer order share (%) recomputed from sums
+ * (rule 2): 100 * SUM(newCustomerOrders) / SUM(new + returning). Its own
+ * denominator — never reconcile against the Pro block or metrics orders.
+ * Returns null when the summed denominator is 0.
+ */
+export function newCustomerShare(
+  rows: {
+    newCustomerOrders: number | null;
+    returningCustomerOrders: number | null;
+  }[],
+): number | null {
+  let numerator = 0;
+  let denominator = 0;
+
+  for (const row of rows) {
+    if (
+      row.newCustomerOrders === null ||
+      row.returningCustomerOrders === null
+    ) {
+      continue;
+    }
+    numerator += row.newCustomerOrders;
+    denominator += row.newCustomerOrders + row.returningCustomerOrders;
+  }
+
+  return denominator > 0 ? (numerator / denominator) * 100 : null;
+}
+
+// --- Metrics (Foody sales / orders / basket, from foody_metrics_by_period) ---
+
+/** One store's metrics for one closed period. */
+export type MetricRow = {
+  storeId: number;
+  storeName: string | null;
+  periodStart: string;
+  periodEnd: string;
+  periodDays: number;
+  sales: number | null;
+  orders: number | null;
+  avgBasketSize: number | null;
+  avgBasketItems: number | null;
+  completedOrders: number | null;
+};
+
+/**
+ * Company-wide (or single-store) totals for one closed period. `avgBasketSize`
+ * is recomputed as SUM(sales)/SUM(orders) — never the mean of per-store ratios.
+ */
+export type MetricsTotals = {
+  periodStart: string | null;
+  periodEnd: string | null;
+  periodDays: number | null;
+  sales: number | null;
+  orders: number | null;
+  completedOrders: number | null;
+  avgBasketSize: number | null;
+  /** Stores that contributed a row to this period. */
+  storeCount: number;
+};
+
+/** Metrics view payload: latest-period totals, per-period trends, store rows. */
+export type MetricsView = {
+  period: PeriodKind;
+  /** Latest closed period, aggregated across the store scope. */
+  totals: MetricsTotals;
+  /** Per-period SUM(sales) across the scope, ascending. */
+  salesTrend: PeriodPoint[];
+  /** Per-period SUM(orders) across the scope, ascending. */
+  ordersTrend: PeriodPoint[];
+  /** Per-store rows for the latest closed period. */
+  rows: MetricRow[];
+};
+
+/** Per-store metrics detail payload: full period history + derived trends. */
+export type MetricsStoreView = {
+  period: PeriodKind;
+  latest: MetricRow | null;
+  salesTrend: PeriodPoint[];
+  ordersTrend: PeriodPoint[];
+  basketTrend: PeriodPoint[];
+  /** Full period history (newest first) for the table. */
+  points: MetricRow[];
+};
+
 // --- Dashboard ---
 
 export type KpiDashboardStats = {
@@ -308,14 +638,20 @@ export type KpiDashboardStats = {
   avgOfflineOpenHoursPct: number | null;
   avgCancellationsPct: number | null;
   avgAvoidableWaitOrdersPct: number | null;
+  /** Total Foody sales for the latest completed week; null when none yet. */
+  latestFoodyWeeklySales: number | null;
+  /** Company-wide Foody Pro order share (%) for the latest completed week. */
+  proOrderSharePct: number | null;
 };
 
 // --- Sub-route metadata for the landing cards ---
 
 export type KpiSubRouteKey =
+  | "metrics"
   | "closures"
   | "order-rejections"
   | "punctuality"
+  | "pro-growth"
   | "ratings"
   | "reviews";
 
@@ -328,6 +664,14 @@ export type KpiSubRoute = {
 };
 
 export const kpiSubRoutes: KpiSubRoute[] = [
+  {
+    key: "metrics",
+    label: "Metrics",
+    href: "/aggregator-kpis/metrics",
+    eyebrow: "Performance",
+    description:
+      "Sales, orders, and average basket per closed week or month — Foody only.",
+  },
   {
     key: "closures",
     label: "Closures",
@@ -351,6 +695,14 @@ export const kpiSubRoutes: KpiSubRoute[] = [
     eyebrow: "Timeliness",
     description:
       "Share of orders with avoidable waiting time and the average avoidable wait.",
+  },
+  {
+    key: "pro-growth",
+    label: "Pro Growth",
+    href: "/aggregator-kpis/pro-growth",
+    eyebrow: "Growth",
+    description:
+      "Foody Pro subscription adoption and the new vs. returning customer mix.",
   },
   {
     key: "ratings",

@@ -1,6 +1,7 @@
 import { requirePermission } from "$lib/server/auth-guards";
-import { getClosuresStoreView } from "$lib/services/aggregator-kpis/closures.server";
+import { getClosuresPeriodStoreView } from "$lib/services/aggregator-kpis/closures.server";
 import { getKpiStore } from "$lib/services/aggregator-kpis/kpi-shared.server";
+import { parsePeriodFilters } from "$lib/services/aggregator-kpis/period-shared.server";
 import { error } from "@sveltejs/kit";
 import { z } from "zod";
 import type { PageServerLoad } from "./$types";
@@ -22,7 +23,8 @@ export const load: PageServerLoad = async (event) => {
     error(404, "Store not found");
   }
 
-  const view = await getClosuresStoreView(store.id);
+  const { period } = parsePeriodFilters(event.url.searchParams);
+  const view = await getClosuresPeriodStoreView(store.id, period);
 
-  return { store, view };
+  return { store, period, view };
 };

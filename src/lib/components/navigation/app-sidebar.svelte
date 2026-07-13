@@ -134,12 +134,14 @@
       roles: aggregatorKpisRoles,
       children: [
         { href: "/aggregator-kpis", label: "Overview" },
+        { href: "/aggregator-kpis/metrics", label: "Metrics" },
         { href: "/aggregator-kpis/closures", label: "Closures" },
         {
           href: "/aggregator-kpis/order-rejections",
           label: "Order Rejections",
         },
         { href: "/aggregator-kpis/punctuality", label: "Punctuality" },
+        { href: "/aggregator-kpis/pro-growth", label: "Pro Growth" },
         { href: "/aggregator-kpis/ratings", label: "Ratings" },
         { href: "/aggregator-kpis/reviews", label: "Reviews" },
         {

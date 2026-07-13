@@ -1,8 +1,9 @@
 <script lang="ts">
   import CancellationReasonsCard from "$lib/components/aggregator-kpis/widgets/cancellation-reasons-card.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
-  import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
-  import OrderRejectionsHistoryTable from "$lib/components/aggregator-kpis/widgets/order-rejections-history-table.svelte";
+  import OrderRejectionsTable from "$lib/components/aggregator-kpis/widgets/order-rejections-table.svelte";
+  import PeriodToggle from "$lib/components/aggregator-kpis/widgets/period-toggle.svelte";
+  import PeriodTrendChart from "$lib/components/aggregator-kpis/widgets/period-trend-chart.svelte";
   import ReasonTrendChart from "$lib/components/aggregator-kpis/widgets/reason-trend-chart.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
@@ -13,6 +14,7 @@
     formatMoney,
     formatNumber,
     formatPct,
+    periodKindLabel,
     sumValues,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
@@ -22,27 +24,26 @@
 
   const store = $derived(data.store);
   const storeTitle = $derived(store.name ?? `Store #${store.id}`);
-  const points = $derived(data.view.points);
+  const period = $derived(data.period);
+  const rows = $derived(data.view.rows);
   const trend = $derived(data.view.trend);
   const reasonBreakdown = $derived(data.view.reasonBreakdown);
   const reasonTrend = $derived(data.view.reasonTrend);
 
   const statCards = $derived([
-    { label: "Snapshots", value: points.length.toString() },
+    { label: "Periods", value: rows.length.toString() },
     {
       label: "Latest cancellations",
-      value: formatNumber(points[0]?.cancellationsCount),
-      hint: formatPct(points[0]?.cancellationsPct),
+      value: formatNumber(rows[0]?.cancellationsCount),
+      hint: formatPct(rows[0]?.cancellationsPct),
     },
     {
       label: "Avg cancellations",
-      value: formatPct(
-        averageValues(points.map((point) => point.cancellationsPct)),
-      ),
+      value: formatPct(averageValues(rows.map((row) => row.cancellationsPct))),
     },
     {
       label: "Total lost sales",
-      value: formatMoney(sumValues(points.map((point) => point.lostSales))),
+      value: formatMoney(sumValues(rows.map((row) => row.lostSales))),
     },
   ]);
 </script>
@@ -53,7 +54,7 @@
   >
   <meta
     name="description"
-    content="Full order-rejections history for {storeTitle} from aggregator KPI scraping."
+    content="Order-rejections history for {storeTitle} per completed period."
   />
 </svelte:head>
 
@@ -94,12 +95,16 @@
         </h1>
       </div>
       <p class="text-muted-foreground max-w-3xl text-base leading-7">
-        {points.length} captured order-rejections snapshot{points.length === 1
-          ? ""
-          : "s"} for this store, showing how its cancellation rate and lost sales
-        moved over time.
+        Cancellation rate and lost sales, per completed {periodKindLabel(
+          period,
+        ).toLowerCase()} period.
       </p>
     </section>
+
+    <PeriodToggle
+      {period}
+      basePath={`/aggregator-kpis/order-rejections/${store.id}`}
+    />
 
     <section class="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
       <Card.Root class="h-fit">
@@ -122,20 +127,6 @@
               <dt class="text-muted-foreground shrink-0">External id</dt>
               <dd class="text-right font-mono text-xs break-all">
                 {store.externalId}
-              </dd>
-            </div>
-            {#if store.slug}
-              <div class="flex justify-between gap-4">
-                <dt class="text-muted-foreground shrink-0">Slug</dt>
-                <dd class="text-right font-mono text-xs break-all">
-                  {store.slug}
-                </dd>
-              </div>
-            {/if}
-            <div class="flex justify-between gap-4">
-              <dt class="text-muted-foreground shrink-0">First scraped</dt>
-              <dd class="text-right font-medium">
-                {formatKpiDateTime(store.createdAt)}
               </dd>
             </div>
             <div class="flex justify-between gap-4">
@@ -162,11 +153,12 @@
       <div class="flex flex-col gap-6">
         <KpiStatCards data={statCards} />
 
-        <KpiTrendChart
-          title="Cancellations over time"
-          description="Daily average cancellation rate for this store."
-          label="Cancellations %"
-          unit="%"
+        <PeriodTrendChart
+          title="Lost sales over time"
+          description="Total sales lost to cancellations per completed period."
+          label="Lost sales"
+          prefix="€"
+          {period}
           data={trend}
         />
 
@@ -182,7 +174,13 @@
           />
         {/if}
 
-        <OrderRejectionsHistoryTable data={points} />
+        <OrderRejectionsTable
+          title="Period history"
+          description="Every completed period captured for this store."
+          data={rows}
+          {period}
+          hideStore
+        />
       </div>
     </section>
   </main>

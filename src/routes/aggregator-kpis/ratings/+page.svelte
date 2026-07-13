@@ -1,5 +1,5 @@
 <script lang="ts">
-  import KpiFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-filter-bar.svelte";
+  import KpiPeriodFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-period-filter-bar.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
   import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
   import RatingsDistribution from "$lib/components/aggregator-kpis/widgets/ratings-distribution.svelte";
@@ -64,15 +64,16 @@
         Ratings
       </h1>
       <p class="text-muted-foreground max-w-3xl text-base leading-7">
-        Store ratings and review counts on each aggregator, and how the latest
-        captured reviews distribute across star buckets.
+        Current store ratings and all-time review counts, and how the latest
+        captured reviews distribute across star buckets. Foody only.
       </p>
     </section>
 
-    <KpiFilterBar
+    <KpiPeriodFilterBar
       stores={data.stores}
       filters={data.filters}
       basePath="/aggregator-kpis/ratings"
+      showPeriod={false}
     />
 
     <KpiStatCards data={statCards} />

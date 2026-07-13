@@ -1,7 +1,8 @@
 <script lang="ts">
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
-  import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
-  import PunctualityHistoryTable from "$lib/components/aggregator-kpis/widgets/punctuality-history-table.svelte";
+  import PeriodToggle from "$lib/components/aggregator-kpis/widgets/period-toggle.svelte";
+  import PeriodTrendChart from "$lib/components/aggregator-kpis/widgets/period-trend-chart.svelte";
+  import PunctualityTable from "$lib/components/aggregator-kpis/widgets/punctuality-table.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import {
@@ -10,6 +11,7 @@
     formatDuration,
     formatKpiDateTime,
     formatPct,
+    periodKindLabel,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import type { PageData } from "./$types";
@@ -18,25 +20,26 @@
 
   const store = $derived(data.store);
   const storeTitle = $derived(store.name ?? `Store #${store.id}`);
-  const points = $derived(data.view.points);
+  const period = $derived(data.period);
+  const rows = $derived(data.view.rows);
   const trend = $derived(data.view.trend);
 
   const statCards = $derived([
-    { label: "Snapshots", value: points.length.toString() },
+    { label: "Periods", value: rows.length.toString() },
     {
       label: "Latest avoidable-wait orders",
-      value: formatPct(points[0]?.avoidableWaitOrdersPct),
+      value: formatPct(rows[0]?.avoidableWaitOrdersPct),
     },
     {
       label: "Avg avoidable-wait orders",
       value: formatPct(
-        averageValues(points.map((point) => point.avoidableWaitOrdersPct)),
+        averageValues(rows.map((row) => row.avoidableWaitOrdersPct)),
       ),
     },
     {
       label: "Avg avoidable wait",
       value: formatDuration(
-        averageValues(points.map((point) => point.avgAvoidableWaitSeconds)),
+        averageValues(rows.map((row) => row.avgAvoidableWaitSeconds)),
       ),
     },
   ]);
@@ -89,12 +92,16 @@
         </h1>
       </div>
       <p class="text-muted-foreground max-w-3xl text-base leading-7">
-        {points.length} captured punctuality snapshot{points.length === 1
-          ? ""
-          : "s"} for this store, showing how its avoidable waiting time moved over
-        time.
+        Avoidable waiting time, per completed {periodKindLabel(
+          period,
+        ).toLowerCase()} period.
       </p>
     </section>
+
+    <PeriodToggle
+      {period}
+      basePath={`/aggregator-kpis/punctuality/${store.id}`}
+    />
 
     <section class="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
       <Card.Root class="h-fit">
@@ -157,15 +164,23 @@
       <div class="flex flex-col gap-6">
         <KpiStatCards data={statCards} />
 
-        <KpiTrendChart
+        <PeriodTrendChart
           title="Avoidable-wait orders over time"
-          description="Daily average share of orders with avoidable waiting time for this store."
+          description="Share of orders with avoidable waiting time per completed period."
           label="Avoidable-wait %"
           unit="%"
+          decimals={1}
+          {period}
           data={trend}
         />
 
-        <PunctualityHistoryTable data={points} />
+        <PunctualityTable
+          title="Period history"
+          description="Every completed period captured for this store."
+          data={rows}
+          {period}
+          hideStore
+        />
       </div>
     </section>
   </main>

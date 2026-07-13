@@ -1,14 +1,15 @@
 <script lang="ts">
-  import KpiFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-filter-bar.svelte";
+  import KpiPeriodFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-period-filter-bar.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
-  import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
   import LostSalesByReasonWidget from "$lib/components/aggregator-kpis/widgets/lost-sales-by-reason-widget.svelte";
   import OrderRejectionsTable from "$lib/components/aggregator-kpis/widgets/order-rejections-table.svelte";
+  import PeriodTrendChart from "$lib/components/aggregator-kpis/widgets/period-trend-chart.svelte";
   import {
     averageValues,
     formatMoney,
     formatNumber,
     formatPct,
+    periodKindLabel,
     sumValues,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
@@ -19,6 +20,7 @@
   const rows = $derived(data.view.rows);
   const trend = $derived(data.view.trend);
   const lostSalesByReason = $derived(data.view.lostSalesByReason);
+  const period = $derived(data.view.period);
 
   const statCards = $derived([
     { label: "Stores with data", value: rows.length.toString() },
@@ -70,11 +72,13 @@
       </h1>
       <p class="text-muted-foreground max-w-3xl text-base leading-7">
         Cancellation rates, the sales lost to them, and orders rejected for
-        reasons the aggregator could not attribute.
+        reasons the aggregator could not attribute — per completed {periodKindLabel(
+          period,
+        ).toLowerCase()} period. Foody only.
       </p>
     </section>
 
-    <KpiFilterBar
+    <KpiPeriodFilterBar
       stores={data.stores}
       filters={data.filters}
       basePath="/aggregator-kpis/order-rejections"
@@ -82,16 +86,17 @@
 
     <KpiStatCards data={statCards} />
 
-    <KpiTrendChart
-      title="Cancellations over time"
-      description="Daily average cancellation rate across the stores."
-      label="Cancellations %"
-      unit="%"
+    <PeriodTrendChart
+      title="Lost sales over time"
+      description="Total sales lost to cancellations per completed period across the stores."
+      label="Lost sales"
+      prefix="€"
+      {period}
       data={trend}
     />
 
     <LostSalesByReasonWidget data={lostSalesByReason} />
 
-    <OrderRejectionsTable data={rows} linkStores />
+    <OrderRejectionsTable data={rows} {period} linkStores />
   </main>
 </div>

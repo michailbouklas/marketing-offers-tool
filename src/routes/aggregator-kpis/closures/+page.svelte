@@ -1,13 +1,14 @@
 <script lang="ts">
   import ClosuresTable from "$lib/components/aggregator-kpis/widgets/closures-table.svelte";
-  import KpiFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-filter-bar.svelte";
+  import KpiPeriodFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-period-filter-bar.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
-  import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
+  import PeriodTrendChart from "$lib/components/aggregator-kpis/widgets/period-trend-chart.svelte";
   import {
     averageValues,
     formatDuration,
     formatDurationDHM,
     formatPct,
+    periodKindLabel,
     sumValues,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
@@ -17,6 +18,7 @@
 
   const rows = $derived(data.view.rows);
   const trend = $derived(data.view.trend);
+  const period = $derived(data.view.period);
 
   const statCards = $derived([
     { label: "Stores with data", value: rows.length.toString() },
@@ -45,7 +47,7 @@
   <title>Closures | Aggregator KPIs | Aggregator Offers Tool</title>
   <meta
     name="description"
-    content="How often stores go offline during their advertised open hours across Foody and Wolt."
+    content="How often Foody stores go offline during their advertised open hours, per completed period."
   />
 </svelte:head>
 
@@ -74,11 +76,13 @@
       </h1>
       <p class="text-muted-foreground max-w-3xl text-base leading-7">
         How often stores go offline during their advertised open hours, and the
-        total time they were unreachable.
+        total time they were unreachable — one exact number per completed {periodKindLabel(
+          period,
+        ).toLowerCase()} period. Foody only.
       </p>
     </section>
 
-    <KpiFilterBar
+    <KpiPeriodFilterBar
       stores={data.stores}
       filters={data.filters}
       basePath="/aggregator-kpis/closures"
@@ -86,14 +90,16 @@
 
     <KpiStatCards data={statCards} />
 
-    <KpiTrendChart
-      title="Offline in open hours over time"
-      description="Daily average share of open hours the stores were offline."
-      label="Offline %"
-      unit="%"
+    <PeriodTrendChart
+      title="Offline time over time"
+      description="Total offline hours per completed period across the selected stores."
+      label="Offline hours"
+      unit="h"
+      decimals={1}
+      {period}
       data={trend}
     />
 
-    <ClosuresTable data={rows} linkStores />
+    <ClosuresTable data={rows} {period} linkStores />
   </main>
 </div>

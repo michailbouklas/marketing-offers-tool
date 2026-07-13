@@ -1,3 +1,4 @@
 [0m[2m[35m$[0m [2m[1mvite dev --port "5199"[0m
 [1m[31mENOENT: no such file or directory, stat 'C:\work\marketing-offers-tool\.svelte-kit\types\src\routes\proxy+layout.server.ts'[22m[39m
 [1m[31mENOENT: no such file or directory, stat 'C:\work\marketing-offers-tool\.svelte-kit\types\src\routes\proxy+layout.server.ts'[22m[39m
+[0m[31merror[0m[2m:[0m script [1m"dev"[0m exited with code 5[0m

@@ -1,11 +1,14 @@
 import { merchantScrapesPrisma } from "$lib/server/merchant-scrapes-prisma";
-import type {
-  KpiDashboardStats,
-  KpiFilters,
+import {
+  type KpiDashboardStats,
+  type KpiFilters,
+  proOrderShare,
 } from "$lib/services/aggregator-kpis/aggregator-kpis";
 import { getClosuresLatestByStore } from "$lib/services/aggregator-kpis/closures.server";
 import { averageOf } from "$lib/services/aggregator-kpis/kpi-shared.server";
+import { getMetricsView } from "$lib/services/aggregator-kpis/metrics.server";
 import { getRejectionsLatestByStore } from "$lib/services/aggregator-kpis/order-rejections.server";
+import { getProGrowthLatestRows } from "$lib/services/aggregator-kpis/pro-growth.server";
 import { getPunctualityLatestByStore } from "$lib/services/aggregator-kpis/punctuality.server";
 import { getRatingsLatestByStore } from "$lib/services/aggregator-kpis/ratings.server";
 
@@ -30,6 +33,8 @@ export async function getDashboardStats(): Promise<KpiDashboardStats> {
     rejections,
     punctuality,
     ratings,
+    metrics,
+    proGrowth,
   ] = await Promise.all([
     merchantScrapesPrisma.store.groupBy({
       by: ["aggregator"],
@@ -40,6 +45,8 @@ export async function getDashboardStats(): Promise<KpiDashboardStats> {
     getRejectionsLatestByStore(ALL),
     getPunctualityLatestByStore(ALL),
     getRatingsLatestByStore(ALL),
+    getMetricsView({ storeId: null, period: "week" }),
+    getProGrowthLatestRows(),
   ]);
 
   const countFor = (aggregator: string) =>
@@ -64,5 +71,7 @@ export async function getDashboardStats(): Promise<KpiDashboardStats> {
     avgAvoidableWaitOrdersPct: averageOf(
       punctuality.map((row) => row.avoidableWaitOrdersPct),
     ),
+    latestFoodyWeeklySales: metrics.totals.sales,
+    proOrderSharePct: proOrderShare(proGrowth),
   };
 }

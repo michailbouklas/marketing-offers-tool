@@ -1,12 +1,16 @@
 <script lang="ts">
-  import KpiFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-filter-bar.svelte";
+  import KpiPeriodFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-period-filter-bar.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
-  import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
+  import PeriodTrendChart from "$lib/components/aggregator-kpis/widgets/period-trend-chart.svelte";
   import PunctualityTable from "$lib/components/aggregator-kpis/widgets/punctuality-table.svelte";
   import {
     averageValues,
     formatDuration,
+    formatNumber,
     formatPct,
+    periodKindLabel,
+    sumValues,
+    weightedAvoidableWaitPct,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import type { PageData } from "./$types";
@@ -15,20 +19,24 @@
 
   const rows = $derived(data.view.rows);
   const trend = $derived(data.view.trend);
+  const period = $derived(data.view.period);
 
   const statCards = $derived([
     { label: "Stores with data", value: rows.length.toString() },
     {
-      label: "Avg avoidable-wait orders",
-      value: formatPct(
-        averageValues(rows.map((row) => row.avoidableWaitOrdersPct)),
-      ),
+      label: "Avoidable-wait orders",
+      value: formatPct(weightedAvoidableWaitPct(rows)),
+      hint: "order-weighted",
     },
     {
       label: "Avg avoidable wait",
       value: formatDuration(
         averageValues(rows.map((row) => row.avgAvoidableWaitSeconds)),
       ),
+    },
+    {
+      label: "Total orders",
+      value: formatNumber(sumValues(rows.map((row) => row.totalOrders))),
     },
   ]);
 </script>
@@ -66,11 +74,13 @@
       </h1>
       <p class="text-muted-foreground max-w-3xl text-base leading-7">
         The share of orders that ran into avoidable waiting time, and how long
-        that avoidable wait was on average.
+        that avoidable wait was on average — per completed {periodKindLabel(
+          period,
+        ).toLowerCase()} period. Foody only.
       </p>
     </section>
 
-    <KpiFilterBar
+    <KpiPeriodFilterBar
       stores={data.stores}
       filters={data.filters}
       basePath="/aggregator-kpis/punctuality"
@@ -78,14 +88,16 @@
 
     <KpiStatCards data={statCards} />
 
-    <KpiTrendChart
+    <PeriodTrendChart
       title="Avoidable-wait orders over time"
-      description="Daily average share of orders with avoidable waiting time."
+      description="Order-weighted share of orders with avoidable waiting time per completed period."
       label="Avoidable-wait %"
       unit="%"
+      decimals={1}
+      {period}
       data={trend}
     />
 
-    <PunctualityTable data={rows} linkStores />
+    <PunctualityTable data={rows} {period} linkStores />
   </main>
 </div>

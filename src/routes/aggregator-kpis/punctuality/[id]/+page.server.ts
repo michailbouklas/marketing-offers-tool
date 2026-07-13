@@ -1,6 +1,7 @@
 import { requirePermission } from "$lib/server/auth-guards";
 import { getKpiStore } from "$lib/services/aggregator-kpis/kpi-shared.server";
-import { getPunctualityStoreView } from "$lib/services/aggregator-kpis/punctuality.server";
+import { getPunctualityPeriodStoreView } from "$lib/services/aggregator-kpis/punctuality.server";
+import { parsePeriodFilters } from "$lib/services/aggregator-kpis/period-shared.server";
 import { error } from "@sveltejs/kit";
 import { z } from "zod";
 import type { PageServerLoad } from "./$types";
@@ -22,7 +23,8 @@ export const load: PageServerLoad = async (event) => {
     error(404, "Store not found");
   }
 
-  const view = await getPunctualityStoreView(store.id);
+  const { period } = parsePeriodFilters(event.url.searchParams);
+  const view = await getPunctualityPeriodStoreView(store.id, period);
 
-  return { store, view };
+  return { store, period, view };
 };

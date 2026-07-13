@@ -1,11 +1,17 @@
 import { merchantScrapesPrisma } from "$lib/server/merchant-scrapes-prisma";
+import { Prisma } from "../../../generated/merchant-scrapes-prisma/client";
 import type {
   AggregatorValue,
   ClosureReasonBreakdown,
   ClosureRow,
+  ClosuresPeriodStoreView,
+  ClosuresPeriodView,
   ClosuresStoreView,
   ClosuresView,
   KpiFilters,
+  PeriodFilters,
+  PeriodKind,
+  PeriodPoint,
   TimeseriesPoint,
 } from "$lib/services/aggregator-kpis/aggregator-kpis";
 import {
@@ -14,6 +20,11 @@ import {
   storeWhere,
   toNumber,
 } from "$lib/services/aggregator-kpis/kpi-shared.server";
+import {
+  PERIOD_TREND_LIMIT,
+  periodDaysSql,
+  storeFilterSql,
+} from "$lib/services/aggregator-kpis/period-shared.server";
 
 /** Latest closures snapshot per store, filtered by aggregator/store. */
 export async function getClosuresLatestByStore(
@@ -190,4 +201,164 @@ export async function getClosuresView(
   ]);
 
   return { rows, trend };
+}
+
+// --- Period-based reads (Foody foody_closures_by_period view) ---
+
+/** Raw shape of a closures period row (dates/timestamps cast to text in SQL). */
+type ClosurePeriodRawRow = {
+  storeId: number;
+  storeName: string | null;
+  periodStart: string;
+  periodEnd: string;
+  periodDays: number;
+  scrapedAt: string | null;
+  offlineOpenHoursPct: unknown;
+  offlineDurationSeconds: unknown;
+  offlineDurationRaw: string | null;
+  unreachableSeconds: unknown;
+};
+
+function mapClosurePeriodRow(row: ClosurePeriodRawRow): ClosureRow {
+  return {
+    storeId: row.storeId,
+    storeName: row.storeName,
+    aggregator: "FOODY",
+    scrapedAt: row.scrapedAt,
+    periodStart: row.periodStart,
+    periodEnd: row.periodEnd,
+    periodDays: row.periodDays,
+    offlineOpenHoursPct: toNumber(row.offlineOpenHoursPct),
+    unreachableSeconds: toNumber(row.unreachableSeconds),
+    offlineDurationSeconds: toNumber(row.offlineDurationSeconds),
+    offlineDurationRaw: row.offlineDurationRaw ?? null,
+  };
+}
+
+/** Total offline hours per period across the scope (a summable flow). */
+async function getClosuresPeriodTrend(
+  period: PeriodKind,
+  storeId: number | null,
+): Promise<PeriodPoint[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<
+    {
+      periodStart: string;
+      periodEnd: string;
+      periodDays: number;
+      hours: unknown;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT "periodStart", "periodEnd", "periodDays", hours
+      FROM (
+        SELECT "periodStart"::text AS "periodStart",
+               "periodEnd"::text   AS "periodEnd",
+               period_days         AS "periodDays",
+               SUM("offlineDurationSeconds")::float8 / 3600.0 AS hours
+        FROM foody_closures_by_period
+        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+          AND "offlineDurationSeconds" IS NOT NULL
+        GROUP BY "periodStart", "periodEnd", period_days
+        ORDER BY "periodStart" DESC
+        LIMIT ${PERIOD_TREND_LIMIT[period]}
+      ) t
+      ORDER BY "periodStart" ASC`,
+  );
+
+  return rows
+    .map((row) => {
+      const value = toNumber(row.hours);
+      return value === null
+        ? null
+        : {
+            periodStart: row.periodStart,
+            periodEnd: row.periodEnd,
+            periodDays: row.periodDays,
+            value,
+          };
+    })
+    .filter((point): point is PeriodPoint => point !== null);
+}
+
+/** Latest completed period's closures per store within the scope. */
+async function getClosuresLatestPeriodRows(
+  period: PeriodKind,
+  storeId: number | null,
+): Promise<ClosureRow[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<ClosurePeriodRawRow[]>(
+    Prisma.sql`
+      WITH latest AS (
+        SELECT MAX("periodStart") AS ps
+        FROM foody_closures_by_period
+        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      )
+      SELECT v."storeId"                 AS "storeId",
+             v.name                      AS "storeName",
+             v."periodStart"::text       AS "periodStart",
+             v."periodEnd"::text         AS "periodEnd",
+             v.period_days               AS "periodDays",
+             v."scrapedAt"::text         AS "scrapedAt",
+             v."offlineOpenHoursPct"     AS "offlineOpenHoursPct",
+             v."offlineDurationSeconds"  AS "offlineDurationSeconds",
+             v."offlineDurationRaw"      AS "offlineDurationRaw",
+             v."unreachableSeconds"      AS "unreachableSeconds"
+      FROM foody_closures_by_period v
+      JOIN latest ON v."periodStart" = latest.ps
+      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      ORDER BY v.name ASC`,
+  );
+
+  return rows.map(mapClosurePeriodRow);
+}
+
+/** Full closures period history for one store, newest first. */
+async function getClosuresPeriodHistory(
+  period: PeriodKind,
+  storeId: number,
+): Promise<ClosureRow[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<ClosurePeriodRawRow[]>(
+    Prisma.sql`
+      SELECT "storeId"                 AS "storeId",
+             name                      AS "storeName",
+             "periodStart"::text       AS "periodStart",
+             "periodEnd"::text         AS "periodEnd",
+             period_days               AS "periodDays",
+             "scrapedAt"::text         AS "scrapedAt",
+             "offlineOpenHoursPct"     AS "offlineOpenHoursPct",
+             "offlineDurationSeconds"  AS "offlineDurationSeconds",
+             "offlineDurationRaw"      AS "offlineDurationRaw",
+             "unreachableSeconds"      AS "unreachableSeconds"
+      FROM foody_closures_by_period
+      WHERE ${periodDaysSql(period)} AND "storeId" = ${storeId}
+      ORDER BY "periodStart" DESC
+      LIMIT ${PERIOD_TREND_LIMIT[period]}`,
+  );
+
+  return rows.map(mapClosurePeriodRow);
+}
+
+/** Closures period view: latest-period rows + per-period offline-hours trend. */
+export async function getClosuresPeriodView(
+  filters: PeriodFilters,
+): Promise<ClosuresPeriodView> {
+  const [rows, trend] = await Promise.all([
+    getClosuresLatestPeriodRows(filters.period, filters.storeId),
+    getClosuresPeriodTrend(filters.period, filters.storeId),
+  ]);
+
+  return { period: filters.period, rows, trend };
+}
+
+/** Per-store closures period history, a trend from it, and reason breakdown. */
+export async function getClosuresPeriodStoreView(
+  storeId: number,
+  period: PeriodKind,
+): Promise<ClosuresPeriodStoreView> {
+  const [rows, trend, reasonBreakdown] = await Promise.all([
+    getClosuresPeriodHistory(period, storeId),
+    getClosuresPeriodTrend(period, storeId),
+    getClosureReasonBreakdown(storeId),
+  ]);
+
+  return { period, rows, trend, reasonBreakdown };
 }
