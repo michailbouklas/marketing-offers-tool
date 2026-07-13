@@ -267,6 +267,61 @@ export type StarBucket = {
   count: number;
 };
 
+/**
+ * The order behind a review, as captured from the aggregator portal's own order
+ * drawer. Canonical shape: `OrderDetails` in the scraper's `src/foody/types.ts`.
+ * Every field except `orderId`, `timeline`, `products`, `scrapedAt` can be null;
+ * the two arrays can be empty. Money fields are raw display strings that already
+ * include `€` and sign (e.g. `"€13.80"`, `"-€1.79"`) — display verbatim, never
+ * treat null as €0.
+ */
+export type OrderTimelineStep = {
+  /** Stable machine key from the portal (open set); use for icons/ordering. */
+  key: string;
+  /** Display label, e.g. "Order delivered". */
+  label: string;
+  /** Wall-clock "HH:MM" string (can cross midnight) — NOT a timestamp. */
+  time: string | null;
+  /** Extra display lines, e.g. "7 min. late", "Accepted in 1 sec". */
+  notes: string[];
+};
+
+export type OrderProductOption = {
+  quantity: number | null;
+  name: string;
+  /** Raw display string, often "€0.00" for bundled options. */
+  price: string | null;
+};
+
+export type OrderProduct = {
+  quantity: number | null;
+  name: string;
+  /** Raw display string — the portal's own line total. */
+  price: string | null;
+  options: OrderProductOption[];
+};
+
+export type OrderDetails = {
+  orderId: number;
+  /** The drawer's status chip, e.g. "Completed"; free text, do not enum-gate. */
+  status: string | null;
+  /** Ordered milestones; may be empty. */
+  timeline: OrderTimelineStep[];
+  /** Line items; may be empty. */
+  products: OrderProduct[];
+  subtotal: string | null;
+  /** Negative = deducted from the merchant. */
+  commission: string | null;
+  /** Percent — the one parsed numeric money field. */
+  commissionRate: number | null;
+  taxCharge: string | null;
+  estimatedEarnings: string | null;
+  paymentMethod: string | null;
+  deliveryType: string | null;
+  /** ISO — same value as the `orderScrapedAt` column. */
+  scrapedAt: string;
+};
+
 export type ReviewRow = {
   id: number;
   storeId: number;
@@ -280,7 +335,31 @@ export type ReviewRow = {
   reviewedAtRaw: string | null;
   firstSeenAt: string;
   lastSeenAt: string;
+  /** Full order behind the review; null = not enriched yet, NOT "no order". */
+  orderDetails: OrderDetails | null;
+  /** When `orderDetails` was last fetched (ISO); null when not enriched. */
+  orderScrapedAt: string | null;
 };
+
+/** Matches a portal lateness note like "7 min. late" / "12 min late". */
+const LATE_NOTE_RE = /(\d+)\s*min\.?\s*late/i;
+
+/**
+ * First lateness figure (in minutes) found across all timeline notes of an
+ * order, or null when the order is missing or shows no lateness note.
+ */
+export function orderLateMinutes(order: OrderDetails | null): number | null {
+  if (!order) return null;
+
+  for (const step of order.timeline) {
+    for (const note of step.notes) {
+      const match = LATE_NOTE_RE.exec(note);
+      if (match) return Number.parseInt(match[1], 10);
+    }
+  }
+
+  return null;
+}
 
 // --- Per-KPI view payloads ---
 

@@ -55,6 +55,7 @@ export type ReviewMinAggregateOutputType = {
   reviewedAtRaw: string | null;
   firstSeenAt: Date | null;
   lastSeenAt: Date | null;
+  orderScrapedAt: Date | null;
 };
 
 export type ReviewMaxAggregateOutputType = {
@@ -68,6 +69,7 @@ export type ReviewMaxAggregateOutputType = {
   reviewedAtRaw: string | null;
   firstSeenAt: Date | null;
   lastSeenAt: Date | null;
+  orderScrapedAt: Date | null;
 };
 
 export type ReviewCountAggregateOutputType = {
@@ -81,6 +83,8 @@ export type ReviewCountAggregateOutputType = {
   reviewedAtRaw: number;
   firstSeenAt: number;
   lastSeenAt: number;
+  orderDetails: number;
+  orderScrapedAt: number;
   _all: number;
 };
 
@@ -109,6 +113,7 @@ export type ReviewMinAggregateInputType = {
   reviewedAtRaw?: true;
   firstSeenAt?: true;
   lastSeenAt?: true;
+  orderScrapedAt?: true;
 };
 
 export type ReviewMaxAggregateInputType = {
@@ -122,6 +127,7 @@ export type ReviewMaxAggregateInputType = {
   reviewedAtRaw?: true;
   firstSeenAt?: true;
   lastSeenAt?: true;
+  orderScrapedAt?: true;
 };
 
 export type ReviewCountAggregateInputType = {
@@ -135,6 +141,8 @@ export type ReviewCountAggregateInputType = {
   reviewedAtRaw?: true;
   firstSeenAt?: true;
   lastSeenAt?: true;
+  orderDetails?: true;
+  orderScrapedAt?: true;
   _all?: true;
 };
 
@@ -242,6 +250,8 @@ export type ReviewGroupByOutputType = {
   reviewedAtRaw: string | null;
   firstSeenAt: Date;
   lastSeenAt: Date;
+  orderDetails: runtime.JsonValue | null;
+  orderScrapedAt: Date | null;
   _count: ReviewCountAggregateOutputType | null;
   _avg: ReviewAvgAggregateOutputType | null;
   _sum: ReviewSumAggregateOutputType | null;
@@ -280,6 +290,12 @@ export type ReviewWhereInput = {
   reviewedAtRaw?: Prisma.StringNullableFilter<"Review"> | string | null;
   firstSeenAt?: Prisma.DateTimeFilter<"Review"> | Date | string;
   lastSeenAt?: Prisma.DateTimeFilter<"Review"> | Date | string;
+  orderDetails?: Prisma.JsonNullableFilter<"Review">;
+  orderScrapedAt?:
+    | Prisma.DateTimeNullableFilter<"Review">
+    | Date
+    | string
+    | null;
   store?: Prisma.XOR<Prisma.StoreScalarRelationFilter, Prisma.StoreWhereInput>;
 };
 
@@ -294,6 +310,8 @@ export type ReviewOrderByWithRelationInput = {
   reviewedAtRaw?: Prisma.SortOrderInput | Prisma.SortOrder;
   firstSeenAt?: Prisma.SortOrder;
   lastSeenAt?: Prisma.SortOrder;
+  orderDetails?: Prisma.SortOrderInput | Prisma.SortOrder;
+  orderScrapedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   store?: Prisma.StoreOrderByWithRelationInput;
 };
 
@@ -317,6 +335,12 @@ export type ReviewWhereUniqueInput = Prisma.AtLeast<
     reviewedAtRaw?: Prisma.StringNullableFilter<"Review"> | string | null;
     firstSeenAt?: Prisma.DateTimeFilter<"Review"> | Date | string;
     lastSeenAt?: Prisma.DateTimeFilter<"Review"> | Date | string;
+    orderDetails?: Prisma.JsonNullableFilter<"Review">;
+    orderScrapedAt?:
+      | Prisma.DateTimeNullableFilter<"Review">
+      | Date
+      | string
+      | null;
     store?: Prisma.XOR<
       Prisma.StoreScalarRelationFilter,
       Prisma.StoreWhereInput
@@ -336,6 +360,8 @@ export type ReviewOrderByWithAggregationInput = {
   reviewedAtRaw?: Prisma.SortOrderInput | Prisma.SortOrder;
   firstSeenAt?: Prisma.SortOrder;
   lastSeenAt?: Prisma.SortOrder;
+  orderDetails?: Prisma.SortOrderInput | Prisma.SortOrder;
+  orderScrapedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   _count?: Prisma.ReviewCountOrderByAggregateInput;
   _avg?: Prisma.ReviewAvgOrderByAggregateInput;
   _max?: Prisma.ReviewMaxOrderByAggregateInput;
@@ -372,6 +398,12 @@ export type ReviewScalarWhereWithAggregatesInput = {
     | null;
   firstSeenAt?: Prisma.DateTimeWithAggregatesFilter<"Review"> | Date | string;
   lastSeenAt?: Prisma.DateTimeWithAggregatesFilter<"Review"> | Date | string;
+  orderDetails?: Prisma.JsonNullableWithAggregatesFilter<"Review">;
+  orderScrapedAt?:
+    | Prisma.DateTimeNullableWithAggregatesFilter<"Review">
+    | Date
+    | string
+    | null;
 };
 
 export type ReviewCreateInput = {
@@ -383,6 +415,8 @@ export type ReviewCreateInput = {
   reviewedAtRaw?: string | null;
   firstSeenAt?: Date | string;
   lastSeenAt: Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?: Date | string | null;
   store: Prisma.StoreCreateNestedOneWithoutReviewsInput;
 };
 
@@ -397,6 +431,8 @@ export type ReviewUncheckedCreateInput = {
   reviewedAtRaw?: string | null;
   firstSeenAt?: Date | string;
   lastSeenAt: Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?: Date | string | null;
 };
 
 export type ReviewUpdateInput = {
@@ -419,6 +455,12 @@ export type ReviewUpdateInput = {
     | null;
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
   store?: Prisma.StoreUpdateOneRequiredWithoutReviewsNestedInput;
 };
 
@@ -444,6 +486,12 @@ export type ReviewUncheckedUpdateInput = {
     | null;
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
 };
 
 export type ReviewCreateManyInput = {
@@ -457,6 +505,8 @@ export type ReviewCreateManyInput = {
   reviewedAtRaw?: string | null;
   firstSeenAt?: Date | string;
   lastSeenAt: Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?: Date | string | null;
 };
 
 export type ReviewUpdateManyMutationInput = {
@@ -479,6 +529,12 @@ export type ReviewUpdateManyMutationInput = {
     | null;
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
 };
 
 export type ReviewUncheckedUpdateManyInput = {
@@ -503,6 +559,12 @@ export type ReviewUncheckedUpdateManyInput = {
     | null;
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
 };
 
 export type ReviewListRelationFilter = {
@@ -531,6 +593,8 @@ export type ReviewCountOrderByAggregateInput = {
   reviewedAtRaw?: Prisma.SortOrder;
   firstSeenAt?: Prisma.SortOrder;
   lastSeenAt?: Prisma.SortOrder;
+  orderDetails?: Prisma.SortOrder;
+  orderScrapedAt?: Prisma.SortOrder;
 };
 
 export type ReviewAvgOrderByAggregateInput = {
@@ -551,6 +615,7 @@ export type ReviewMaxOrderByAggregateInput = {
   reviewedAtRaw?: Prisma.SortOrder;
   firstSeenAt?: Prisma.SortOrder;
   lastSeenAt?: Prisma.SortOrder;
+  orderScrapedAt?: Prisma.SortOrder;
 };
 
 export type ReviewMinOrderByAggregateInput = {
@@ -564,6 +629,7 @@ export type ReviewMinOrderByAggregateInput = {
   reviewedAtRaw?: Prisma.SortOrder;
   firstSeenAt?: Prisma.SortOrder;
   lastSeenAt?: Prisma.SortOrder;
+  orderScrapedAt?: Prisma.SortOrder;
 };
 
 export type ReviewSumOrderByAggregateInput = {
@@ -676,6 +742,8 @@ export type ReviewCreateWithoutStoreInput = {
   reviewedAtRaw?: string | null;
   firstSeenAt?: Date | string;
   lastSeenAt: Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?: Date | string | null;
 };
 
 export type ReviewUncheckedCreateWithoutStoreInput = {
@@ -688,6 +756,8 @@ export type ReviewUncheckedCreateWithoutStoreInput = {
   reviewedAtRaw?: string | null;
   firstSeenAt?: Date | string;
   lastSeenAt: Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?: Date | string | null;
 };
 
 export type ReviewCreateOrConnectWithoutStoreInput = {
@@ -749,6 +819,12 @@ export type ReviewScalarWhereInput = {
   reviewedAtRaw?: Prisma.StringNullableFilter<"Review"> | string | null;
   firstSeenAt?: Prisma.DateTimeFilter<"Review"> | Date | string;
   lastSeenAt?: Prisma.DateTimeFilter<"Review"> | Date | string;
+  orderDetails?: Prisma.JsonNullableFilter<"Review">;
+  orderScrapedAt?:
+    | Prisma.DateTimeNullableFilter<"Review">
+    | Date
+    | string
+    | null;
 };
 
 export type ReviewCreateManyStoreInput = {
@@ -761,6 +837,8 @@ export type ReviewCreateManyStoreInput = {
   reviewedAtRaw?: string | null;
   firstSeenAt?: Date | string;
   lastSeenAt: Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?: Date | string | null;
 };
 
 export type ReviewUpdateWithoutStoreInput = {
@@ -783,6 +861,12 @@ export type ReviewUpdateWithoutStoreInput = {
     | null;
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
 };
 
 export type ReviewUncheckedUpdateWithoutStoreInput = {
@@ -806,6 +890,12 @@ export type ReviewUncheckedUpdateWithoutStoreInput = {
     | null;
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
 };
 
 export type ReviewUncheckedUpdateManyWithoutStoreInput = {
@@ -829,6 +919,12 @@ export type ReviewUncheckedUpdateManyWithoutStoreInput = {
     | null;
   firstSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orderDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  orderScrapedAt?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
 };
 
 export type ReviewSelect<
@@ -846,6 +942,8 @@ export type ReviewSelect<
     reviewedAtRaw?: boolean;
     firstSeenAt?: boolean;
     lastSeenAt?: boolean;
+    orderDetails?: boolean;
+    orderScrapedAt?: boolean;
     store?: boolean | Prisma.StoreDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["review"]
@@ -866,6 +964,8 @@ export type ReviewSelectCreateManyAndReturn<
     reviewedAtRaw?: boolean;
     firstSeenAt?: boolean;
     lastSeenAt?: boolean;
+    orderDetails?: boolean;
+    orderScrapedAt?: boolean;
     store?: boolean | Prisma.StoreDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["review"]
@@ -886,6 +986,8 @@ export type ReviewSelectUpdateManyAndReturn<
     reviewedAtRaw?: boolean;
     firstSeenAt?: boolean;
     lastSeenAt?: boolean;
+    orderDetails?: boolean;
+    orderScrapedAt?: boolean;
     store?: boolean | Prisma.StoreDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["review"]
@@ -902,6 +1004,8 @@ export type ReviewSelectScalar = {
   reviewedAtRaw?: boolean;
   firstSeenAt?: boolean;
   lastSeenAt?: boolean;
+  orderDetails?: boolean;
+  orderScrapedAt?: boolean;
 };
 
 export type ReviewOmit<
@@ -917,7 +1021,9 @@ export type ReviewOmit<
   | "reviewedAt"
   | "reviewedAtRaw"
   | "firstSeenAt"
-  | "lastSeenAt",
+  | "lastSeenAt"
+  | "orderDetails"
+  | "orderScrapedAt",
   ExtArgs["result"]["review"]
 >;
 export type ReviewInclude<
@@ -959,6 +1065,8 @@ export type $ReviewPayload<
       reviewedAtRaw: string | null;
       firstSeenAt: Date;
       lastSeenAt: Date;
+      orderDetails: runtime.JsonValue | null;
+      orderScrapedAt: Date | null;
     },
     ExtArgs["result"]["review"]
   >;
@@ -1575,6 +1683,8 @@ export interface ReviewFieldRefs {
   readonly reviewedAtRaw: Prisma.FieldRef<"Review", "String">;
   readonly firstSeenAt: Prisma.FieldRef<"Review", "DateTime">;
   readonly lastSeenAt: Prisma.FieldRef<"Review", "DateTime">;
+  readonly orderDetails: Prisma.FieldRef<"Review", "Json">;
+  readonly orderScrapedAt: Prisma.FieldRef<"Review", "DateTime">;
 }
 
 // Custom InputTypes

@@ -1,10 +1,12 @@
 <script lang="ts">
+  import OrderDetailsPanel from "$lib/components/aggregator-kpis/widgets/order-details-panel.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import {
     aggregatorLabel,
     formatKpiDateTime,
+    orderLateMinutes,
     type ReviewRow,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
   import StarIcon from "@lucide/svelte/icons/star";
@@ -93,11 +95,17 @@
               </span>
             </Table.Cell>
             <Table.Cell class="max-w-md">
-              <span
-                class="text-muted-foreground line-clamp-2 text-sm whitespace-normal"
-              >
-                {row.comment || "-"}
-              </span>
+              {@const lateMinutes = orderLateMinutes(row.orderDetails)}
+              <div class="space-y-1">
+                {#if lateMinutes !== null}
+                  <Badge variant="destructive">{lateMinutes} min late</Badge>
+                {/if}
+                <span
+                  class="text-muted-foreground line-clamp-2 text-sm whitespace-normal"
+                >
+                  {row.comment || "-"}
+                </span>
+              </div>
             </Table.Cell>
           </Table.Row>
         {/each}
@@ -171,6 +179,17 @@
           {selectedReview.comment || "No review text."}
         </p>
       </div>
+
+      {#if selectedReview.orderDetails}
+        <OrderDetailsPanel
+          order={selectedReview.orderDetails}
+          orderScrapedAt={selectedReview.orderScrapedAt}
+        />
+      {:else}
+        <p class="text-muted-foreground text-sm">
+          Order details unavailable — this review hasn't been enriched yet.
+        </p>
+      {/if}
     {/if}
   </Dialog.Content>
 </Dialog.Root>

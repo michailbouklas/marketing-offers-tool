@@ -101,3 +101,7 @@
 ## 2026-07-06T08:42:15Z [3b64fa37-590]
 
 📁 `C:\work\marketing-offers-tool\prisma\merchant-scrapes\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ
+
+## 2026-07-13T09:30:48Z [4fd019c4-ead]
+
+📁 `C:\work\marketing-offers-tool\prisma\merchant-scrapes\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ

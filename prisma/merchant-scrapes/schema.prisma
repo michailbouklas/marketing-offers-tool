@@ -269,6 +269,8 @@ model Review {
   reviewedAtRaw   String?
   firstSeenAt     DateTime  @default(now())
   lastSeenAt      DateTime
+  orderDetails    Json? // full order behind the review (status/timeline/products/totals); null = not enriched yet
+  orderScrapedAt  DateTime? // when orderDetails was last fetched
 
   @@unique([storeId, dedupeKey])
   @@index([storeId, rating])

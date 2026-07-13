@@ -1674,6 +1674,8 @@ export const ReviewScalarFieldEnum = {
   reviewedAtRaw: "reviewedAtRaw",
   firstSeenAt: "firstSeenAt",
   lastSeenAt: "lastSeenAt",
+  orderDetails: "orderDetails",
+  orderScrapedAt: "orderScrapedAt",
 } as const;
 
 export type ReviewScalarFieldEnum =

@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-07-13T08:44:05Z",
-  "changed_file": "src/lib/services/aggregator-kpis/dashboard.server.ts",
+  "timestamp": "2026-07-13T09:32:04Z",
+  "changed_file": "src/lib/services/aggregator-kpis/reviews.server.ts",
   "test_command": "npx vitest run --reporter=verbose",
   "related_test": "",
   "recommendation": "テストの実行を推奨します"

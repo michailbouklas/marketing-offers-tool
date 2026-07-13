@@ -3,6 +3,7 @@ import type {
   AggregatorValue,
   KpiFilters,
   KpiSortDirection,
+  OrderDetails,
   Paginated,
   ReviewRow,
   ReviewSortField,
@@ -72,8 +73,23 @@ type ReviewQueryRow = {
   reviewedAtRaw: string | null;
   firstSeenAt: Date;
   lastSeenAt: Date;
+  orderDetails: unknown;
+  orderScrapedAt: Date | null;
   store: { name: string | null; aggregator: string };
 };
+
+/**
+ * Trust the scraper-produced JSON (our own pipeline) as an `OrderDetails`,
+ * guarding only that it is a non-null object. `null`/JSON-null (not enriched)
+ * and malformed values collapse to `null` so the UI hides the panel.
+ */
+function toOrderDetails(value: unknown): OrderDetails | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  return value as OrderDetails;
+}
 
 function mapReviewRow(row: ReviewQueryRow): ReviewRow {
   return {
@@ -89,6 +105,10 @@ function mapReviewRow(row: ReviewQueryRow): ReviewRow {
     reviewedAtRaw: row.reviewedAtRaw,
     firstSeenAt: row.firstSeenAt.toISOString(),
     lastSeenAt: row.lastSeenAt.toISOString(),
+    orderDetails: toOrderDetails(row.orderDetails),
+    orderScrapedAt: row.orderScrapedAt
+      ? row.orderScrapedAt.toISOString()
+      : null,
   };
 }
 
@@ -159,6 +179,8 @@ export async function listReviews(
         reviewedAtRaw: true,
         firstSeenAt: true,
         lastSeenAt: true,
+        orderDetails: true,
+        orderScrapedAt: true,
         store: { select: { name: true, aggregator: true } },
       },
     }),
