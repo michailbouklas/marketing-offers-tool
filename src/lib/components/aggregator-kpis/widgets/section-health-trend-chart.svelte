@@ -47,6 +47,24 @@
     }),
   );
 
+  // Sessions can run multiple times per day, so a tick per data point (and the
+  // time scale's default sub-day ticks) render the same day label repeatedly.
+  // Emit one tick per unique day, subsampled so long ranges don't crowd.
+  const MAX_AXIS_TICKS = 8;
+  const axisTicks = $derived.by(() => {
+    const seen = new Set<string>();
+    const perDay: Date[] = [];
+    for (const d of chartData) {
+      const key = d.date.toISOString().slice(0, 10);
+      if (!seen.has(key)) {
+        seen.add(key);
+        perDay.push(d.date);
+      }
+    }
+    const step = Math.max(1, Math.ceil(perDay.length / MAX_AXIS_TICKS));
+    return perDay.filter((_, i) => i % step === 0);
+  });
+
   const formatAxis = (v: Date) =>
     v.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
@@ -79,7 +97,7 @@
           series={chartSeries}
           legend
           props={{
-            xAxis: { format: formatAxis },
+            xAxis: { format: formatAxis, ticks: axisTicks },
             yAxis: { format: (v: number) => `${v}%` },
           }}
         >
