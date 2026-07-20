@@ -1,1 +1,2 @@
 {"type":"skill","name":"codebase-management","digest":"{\"skill\":\"socraticode:codebase-management\",\"args\":\"index this project\"}","timestamp":"2026-05-26T09:04:27Z"}
+{"type":"skill","name":"dataviz","digest":"{\"skill\":\"dataviz\",\"args\":\"multi-series time-series line chart in an existing shadcn-svelte + layerc","timestamp":"2026-07-20T12:47:41Z"}

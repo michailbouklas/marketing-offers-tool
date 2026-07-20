@@ -33,6 +33,14 @@ export type Paginated<T> = {
 };
 
 /**
+ * One page of invoice headers plus the summed `totalpayout` across ALL
+ * invoices matching the filters (not just the visible page).
+ */
+export type InvoiceHeadersPage = Paginated<InvoiceHeaderRow> & {
+  totalPayout: number | null;
+};
+
+/**
  * Invoice header unified across aggregators. Shared columns are typed;
  * aggregator-specific columns (WOLT remarks; BOLT scenario, JE dates, ERP
  * comments) are flattened into display-ready `extraFields` so the UI needs no
@@ -105,6 +113,32 @@ export type StoreInvoiceMetrics = {
   lineDetails: InvoiceLineDetailsMetric[];
 };
 
+export type InvoicePayoutTrendPoint = {
+  /** Bucket start (first day of month, or the day itself), YYYY-MM-DD UTC. */
+  period: string;
+  invoiceCount: number;
+  totalPayout: number;
+};
+
+/**
+ * Invoice count + payout total over time. Monthly buckets when the data spans
+ * at least two months; daily buckets otherwise (e.g. a single-month period
+ * filter), so short periods still chart. Zero-filled between the first and
+ * last bucket with data.
+ */
+export type InvoicePayoutTrend = {
+  granularity: "month" | "day";
+  points: InvoicePayoutTrendPoint[];
+};
+
+/**
+ * The store-dialog metrics minus the line-details breakdown, computed across
+ * ALL invoices matching the page filters — powers the filter-wide Info dialog.
+ */
+export type InvoiceMetrics = Omit<StoreInvoiceMetrics, "lineDetails"> & {
+  payoutTrend: InvoicePayoutTrend;
+};
+
 export type InvoiceFilters = {
   aggregator: InvoiceAggregator;
   /** Case-insensitive substring match on `invoicenumber`. */
@@ -129,6 +163,34 @@ export type InvoiceSortField = (typeof invoiceSortFields)[number];
 export const invoiceSortDirections = ["asc", "desc"] as const;
 
 export type InvoiceSortDirection = (typeof invoiceSortDirections)[number];
+
+export const invoiceViewModes = ["table", "chart"] as const;
+
+export type InvoiceViewMode = (typeof invoiceViewModes)[number];
+
+export type InvoiceTrendSeriesItem = {
+  /** Synthetic CSS-safe series key (`t0`, `t1`, …) — transtypes are free text. */
+  key: string;
+  /** The raw `transtype` value (or "Unknown" for null). */
+  label: string;
+};
+
+export type InvoiceTrendPoint = {
+  /** UTC day of the header `documentdate`, YYYY-MM-DD. */
+  day: string;
+  /** Summed line `totalamount` per series key; absent types are 0. */
+  values: Record<string, number>;
+};
+
+/**
+ * Per-day line totals per transaction type across ALL invoices matching the
+ * filters (not just one page). Series are ordered by total absolute volume,
+ * largest first, so color assignment is stable and meaningful.
+ */
+export type InvoiceTrend = {
+  series: InvoiceTrendSeriesItem[];
+  points: InvoiceTrendPoint[];
+};
 
 const invoiceDateFormatter = new Intl.DateTimeFormat("en-GB", {
   dateStyle: "medium",

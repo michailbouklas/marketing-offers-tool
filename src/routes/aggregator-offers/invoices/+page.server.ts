@@ -4,8 +4,12 @@ import {
   invoiceErpSentValues,
   invoiceSortDirections,
   invoiceSortFields,
+  invoiceViewModes,
 } from "$lib/services/aggregator-invoices/aggregator-invoices";
-import { listInvoiceHeaders } from "$lib/services/aggregator-invoices/invoices.server";
+import {
+  getInvoiceTrend,
+  listInvoiceHeaders,
+} from "$lib/services/aggregator-invoices/invoices.server";
 import { resolveBrandProjectCodes } from "$lib/services/brand-project-codes.server";
 import { listBrands } from "$lib/services/brands.server";
 import { z } from "zod";
@@ -65,6 +69,7 @@ const paramsSchema = z.object({
     .default("documentdate")
     .catch("documentdate"),
   sortDir: z.enum(invoiceSortDirections).default("desc").catch("desc"),
+  view: z.enum(invoiceViewModes).default("table").catch("table"),
 });
 
 export const load: PageServerLoad = async (event) => {
@@ -84,6 +89,7 @@ export const load: PageServerLoad = async (event) => {
     to: params.get("to") ?? undefined,
     sortBy: params.get("sortBy") ?? undefined,
     sortDir: params.get("sortDir") ?? undefined,
+    view: params.get("view") ?? undefined,
   });
 
   const filters = parsed.success
@@ -108,6 +114,7 @@ export const load: PageServerLoad = async (event) => {
   const page = parsed.success ? parsed.data.page : 1;
   const sortBy = parsed.success ? parsed.data.sortBy : "documentdate";
   const sortDir = parsed.success ? parsed.data.sortDir : "desc";
+  const view = parsed.success ? parsed.data.view : "table";
 
   const brands = await listBrands({ active: true });
 
@@ -124,14 +131,28 @@ export const load: PageServerLoad = async (event) => {
   const projectCodes =
     brandId !== null ? await resolveBrandProjectCodes(brandId) : null;
 
-  const invoicesPage = await listInvoiceHeaders({
-    ...filters,
-    projectCodes,
-    page,
-    pageSize: PAGE_SIZE,
+  const [invoicesPage, trend] = await Promise.all([
+    listInvoiceHeaders({
+      ...filters,
+      projectCodes,
+      page,
+      pageSize: PAGE_SIZE,
+      sortBy,
+      sortDir,
+    }),
+    view === "chart"
+      ? getInvoiceTrend({ ...filters, projectCodes })
+      : Promise.resolve(null),
+  ]);
+
+  return {
+    filters,
+    brandId,
+    brands,
+    view,
+    trend,
     sortBy,
     sortDir,
-  });
-
-  return { filters, brandId, brands, sortBy, sortDir, invoicesPage };
+    invoicesPage,
+  };
 };

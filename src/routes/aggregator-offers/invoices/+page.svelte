@@ -1,6 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import InvoiceMetricsDialog from "$lib/components/aggregator-invoices/invoice-metrics-dialog.svelte";
   import InvoicesTable from "$lib/components/aggregator-invoices/invoices-table.svelte";
+  import InvoicesTrendChart from "$lib/components/aggregator-invoices/invoices-trend-chart.svelte";
   import DateRangeFilter from "$lib/components/date-range-filter.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
@@ -9,21 +11,27 @@
   import { Input } from "$lib/components/ui/input/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
   import {
+    formatInvoiceAmount,
     invoiceAggregatorLabel,
     invoiceAggregators,
     type InvoiceAggregator,
     type InvoiceErpSent,
     type InvoiceSortDirection,
     type InvoiceSortField,
+    type InvoiceViewMode,
   } from "$lib/services/aggregator-invoices/aggregator-invoices";
   import { formatBrandLabel } from "$lib/services/brands";
+  import ChartLineIcon from "@lucide/svelte/icons/chart-line";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+  import InfoIcon from "@lucide/svelte/icons/info";
   import SearchIcon from "@lucide/svelte/icons/search";
+  import TableIcon from "@lucide/svelte/icons/table";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
   let searchForm: HTMLFormElement | null = null;
   let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
+  let infoOpen = $state(false);
 
   const rows = $derived(data.invoicesPage.items);
   const selectedBrand = $derived(
@@ -86,6 +94,7 @@
     to = data.filters.to,
     sortBy = data.sortBy,
     sortDir = data.sortDir,
+    view = data.view,
   }: {
     page?: number;
     aggregator?: InvoiceAggregator;
@@ -98,6 +107,7 @@
     to?: string | null;
     sortBy?: InvoiceSortField;
     sortDir?: InvoiceSortDirection;
+    view?: InvoiceViewMode;
   }) {
     const params = new URLSearchParams();
 
@@ -139,6 +149,10 @@
 
     if (sortDir && sortDir !== "desc") {
       params.set("sortDir", sortDir);
+    }
+
+    if (view && view !== "table") {
+      params.set("view", view);
     }
 
     if (page && page > 1) {
@@ -266,7 +280,7 @@
           <form
             method="GET"
             bind:this={searchForm}
-            class="grid gap-3 lg:grid-cols-[minmax(0,11rem)_minmax(0,11rem)_minmax(0,13rem)_minmax(0,8rem)_minmax(0,11rem)_auto_auto] lg:items-end"
+            class="grid gap-3 lg:grid-cols-[minmax(0,11rem)_minmax(0,11rem)_minmax(0,13rem)_minmax(0,8rem)_minmax(0,11rem)_auto_auto_auto] lg:items-end"
           >
             <div class="space-y-2">
               <label class="text-sm font-medium" for="invoiceNumber"
@@ -314,19 +328,7 @@
               </div>
             </div>
 
-            <div class="space-y-2">
-              <label class="text-sm font-medium" for="erpsent">ERP sent</label>
-              <NativeSelect.Root
-                id="erpsent"
-                name="erpsent"
-                value={data.filters.erpsent ?? ""}
-                onchange={handleSearchChange}
-              >
-                <NativeSelect.Option value="">All</NativeSelect.Option>
-                <NativeSelect.Option value="Y">Sent</NativeSelect.Option>
-                <NativeSelect.Option value="N">Not sent</NativeSelect.Option>
-              </NativeSelect.Root>
-            </div>
+            <div class="space-y-2"></div>
 
             <div class="space-y-2">
               <label class="text-sm font-medium" for="brand">Brand</label>
@@ -369,6 +371,9 @@
             {/if}
             <input type="hidden" name="sortBy" value={data.sortBy} />
             <input type="hidden" name="sortDir" value={data.sortDir} />
+            {#if data.view !== "table"}
+              <input type="hidden" name="view" value={data.view} />
+            {/if}
 
             <div class="flex gap-2">
               <Button type="submit">Apply</Button>
@@ -386,6 +391,36 @@
                 variant="outline"
               >
                 Reset
+              </Button>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span class="sr-only">View</span>
+              <ButtonGroup.Root>
+                <Button
+                  href={getRouteHref({ view: "table" })}
+                  variant={data.view === "table" ? "default" : "outline"}
+                  aria-current={data.view === "table" ? "page" : undefined}
+                >
+                  <TableIcon class="size-4" />
+                  Table
+                </Button>
+                <Button
+                  href={getRouteHref({ view: "chart" })}
+                  variant={data.view === "chart" ? "default" : "outline"}
+                  aria-current={data.view === "chart" ? "page" : undefined}
+                >
+                  <ChartLineIcon class="size-4" />
+                  Chart
+                </Button>
+              </ButtonGroup.Root>
+              <Button
+                type="button"
+                variant="outline"
+                onclick={() => (infoOpen = true)}
+              >
+                <InfoIcon class="size-4" />
+                Info
               </Button>
             </div>
           </form>
@@ -429,18 +464,29 @@
               totalItems,
             )} of {totalItems} invoices
           </span>
+          {#if data.invoicesPage.totalPayout !== null}
+            <span class="text-muted-foreground text-sm">
+              · <span class="text-foreground font-medium tabular-nums">
+                {formatInvoiceAmount(data.invoicesPage.totalPayout)}
+              </span> total payout
+            </span>
+          {/if}
         </div>
 
-        <InvoicesTable
-          items={rows}
-          sortBy={data.sortBy}
-          sortDir={data.sortDir}
-          from={data.filters.from}
-          to={data.filters.to}
-          {getSortHref}
-        />
+        {#if data.view === "chart" && data.trend}
+          <InvoicesTrendChart trend={data.trend} />
+        {:else}
+          <InvoicesTable
+            items={rows}
+            sortBy={data.sortBy}
+            sortDir={data.sortDir}
+            from={data.filters.from}
+            to={data.filters.to}
+            {getSortHref}
+          />
+        {/if}
 
-        {#if totalItems > 0}
+        {#if data.view !== "chart" && totalItems > 0}
           <div
             class="mt-6 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-end"
           >
@@ -475,5 +521,12 @@
         {/if}
       </Card.Content>
     </Card.Root>
+
+    <InvoiceMetricsDialog
+      bind:open={infoOpen}
+      filters={data.filters}
+      brandId={data.brandId}
+      brandLabel={selectedBrand ? formatBrandLabel(selectedBrand) : null}
+    />
   </main>
 </div>

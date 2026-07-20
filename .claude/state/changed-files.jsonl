@@ -1,11 +1,3 @@
-{"file":"src/routes/admin/brands/[id]/+page.server.ts","action":"Edit","timestamp":"2026-06-04T07:50:33Z","important":false}
-{"file":"src/routes/admin/brands/[id]/+page.svelte","action":"Edit","timestamp":"2026-06-04T07:50:49Z","important":false}
-{"file":"src/routes/api/brand-assets/+server.ts","action":"Write","timestamp":"2026-06-04T08:00:22Z","important":false}
-{"file":"src/lib/services/image-generator/image-generator-client.ts","action":"Edit","timestamp":"2026-06-04T08:00:33Z","important":false}
-{"file":"src/routes/image-generator/BrandAssetGalleryDialog.svelte","action":"Write","timestamp":"2026-06-04T08:01:00Z","important":false}
-{"file":"src/routes/image-generator/+page.svelte","action":"Edit","timestamp":"2026-06-04T08:01:14Z","important":false}
-{"file":"src/routes/api/brand-assets/server.test.ts","action":"Write","timestamp":"2026-06-04T08:01:53Z","important":true}
-{"file":"C:/Users/mbouklas/.claude/plans/image-generator-inspiration-is-a-new-lovely-meadow.md","action":"Write","timestamp":"2026-06-04T09:30:58Z","important":false}
 {"file":"src/lib/server/object-store.server.ts","action":"Edit","timestamp":"2026-06-04T09:32:28Z","important":false}
 {"file":"src/lib/auth/permissions.ts","action":"Edit","timestamp":"2026-06-04T09:32:58Z","important":false}
 {"file":"src/lib/server/inspiration/frontmatter.ts","action":"Write","timestamp":"2026-06-04T09:33:25Z","important":false}
@@ -499,3 +491,11 @@
 {"file":"C:/Users/mbouklas/AppData/Local/Temp/claude/C--work-marketing-offers-tool/579f520a-2733-4b1c-982a-78501831da4d/scratchpad/mint-cookie.ts","action":"Write","timestamp":"2026-07-20T11:58:35Z","important":false}
 {"file":"C:/Users/mbouklas/.claude/projects/C--work-marketing-offers-tool/memory/brand-project-codes-filter.md","action":"Write","timestamp":"2026-07-20T11:59:41Z","important":false}
 {"file":"C:/Users/mbouklas/.claude/projects/C--work-marketing-offers-tool/memory/MEMORY.md","action":"Edit","timestamp":"2026-07-20T12:00:07Z","important":false}
+{"file":"C:/Users/mbouklas/AppData/Local/Temp/claude/C--work-marketing-offers-tool/579f520a-2733-4b1c-982a-78501831da4d/scratchpad/transtype-check.ts","action":"Write","timestamp":"2026-07-20T12:48:49Z","important":false}
+{"file":"src/lib/components/aggregator-invoices/invoices-trend-chart.svelte","action":"Write","timestamp":"2026-07-20T12:54:04Z","important":false}
+{"file":"C:/Users/mbouklas/AppData/Local/Temp/claude/C--work-marketing-offers-tool/579f520a-2733-4b1c-982a-78501831da4d/scratchpad/trend-sanity.ts","action":"Write","timestamp":"2026-07-20T12:56:15Z","important":false}
+{"file":"C:/Users/mbouklas/AppData/Local/Temp/claude/C--work-marketing-offers-tool/579f520a-2733-4b1c-982a-78501831da4d/scratchpad/payout-sanity.ts","action":"Write","timestamp":"2026-07-20T13:03:08Z","important":false}
+{"file":"src/routes/aggregator-offers/invoices/metrics/+server.ts","action":"Write","timestamp":"2026-07-20T13:10:58Z","important":false}
+{"file":"src/lib/services/aggregator-invoices/invoice-details.ts","action":"Edit","timestamp":"2026-07-20T13:11:11Z","important":false}
+{"file":"src/lib/components/aggregator-invoices/invoice-metrics-dialog.svelte","action":"Write","timestamp":"2026-07-20T13:11:50Z","important":false}
+{"file":"C:/Users/mbouklas/AppData/Local/Temp/claude/C--work-marketing-offers-tool/579f520a-2733-4b1c-982a-78501831da4d/scratchpad/monthly-sanity.ts","action":"Write","timestamp":"2026-07-20T13:20:13Z","important":false}

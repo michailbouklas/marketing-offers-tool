@@ -140,7 +140,6 @@
         <Table.Head class="text-right">
           {@render sortableHead("totalpayout", "Total payout")}
         </Table.Head>
-        <Table.Head>ERP sent</Table.Head>
         <Table.Head class="text-right">Lines</Table.Head>
       </Table.Row>
     </Table.Header>
@@ -191,11 +190,7 @@
             <Table.Cell class="text-right tabular-nums">
               {formatInvoiceAmount(row.totalpayout)}
             </Table.Cell>
-            <Table.Cell>
-              <Badge variant={row.erpsent === "Y" ? "default" : "outline"}>
-                {row.erpsent === "Y" ? "Sent" : "Not sent"}
-              </Badge>
-            </Table.Cell>
+
             <Table.Cell class="text-right tabular-nums">
               {row.lineCount}
             </Table.Cell>
