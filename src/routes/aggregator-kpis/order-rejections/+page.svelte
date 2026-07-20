@@ -4,6 +4,7 @@
   import LostSalesByReasonWidget from "$lib/components/aggregator-kpis/widgets/lost-sales-by-reason-widget.svelte";
   import OrderRejectionsTable from "$lib/components/aggregator-kpis/widgets/order-rejections-table.svelte";
   import PeriodTrendChart from "$lib/components/aggregator-kpis/widgets/period-trend-chart.svelte";
+  import PerDayStackedBars from "$lib/components/aggregator-kpis/widgets/per-day-stacked-bars.svelte";
   import {
     averageValues,
     formatMoney,
@@ -21,22 +22,70 @@
   const trend = $derived(data.view.trend);
   const lostSalesByReason = $derived(data.view.lostSalesByReason);
   const period = $derived(data.view.period);
+  const isWolt = $derived(data.aggregator === "WOLT");
 
-  const statCards = $derived([
-    { label: "Stores with data", value: rows.length.toString() },
+  const statCards = $derived(
+    isWolt
+      ? [
+          { label: "Stores with data", value: rows.length.toString() },
+          {
+            label: "Total rejections",
+            value: formatNumber(
+              sumValues(rows.map((row) => row.cancellationsCount)),
+            ),
+          },
+          {
+            label: "Avg late orders",
+            value: formatPct(
+              averageValues(rows.map((row) => row.lateOrdersPct)),
+            ),
+          },
+          {
+            label: "Total lost sales",
+            value: formatMoney(sumValues(rows.map((row) => row.lostSales))),
+          },
+        ]
+      : [
+          { label: "Stores with data", value: rows.length.toString() },
+          {
+            label: "Total cancellations",
+            value: formatNumber(
+              sumValues(rows.map((row) => row.cancellationsCount)),
+            ),
+          },
+          {
+            label: "Avg cancellations",
+            value: formatPct(
+              averageValues(rows.map((row) => row.cancellationsPct)),
+            ),
+          },
+          {
+            label: "Total lost sales",
+            value: formatMoney(sumValues(rows.map((row) => row.lostSales))),
+          },
+        ],
+  );
+
+  // Wolt per-day rejections split (auto- vs actively-rejected).
+  const perDayRejections = $derived(
+    (data.view.perDay ?? []).map((day) => ({
+      date: day.date,
+      values: {
+        autoRejected: day.autoRejected ?? 0,
+        activelyRejected: day.activelyRejected ?? 0,
+      },
+      loss: day.lossAmount,
+    })),
+  );
+
+  const rejectionSegments = [
+    { key: "autoRejected", label: "Auto-rejected", color: "var(--chart-1)" },
     {
-      label: "Total cancellations",
-      value: formatNumber(sumValues(rows.map((row) => row.cancellationsCount))),
+      key: "activelyRejected",
+      label: "Actively rejected",
+      color: "var(--chart-2)",
     },
-    {
-      label: "Avg cancellations",
-      value: formatPct(averageValues(rows.map((row) => row.cancellationsPct))),
-    },
-    {
-      label: "Total lost sales",
-      value: formatMoney(sumValues(rows.map((row) => row.lostSales))),
-    },
-  ]);
+  ];
 </script>
 
 <svelte:head>
@@ -71,10 +120,15 @@
         Order Rejections
       </h1>
       <p class="text-muted-foreground max-w-3xl text-base leading-7">
-        Cancellation rates, the sales lost to them, and orders rejected for
-        reasons the aggregator could not attribute — per completed {periodKindLabel(
-          period,
-        ).toLowerCase()} period. Foody only.
+        {#if isWolt}
+          Avoidable rejections, late orders and preparation time, plus the sales
+          lost — per completed {periodKindLabel(period).toLowerCase()} period.
+        {:else}
+          Cancellation rates, the sales lost to them, and orders rejected for
+          reasons the aggregator could not attribute — per completed {periodKindLabel(
+            period,
+          ).toLowerCase()} period.
+        {/if}
       </p>
     </section>
 
@@ -88,14 +142,24 @@
 
     <PeriodTrendChart
       title="Lost sales over time"
-      description="Total sales lost to cancellations per completed period across the stores."
+      description="Total sales lost to rejections per completed period across the stores."
       label="Lost sales"
       prefix="€"
       {period}
       data={trend}
     />
 
-    <LostSalesByReasonWidget data={lostSalesByReason} />
+    {#if isWolt}
+      <PerDayStackedBars
+        title="Rejections by day"
+        description="Daily split of auto- vs actively-rejected orders for the latest completed period."
+        segments={rejectionSegments}
+        days={perDayRejections}
+        formatValue={formatNumber}
+      />
+    {:else}
+      <LostSalesByReasonWidget data={lostSalesByReason} />
+    {/if}
 
     <OrderRejectionsTable data={rows} {period} linkStores />
   </main>

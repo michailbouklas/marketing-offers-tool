@@ -2,6 +2,7 @@
   import KpiPeriodFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-period-filter-bar.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
   import KpiTrendChart from "$lib/components/aggregator-kpis/widgets/kpi-trend-chart.svelte";
+  import KpiUnavailableNotice from "$lib/components/aggregator-kpis/widgets/kpi-unavailable-notice.svelte";
   import RatingsDistribution from "$lib/components/aggregator-kpis/widgets/ratings-distribution.svelte";
   import RatingsTable from "$lib/components/aggregator-kpis/widgets/ratings-table.svelte";
   import {
@@ -76,19 +77,25 @@
       showPeriod={false}
     />
 
-    <KpiStatCards data={statCards} />
-
-    <section class="grid gap-6 xl:grid-cols-2">
-      <KpiTrendChart
-        title="Store rating over time"
-        description="Daily average store rating across the stores."
-        label="Rating"
-        decimals={2}
-        data={trend}
+    {#if data.unavailableForWolt}
+      <KpiUnavailableNotice
+        message="Ratings and reviews aren't scraped for Wolt yet. Switch to Foody to view store ratings and the star distribution."
       />
-      <RatingsDistribution data={distribution} />
-    </section>
+    {:else}
+      <KpiStatCards data={statCards} />
 
-    <RatingsTable data={rows} linkStores />
+      <section class="grid gap-6 xl:grid-cols-2">
+        <KpiTrendChart
+          title="Store rating over time"
+          description="Daily average store rating across the stores."
+          label="Rating"
+          decimals={2}
+          data={trend}
+        />
+        <RatingsDistribution data={distribution} />
+      </section>
+
+      <RatingsTable data={rows} linkStores />
+    {/if}
   </main>
 </div>

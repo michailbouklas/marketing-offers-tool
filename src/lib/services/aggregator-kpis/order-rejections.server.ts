@@ -16,6 +16,7 @@ import type {
   RejectionsStoreView,
   RejectionsView,
   TimeseriesPoint,
+  WoltRejectionDay,
 } from "$lib/services/aggregator-kpis/aggregator-kpis";
 import {
   averageByDay,
@@ -499,10 +500,234 @@ async function getRejectionsLostSalesByReasonPeriod(
     .filter((row) => row.salesLoss > 0);
 }
 
+// --- Wolt period reads (wolt_rejections_by_period + RejectionDay child) ---
+//
+// Wolt aliases: avoidable_rejections ≙ cancellationsCount, avoidable_rejections_pct
+// ≙ cancellationsPct, loss_amount ≙ lostSales. It adds late-orders / prep-time /
+// prepared-later metrics (each with a portal delta) and a per-day auto-vs-active
+// rejection breakdown on the RejectionDay child. Wolt has no reasonUnknownCount,
+// and its CancellationReason rows carry NULL salesLoss — so the €-by-reason
+// rollup is Foody-only.
+
+type WoltRejectionPeriodRawRow = {
+  storeId: number;
+  storeName: string | null;
+  periodStart: string;
+  periodEnd: string;
+  periodDays: number;
+  scrapedAt: string | null;
+  cancellationsPct: unknown;
+  cancellationsCount: unknown;
+  lostSales: unknown;
+  lateOrdersPct: unknown;
+  prepTimeSeconds: unknown;
+  prepTimeRaw: string | null;
+  preparedLaterCount: unknown;
+  lateOrdersDeltaPct: unknown;
+  prepTimeDeltaPct: unknown;
+  preparedLaterDeltaPct: unknown;
+  comparisonWindow: string | null;
+};
+
+function mapWoltRejectionPeriodRow(
+  row: WoltRejectionPeriodRawRow,
+): RejectionRow {
+  const window = row.comparisonWindow;
+  return {
+    storeId: row.storeId,
+    storeName: row.storeName,
+    aggregator: "WOLT",
+    scrapedAt: row.scrapedAt,
+    periodStart: row.periodStart,
+    periodEnd: row.periodEnd,
+    periodDays: row.periodDays,
+    cancellationsPct: toNumber(row.cancellationsPct),
+    cancellationsCount: toNumber(row.cancellationsCount),
+    lostSales: toNumber(row.lostSales),
+    reasonUnknownCount: null,
+    lateOrdersPct: toNumber(row.lateOrdersPct),
+    prepTimeSeconds: toNumber(row.prepTimeSeconds),
+    prepTimeRaw: row.prepTimeRaw ?? null,
+    preparedLaterCount: toNumber(row.preparedLaterCount),
+    deltas: {
+      lateOrdersPct: { pct: toNumber(row.lateOrdersDeltaPct), window },
+      prepTime: { pct: toNumber(row.prepTimeDeltaPct), window },
+      preparedLater: { pct: toNumber(row.preparedLaterDeltaPct), window },
+    },
+  };
+}
+
+const woltRejectionColumnsSql = Prisma.sql`
+  "periodStart"::text        AS "periodStart",
+  "periodEnd"::text          AS "periodEnd",
+  period_days                AS "periodDays",
+  "scrapedAt"::text          AS "scrapedAt",
+  avoidable_rejections_pct   AS "cancellationsPct",
+  avoidable_rejections       AS "cancellationsCount",
+  loss_amount                AS "lostSales",
+  late_orders_pct            AS "lateOrdersPct",
+  prep_time_seconds          AS "prepTimeSeconds",
+  prep_time_raw              AS "prepTimeRaw",
+  prepared_later_count       AS "preparedLaterCount",
+  late_orders_delta_pct      AS "lateOrdersDeltaPct",
+  prep_time_delta_pct        AS "prepTimeDeltaPct",
+  prepared_later_delta_pct   AS "preparedLaterDeltaPct",
+  comparison_window          AS "comparisonWindow"`;
+
+/** Total lost sales (€) per period across the scope, from the Wolt view. */
+async function getWoltRejectionsPeriodTrend(
+  period: PeriodKind,
+  storeId: number | null,
+): Promise<PeriodPoint[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<
+    {
+      periodStart: string;
+      periodEnd: string;
+      periodDays: number;
+      lost: unknown;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT "periodStart", "periodEnd", "periodDays", lost
+      FROM (
+        SELECT "periodStart"::text AS "periodStart",
+               "periodEnd"::text   AS "periodEnd",
+               period_days         AS "periodDays",
+               SUM(loss_amount)    AS lost
+        FROM wolt_rejections_by_period
+        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+          AND loss_amount IS NOT NULL
+        GROUP BY "periodStart", "periodEnd", period_days
+        ORDER BY "periodStart" DESC
+        LIMIT ${PERIOD_TREND_LIMIT[period]}
+      ) t
+      ORDER BY "periodStart" ASC`,
+  );
+
+  return rows
+    .map((row) => {
+      const value = toNumber(row.lost);
+      return value === null
+        ? null
+        : {
+            periodStart: row.periodStart,
+            periodEnd: row.periodEnd,
+            periodDays: row.periodDays,
+            value,
+          };
+    })
+    .filter((point): point is PeriodPoint => point !== null);
+}
+
+/** Latest completed period's Wolt rejections per store within the scope. */
+async function getWoltRejectionsLatestPeriodRows(
+  period: PeriodKind,
+  storeId: number | null,
+): Promise<RejectionRow[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<
+    WoltRejectionPeriodRawRow[]
+  >(
+    Prisma.sql`
+      WITH latest AS (
+        SELECT MAX("periodStart") AS ps
+        FROM wolt_rejections_by_period
+        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      )
+      SELECT v."storeId" AS "storeId", v.name AS "storeName", ${woltRejectionColumnsSql}
+      FROM wolt_rejections_by_period v
+      JOIN latest ON v."periodStart" = latest.ps
+      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      ORDER BY v.name ASC`,
+  );
+
+  return rows.map(mapWoltRejectionPeriodRow);
+}
+
+/** Full Wolt rejections period history for one store, newest first. */
+async function getWoltRejectionsPeriodHistory(
+  period: PeriodKind,
+  storeId: number,
+): Promise<RejectionRow[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<
+    WoltRejectionPeriodRawRow[]
+  >(
+    Prisma.sql`
+      SELECT "storeId" AS "storeId", name AS "storeName", ${woltRejectionColumnsSql}
+      FROM wolt_rejections_by_period
+      WHERE ${periodDaysSql(period)} AND "storeId" = ${storeId}
+      ORDER BY "periodStart" DESC
+      LIMIT ${PERIOD_TREND_LIMIT[period]}`,
+  );
+
+  return rows.map(mapWoltRejectionPeriodRow);
+}
+
+/**
+ * Per-day rejections (auto vs actively rejected + € loss) for the latest
+ * completed period, summed by date across the scope. Only days WITH rejections
+ * produce rows — an absent date inside the period is a real zero (§4.4).
+ */
+async function getWoltRejectionsPerDay(
+  period: PeriodKind,
+  storeId: number | null,
+): Promise<WoltRejectionDay[]> {
+  const rows = await merchantScrapesPrisma.$queryRaw<
+    {
+      date: string;
+      autoRejected: unknown;
+      activelyRejected: unknown;
+      lossAmount: unknown;
+    }[]
+  >(
+    Prisma.sql`
+      WITH latest AS (
+        SELECT MAX("periodStart") AS ps
+        FROM wolt_rejections_by_period
+        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      )
+      SELECT d.date::text                  AS date,
+             SUM(d."autoRejected")         AS "autoRejected",
+             SUM(d."activelyRejected")     AS "activelyRejected",
+             SUM(d."lossAmount")           AS "lossAmount"
+      FROM wolt_rejections_by_period v
+      JOIN latest ON v."periodStart" = latest.ps
+      JOIN "RejectionDay" d ON d."orderRejectionsSnapshotId" = v.rejections_id
+      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      GROUP BY d.date
+      ORDER BY d.date ASC`,
+  );
+
+  return rows.map((row) => ({
+    date: row.date,
+    autoRejected: toNumber(row.autoRejected),
+    activelyRejected: toNumber(row.activelyRejected),
+    lossAmount: toNumber(row.lossAmount),
+  }));
+}
+
 /** Rejections period view: latest-period rows + lost-sales trend + reasons. */
 export async function getRejectionsPeriodView(
   filters: PeriodFilters,
+  aggregator: AggregatorValue = "FOODY",
 ): Promise<RejectionsPeriodView> {
+  if (aggregator === "WOLT") {
+    const [rows, trend, perDay] = await Promise.all([
+      getWoltRejectionsLatestPeriodRows(filters.period, filters.storeId),
+      getWoltRejectionsPeriodTrend(filters.period, filters.storeId),
+      getWoltRejectionsPerDay(filters.period, filters.storeId),
+    ]);
+
+    // Wolt's CancellationReason rows carry no € loss, so there is no €-by-reason
+    // rollup — the per-day auto/active split is the Wolt breakdown instead.
+    return {
+      period: filters.period,
+      rows,
+      trend,
+      lostSalesByReason: [],
+      perDay,
+    };
+  }
+
   const [rows, trend, lostSalesByReason] = await Promise.all([
     getRejectionsLatestPeriodRows(filters.period, filters.storeId),
     getRejectionsPeriodTrend(filters.period, filters.storeId),
@@ -516,7 +741,25 @@ export async function getRejectionsPeriodView(
 export async function getRejectionsPeriodStoreView(
   storeId: number,
   period: PeriodKind,
+  aggregator: AggregatorValue = "FOODY",
 ): Promise<RejectionsPeriodStoreView> {
+  if (aggregator === "WOLT") {
+    const [rows, trend, perDay] = await Promise.all([
+      getWoltRejectionsPeriodHistory(period, storeId),
+      getWoltRejectionsPeriodTrend(period, storeId),
+      getWoltRejectionsPerDay(period, storeId),
+    ]);
+
+    return {
+      period,
+      rows,
+      trend,
+      reasonBreakdown: null,
+      reasonTrend: { series: [], points: [] },
+      perDay,
+    };
+  }
+
   const [rows, trend, reasonBreakdown, reasonTrend] = await Promise.all([
     getRejectionsPeriodHistory(period, storeId),
     getRejectionsPeriodTrend(period, storeId),

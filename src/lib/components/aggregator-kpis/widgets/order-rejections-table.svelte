@@ -1,8 +1,10 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
+  import DeltaBadge from "$lib/components/aggregator-kpis/widgets/delta-badge.svelte";
   import {
     aggregatorLabel,
+    formatDuration,
     formatKpiDateTime,
     formatMoney,
     formatNumber,
@@ -30,6 +32,9 @@
     /** When true, omit the store column (per-store detail page). */
     hideStore?: boolean;
   } = $props();
+
+  // Wolt has no "reason unknown" count but adds late-orders and prep-time.
+  const isWolt = $derived(data.some((row) => row.aggregator === "WOLT"));
 </script>
 
 <Card.Root>
@@ -55,9 +60,16 @@
               {:else}
                 <Table.Head>Platform</Table.Head>
               {/if}
-              <Table.Head class="text-right">Cancellations</Table.Head>
+              <Table.Head class="text-right">
+                {isWolt ? "Rejections" : "Cancellations"}
+              </Table.Head>
               <Table.Head class="text-right">Lost sales</Table.Head>
-              <Table.Head class="text-right">Reason unknown</Table.Head>
+              {#if isWolt}
+                <Table.Head class="text-right">Late orders</Table.Head>
+                <Table.Head class="text-right">Prep time</Table.Head>
+              {:else}
+                <Table.Head class="text-right">Reason unknown</Table.Head>
+              {/if}
               {#if !period}
                 <Table.Head class="text-right">Captured</Table.Head>
               {/if}
@@ -97,9 +109,27 @@
                 <Table.Cell class="text-right tabular-nums">
                   {formatMoney(row.lostSales)}
                 </Table.Cell>
-                <Table.Cell class="text-right tabular-nums">
-                  {formatNumber(row.reasonUnknownCount)}
-                </Table.Cell>
+                {#if isWolt}
+                  <Table.Cell class="text-right tabular-nums">
+                    <div class="flex flex-col items-end gap-1">
+                      <span>{formatPct(row.lateOrdersPct)}</span>
+                      <DeltaBadge delta={row.deltas?.lateOrdersPct} />
+                    </div>
+                  </Table.Cell>
+                  <Table.Cell class="text-right tabular-nums">
+                    <div class="flex flex-col items-end gap-1">
+                      <span
+                        >{row.prepTimeRaw ??
+                          formatDuration(row.prepTimeSeconds)}</span
+                      >
+                      <DeltaBadge delta={row.deltas?.prepTime} />
+                    </div>
+                  </Table.Cell>
+                {:else}
+                  <Table.Cell class="text-right tabular-nums">
+                    {formatNumber(row.reasonUnknownCount)}
+                  </Table.Cell>
+                {/if}
                 {#if !period}
                   <Table.Cell
                     class="text-muted-foreground text-right whitespace-nowrap"

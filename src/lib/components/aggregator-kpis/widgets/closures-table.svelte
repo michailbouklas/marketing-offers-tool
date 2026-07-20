@@ -1,12 +1,15 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
+  import DeltaBadge from "$lib/components/aggregator-kpis/widgets/delta-badge.svelte";
   import {
     aggregatorLabel,
     formatDuration,
+    formatDurationDHM,
     formatKpiDateTime,
     formatPct,
     formatPeriodLong,
+    formatSalesLoss,
     type ClosureRow,
     type PeriodKind,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
@@ -29,6 +32,9 @@
     /** When true, omit the store column (per-store detail page). */
     hideStore?: boolean;
   } = $props();
+
+  // Wolt has no "unreachable" metric but adds total offline time + € loss.
+  const isWolt = $derived(data.some((row) => row.aggregator === "WOLT"));
 </script>
 
 <Card.Root>
@@ -55,7 +61,12 @@
                 <Table.Head>Platform</Table.Head>
               {/if}
               <Table.Head class="text-right">Offline in open hours</Table.Head>
-              <Table.Head class="text-right">Unreachable</Table.Head>
+              {#if isWolt}
+                <Table.Head class="text-right">Offline time</Table.Head>
+                <Table.Head class="text-right">Lost</Table.Head>
+              {:else}
+                <Table.Head class="text-right">Unreachable</Table.Head>
+              {/if}
               {#if !period}
                 <Table.Head class="text-right">Captured</Table.Head>
               {/if}
@@ -90,11 +101,26 @@
                   <Table.Cell>{aggregatorLabel(row.aggregator)}</Table.Cell>
                 {/if}
                 <Table.Cell class="text-right tabular-nums">
-                  {formatPct(row.offlineOpenHoursPct)}
+                  <div class="flex flex-col items-end gap-1">
+                    <span>{formatPct(row.offlineOpenHoursPct)}</span>
+                    <DeltaBadge delta={row.deltas?.offlineOpenHoursPct} />
+                  </div>
                 </Table.Cell>
-                <Table.Cell class="text-right tabular-nums">
-                  {formatDuration(row.unreachableSeconds)}
-                </Table.Cell>
+                {#if isWolt}
+                  <Table.Cell class="text-right tabular-nums">
+                    {formatDurationDHM(
+                      row.offlineDurationSeconds,
+                      row.offlineDurationRaw,
+                    )}
+                  </Table.Cell>
+                  <Table.Cell class="text-right tabular-nums">
+                    {formatSalesLoss(row.lossAmount)}
+                  </Table.Cell>
+                {:else}
+                  <Table.Cell class="text-right tabular-nums">
+                    {formatDuration(row.unreachableSeconds)}
+                  </Table.Cell>
+                {/if}
                 {#if !period}
                   <Table.Cell
                     class="text-muted-foreground text-right whitespace-nowrap"

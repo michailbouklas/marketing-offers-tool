@@ -7,9 +7,19 @@
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import { Toaster } from "$lib/components/ui/sonner/index.js";
   import { scrapeStream } from "$lib/state/scrape-stream.svelte";
+  import { aggregatorStore } from "$lib/state/aggregator.svelte";
+  import type { AggregatorValue } from "$lib/services/aggregator-kpis/aggregator-kpis";
   let { children } = $props();
 
   const user = $derived(page.data.user as { role?: string } | null | undefined);
+
+  // Hydrate the global Foody/Wolt choice from the cookie-backed server data so
+  // the KPI filter-bar toggle reflects the persisted platform on every page.
+  $effect(() => {
+    aggregatorStore.hydrate(
+      page.data.aggregator as AggregatorValue | null | undefined,
+    );
+  });
 
   // Reconnect to an in-flight scrape (started elsewhere or before a reload) so
   // the "Scrape completed" toast fires from any page. `init()` is idempotent and

@@ -17,6 +17,7 @@
   const view = $derived(data.view);
   const totals = $derived(view.totals);
   const period = $derived(view.period);
+  const isWolt = $derived(data.aggregator === "WOLT");
 
   const periodLabel = $derived(
     totals.periodStart
@@ -24,6 +25,8 @@
       : "No completed period yet",
   );
 
+  // Wolt's "completed orders" is today-scoped at scrape time (handoff §4.2), so
+  // it is not comparable to the period figures — omit it for Wolt.
   const statCards = $derived([
     { label: "Sales", value: formatMoney(totals.sales), hint: periodLabel },
     {
@@ -32,7 +35,14 @@
       hint: `${totals.storeCount} store${totals.storeCount === 1 ? "" : "s"}`,
     },
     { label: "Avg basket", value: formatMoney(totals.avgBasketSize) },
-    { label: "Completed orders", value: formatNumber(totals.completedOrders) },
+    ...(isWolt
+      ? []
+      : [
+          {
+            label: "Completed orders",
+            value: formatNumber(totals.completedOrders),
+          },
+        ]),
   ]);
 </script>
 
@@ -71,7 +81,6 @@
         Sales, orders, and average basket size for each completed {periodKindLabel(
           period,
         ).toLowerCase()} period — one exact number per period, no re-scrape double-counting.
-        Foody only.
       </p>
     </section>
 

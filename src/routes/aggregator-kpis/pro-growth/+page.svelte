@@ -1,6 +1,7 @@
 <script lang="ts">
   import KpiPeriodFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-period-filter-bar.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
+  import KpiUnavailableNotice from "$lib/components/aggregator-kpis/widgets/kpi-unavailable-notice.svelte";
   import PeriodTrendChart from "$lib/components/aggregator-kpis/widgets/period-trend-chart.svelte";
   import ProGrowthTable from "$lib/components/aggregator-kpis/widgets/pro-growth-table.svelte";
   import {
@@ -86,28 +87,34 @@
       basePath="/aggregator-kpis/pro-growth"
     />
 
-    <KpiStatCards data={statCards} />
+    {#if data.unavailableForWolt}
+      <KpiUnavailableNotice
+        message="Foody Pro is a Foody-only programme, so Pro adoption and the new-vs-returning mix aren't tracked for Wolt. Switch to Foody to view."
+      />
+    {:else}
+      <KpiStatCards data={statCards} />
 
-    <PeriodTrendChart
-      title="Pro order share over time"
-      description="Order-weighted share of orders placed by Foody Pro subscribers per completed period."
-      label="Pro share"
-      unit="%"
-      decimals={1}
-      {period}
-      data={proShareTrend}
-    />
+      <PeriodTrendChart
+        title="Pro order share over time"
+        description="Order-weighted share of orders placed by Foody Pro subscribers per completed period."
+        label="Pro share"
+        unit="%"
+        decimals={1}
+        {period}
+        data={proShareTrend}
+      />
 
-    <PeriodTrendChart
-      title="New-customer share over time"
-      description="Order-weighted share of orders from first-time customers per completed period (all-time first-order rule)."
-      label="New-customer share"
-      unit="%"
-      decimals={1}
-      {period}
-      data={newShareTrend}
-    />
+      <PeriodTrendChart
+        title="New-customer share over time"
+        description="Order-weighted share of orders from first-time customers per completed period (all-time first-order rule)."
+        label="New-customer share"
+        unit="%"
+        decimals={1}
+        {period}
+        data={newShareTrend}
+      />
 
-    <ProGrowthTable data={rows} {period} linkStores />
+      <ProGrowthTable data={rows} {period} linkStores />
+    {/if}
   </main>
 </div>

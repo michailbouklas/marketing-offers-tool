@@ -22,6 +22,7 @@ export const statement = {
   competition: ["view"],
   googleReviews: ["view"],
   aggregatorKpis: ["view"],
+  aggregatorInvoices: ["view"],
   notifications: ["run"],
   urlsToScrape: ["manage"],
 } as const;
@@ -47,8 +48,8 @@ export const ac = createAccessControl(statement);
  * - `offerEditor` — create and edit aggregator offers in the registry.
  * - `imageEditor` — generate images in the image generator.
  * - `copywriter` — generate marketing copy in the copywriter studio.
- * - `analyticsViewer` — view the `/competition` and `/google-reviews`
- *   analytics sections.
+ * - `analyticsViewer` — view the `/competition`, `/google-reviews`,
+ *   `/aggregator-kpis`, and `/aggregator-offers/invoices` analytics sections.
  * - `superUser` — admin-equivalent that holds every resource permission.
  *
  * Explicit empty action arrays (rather than `{}`) keep a role's resource keys
@@ -70,6 +71,7 @@ export const roles = {
     brand: ["manage"],
     urlsToScrape: ["manage"],
     aggregatorKpis: ["view"],
+    aggregatorInvoices: ["view"],
   }),
   approver: ac.newRole({
     submission: ["approve", "reject"],
@@ -98,6 +100,7 @@ export const roles = {
     competition: ["view"],
     googleReviews: ["view"],
     aggregatorKpis: ["view"],
+    aggregatorInvoices: ["view"],
   }),
   superUser: ac.newRole({
     ...adminAc.statements,
@@ -111,6 +114,7 @@ export const roles = {
     competition: ["view"],
     googleReviews: ["view"],
     aggregatorKpis: ["view"],
+    aggregatorInvoices: ["view"],
     notifications: ["run"],
     urlsToScrape: ["manage"],
   }),

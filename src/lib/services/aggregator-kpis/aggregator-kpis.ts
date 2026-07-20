@@ -21,6 +21,20 @@ export const aggregators = ["FOODY", "WOLT"] as const;
 
 export type AggregatorValue = (typeof aggregators)[number];
 
+/**
+ * A Wolt-only portal delta: the aggregator's own signed % change plus the
+ * free-text comparison window it was measured against ("6 days"). Captured
+ * verbatim from the page. Display-only — NEVER sum/average these, derive numbers
+ * from them, or mix them with your own period-over-period math (handoff §3).
+ * Absent (undefined) for Foody rows; `pct` can be null while a value is present.
+ */
+export type PortalDelta = {
+  /** Signed percent change as shown by the portal; null when the portal omits it. */
+  pct: number | null;
+  /** Portal's comparison-window text, e.g. "6 days" — display verbatim, don't parse. */
+  window: string | null;
+};
+
 export const kpiSortDirections = ["asc", "desc"] as const;
 
 export type KpiSortDirection = (typeof kpiSortDirections)[number];
@@ -179,6 +193,17 @@ export type ClosureRow = StoreKpiBase & {
   offlineDurationSeconds: number | null;
   /** Portal's own offline display string (e.g. "2d 6h"); null when absent. */
   offlineDurationRaw: string | null;
+  /**
+   * Wolt only (`loss_amount`): € lost to unavailability this period. No Foody
+   * equivalent — undefined/null for Foody rows.
+   */
+  lossAmount?: number | null;
+  /** Wolt-only portal deltas (display-only); absent for Foody. */
+  deltas?: {
+    offlineDuration: PortalDelta | null;
+    offlineOpenHoursPct: PortalDelta | null;
+    loss: PortalDelta | null;
+  } | null;
 };
 
 /** One historical closures snapshot for a single store. */
@@ -213,6 +238,25 @@ export type RejectionRow = StoreKpiBase & {
   cancellationsCount: number | null;
   lostSales: number | null;
   reasonUnknownCount: number | null;
+  /**
+   * Wolt-only extras from `wolt_rejections_by_period`; undefined for Foody.
+   * `lateOrdersPct` = share of late orders; `prepTimeSeconds`/`prepTimeRaw` =
+   * average preparation time; `preparedLaterCount` = orders prepared late.
+   */
+  lateOrdersPct?: number | null;
+  prepTimeSeconds?: number | null;
+  prepTimeRaw?: string | null;
+  preparedLaterCount?: number | null;
+  /**
+   * Wolt-only portal deltas (display-only); absent for Foody. The Wolt rejections
+   * view only exposes deltas for late-orders, prep-time and prepared-later — the
+   * avoidable-rejections count and loss cells have no delta column.
+   */
+  deltas?: {
+    lateOrdersPct: PortalDelta | null;
+    prepTime: PortalDelta | null;
+    preparedLater: PortalDelta | null;
+  } | null;
 };
 
 /** One historical order-rejections snapshot for a single store. */
@@ -485,6 +529,36 @@ export type RatingsStoreView = {
   distribution: StarBucket[];
 };
 
+// --- Wolt-only per-day drill-downs (decoded from portal charts) ---
+//
+// Decoded from chart pixel geometry, not portal text (handoff §4.3) — accurate
+// but not contractual, so label absolute-value charts "approx.". The headline
+// view columns remain authoritative. `date` is a "YYYY-MM-DD" UTC day string.
+
+/**
+ * One decoded day of Wolt unavailability, split into "app not live" vs
+ * "manually put offline", with the € lost that day. Every day in the period
+ * gets a row — a `(0, 0)` row is a real zero-closure day (handoff §4.4).
+ */
+export type WoltClosureDay = {
+  date: string;
+  appNotLiveSeconds: number | null;
+  manualOfflineSeconds: number | null;
+  lossAmount: number | null;
+};
+
+/**
+ * One decoded day of Wolt order rejections, split into auto- vs actively
+ * rejected, with the € lost that day. Only days WITH rejections produce rows —
+ * an absent date inside the period is a real zero (fill client-side, §4.4).
+ */
+export type WoltRejectionDay = {
+  date: string;
+  autoRejected: number | null;
+  activelyRejected: number | null;
+  lossAmount: number | null;
+};
+
 // --- Foody period views for the operations KPIs (week/month lanes) ---
 //
 // These reuse the existing *Row shapes (now carrying periodStart/periodEnd),
@@ -497,6 +571,11 @@ export type ClosuresPeriodView = {
   rows: ClosureRow[];
   /** Per-period total offline hours across the scope (a summable flow). */
   trend: PeriodPoint[];
+  /**
+   * Wolt only: latest period's unavailability per day, summed by date across the
+   * scope. Empty for Foody, or when the per-day chart didn't render (§4.4).
+   */
+  perDay?: WoltClosureDay[];
 };
 
 /** Per-store closures period history + a trend derived from it. */
@@ -505,6 +584,8 @@ export type ClosuresPeriodStoreView = {
   rows: ClosureRow[];
   trend: PeriodPoint[];
   reasonBreakdown: ClosureReasonBreakdown | null;
+  /** Wolt only: latest period's per-day unavailability for this store. */
+  perDay?: WoltClosureDay[];
 };
 
 /** Order rejections for the latest completed period, plus a per-period trend. */
@@ -514,6 +595,11 @@ export type RejectionsPeriodView = {
   /** Per-period total lost sales (€) across the scope. */
   trend: PeriodPoint[];
   lostSalesByReason: LostSalesByReasonRow[];
+  /**
+   * Wolt only: latest period's rejections per day, summed by date across the
+   * scope (zero-filled over the period range). Empty for Foody.
+   */
+  perDay?: WoltRejectionDay[];
 };
 
 /** Per-store order-rejections period history + a trend derived from it. */
@@ -523,6 +609,8 @@ export type RejectionsPeriodStoreView = {
   trend: PeriodPoint[];
   reasonBreakdown: CancellationReasonBreakdown | null;
   reasonTrend: ReasonTrend;
+  /** Wolt only: latest period's per-day rejections for this store. */
+  perDay?: WoltRejectionDay[];
 };
 
 /** Punctuality for the latest completed period, plus a per-period trend. */
@@ -662,7 +750,21 @@ export type MetricRow = {
   orders: number | null;
   avgBasketSize: number | null;
   avgBasketItems: number | null;
+  /**
+   * Foody: completed orders for the period. Wolt: the venue-home "Completed
+   * orders" figure, which is **today-scoped at scrape time** — not comparable to
+   * the period numbers. Label/hide it for Wolt (handoff §4.2).
+   */
   completedOrders: number | null;
+  /** Source platform; defaults to Foody when absent (legacy Foody-only rows). */
+  aggregator?: AggregatorValue;
+  /** Wolt-only portal deltas (display-only); absent for Foody. */
+  deltas?: {
+    sales: PortalDelta | null;
+    orders: PortalDelta | null;
+    avgBasketSize: PortalDelta | null;
+    avgBasketItems: PortalDelta | null;
+  } | null;
 };
 
 /**
@@ -833,6 +935,25 @@ export function sumValues(
   }
 
   return present.reduce((sum, value) => sum + value, 0);
+}
+
+/**
+ * Renders a Wolt portal delta as a badge string, e.g. "−7% vs 6 days" (sign
+ * kept, minus rendered as a true minus glyph). Returns null when there is no
+ * numeric delta to show. The comparison window is displayed verbatim — never
+ * parsed or aggregated (handoff §3).
+ */
+export function formatPortalDelta(
+  delta: PortalDelta | null | undefined,
+): string | null {
+  if (!delta || delta.pct === null || Number.isNaN(delta.pct)) {
+    return null;
+  }
+
+  const sign = delta.pct > 0 ? "+" : delta.pct < 0 ? "−" : "";
+  const pct = `${sign}${Math.abs(delta.pct).toFixed(1)}%`;
+
+  return delta.window ? `${pct} vs ${delta.window}` : pct;
 }
 
 /** Human label for an aggregator value, e.g. "Foody". */

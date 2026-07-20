@@ -1,6 +1,7 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
+  import DeltaBadge from "$lib/components/aggregator-kpis/widgets/delta-badge.svelte";
   import {
     formatMoney,
     formatNumber,
@@ -26,6 +27,10 @@
     /** When true, show a Period column instead of the store name column. */
     showPeriod?: boolean;
   } = $props();
+
+  // Wolt rows carry portal deltas + a today-scoped completedOrders; the latter
+  // isn't a period figure, so the Completed column is hidden for Wolt.
+  const isWolt = $derived(data.some((row) => row.aggregator === "WOLT"));
 </script>
 
 <Card.Root>
@@ -47,7 +52,9 @@
               <Table.Head class="text-right">Sales</Table.Head>
               <Table.Head class="text-right">Orders</Table.Head>
               <Table.Head class="text-right">Avg basket</Table.Head>
-              <Table.Head class="text-right">Completed</Table.Head>
+              {#if !isWolt}
+                <Table.Head class="text-right">Completed</Table.Head>
+              {/if}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -68,17 +75,28 @@
                   {/if}
                 </Table.Cell>
                 <Table.Cell class="text-right tabular-nums">
-                  {formatMoney(row.sales)}
+                  <div class="flex flex-col items-end gap-1">
+                    <span>{formatMoney(row.sales)}</span>
+                    <DeltaBadge delta={row.deltas?.sales} />
+                  </div>
                 </Table.Cell>
                 <Table.Cell class="text-right tabular-nums">
-                  {formatNumber(row.orders)}
+                  <div class="flex flex-col items-end gap-1">
+                    <span>{formatNumber(row.orders)}</span>
+                    <DeltaBadge delta={row.deltas?.orders} />
+                  </div>
                 </Table.Cell>
                 <Table.Cell class="text-right tabular-nums">
-                  {formatMoney(row.avgBasketSize)}
+                  <div class="flex flex-col items-end gap-1">
+                    <span>{formatMoney(row.avgBasketSize)}</span>
+                    <DeltaBadge delta={row.deltas?.avgBasketSize} />
+                  </div>
                 </Table.Cell>
-                <Table.Cell class="text-right tabular-nums">
-                  {formatNumber(row.completedOrders)}
-                </Table.Cell>
+                {#if !isWolt}
+                  <Table.Cell class="text-right tabular-nums">
+                    {formatNumber(row.completedOrders)}
+                  </Table.Cell>
+                {/if}
               </Table.Row>
             {/each}
           </Table.Body>

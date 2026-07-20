@@ -3,13 +3,19 @@ import {
   hasPermission,
 } from "$lib/server/auth-guards";
 import { getPendingNotificationCountForUser } from "$lib/services/notifications/pending.server";
+import { resolveAggregator } from "$lib/services/aggregator-kpis/period-shared.server";
 import type { LayoutServerLoad } from "./$types";
 
 export const load: LayoutServerLoad = async (event) => {
+  // Persisted Foody/Wolt choice for the KPI pages; safe to expose regardless of
+  // auth so the client singleton can hydrate on first paint.
+  const aggregator = resolveAggregator(event);
+
   if (!event.locals.user) {
     return {
       user: null,
       pendingNotificationCount: 0,
+      aggregator,
     };
   }
 
@@ -36,5 +42,6 @@ export const load: LayoutServerLoad = async (event) => {
   return {
     user: event.locals.user,
     pendingNotificationCount,
+    aggregator,
   };
 };

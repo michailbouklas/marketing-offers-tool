@@ -3,11 +3,13 @@
   import KpiPeriodFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-period-filter-bar.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
   import PeriodTrendChart from "$lib/components/aggregator-kpis/widgets/period-trend-chart.svelte";
+  import PerDayStackedBars from "$lib/components/aggregator-kpis/widgets/per-day-stacked-bars.svelte";
   import {
     averageValues,
     formatDuration,
     formatDurationDHM,
     formatPct,
+    formatSalesLoss,
     periodKindLabel,
     sumValues,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
@@ -19,11 +21,12 @@
   const rows = $derived(data.view.rows);
   const trend = $derived(data.view.trend);
   const period = $derived(data.view.period);
+  const isWolt = $derived(data.aggregator === "WOLT");
 
   const statCards = $derived([
     { label: "Stores with data", value: rows.length.toString() },
     {
-      label: "Avg offline in open hours",
+      label: isWolt ? "Avg unavailability" : "Avg offline in open hours",
       value: formatPct(
         averageValues(rows.map((row) => row.offlineOpenHoursPct)),
       ),
@@ -34,13 +37,40 @@
         sumValues(rows.map((row) => row.offlineDurationSeconds)),
       ),
     },
-    {
-      label: "Total unreachable",
-      value: formatDuration(
-        sumValues(rows.map((row) => row.unreachableSeconds)),
-      ),
-    },
+    // Wolt quantifies € lost to unavailability; Foody exposes unreachable time.
+    isWolt
+      ? {
+          label: "Money lost",
+          value: formatSalesLoss(sumValues(rows.map((row) => row.lossAmount))),
+        }
+      : {
+          label: "Total unreachable",
+          value: formatDuration(
+            sumValues(rows.map((row) => row.unreachableSeconds)),
+          ),
+        },
   ]);
+
+  // Wolt per-day unavailability split (app-not-live vs manually offline).
+  const perDayClosures = $derived(
+    (data.view.perDay ?? []).map((day) => ({
+      date: day.date,
+      values: {
+        appNotLive: day.appNotLiveSeconds ?? 0,
+        manualOffline: day.manualOfflineSeconds ?? 0,
+      },
+      loss: day.lossAmount,
+    })),
+  );
+
+  const closureSegments = [
+    { key: "appNotLive", label: "App not live", color: "var(--chart-1)" },
+    {
+      key: "manualOffline",
+      label: "Manually offline",
+      color: "var(--chart-2)",
+    },
+  ];
 </script>
 
 <svelte:head>
@@ -75,10 +105,10 @@
         Closures
       </h1>
       <p class="text-muted-foreground max-w-3xl text-base leading-7">
-        How often stores go offline during their advertised open hours, and the
-        total time they were unreachable — one exact number per completed {periodKindLabel(
-          period,
-        ).toLowerCase()} period. Foody only.
+        How often stores go offline during their advertised open hours{isWolt
+          ? " and the money lost to it"
+          : ", and the total time they were unreachable"} — one exact number per completed
+        {periodKindLabel(period).toLowerCase()} period.
       </p>
     </section>
 
@@ -91,7 +121,7 @@
     <KpiStatCards data={statCards} />
 
     <PeriodTrendChart
-      title="Offline time over time"
+      title={isWolt ? "Unavailability over time" : "Offline time over time"}
       description="Total offline hours per completed period across the selected stores."
       label="Offline hours"
       unit="h"
@@ -99,6 +129,16 @@
       {period}
       data={trend}
     />
+
+    {#if isWolt}
+      <PerDayStackedBars
+        title="Unavailability by day"
+        description="Daily split of app-not-live vs manually-offline time for the latest completed period."
+        segments={closureSegments}
+        days={perDayClosures}
+        formatValue={formatDuration}
+      />
+    {/if}
 
     <ClosuresTable data={rows} {period} linkStores />
   </main>

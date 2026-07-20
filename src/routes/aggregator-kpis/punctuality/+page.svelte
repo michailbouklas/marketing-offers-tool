@@ -1,6 +1,7 @@
 <script lang="ts">
   import KpiPeriodFilterBar from "$lib/components/aggregator-kpis/widgets/kpi-period-filter-bar.svelte";
   import KpiStatCards from "$lib/components/aggregator-kpis/widgets/kpi-stat-cards.svelte";
+  import KpiUnavailableNotice from "$lib/components/aggregator-kpis/widgets/kpi-unavailable-notice.svelte";
   import PeriodTrendChart from "$lib/components/aggregator-kpis/widgets/period-trend-chart.svelte";
   import PunctualityTable from "$lib/components/aggregator-kpis/widgets/punctuality-table.svelte";
   import {
@@ -86,18 +87,24 @@
       basePath="/aggregator-kpis/punctuality"
     />
 
-    <KpiStatCards data={statCards} />
+    {#if data.unavailableForWolt}
+      <KpiUnavailableNotice
+        message="Wolt has no separate punctuality section. Its late-orders and preparation-time metrics live on the Order Rejections KPI. Switch to Foody to view punctuality."
+      />
+    {:else}
+      <KpiStatCards data={statCards} />
 
-    <PeriodTrendChart
-      title="Avoidable-wait orders over time"
-      description="Order-weighted share of orders with avoidable waiting time per completed period."
-      label="Avoidable-wait %"
-      unit="%"
-      decimals={1}
-      {period}
-      data={trend}
-    />
+      <PeriodTrendChart
+        title="Avoidable-wait orders over time"
+        description="Order-weighted share of orders with avoidable waiting time per completed period."
+        label="Avoidable-wait %"
+        unit="%"
+        decimals={1}
+        {period}
+        data={trend}
+      />
 
-    <PunctualityTable data={rows} {period} linkStores />
+      <PunctualityTable data={rows} {period} linkStores />
+    {/if}
   </main>
 </div>

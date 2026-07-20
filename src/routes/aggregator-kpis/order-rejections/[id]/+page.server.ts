@@ -24,7 +24,11 @@ export const load: PageServerLoad = async (event) => {
   }
 
   const { period } = parsePeriodFilters(event.url.searchParams);
-  const view = await getRejectionsPeriodStoreView(store.id, period);
+  const view = await getRejectionsPeriodStoreView(
+    store.id,
+    period,
+    store.aggregator,
+  );
 
   return { store, period, view };
 };

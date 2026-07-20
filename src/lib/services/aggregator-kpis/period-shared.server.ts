@@ -14,10 +14,15 @@
  */
 import { Prisma } from "../../../generated/merchant-scrapes-prisma/client";
 import {
+  type AggregatorValue,
   type PeriodFilters,
   type PeriodKind,
   periodKinds,
 } from "$lib/services/aggregator-kpis/aggregator-kpis";
+import {
+  AGGREGATOR_COOKIE,
+  parseAggregatorValue,
+} from "$lib/services/aggregator-kpis/aggregator-cookie";
 import { z } from "zod";
 
 /** How many recent periods a trend query fetches, per kind. */
@@ -59,6 +64,17 @@ const periodFiltersSchema = z.object({
     .catch(undefined),
   period: z.enum(periodKinds).catch("week"),
 });
+
+/**
+ * Resolves the active aggregator for a period page from the persisted cookie,
+ * defaulting to Foody. The cookie is the source of truth (set by the filter-bar
+ * toggle) so the choice carries across every KPI page without a URL param.
+ */
+export function resolveAggregator(event: {
+  cookies: { get(name: string): string | undefined };
+}): AggregatorValue {
+  return parseAggregatorValue(event.cookies.get(AGGREGATOR_COOKIE));
+}
 
 /** Parses the Foody period filters (store, week/month) from a URL. */
 export function parsePeriodFilters(

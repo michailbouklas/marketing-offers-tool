@@ -1,16 +1,19 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
   import {
+    aggregatorLabel,
+    aggregators,
     periodKindLabel,
     periodKinds,
+    type AggregatorValue,
     type PeriodFilters,
     type PeriodKind,
     type StoreRef,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
+  import { aggregatorStore } from "$lib/state/aggregator.svelte";
 
   let {
     stores,
@@ -18,7 +21,7 @@
     basePath,
     showPeriod = true,
   }: {
-    /** Foody stores only (these views are Foody-scoped). */
+    /** Stores for the active platform (the loader scopes this by aggregator). */
     stores: StoreRef[];
     filters: PeriodFilters;
     /** Route these filters navigate to, e.g. "/aggregator-kpis/metrics". */
@@ -26,6 +29,17 @@
     /** Hide the Week/Month toggle (for views with no period lane, e.g. ratings). */
     showPeriod?: boolean;
   } = $props();
+
+  function selectAggregator(next: AggregatorValue) {
+    if (next === aggregatorStore.current) {
+      return;
+    }
+    // Persist the choice, then reset to the base path: a stored store id belongs
+    // to the old platform (cross-aggregator ids are unrelated), and the reload
+    // re-reads the cookie server-side to fetch the new platform's data.
+    aggregatorStore.set(next);
+    void goto(basePath, { invalidateAll: true });
+  }
 
   function buildHref(next: Partial<PeriodFilters>): string {
     const merged: PeriodFilters = { ...filters, ...next };
@@ -59,14 +73,18 @@
 <div class="flex flex-wrap items-end gap-3">
   <div class="space-y-2">
     <span class="text-sm font-medium">Platform</span>
-    <div>
-      <Badge
-        variant="outline"
-        class="h-9 px-3 text-[0.7rem] tracking-[0.18em] uppercase"
-      >
-        Foody
-      </Badge>
-    </div>
+    <ButtonGroup.Root>
+      {#each aggregators as aggregator (aggregator)}
+        <Button
+          variant={aggregatorStore.current === aggregator
+            ? "default"
+            : "outline"}
+          onclick={() => selectAggregator(aggregator)}
+        >
+          {aggregatorLabel(aggregator)}
+        </Button>
+      {/each}
+    </ButtonGroup.Root>
   </div>
 
   <div class="space-y-2">

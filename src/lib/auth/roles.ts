@@ -73,6 +73,20 @@ export const aggregatorKpisRoles: UserRole[] = [
   superUserRole,
 ];
 
+/**
+ * Roles that may access the `/aggregator-offers/invoices` section (processed
+ * aggregator invoices ingested into the main Postgres database). Like the
+ * KPI section, `admin` is included explicitly — the marker admin role is
+ * granted the matching `aggregatorInvoices: ["view"]` permission in
+ * `permissions.ts`. `superUser` is the admin-equivalent that holds every
+ * resource permission.
+ */
+export const aggregatorInvoicesRoles: UserRole[] = [
+  "analyticsViewer",
+  adminUserRole,
+  superUserRole,
+];
+
 export const roleLabels: Record<UserRole, string> = {
   user: "User",
   admin: "Admin",

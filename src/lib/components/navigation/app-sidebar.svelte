@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import {
+    aggregatorInvoicesRoles,
     aggregatorKpisRoles,
     canAccessAdminSection,
     competitionRoles,
@@ -70,7 +71,19 @@
       href: "/aggregator-offers",
       label: "Aggregator Offers",
       icon: StoreIcon,
-      roles: ["offerEditor", "superUser"],
+      roles: ["offerEditor", ...aggregatorInvoicesRoles],
+      children: [
+        {
+          href: "/aggregator-offers",
+          label: "Offers",
+          roles: ["offerEditor", "superUser"],
+        },
+        {
+          href: "/aggregator-offers/invoices",
+          label: "Invoices",
+          roles: aggregatorInvoicesRoles,
+        },
+      ],
     },
     {
       href: "/offers-data-quality",
