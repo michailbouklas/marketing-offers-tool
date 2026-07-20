@@ -44,6 +44,8 @@ export type BrandMinAggregateOutputType = {
   updated_at: Date | null;
   description: string | null;
   active: boolean | null;
+  sap_brand_alias: string | null;
+  sap_company_name: string | null;
 };
 
 export type BrandMaxAggregateOutputType = {
@@ -56,6 +58,8 @@ export type BrandMaxAggregateOutputType = {
   updated_at: Date | null;
   description: string | null;
   active: boolean | null;
+  sap_brand_alias: string | null;
+  sap_company_name: string | null;
 };
 
 export type BrandCountAggregateOutputType = {
@@ -68,6 +72,8 @@ export type BrandCountAggregateOutputType = {
   updated_at: number;
   description: number;
   active: number;
+  sap_brand_alias: number;
+  sap_company_name: number;
   _all: number;
 };
 
@@ -89,6 +95,8 @@ export type BrandMinAggregateInputType = {
   updated_at?: true;
   description?: true;
   active?: true;
+  sap_brand_alias?: true;
+  sap_company_name?: true;
 };
 
 export type BrandMaxAggregateInputType = {
@@ -101,6 +109,8 @@ export type BrandMaxAggregateInputType = {
   updated_at?: true;
   description?: true;
   active?: true;
+  sap_brand_alias?: true;
+  sap_company_name?: true;
 };
 
 export type BrandCountAggregateInputType = {
@@ -113,6 +123,8 @@ export type BrandCountAggregateInputType = {
   updated_at?: true;
   description?: true;
   active?: true;
+  sap_brand_alias?: true;
+  sap_company_name?: true;
   _all?: true;
 };
 
@@ -219,6 +231,8 @@ export type BrandGroupByOutputType = {
   updated_at: Date;
   description: string | null;
   active: boolean;
+  sap_brand_alias: string | null;
+  sap_company_name: string | null;
   _count: BrandCountAggregateOutputType | null;
   _avg: BrandAvgAggregateOutputType | null;
   _sum: BrandSumAggregateOutputType | null;
@@ -252,6 +266,8 @@ export type brandWhereInput = {
   updated_at?: Prisma.DateTimeFilter<"brand"> | Date | string;
   description?: Prisma.StringNullableFilter<"brand"> | string | null;
   active?: Prisma.BoolFilter<"brand"> | boolean;
+  sap_brand_alias?: Prisma.StringNullableFilter<"brand"> | string | null;
+  sap_company_name?: Prisma.StringNullableFilter<"brand"> | string | null;
   aggregator_offers?: Prisma.Aggregator_offersListRelationFilter;
   user_assignments?: Prisma.User_brandListRelationFilter;
   brand_assets?: Prisma.BrandAssetListRelationFilter;
@@ -271,6 +287,8 @@ export type brandOrderByWithRelationInput = {
   updated_at?: Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   active?: Prisma.SortOrder;
+  sap_brand_alias?: Prisma.SortOrderInput | Prisma.SortOrder;
+  sap_company_name?: Prisma.SortOrderInput | Prisma.SortOrder;
   aggregator_offers?: Prisma.aggregator_offersOrderByRelationAggregateInput;
   user_assignments?: Prisma.user_brandOrderByRelationAggregateInput;
   brand_assets?: Prisma.BrandAssetOrderByRelationAggregateInput;
@@ -294,6 +312,8 @@ export type brandWhereUniqueInput = Prisma.AtLeast<
     updated_at?: Prisma.DateTimeFilter<"brand"> | Date | string;
     description?: Prisma.StringNullableFilter<"brand"> | string | null;
     active?: Prisma.BoolFilter<"brand"> | boolean;
+    sap_brand_alias?: Prisma.StringNullableFilter<"brand"> | string | null;
+    sap_company_name?: Prisma.StringNullableFilter<"brand"> | string | null;
     aggregator_offers?: Prisma.Aggregator_offersListRelationFilter;
     user_assignments?: Prisma.User_brandListRelationFilter;
     brand_assets?: Prisma.BrandAssetListRelationFilter;
@@ -315,6 +335,8 @@ export type brandOrderByWithAggregationInput = {
   updated_at?: Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   active?: Prisma.SortOrder;
+  sap_brand_alias?: Prisma.SortOrderInput | Prisma.SortOrder;
+  sap_company_name?: Prisma.SortOrderInput | Prisma.SortOrder;
   _count?: Prisma.brandCountOrderByAggregateInput;
   _avg?: Prisma.brandAvgOrderByAggregateInput;
   _max?: Prisma.brandMaxOrderByAggregateInput;
@@ -342,6 +364,14 @@ export type brandScalarWhereWithAggregatesInput = {
     | string
     | null;
   active?: Prisma.BoolWithAggregatesFilter<"brand"> | boolean;
+  sap_brand_alias?:
+    | Prisma.StringNullableWithAggregatesFilter<"brand">
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.StringNullableWithAggregatesFilter<"brand">
+    | string
+    | null;
 };
 
 export type brandCreateInput = {
@@ -353,6 +383,8 @@ export type brandCreateInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -372,6 +404,8 @@ export type brandUncheckedCreateInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -390,6 +424,14 @@ export type brandUpdateInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -409,6 +451,14 @@ export type brandUncheckedUpdateInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -428,6 +478,8 @@ export type brandCreateManyInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
 };
 
 export type brandUpdateManyMutationInput = {
@@ -439,6 +491,14 @@ export type brandUpdateManyMutationInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
 };
 
 export type brandUncheckedUpdateManyInput = {
@@ -451,6 +511,14 @@ export type brandUncheckedUpdateManyInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
 };
 
 export type brandCountOrderByAggregateInput = {
@@ -463,6 +531,8 @@ export type brandCountOrderByAggregateInput = {
   updated_at?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   active?: Prisma.SortOrder;
+  sap_brand_alias?: Prisma.SortOrder;
+  sap_company_name?: Prisma.SortOrder;
 };
 
 export type brandAvgOrderByAggregateInput = {
@@ -479,6 +549,8 @@ export type brandMaxOrderByAggregateInput = {
   updated_at?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   active?: Prisma.SortOrder;
+  sap_brand_alias?: Prisma.SortOrder;
+  sap_company_name?: Prisma.SortOrder;
 };
 
 export type brandMinOrderByAggregateInput = {
@@ -491,6 +563,8 @@ export type brandMinOrderByAggregateInput = {
   updated_at?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   active?: Prisma.SortOrder;
+  sap_brand_alias?: Prisma.SortOrder;
+  sap_company_name?: Prisma.SortOrder;
 };
 
 export type brandSumOrderByAggregateInput = {
@@ -706,6 +780,8 @@ export type brandCreateWithoutUser_assignmentsInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
@@ -724,6 +800,8 @@ export type brandUncheckedCreateWithoutUser_assignmentsInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
@@ -769,6 +847,14 @@ export type brandUpdateWithoutUser_assignmentsInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
@@ -787,6 +873,14 @@ export type brandUncheckedUpdateWithoutUser_assignmentsInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
@@ -804,6 +898,8 @@ export type brandCreateWithoutAggregator_offersInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
@@ -822,6 +918,8 @@ export type brandUncheckedCreateWithoutAggregator_offersInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
@@ -867,6 +965,14 @@ export type brandUpdateWithoutAggregator_offersInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
@@ -885,6 +991,14 @@ export type brandUncheckedUpdateWithoutAggregator_offersInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
@@ -902,6 +1016,8 @@ export type brandCreateWithoutGenerated_imagesInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -920,6 +1036,8 @@ export type brandUncheckedCreateWithoutGenerated_imagesInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -965,6 +1083,14 @@ export type brandUpdateWithoutGenerated_imagesInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -983,6 +1109,14 @@ export type brandUncheckedUpdateWithoutGenerated_imagesInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1000,6 +1134,8 @@ export type brandCreateWithoutBrand_assetsInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
@@ -1018,6 +1154,8 @@ export type brandUncheckedCreateWithoutBrand_assetsInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
@@ -1063,6 +1201,14 @@ export type brandUpdateWithoutBrand_assetsInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
@@ -1081,6 +1227,14 @@ export type brandUncheckedUpdateWithoutBrand_assetsInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1098,6 +1252,8 @@ export type brandCreateWithoutImage_templatesInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -1116,6 +1272,8 @@ export type brandUncheckedCreateWithoutImage_templatesInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -1161,6 +1319,14 @@ export type brandUpdateWithoutImage_templatesInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -1179,6 +1345,14 @@ export type brandUncheckedUpdateWithoutImage_templatesInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1196,6 +1370,8 @@ export type brandCreateWithoutGenerated_copiesInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -1214,6 +1390,8 @@ export type brandUncheckedCreateWithoutGenerated_copiesInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -1259,6 +1437,14 @@ export type brandUpdateWithoutGenerated_copiesInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -1277,6 +1463,14 @@ export type brandUncheckedUpdateWithoutGenerated_copiesInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1294,6 +1488,8 @@ export type brandCreateWithoutBrand_entitiesInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -1312,6 +1508,8 @@ export type brandUncheckedCreateWithoutBrand_entitiesInput = {
   updated_at: Date | string;
   description?: string | null;
   active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -1357,6 +1555,14 @@ export type brandUpdateWithoutBrand_entitiesInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -1375,6 +1581,14 @@ export type brandUncheckedUpdateWithoutBrand_entitiesInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1507,6 +1721,8 @@ export type brandSelect<
     updated_at?: boolean;
     description?: boolean;
     active?: boolean;
+    sap_brand_alias?: boolean;
+    sap_company_name?: boolean;
     aggregator_offers?: boolean | Prisma.brand$aggregator_offersArgs<ExtArgs>;
     user_assignments?: boolean | Prisma.brand$user_assignmentsArgs<ExtArgs>;
     brand_assets?: boolean | Prisma.brand$brand_assetsArgs<ExtArgs>;
@@ -1533,6 +1749,8 @@ export type brandSelectCreateManyAndReturn<
     updated_at?: boolean;
     description?: boolean;
     active?: boolean;
+    sap_brand_alias?: boolean;
+    sap_company_name?: boolean;
   },
   ExtArgs["result"]["brand"]
 >;
@@ -1551,6 +1769,8 @@ export type brandSelectUpdateManyAndReturn<
     updated_at?: boolean;
     description?: boolean;
     active?: boolean;
+    sap_brand_alias?: boolean;
+    sap_company_name?: boolean;
   },
   ExtArgs["result"]["brand"]
 >;
@@ -1565,6 +1785,8 @@ export type brandSelectScalar = {
   updated_at?: boolean;
   description?: boolean;
   active?: boolean;
+  sap_brand_alias?: boolean;
+  sap_company_name?: boolean;
 };
 
 export type brandOmit<
@@ -1579,7 +1801,9 @@ export type brandOmit<
   | "created_at"
   | "updated_at"
   | "description"
-  | "active",
+  | "active"
+  | "sap_brand_alias"
+  | "sap_company_name",
   ExtArgs["result"]["brand"]
 >;
 export type brandInclude<
@@ -1629,6 +1853,8 @@ export type $brandPayload<
       updated_at: Date;
       description: string | null;
       active: boolean;
+      sap_brand_alias: string | null;
+      sap_company_name: string | null;
     },
     ExtArgs["result"]["brand"]
   >;
@@ -2307,6 +2533,8 @@ export interface brandFieldRefs {
   readonly updated_at: Prisma.FieldRef<"brand", "DateTime">;
   readonly description: Prisma.FieldRef<"brand", "String">;
   readonly active: Prisma.FieldRef<"brand", "Boolean">;
+  readonly sap_brand_alias: Prisma.FieldRef<"brand", "String">;
+  readonly sap_company_name: Prisma.FieldRef<"brand", "String">;
 }
 
 // Custom InputTypes

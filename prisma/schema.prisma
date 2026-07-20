@@ -61,6 +61,8 @@ model brand {
   updated_at        DateTime                      @db.Timestamp(3)
   description       String?                       @default("") @db.Text
   active            Boolean                       @default(true)
+  sap_brand_alias   String?                       @db.Text
+  sap_company_name  String?                       @db.Text
   aggregator_offers aggregator_offers[]
   user_assignments  user_brand[]
   brand_assets      BrandAsset[]
@@ -88,14 +90,11 @@ model regex_patterns_by_category {
   category String
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model store_names {
-  id              Int     @default(autoincrement())
+  id              Int     @id @default(autoincrement())
   file_name       String? @db.VarChar
   pdf_name        String? @db.VarChar
   aggregator_name String? @db.VarChar
-
-  @@ignore
 }
 
 model wolt_regex_patters {
@@ -172,6 +171,24 @@ model verification {
   expiresAt  DateTime
   createdAt  DateTime?
   updatedAt  DateTime?
+}
+
+model UserToken {
+  id         Int           @id @default(autoincrement())
+  token      String        @unique
+  type       EnumTokenType
+  userId     Int
+  isValid    Boolean       @default(true)
+  expiresAt  DateTime
+  usedAt     DateTime?
+  created_at DateTime      @default(now())
+  updated_at DateTime
+
+  @@index([expiresAt])
+  @@index([isValid])
+  @@index([token])
+  @@index([type])
+  @@index([userId])
 }
 
 model categories {
@@ -698,6 +715,11 @@ model notification_cursor {
 enum BrandEntityType {
   competitionRestaurant
   googleReviewsBusiness
+}
+
+enum EnumTokenType {
+  ACTIVATION
+  PASSWORD_RESET
 }
 
 model brand_entity {

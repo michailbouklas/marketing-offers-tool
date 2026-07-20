@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-07-20T08:42:00Z",
-  "changed_file": "scripts/diag-invoices.ts",
+  "timestamp": "2026-07-20T11:58:35Z",
+  "changed_file": "C:/Users/mbouklas/AppData/Local/Temp/claude/C--work-marketing-offers-tool/579f520a-2733-4b1c-982a-78501831da4d/scratchpad/mint-cookie.ts",
   "test_command": "npx vitest run --reporter=verbose",
   "related_test": "",
   "recommendation": "テストの実行を推奨します"

@@ -6,6 +6,8 @@ import {
   invoiceSortFields,
 } from "$lib/services/aggregator-invoices/aggregator-invoices";
 import { listInvoiceHeaders } from "$lib/services/aggregator-invoices/invoices.server";
+import { resolveBrandProjectCodes } from "$lib/services/brand-project-codes.server";
+import { listBrands } from "$lib/services/brands.server";
 import { z } from "zod";
 import type { PageServerLoad } from "./$types";
 
@@ -33,6 +35,9 @@ const paramsSchema = z.object({
     .catch(undefined),
   erpsent: z
     .preprocess(emptyToUndefined, z.enum(invoiceErpSentValues).optional())
+    .catch(undefined),
+  brand: z
+    .preprocess(emptyToUndefined, z.coerce.number().int().positive().optional())
     .catch(undefined),
   lineDetails: z
     .preprocess(emptyToUndefined, z.string().trim().min(1).optional())
@@ -73,6 +78,7 @@ export const load: PageServerLoad = async (event) => {
     invoiceNumber: params.get("invoiceNumber") ?? undefined,
     store: params.get("store") ?? undefined,
     erpsent: params.get("erpsent") ?? undefined,
+    brand: params.get("brand") ?? undefined,
     lineDetails: params.get("lineDetails") ?? undefined,
     from: params.get("from") ?? undefined,
     to: params.get("to") ?? undefined,
@@ -103,13 +109,29 @@ export const load: PageServerLoad = async (event) => {
   const sortBy = parsed.success ? parsed.data.sortBy : "documentdate";
   const sortDir = parsed.success ? parsed.data.sortDir : "desc";
 
+  const brands = await listBrands({ active: true });
+
+  // Ignore brand ids that are unknown or inactive (stale/hand-edited URLs).
+  const requestedBrandId = parsed.success ? (parsed.data.brand ?? null) : null;
+  const brandId =
+    requestedBrandId !== null &&
+    brands.some((brand) => brand.id === requestedBrandId)
+      ? requestedBrandId
+      : null;
+
+  // `[]` (brand without stores/SAP alias) intentionally matches zero invoices;
+  // `null` disables the filter.
+  const projectCodes =
+    brandId !== null ? await resolveBrandProjectCodes(brandId) : null;
+
   const invoicesPage = await listInvoiceHeaders({
     ...filters,
+    projectCodes,
     page,
     pageSize: PAGE_SIZE,
     sortBy,
     sortDir,
   });
 
-  return { filters, sortBy, sortDir, invoicesPage };
+  return { filters, brandId, brands, sortBy, sortDir, invoicesPage };
 };

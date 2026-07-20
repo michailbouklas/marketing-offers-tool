@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Badge } from "$lib/components/ui/badge/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Skeleton } from "$lib/components/ui/skeleton/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
@@ -11,22 +12,30 @@
     type InvoiceDetail,
     type InvoiceHeaderRow,
     type InvoiceLineRow,
+    type InvoiceStoreSelection,
     type InvoiceSortDirection,
     type InvoiceSortField,
   } from "$lib/services/aggregator-invoices/aggregator-invoices";
+  import { fetchInvoiceDetail } from "$lib/services/aggregator-invoices/invoice-details";
   import ArrowDownIcon from "@lucide/svelte/icons/arrow-down";
   import ArrowUpIcon from "@lucide/svelte/icons/arrow-up";
+  import { SvelteMap } from "svelte/reactivity";
+  import StoreMetricsDialog from "./store-metrics-dialog.svelte";
 
   let {
     items,
     sortBy,
     sortDir,
     getSortHref,
+    from,
+    to,
   }: {
     items: InvoiceHeaderRow[];
     sortBy: InvoiceSortField;
     sortDir: InvoiceSortDirection;
     getSortHref: (column: InvoiceSortField) => string;
+    from: string | null;
+    to: string | null;
   } = $props();
 
   let dialogOpen = $state(false);
@@ -34,10 +43,12 @@
   let lines = $state<InvoiceLineRow[] | null>(null);
   let loadingLines = $state(false);
   let linesError = $state<string | null>(null);
+  let storeDialogOpen = $state(false);
+  let selectedStore = $state<InvoiceStoreSelection | null>(null);
 
   // Fetched lines per invoice so reopening a row is instant. Keyed per
   // aggregator because document ids are only unique within one.
-  const linesCache = new Map<string, InvoiceLineRow[]>();
+  const linesCache = new SvelteMap<string, InvoiceLineRow[]>();
 
   function cacheKey(row: InvoiceHeaderRow) {
     return `${row.aggregator}:${row.documentid}`;
@@ -59,19 +70,10 @@
     loadingLines = true;
 
     try {
-      const params = new URLSearchParams({
-        aggregator: row.aggregator,
-        documentid: row.documentid,
-      });
-      const response = await fetch(
-        `/aggregator-offers/invoices/detail?${params.toString()}`,
+      const detail: InvoiceDetail = await fetchInvoiceDetail(
+        row.aggregator,
+        row.documentid,
       );
-
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
-      }
-
-      const detail = (await response.json()) as InvoiceDetail;
       linesCache.set(cacheKey(row), detail.lines);
 
       // A slow response must not clobber a dialog the user has since pointed
@@ -90,13 +92,17 @@
     }
   }
 
-  function handleRowKeydown(event: KeyboardEvent, row: InvoiceHeaderRow) {
-    if (event.key !== "Enter" && event.key !== " ") {
+  function openStoreMetrics(row: InvoiceHeaderRow) {
+    if (!row.storeName && !row.bpname) {
       return;
     }
 
-    event.preventDefault();
-    openInvoice(row);
+    selectedStore = {
+      aggregator: row.aggregator,
+      storeName: row.storeName,
+      bpname: row.bpname,
+    };
+    storeDialogOpen = true;
   }
 
   const showJeColumn = $derived(
@@ -150,24 +156,34 @@
         </Table.Row>
       {:else}
         {#each items as row (`${row.aggregator}:${row.documentid}`)}
-          <Table.Row
-            class="hover:bg-muted/50 cursor-pointer"
-            role="button"
-            tabindex={0}
-            onclick={() => openInvoice(row)}
-            onkeydown={(event) => handleRowKeydown(event, row)}
-          >
+          <Table.Row class="hover:bg-muted/50">
             <Table.Cell class="text-muted-foreground whitespace-nowrap">
               {formatInvoiceDate(row.documentdate)}
             </Table.Cell>
-            <Table.Cell class="font-medium">
-              {row.invoicenumber ?? "—"}
+            <Table.Cell>
+              <Button
+                variant="link"
+                class="h-auto px-0 py-0 font-medium"
+                onclick={() => openInvoice(row)}
+              >
+                {row.invoicenumber ?? "View invoice"}
+              </Button>
             </Table.Cell>
             <Table.Cell class="max-w-48 truncate font-mono text-xs">
               {row.documentid}
             </Table.Cell>
             <Table.Cell class="max-w-56 truncate">
-              {row.storeName ?? row.bpname ?? "—"}
+              {#if row.storeName || row.bpname}
+                <Button
+                  variant="link"
+                  class="h-auto max-w-full justify-start truncate px-0 py-0 font-normal"
+                  onclick={() => openStoreMetrics(row)}
+                >
+                  {row.storeName ?? row.bpname}
+                </Button>
+              {:else}
+                —
+              {/if}
             </Table.Cell>
             <Table.Cell class="text-muted-foreground whitespace-nowrap">
               {row.timeframe ?? "—"}
@@ -352,3 +368,10 @@
     {/if}
   </Dialog.Content>
 </Dialog.Root>
+
+<StoreMetricsDialog
+  bind:open={storeDialogOpen}
+  store={selectedStore}
+  {from}
+  {to}
+/>

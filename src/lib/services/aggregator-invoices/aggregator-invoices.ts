@@ -79,6 +79,32 @@ export type InvoiceDetail = {
   lines: InvoiceLineRow[];
 };
 
+export type InvoiceStoreSelection = {
+  aggregator: InvoiceAggregator;
+  storeName: string | null;
+  bpname: string | null;
+};
+
+export type InvoiceTransactionTypeMetric = {
+  transactionType: string | null;
+  lineItemCount: number;
+  totalAmount: number;
+};
+
+export type InvoiceLineDetailsMetric = {
+  lineDetails: string | null;
+  lineItemCount: number;
+  totalAmount: number;
+};
+
+export type StoreInvoiceMetrics = {
+  invoiceCount: number;
+  lineItemCount: number;
+  totalInvoiceAmount: number;
+  transactionTypes: InvoiceTransactionTypeMetric[];
+  lineDetails: InvoiceLineDetailsMetric[];
+};
+
 export type InvoiceFilters = {
   aggregator: InvoiceAggregator;
   /** Case-insensitive substring match on `invoicenumber`. */
@@ -92,6 +118,8 @@ export type InvoiceFilters = {
   to: string | null;
   /** Headers with at least one line whose `linedetails` matches (ilike %x%). */
   lineDetails: string | null;
+  /** Exact-match allowlist for `project`; empty array intentionally yields zero rows. */
+  projectCodes?: string[] | null;
 };
 
 export const invoiceSortFields = ["documentdate", "totalpayout"] as const;

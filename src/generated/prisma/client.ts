@@ -77,6 +77,11 @@ export type user_brand = Prisma.user_brandModel;
  */
 export type regex_patterns_by_category = Prisma.regex_patterns_by_categoryModel;
 /**
+ * Model store_names
+ *
+ */
+export type store_names = Prisma.store_namesModel;
+/**
  * Model wolt_regex_patters
  *
  */
@@ -101,6 +106,11 @@ export type account = Prisma.accountModel;
  *
  */
 export type verification = Prisma.verificationModel;
+/**
+ * Model UserToken
+ *
+ */
+export type UserToken = Prisma.UserTokenModel;
 /**
  * Model categories
  *

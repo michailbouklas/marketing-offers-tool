@@ -16,6 +16,7 @@
     type InvoiceSortDirection,
     type InvoiceSortField,
   } from "$lib/services/aggregator-invoices/aggregator-invoices";
+  import { formatBrandLabel } from "$lib/services/brands";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import SearchIcon from "@lucide/svelte/icons/search";
   import type { PageData } from "./$types";
@@ -25,6 +26,11 @@
   let searchDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const rows = $derived(data.invoicesPage.items);
+  const selectedBrand = $derived(
+    data.brandId !== null
+      ? (data.brands.find((brand) => brand.id === data.brandId) ?? null)
+      : null,
+  );
   const page = $derived(data.invoicesPage.page);
   const pageSize = $derived(data.invoicesPage.pageSize);
   const totalItems = $derived(data.invoicesPage.totalItems);
@@ -74,6 +80,7 @@
     invoiceNumber = data.filters.invoiceNumber,
     store = data.filters.store,
     erpsent = data.filters.erpsent,
+    brandId = data.brandId,
     lineDetails = data.filters.lineDetails,
     from = data.filters.from,
     to = data.filters.to,
@@ -85,6 +92,7 @@
     invoiceNumber?: string | null;
     store?: string | null;
     erpsent?: InvoiceErpSent | null;
+    brandId?: number | null;
     lineDetails?: string | null;
     from?: string | null;
     to?: string | null;
@@ -107,6 +115,10 @@
 
     if (erpsent) {
       params.set("erpsent", erpsent);
+    }
+
+    if (brandId) {
+      params.set("brand", brandId.toString());
     }
 
     if (lineDetails) {
@@ -254,7 +266,7 @@
           <form
             method="GET"
             bind:this={searchForm}
-            class="grid gap-3 lg:grid-cols-[minmax(0,11rem)_minmax(0,11rem)_minmax(0,13rem)_minmax(0,8rem)_auto_auto] lg:items-end"
+            class="grid gap-3 lg:grid-cols-[minmax(0,11rem)_minmax(0,11rem)_minmax(0,13rem)_minmax(0,8rem)_minmax(0,11rem)_auto_auto] lg:items-end"
           >
             <div class="space-y-2">
               <label class="text-sm font-medium" for="invoiceNumber"
@@ -317,6 +329,23 @@
             </div>
 
             <div class="space-y-2">
+              <label class="text-sm font-medium" for="brand">Brand</label>
+              <NativeSelect.Root
+                id="brand"
+                name="brand"
+                value={data.brandId?.toString() ?? ""}
+                onchange={handleSearchChange}
+              >
+                <NativeSelect.Option value="">All brands</NativeSelect.Option>
+                {#each data.brands as brand (brand.id)}
+                  <NativeSelect.Option value={brand.id.toString()}>
+                    {formatBrandLabel(brand)}
+                  </NativeSelect.Option>
+                {/each}
+              </NativeSelect.Root>
+            </div>
+
+            <div class="space-y-2">
               <span class="text-sm font-medium">Document date</span>
               <DateRangeFilter
                 from={data.filters.from}
@@ -349,6 +378,7 @@
                   invoiceNumber: null,
                   store: null,
                   erpsent: null,
+                  brandId: null,
                   lineDetails: null,
                   from: null,
                   to: null,
@@ -380,6 +410,11 @@
               ERP: {data.filters.erpsent === "Y" ? "Sent" : "Not sent"}
             </Badge>
           {/if}
+          {#if selectedBrand}
+            <Badge variant="outline">
+              Brand: {formatBrandLabel(selectedBrand)}
+            </Badge>
+          {/if}
           {#if data.filters.lineDetails}
             <Badge variant="outline">Lines: {data.filters.lineDetails}</Badge>
           {/if}
@@ -400,6 +435,8 @@
           items={rows}
           sortBy={data.sortBy}
           sortDir={data.sortDir}
+          from={data.filters.from}
+          to={data.filters.to}
           {getSortHref}
         />
 

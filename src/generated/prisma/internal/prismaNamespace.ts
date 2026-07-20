@@ -418,11 +418,13 @@ export const ModelName = {
   brand: "brand",
   user_brand: "user_brand",
   regex_patterns_by_category: "regex_patterns_by_category",
+  store_names: "store_names",
   wolt_regex_patters: "wolt_regex_patters",
   user: "user",
   session: "session",
   account: "account",
   verification: "verification",
+  UserToken: "UserToken",
   categories: "categories",
   channels: "channels",
   dq_missing_offers_pricing: "dq_missing_offers_pricing",
@@ -478,11 +480,13 @@ export type TypeMap<
       | "brand"
       | "user_brand"
       | "regex_patterns_by_category"
+      | "store_names"
       | "wolt_regex_patters"
       | "user"
       | "session"
       | "account"
       | "verification"
+      | "userToken"
       | "categories"
       | "channels"
       | "dq_missing_offers_pricing"
@@ -969,6 +973,82 @@ export type TypeMap<
         };
       };
     };
+    store_names: {
+      payload: Prisma.$store_namesPayload<ExtArgs>;
+      fields: Prisma.store_namesFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.store_namesFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$store_namesPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.store_namesFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$store_namesPayload>;
+        };
+        findFirst: {
+          args: Prisma.store_namesFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$store_namesPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.store_namesFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$store_namesPayload>;
+        };
+        findMany: {
+          args: Prisma.store_namesFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$store_namesPayload>[];
+        };
+        create: {
+          args: Prisma.store_namesCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$store_namesPayload>;
+        };
+        createMany: {
+          args: Prisma.store_namesCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.store_namesCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$store_namesPayload>[];
+        };
+        delete: {
+          args: Prisma.store_namesDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$store_namesPayload>;
+        };
+        update: {
+          args: Prisma.store_namesUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$store_namesPayload>;
+        };
+        deleteMany: {
+          args: Prisma.store_namesDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.store_namesUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.store_namesUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$store_namesPayload>[];
+        };
+        upsert: {
+          args: Prisma.store_namesUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$store_namesPayload>;
+        };
+        aggregate: {
+          args: Prisma.Store_namesAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStore_names>;
+        };
+        groupBy: {
+          args: Prisma.store_namesGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Store_namesGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.store_namesCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Store_namesCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     wolt_regex_patters: {
       payload: Prisma.$wolt_regex_pattersPayload<ExtArgs>;
       fields: Prisma.wolt_regex_pattersFieldRefs;
@@ -1345,6 +1425,82 @@ export type TypeMap<
           args: Prisma.verificationCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.VerificationCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    UserToken: {
+      payload: Prisma.$UserTokenPayload<ExtArgs>;
+      fields: Prisma.UserTokenFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.UserTokenFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserTokenPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.UserTokenFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserTokenPayload>;
+        };
+        findFirst: {
+          args: Prisma.UserTokenFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserTokenPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.UserTokenFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserTokenPayload>;
+        };
+        findMany: {
+          args: Prisma.UserTokenFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserTokenPayload>[];
+        };
+        create: {
+          args: Prisma.UserTokenCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserTokenPayload>;
+        };
+        createMany: {
+          args: Prisma.UserTokenCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.UserTokenCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserTokenPayload>[];
+        };
+        delete: {
+          args: Prisma.UserTokenDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserTokenPayload>;
+        };
+        update: {
+          args: Prisma.UserTokenUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserTokenPayload>;
+        };
+        deleteMany: {
+          args: Prisma.UserTokenDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.UserTokenUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.UserTokenUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserTokenPayload>[];
+        };
+        upsert: {
+          args: Prisma.UserTokenUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserTokenPayload>;
+        };
+        aggregate: {
+          args: Prisma.UserTokenAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserToken>;
+        };
+        groupBy: {
+          args: Prisma.UserTokenGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.UserTokenGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.UserTokenCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.UserTokenCountAggregateOutputType>
             | number;
         };
       };
@@ -3499,6 +3655,8 @@ export const BrandScalarFieldEnum = {
   updated_at: "updated_at",
   description: "description",
   active: "active",
+  sap_brand_alias: "sap_brand_alias",
+  sap_company_name: "sap_company_name",
 } as const;
 
 export type BrandScalarFieldEnum =
@@ -3522,6 +3680,16 @@ export const Regex_patterns_by_categoryScalarFieldEnum = {
 
 export type Regex_patterns_by_categoryScalarFieldEnum =
   (typeof Regex_patterns_by_categoryScalarFieldEnum)[keyof typeof Regex_patterns_by_categoryScalarFieldEnum];
+
+export const Store_namesScalarFieldEnum = {
+  id: "id",
+  file_name: "file_name",
+  pdf_name: "pdf_name",
+  aggregator_name: "aggregator_name",
+} as const;
+
+export type Store_namesScalarFieldEnum =
+  (typeof Store_namesScalarFieldEnum)[keyof typeof Store_namesScalarFieldEnum];
 
 export const Wolt_regex_pattersScalarFieldEnum = {
   id: "id",
@@ -3595,6 +3763,21 @@ export const VerificationScalarFieldEnum = {
 
 export type VerificationScalarFieldEnum =
   (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum];
+
+export const UserTokenScalarFieldEnum = {
+  id: "id",
+  token: "token",
+  type: "type",
+  userId: "userId",
+  isValid: "isValid",
+  expiresAt: "expiresAt",
+  usedAt: "usedAt",
+  created_at: "created_at",
+  updated_at: "updated_at",
+} as const;
+
+export type UserTokenScalarFieldEnum =
+  (typeof UserTokenScalarFieldEnum)[keyof typeof UserTokenScalarFieldEnum];
 
 export const CategoriesScalarFieldEnum = {
   id: "id",
@@ -4128,6 +4311,20 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<
 >;
 
 /**
+ * Reference to a field of type 'EnumTokenType'
+ */
+export type EnumEnumTokenTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  "EnumTokenType"
+>;
+
+/**
+ * Reference to a field of type 'EnumTokenType[]'
+ */
+export type ListEnumEnumTokenTypeFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "EnumTokenType[]">;
+
+/**
  * Reference to a field of type 'DqGapStatus'
  */
 export type EnumDqGapStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -4456,11 +4653,13 @@ export type GlobalOmitConfig = {
   brand?: Prisma.brandOmit;
   user_brand?: Prisma.user_brandOmit;
   regex_patterns_by_category?: Prisma.regex_patterns_by_categoryOmit;
+  store_names?: Prisma.store_namesOmit;
   wolt_regex_patters?: Prisma.wolt_regex_pattersOmit;
   user?: Prisma.userOmit;
   session?: Prisma.sessionOmit;
   account?: Prisma.accountOmit;
   verification?: Prisma.verificationOmit;
+  userToken?: Prisma.UserTokenOmit;
   categories?: Prisma.categoriesOmit;
   channels?: Prisma.channelsOmit;
   dq_missing_offers_pricing?: Prisma.dq_missing_offers_pricingOmit;

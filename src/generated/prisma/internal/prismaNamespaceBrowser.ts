@@ -60,11 +60,13 @@ export const ModelName = {
   brand: "brand",
   user_brand: "user_brand",
   regex_patterns_by_category: "regex_patterns_by_category",
+  store_names: "store_names",
   wolt_regex_patters: "wolt_regex_patters",
   user: "user",
   session: "session",
   account: "account",
   verification: "verification",
+  UserToken: "UserToken",
   categories: "categories",
   channels: "channels",
   dq_missing_offers_pricing: "dq_missing_offers_pricing",
@@ -169,6 +171,8 @@ export const BrandScalarFieldEnum = {
   updated_at: "updated_at",
   description: "description",
   active: "active",
+  sap_brand_alias: "sap_brand_alias",
+  sap_company_name: "sap_company_name",
 } as const;
 
 export type BrandScalarFieldEnum =
@@ -192,6 +196,16 @@ export const Regex_patterns_by_categoryScalarFieldEnum = {
 
 export type Regex_patterns_by_categoryScalarFieldEnum =
   (typeof Regex_patterns_by_categoryScalarFieldEnum)[keyof typeof Regex_patterns_by_categoryScalarFieldEnum];
+
+export const Store_namesScalarFieldEnum = {
+  id: "id",
+  file_name: "file_name",
+  pdf_name: "pdf_name",
+  aggregator_name: "aggregator_name",
+} as const;
+
+export type Store_namesScalarFieldEnum =
+  (typeof Store_namesScalarFieldEnum)[keyof typeof Store_namesScalarFieldEnum];
 
 export const Wolt_regex_pattersScalarFieldEnum = {
   id: "id",
@@ -265,6 +279,21 @@ export const VerificationScalarFieldEnum = {
 
 export type VerificationScalarFieldEnum =
   (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum];
+
+export const UserTokenScalarFieldEnum = {
+  id: "id",
+  token: "token",
+  type: "type",
+  userId: "userId",
+  isValid: "isValid",
+  expiresAt: "expiresAt",
+  usedAt: "usedAt",
+  created_at: "created_at",
+  updated_at: "updated_at",
+} as const;
+
+export type UserTokenScalarFieldEnum =
+  (typeof UserTokenScalarFieldEnum)[keyof typeof UserTokenScalarFieldEnum];
 
 export const CategoriesScalarFieldEnum = {
   id: "id",

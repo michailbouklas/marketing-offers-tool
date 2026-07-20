@@ -114,3 +114,10 @@ export const BrandEntityType = {
 
 export type BrandEntityType =
   (typeof BrandEntityType)[keyof typeof BrandEntityType];
+
+export const EnumTokenType = {
+  ACTIVATION: "ACTIVATION",
+  PASSWORD_RESET: "PASSWORD_RESET",
+} as const;
+
+export type EnumTokenType = (typeof EnumTokenType)[keyof typeof EnumTokenType];

@@ -8,6 +8,7 @@ import type {
   InvoiceSortDirection,
   InvoiceSortField,
   Paginated,
+  StoreInvoiceMetrics,
 } from "$lib/services/aggregator-invoices/aggregator-invoices";
 import type { Prisma } from "../../../generated/prisma/client";
 
@@ -16,6 +17,14 @@ export type ListInvoicesParams = InvoiceFilters & {
   pageSize: number;
   sortBy: InvoiceSortField;
   sortDir: InvoiceSortDirection;
+};
+
+export type StoreInvoiceMetricsParams = Pick<
+  InvoiceFilters,
+  "aggregator" | "from" | "to"
+> & {
+  storeName: string | null;
+  bpname: string | null;
 };
 
 /**
@@ -156,6 +165,7 @@ function woltWhere(filters: InvoiceFilters): Prisma.api_WOLT_headerWhereInput {
       : {}),
     ...(filters.erpsent ? { erpsent: filters.erpsent } : {}),
     ...(range ? { documentdate: range } : {}),
+    ...(filters.projectCodes ? { project: { in: filters.projectCodes } } : {}),
     ...(filters.lineDetails
       ? {
           api_WOLT_lines: {
@@ -208,6 +218,73 @@ function mapWoltLine(row: WoltLinePayload): InvoiceLineRow {
     totalamount: toNumber(row.totalamount),
     accountcode: row.accountcode,
     vatcode: row.vatcode,
+  };
+}
+
+function woltStoreWhere(
+  params: StoreInvoiceMetricsParams,
+): Prisma.api_WOLT_headerWhereInput {
+  const range = documentDateRange(params);
+
+  return {
+    ...(params.storeName
+      ? { partnername: params.storeName }
+      : { partnername: null, bpname: params.bpname }),
+    ...(range ? { documentdate: range } : {}),
+  };
+}
+
+async function getWoltStoreMetrics(
+  params: StoreInvoiceMetricsParams,
+): Promise<StoreInvoiceMetrics> {
+  const where = woltStoreWhere(params);
+  const [invoiceTotals, transactionTypes, lineDetails] = await Promise.all([
+    prisma.api_WOLT_header.aggregate({
+      where,
+      _count: { _all: true },
+      _sum: { totalpayout: true },
+    }),
+    prisma.api_WOLT_lines.groupBy({
+      by: ["transtype"],
+      where: { api_WOLT_header: where },
+      _count: { _all: true },
+      _sum: { totalamount: true },
+    }),
+    prisma.api_WOLT_lines.groupBy({
+      by: ["linedetails"],
+      where: { api_WOLT_header: where },
+      _count: { _all: true },
+      _sum: { totalamount: true },
+    }),
+  ]);
+
+  const metrics = transactionTypes
+    .map((row) => ({
+      transactionType: row.transtype,
+      lineItemCount: row._count._all,
+      totalAmount: toNumber(row._sum.totalamount) ?? 0,
+    }))
+    .sort((left, right) =>
+      (left.transactionType ?? "").localeCompare(right.transactionType ?? ""),
+    );
+
+  return {
+    invoiceCount: invoiceTotals._count._all,
+    lineItemCount: metrics.reduce(
+      (total, metric) => total + metric.lineItemCount,
+      0,
+    ),
+    totalInvoiceAmount: toNumber(invoiceTotals._sum.totalpayout) ?? 0,
+    transactionTypes: metrics,
+    lineDetails: lineDetails
+      .map((row) => ({
+        lineDetails: row.linedetails,
+        lineItemCount: row._count._all,
+        totalAmount: toNumber(row._sum.totalamount) ?? 0,
+      }))
+      .sort((left, right) =>
+        (left.lineDetails ?? "").localeCompare(right.lineDetails ?? ""),
+      ),
   };
 }
 
@@ -332,6 +409,7 @@ function boltWhere(filters: InvoiceFilters): Prisma.api_BOLT_headerWhereInput {
       : {}),
     ...(filters.erpsent ? { erpsent: filters.erpsent } : {}),
     ...(range ? { documentdate: range } : {}),
+    ...(filters.projectCodes ? { project: { in: filters.projectCodes } } : {}),
     ...(filters.lineDetails
       ? {
           api_BOLT_lines: {
@@ -413,6 +491,73 @@ function mapBoltLine(row: BoltLinePayload): InvoiceLineRow {
   };
 }
 
+function boltStoreWhere(
+  params: StoreInvoiceMetricsParams,
+): Prisma.api_BOLT_headerWhereInput {
+  const range = documentDateRange(params);
+
+  return {
+    ...(params.storeName
+      ? { bolt_storename: params.storeName }
+      : { bolt_storename: null, bpname: params.bpname }),
+    ...(range ? { documentdate: range } : {}),
+  };
+}
+
+async function getBoltStoreMetrics(
+  params: StoreInvoiceMetricsParams,
+): Promise<StoreInvoiceMetrics> {
+  const where = boltStoreWhere(params);
+  const [invoiceTotals, transactionTypes, lineDetails] = await Promise.all([
+    prisma.api_BOLT_header.aggregate({
+      where,
+      _count: { _all: true },
+      _sum: { totalpayout: true },
+    }),
+    prisma.api_BOLT_lines.groupBy({
+      by: ["transtype"],
+      where: { api_BOLT_header: where },
+      _count: { _all: true },
+      _sum: { totalamount: true },
+    }),
+    prisma.api_BOLT_lines.groupBy({
+      by: ["linedetails"],
+      where: { api_BOLT_header: where },
+      _count: { _all: true },
+      _sum: { totalamount: true },
+    }),
+  ]);
+
+  const metrics = transactionTypes
+    .map((row) => ({
+      transactionType: row.transtype,
+      lineItemCount: row._count._all,
+      totalAmount: toNumber(row._sum.totalamount) ?? 0,
+    }))
+    .sort((left, right) =>
+      (left.transactionType ?? "").localeCompare(right.transactionType ?? ""),
+    );
+
+  return {
+    invoiceCount: invoiceTotals._count._all,
+    lineItemCount: metrics.reduce(
+      (total, metric) => total + metric.lineItemCount,
+      0,
+    ),
+    totalInvoiceAmount: toNumber(invoiceTotals._sum.totalpayout) ?? 0,
+    transactionTypes: metrics,
+    lineDetails: lineDetails
+      .map((row) => ({
+        lineDetails: row.linedetails,
+        lineItemCount: row._count._all,
+        totalAmount: toNumber(row._sum.totalamount) ?? 0,
+      }))
+      .sort((left, right) =>
+        (left.lineDetails ?? "").localeCompare(right.lineDetails ?? ""),
+      ),
+  };
+}
+
 const boltAdapter: InvoiceAdapter = {
   async listHeaders(params) {
     const where = boltWhere(params);
@@ -481,4 +626,13 @@ export function getInvoiceDetail(
   documentid: string,
 ): Promise<InvoiceDetail | null> {
   return adapters[aggregator].getDetail(documentid);
+}
+
+/** Store totals and transaction-type line breakdown for the selected period. */
+export function getStoreInvoiceMetrics(
+  params: StoreInvoiceMetricsParams,
+): Promise<StoreInvoiceMetrics> {
+  return params.aggregator === "wolt"
+    ? getWoltStoreMetrics(params)
+    : getBoltStoreMetrics(params);
 }
