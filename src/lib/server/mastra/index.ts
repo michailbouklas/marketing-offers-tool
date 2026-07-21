@@ -5,7 +5,7 @@ import {
   Workspace,
   WORKSPACE_TOOLS,
 } from "@mastra/core/workspace";
-import { ClickhouseStore } from "@mastra/clickhouse";
+import { ClickhouseStoreVNext } from "@mastra/clickhouse";
 import {
   MastraStorageExporter,
   Observability,
@@ -72,7 +72,10 @@ function createStorage(): MastraCompositeStore {
     return postgres;
   }
 
-  const clickhouseStore = new ClickhouseStore({
+  // VNext: the metrics-capable observability domain — the base ClickhouseStore
+  // only persists spans, and Studio then reports "Metrics are not available
+  // with your current storage".
+  const clickhouseStore = new ClickhouseStoreVNext({
     id: "ai-chat-observability",
     url: clickhouse.url,
     username: clickhouse.username,
