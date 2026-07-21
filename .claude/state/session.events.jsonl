@@ -11,3 +11,5 @@
 {"id":"event-000001","type":"session.stop","ts":"2026-06-29T08:00:51Z","state":"stopped"}
 {"id":"event-000016","type":"session.stop","ts":"2026-07-06T12:20:58Z","state":"stopped"}
 {"id":"event-000001","type":"session.stop","ts":"2026-07-13T08:56:58Z","state":"stopped"}
+{"id":"event-000001","type":"session.stop","ts":"2026-07-20T13:27:14Z","state":"stopped"}
+{"id":"event-000001","type":"session.stop","ts":"2026-07-20T13:28:15Z","state":"stopped"}

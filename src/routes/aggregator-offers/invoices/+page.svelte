@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import InvoiceMetricsDialog from "$lib/components/aggregator-invoices/invoice-metrics-dialog.svelte";
   import InvoicesTable from "$lib/components/aggregator-invoices/invoices-table.svelte";
   import InvoicesTrendChart from "$lib/components/aggregator-invoices/invoices-trend-chart.svelte";
@@ -527,6 +528,12 @@
       filters={data.filters}
       brandId={data.brandId}
       brandLabel={selectedBrand ? formatBrandLabel(selectedBrand) : null}
+    />
+
+    <ChatWidget
+      agentId="invoices-agent"
+      title="Invoices Assistant"
+      greeting="Hi! Ask me anything about the Wolt and Bolt invoices — totals, stores, trends, ERP status…"
     />
   </main>
 </div>

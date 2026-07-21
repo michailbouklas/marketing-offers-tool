@@ -182,9 +182,11 @@ function buildInvoiceTrend(
 /**
  * Buckets header dates + payouts over time. Monthly when the data spans at
  * least two months; daily otherwise so a short period filter (e.g. a single
- * month) still gets a usable trend. Buckets without invoices between the
- * first and last are zero-filled so lines don't interpolate over gaps.
- * Headers without a `documentdate` are skipped.
+ * month) still gets a usable trend. Months without invoices between the
+ * first and last are zero-filled; daily points only include actual issuance
+ * dates (invoices arrive in multi-day batches, so zero-filling every
+ * calendar day would render a misleading sawtooth). Headers without a
+ * `documentdate` are skipped.
  */
 function buildPayoutTrend(
   rows: { documentdate: Date | null; totalpayout: unknown }[],
@@ -218,12 +220,23 @@ function buildPayoutTrend(
   }
 
   const keys = [...byBucket.keys()].sort();
+
+  if (granularity === "day") {
+    return {
+      granularity,
+      points: keys.map((key) => {
+        const bucket = byBucket.get(key)!;
+        return {
+          period: key,
+          invoiceCount: bucket.invoiceCount,
+          totalPayout: roundAmount(bucket.totalPayout),
+        };
+      }),
+    };
+  }
+
   const last = keys[keys.length - 1];
-  const cursor = new Date(
-    granularity === "month"
-      ? `${keys[0]}-01T00:00:00Z`
-      : `${keys[0]}T00:00:00Z`,
-  );
+  const cursor = new Date(`${keys[0]}-01T00:00:00Z`);
   const points: InvoicePayoutTrendPoint[] = [];
 
   while (true) {
@@ -239,11 +252,7 @@ function buildPayoutTrend(
       return { granularity, points };
     }
 
-    if (granularity === "month") {
-      cursor.setUTCMonth(cursor.getUTCMonth() + 1);
-    } else {
-      cursor.setUTCDate(cursor.getUTCDate() + 1);
-    }
+    cursor.setUTCMonth(cursor.getUTCMonth() + 1);
   }
 }
 

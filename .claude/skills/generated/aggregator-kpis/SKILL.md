@@ -1,92 +1,93 @@
 ---
 name: aggregator-kpis
-description: "Skill for the Aggregator-kpis area of marketing-offers-tool. 57 symbols across 20 files."
+description: "Skill for the Aggregator-kpis area of marketing-offers-tool. 126 symbols across 26 files."
 ---
 
 # Aggregator-kpis
 
-57 symbols | 20 files | Cohesion: 75%
+126 symbols | 26 files | Cohesion: 68%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how load, load, load work
+- Understanding how getPunctualityPeriodView, getPunctualityPeriodStoreView, periodDaysSql work
 - Modifying aggregator-kpis-related functionality
 
 ## Key Files
 
-| File                                                          | Symbols                                                                                                           |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `src/lib/services/aggregator-kpis/order-rejections.server.ts` | getRejectionsLatestByStore, getRejectionsTrend, getLostSalesByReason, getRejectionsView, toReasonSlices (+4)      |
-| `src/lib/services/aggregator-kpis/kpi-shared.server.ts`       | storeWhere, scrapedAtRange, averageByDay, averageOf, parseKpiFilters (+3)                                         |
-| `src/lib/services/aggregator-kpis/ratings.server.ts`          | getRatingsLatestByStore, getRatingsTrend, getRatingsDistribution, getRatingsView, points (+1)                     |
-| `src/lib/services/aggregator-kpis/closures.server.ts`         | getClosuresLatestByStore, getClosuresTrend, getClosuresView, getClosureReasonBreakdown, getClosuresStoreView (+1) |
-| `src/lib/services/aggregator-kpis/punctuality.server.ts`      | getPunctualityLatestByStore, getPunctualityTrend, getPunctualityView, points, getPunctualityStoreView             |
-| `src/lib/services/aggregator-kpis/sessions.server.ts`         | rows, parseSessionFilters, startedAtRange, sumByDay, getSessionsView                                              |
-| `src/lib/services/aggregator-kpis/reviews.server.ts`          | reviewedAtRange, orderByFor, getReviewStore, listReviews                                                          |
-| `src/lib/services/aggregator-kpis/dashboard.server.ts`        | getDashboardStats, countFor                                                                                       |
-| `src/routes/aggregator-kpis/reviews/+page.server.ts`          | load                                                                                                              |
-| `src/routes/aggregator-kpis/punctuality/+page.server.ts`      | load                                                                                                              |
+| File | Symbols |
+|------|---------|
+| `src/lib/services/aggregator-kpis/order-rejections.server.ts` | getRejectionsPeriodTrend, getRejectionsLatestPeriodRows, getRejectionsPeriodHistory, getRejectionsLostSalesByReasonPeriod, getWoltRejectionsPeriodTrend (+16) |
+| `src/lib/services/aggregator-kpis/closures.server.ts` | getClosuresPeriodTrend, getClosuresLatestPeriodRows, getClosuresPeriodHistory, getWoltClosuresPeriodTrend, getWoltClosuresLatestPeriodRows (+12) |
+| `src/lib/services/aggregator-kpis/punctuality.server.ts` | getPunctualityPeriodTrend, getPunctualityLatestPeriodRows, getPunctualityPeriodHistory, getPunctualityPeriodView, getPunctualityPeriodStoreView (+6) |
+| `src/lib/services/aggregator-kpis/metrics.server.ts` | periodSumTrends, latestPeriodRows, totalsFromRows, woltPeriodSumTrends, woltLatestPeriodRows (+6) |
+| `src/lib/services/aggregator-kpis/pro-growth.server.ts` | getProGrowthLatestPeriodRows, mapProGrowthPeriodRow, getProGrowthLatestRows, getProGrowthPeriodHistory, mapShareTrend (+4) |
+| `src/lib/services/aggregator-kpis/ratings.server.ts` | points, getRatingsLatestByStore, getRatingsTrend, getRatingsDistribution, getRatingsView (+4) |
+| `src/lib/services/aggregator-kpis/sessions.server.ts` | sections, rows, toSessionRow, getSessionDetail, startedAtRange (+2) |
+| `src/lib/services/aggregator-kpis/kpi-shared.server.ts` | toNumber, averageOf, getKpiStore, storeWhere, scrapedAtRange (+2) |
+| `src/lib/services/aggregator-kpis/aggregator-kpis.ts` | proOrderShare, parseSectionDiagnostics, deriveStoreOutcome, sectionKeyLabel, buildSectionHealthTrend (+2) |
+| `src/lib/services/aggregator-kpis/reviews.server.ts` | reviewedAtRange, orderByFor, getReviewStore, listReviews, toOrderDetails (+1) |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`load`** (Function) — `src/routes/aggregator-kpis/reviews/+page.server.ts:41`
-- **`load`** (Function) — `src/routes/aggregator-kpis/punctuality/+page.server.ts:8`
-- **`load`** (Function) — `src/routes/aggregator-kpis/ratings/+page.server.ts:8`
-- **`load`** (Function) — `src/routes/aggregator-kpis/order-rejections/+page.server.ts:8`
-- **`load`** (Function) — `src/routes/aggregator-kpis/closures/+page.server.ts:8`
+- **`getPunctualityPeriodView`** (Function) — `src/lib/services/aggregator-kpis/punctuality.server.ts:288`
+- **`getPunctualityPeriodStoreView`** (Function) — `src/lib/services/aggregator-kpis/punctuality.server.ts:300`
+- **`periodDaysSql`** (Function) — `src/lib/services/aggregator-kpis/period-shared.server.ts:39`
+- **`storeFilterSql`** (Function) — `src/lib/services/aggregator-kpis/period-shared.server.ts:50`
+- **`getRejectionsPeriodView`** (Function) — `src/lib/services/aggregator-kpis/order-rejections.server.ts:708`
 
 ## Key Symbols
 
-| Symbol                        | Type     | File                                                          | Line |
-| ----------------------------- | -------- | ------------------------------------------------------------- | ---- |
-| `load`                        | Function | `src/routes/aggregator-kpis/reviews/+page.server.ts`          | 41   |
-| `load`                        | Function | `src/routes/aggregator-kpis/punctuality/+page.server.ts`      | 8    |
-| `load`                        | Function | `src/routes/aggregator-kpis/ratings/+page.server.ts`          | 8    |
-| `load`                        | Function | `src/routes/aggregator-kpis/order-rejections/+page.server.ts` | 8    |
-| `load`                        | Function | `src/routes/aggregator-kpis/closures/+page.server.ts`         | 8    |
-| `getReviewStore`              | Function | `src/lib/services/aggregator-kpis/reviews.server.ts`          | 94   |
-| `listReviews`                 | Function | `src/lib/services/aggregator-kpis/reviews.server.ts`          | 128  |
-| `getRatingsLatestByStore`     | Function | `src/lib/services/aggregator-kpis/ratings.server.ts`          | 18   |
-| `getRatingsTrend`             | Function | `src/lib/services/aggregator-kpis/ratings.server.ts`          | 60   |
-| `getRatingsDistribution`      | Function | `src/lib/services/aggregator-kpis/ratings.server.ts`          | 92   |
-| `getRatingsView`              | Function | `src/lib/services/aggregator-kpis/ratings.server.ts`          | 203  |
-| `getPunctualityLatestByStore` | Function | `src/lib/services/aggregator-kpis/punctuality.server.ts`      | 17   |
-| `getPunctualityTrend`         | Function | `src/lib/services/aggregator-kpis/punctuality.server.ts`      | 66   |
-| `getPunctualityView`          | Function | `src/lib/services/aggregator-kpis/punctuality.server.ts`      | 135  |
-| `getRejectionsLatestByStore`  | Function | `src/lib/services/aggregator-kpis/order-rejections.server.ts` | 31   |
-| `getRejectionsTrend`          | Function | `src/lib/services/aggregator-kpis/order-rejections.server.ts` | 80   |
-| `getLostSalesByReason`        | Function | `src/lib/services/aggregator-kpis/order-rejections.server.ts` | 219  |
-| `getRejectionsView`           | Function | `src/lib/services/aggregator-kpis/order-rejections.server.ts` | 313  |
-| `storeWhere`                  | Function | `src/lib/services/aggregator-kpis/kpi-shared.server.ts`       | 33   |
-| `scrapedAtRange`              | Function | `src/lib/services/aggregator-kpis/kpi-shared.server.ts`       | 44   |
+| Symbol | Type | File | Line |
+|--------|------|------|------|
+| `getPunctualityPeriodView` | Function | `src/lib/services/aggregator-kpis/punctuality.server.ts` | 288 |
+| `getPunctualityPeriodStoreView` | Function | `src/lib/services/aggregator-kpis/punctuality.server.ts` | 300 |
+| `periodDaysSql` | Function | `src/lib/services/aggregator-kpis/period-shared.server.ts` | 39 |
+| `storeFilterSql` | Function | `src/lib/services/aggregator-kpis/period-shared.server.ts` | 50 |
+| `getRejectionsPeriodView` | Function | `src/lib/services/aggregator-kpis/order-rejections.server.ts` | 708 |
+| `getRejectionsPeriodStoreView` | Function | `src/lib/services/aggregator-kpis/order-rejections.server.ts` | 740 |
+| `getMetricsView` | Function | `src/lib/services/aggregator-kpis/metrics.server.ts` | 297 |
+| `getClosuresPeriodView` | Function | `src/lib/services/aggregator-kpis/closures.server.ts` | 532 |
+| `getClosuresPeriodStoreView` | Function | `src/lib/services/aggregator-kpis/closures.server.ts` | 555 |
+| `sections` | Function | `src/lib/services/aggregator-kpis/sessions.server.ts` | 376 |
+| `points` | Function | `src/lib/services/aggregator-kpis/ratings.server.ts` | 164 |
+| `points` | Function | `src/lib/services/aggregator-kpis/punctuality.server.ts` | 127 |
+| `getCancellationReasonBreakdown` | Function | `src/lib/services/aggregator-kpis/order-rejections.server.ts` | 129 |
+| `getCancellationReasonTrend` | Function | `src/lib/services/aggregator-kpis/order-rejections.server.ts` | 175 |
+| `points` | Function | `src/lib/services/aggregator-kpis/order-rejections.server.ts` | 210 |
+| `getRejectionsStoreView` | Function | `src/lib/services/aggregator-kpis/order-rejections.server.ts` | 287 |
+| `toNumber` | Function | `src/lib/services/aggregator-kpis/kpi-shared.server.ts` | 22 |
+| `getClosureReasonBreakdown` | Function | `src/lib/services/aggregator-kpis/closures.server.ts` | 115 |
+| `getClosuresStoreView` | Function | `src/lib/services/aggregator-kpis/closures.server.ts` | 158 |
+| `points` | Function | `src/lib/services/aggregator-kpis/closures.server.ts` | 176 |
 
 ## Execution Flows
 
-| Flow                    | Type            | Steps |
-| ----------------------- | --------------- | ----- |
-| `Load → ToNumber`       | cross_community | 5     |
-| `Load → StoreWhere`     | intra_community | 4     |
-| `Load → ToNumber`       | cross_community | 4     |
-| `Load → ScrapedAtRange` | intra_community | 4     |
-| `Load → AverageByDay`   | intra_community | 4     |
-| `Load → StoreWhere`     | intra_community | 4     |
-| `Load → ToNumber`       | cross_community | 4     |
-| `Load → ScrapedAtRange` | intra_community | 4     |
-| `Load → AverageByDay`   | intra_community | 4     |
-| `Load → StoreWhere`     | intra_community | 4     |
+| Flow | Type | Steps |
+|------|------|-------|
+| `Load → ToNumber` | cross_community | 5 |
+| `Load → PeriodDaysSql` | cross_community | 4 |
+| `Load → StoreFilterSql` | cross_community | 4 |
+| `Load → ToNumber` | cross_community | 4 |
+| `Load → PeriodDaysSql` | cross_community | 4 |
+| `Load → StoreFilterSql` | cross_community | 4 |
+| `Load → ToNumber` | cross_community | 4 |
+| `Load → PeriodDaysSql` | cross_community | 4 |
+| `Load → StoreFilterSql` | cross_community | 4 |
+| `Load → ToNumber` | cross_community | 4 |
 
 ## Connected Areas
 
-| Area     | Connections |
-| -------- | ----------- |
-| Services | 12 calls    |
-| Server   | 1 calls     |
+| Area | Connections |
+|------|-------------|
+| Services | 12 calls |
+| Punctuality | 4 calls |
+| Server | 1 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "load"})` — see callers and callees
+1. `gitnexus_context({name: "getPunctualityPeriodView"})` — see callers and callees
 2. `gitnexus_query({query: "aggregator-kpis"})` — find related execution flows
 3. Read key files listed above for implementation details

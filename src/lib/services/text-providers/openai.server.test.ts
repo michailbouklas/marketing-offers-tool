@@ -43,7 +43,10 @@ describe("OpenAITextProvider", () => {
     const output = await provider.generateText(makeInput({ model: "gpt-4o" }));
 
     expect(output.content).toEqual({ variants: [1] });
-    const [url, init] = fetchMock.mock.calls[0]! as [string, RequestInit];
+    const [url, init] = fetchMock.mock.calls[0]! as unknown as [
+      string,
+      RequestInit,
+    ];
     expect(url).toBe("https://api.openai.com/v1/chat/completions");
     const body = JSON.parse(init.body as string);
     expect(body.model).toBe("gpt-4o");

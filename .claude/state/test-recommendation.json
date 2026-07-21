@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-07-20T13:23:32Z",
-  "changed_file": "src/lib/services/aggregator-invoices/invoices.server.ts",
+  "timestamp": "2026-07-21T12:07:38Z",
+  "changed_file": "src/lib/server/mastra/index.ts",
   "test_command": "npx vitest run --reporter=verbose",
-  "related_test": "C:\\work\\marketing-offers-tool\\src\\lib\\services\\aggregator-invoices\\invoices.server.test.ts",
+  "related_test": "",
   "recommendation": "テストの実行を推奨します"
 }

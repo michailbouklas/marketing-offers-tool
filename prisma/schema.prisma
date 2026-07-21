@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["views"]
 }
 
 datasource db {
@@ -734,4 +735,33 @@ model brand_entity {
 
   @@unique([entityType, entityId])
   @@index([brandId])
+}
+
+// --- AI chat history (read-only views) ---------------------------------------
+// Chat threads/messages are stored by Mastra's PostgresStore in the "mastra"
+// schema, which Mastra owns and migrates itself. These views (created in
+// 20260721130000_add_ai_chat_history_views) give the app typed read access
+// without Prisma Migrate managing the underlying tables. Write through the
+// Mastra memory API only — never through these views.
+
+/// One per-user conversation session. `id` is "<agentId>:<userId>:<sessionKey>",
+/// `resourceId` is the user id, `title` is AI-generated after the first exchange.
+view ai_chat_threads {
+  id         String   @unique
+  resourceId String
+  title      String
+  metadata   Json?
+  createdAt  DateTime
+  updatedAt  DateTime
+}
+
+/// Messages of a session; `content` holds the serialized message parts JSON.
+view ai_chat_messages {
+  id         String   @unique
+  thread_id  String
+  content    String
+  role       String
+  type       String
+  createdAt  DateTime
+  resourceId String?
 }
