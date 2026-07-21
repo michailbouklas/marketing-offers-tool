@@ -63,13 +63,22 @@ proven query patterns.
 - Do not show the SQL unless the user asks for it.
 `.trim();
 
+const globalForInvoicesMemory = globalThis as typeof globalThis & {
+  invoicesMemoryCache?: Memory;
+};
+
 /**
  * Conversation memory shared across requests: threads/messages live in the
  * app's PostgreSQL database under the dedicated "mastra" schema so Prisma
  * migrations (which manage "public") never see drift.
+ *
+ * Resolved lazily (the agent config takes a function) so importing this
+ * module never touches DATABASE_URL — SvelteKit imports server modules
+ * during `vite build`, where no env is available (e.g. the Docker builder
+ * stage). Same reasoning as the lazy proxy in $lib/server/prisma.
  */
-function createMemory(): Memory {
-  return new Memory({
+function getInvoicesMemory(): Memory {
+  globalForInvoicesMemory.invoicesMemoryCache ??= new Memory({
     storage: new PostgresStore({
       id: "ai-chat-memory",
       connectionString: getDatabaseUrl(),
@@ -86,6 +95,8 @@ function createMemory(): Memory {
       },
     },
   });
+
+  return globalForInvoicesMemory.invoicesMemoryCache;
 }
 
 /**
@@ -98,5 +109,5 @@ export const invoicesAgent = new Agent({
   instructions,
   model: getAiChatEnv().AI_CHAT_MODEL,
   tools: { queryInvoicesSql },
-  memory: createMemory(),
+  memory: () => getInvoicesMemory(),
 });

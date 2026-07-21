@@ -134,11 +134,13 @@ function createMastra(): Mastra {
  * (rebuilding on every reload would leak PostgresStore/pg pools). The flip
  * side: agent/memory config changes do NOT hot-reload — restart the dev
  * server after editing anything under src/lib/server/mastra.
+ *
+ * Only ever call this at request time — never at module scope. SvelteKit
+ * imports server modules during `vite build` (no env/DB available, e.g. the
+ * Docker builder stage), so constructing Mastra eagerly breaks the build.
+ * The `mastra dev` playground gets its eager export from ./dev/index.ts.
  */
 export function getMastra(): Mastra {
   globalForMastra.mastraCache ??= createMastra();
   return globalForMastra.mastraCache;
 }
-
-/** Named export required by the `mastra dev` playground (bun run mastra:dev). */
-export const mastra = getMastra();

@@ -1,6 +1,3 @@
-{"file":"C:/Users/mbouklas/.claude/plans/for-image-generation-models-moonlit-graham.md","action":"Write","timestamp":"2026-06-04T11:32:06Z","important":false}
-{"file":"src/routes/image-generator/structured-prompt-types.ts","action":"Write","timestamp":"2026-06-04T11:34:35Z","important":false}
-{"file":"src/routes/image-generator/ChipInput.svelte","action":"Write","timestamp":"2026-06-04T11:34:59Z","important":false}
 {"file":"src/routes/image-generator/SelectWithCustom.svelte","action":"Write","timestamp":"2026-06-04T11:36:19Z","important":false}
 {"file":"src/routes/image-generator/StructuredPromptBuilderDialog.svelte","action":"Write","timestamp":"2026-06-04T11:37:11Z","important":false}
 {"file":"src/routes/image-generator/+page.svelte","action":"Edit","timestamp":"2026-06-04T11:37:20Z","important":false}
@@ -499,3 +496,6 @@
 {"file":"src/lib/server/mastra/env.ts","action":"Edit","timestamp":"2026-07-21T13:05:28Z","important":false}
 {"file":"src/lib/server/mastra/index.ts","action":"Edit","timestamp":"2026-07-21T13:06:05Z","important":false}
 {"file":"C:/Users/mbouklas/.claude/projects/C--work-marketing-offers-tool/memory/ai-chat-mastra.md","action":"Edit","timestamp":"2026-07-21T13:12:55Z","important":false}
+{"file":"src/lib/server/mastra/agents/invoices-agent.ts","action":"Edit","timestamp":"2026-07-21T13:25:29Z","important":false}
+{"file":"src/lib/server/mastra/dev/index.ts","action":"Write","timestamp":"2026-07-21T13:26:39Z","important":false}
+{"file":"package.json","action":"Edit","timestamp":"2026-07-21T13:27:50Z","important":false}
