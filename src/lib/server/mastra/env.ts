@@ -154,3 +154,61 @@ export function getClickhouseEnv(): AiChatClickhouseEnv | null {
     database: readEnv("CLICKHOUSE_DATABASE") ?? "default",
   };
 }
+
+// The database name ends up interpolated into connection config; keep it a
+// strict identifier so a malformed env value can never smuggle SQL, mirroring
+// src/lib/server/google-reviews-db.ts.
+const IDENTIFIER_PATTERN = /^[A-Za-z0-9_]+$/;
+
+/**
+ * Same ClickHouse server as {@link getClickhouseEnv} but pointed at the
+ * google-maps-scraper replica database, so the google-reviews SQL tool's
+ * unqualified table names resolve there. Returns null when unconfigured so
+ * the tool can fail soft at execute time.
+ */
+export function getGoogleReviewsClickhouseEnv(): AiChatClickhouseEnv | null {
+  const base = getClickhouseEnv();
+
+  if (!base) {
+    return null;
+  }
+
+  const database =
+    readEnv("CLICKHOUSE_GOOGLE_REVIEWS_DATABASE") ??
+    "google_maps_scraper_replica";
+
+  if (!IDENTIFIER_PATTERN.test(database)) {
+    throw new Error(
+      `Invalid CLICKHOUSE_GOOGLE_REVIEWS_DATABASE: must match ${IDENTIFIER_PATTERN}`,
+    );
+  }
+
+  return { ...base, database };
+}
+
+/**
+ * Same ClickHouse server as {@link getClickhouseEnv} but pointed at the
+ * aggregator-scraper replica database, so the competition SQL tool's
+ * unqualified table names resolve there. Reads the same env var the app's
+ * competition dashboards use (src/lib/server/competition-db.ts) — one config
+ * knob for both. Returns null when unconfigured so the tool can fail soft at
+ * execute time.
+ */
+export function getCompetitionClickhouseEnv(): AiChatClickhouseEnv | null {
+  const base = getClickhouseEnv();
+
+  if (!base) {
+    return null;
+  }
+
+  const database =
+    readEnv("CLICKHOUSE_COMPETITION_DATABASE") ?? "aggregator_scraper_replica";
+
+  if (!IDENTIFIER_PATTERN.test(database)) {
+    throw new Error(
+      `Invalid CLICKHOUSE_COMPETITION_DATABASE: must match ${IDENTIFIER_PATTERN}`,
+    );
+  }
+
+  return { ...base, database };
+}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import ActiveOffersByAggregatorWidget from "$lib/components/competition/widgets/active-offers-by-aggregator-widget.svelte";
   import ActiveOffersByDayByAggregatorWidget from "$lib/components/competition/widgets/active-offers-by-day-by-aggregator-widget.svelte";
   import MyNotificationsWidget from "$lib/components/competition/widgets/my-notifications-widget.svelte";
@@ -71,5 +72,11 @@
       <ActiveOffersByAggregatorWidget data={stats.activeOffersByProcessor} />
       <RecentOfferChangesWidget data={stats.recentChanges} />
     </section>
+
+    <ChatWidget
+      agentId="competition-agent"
+      title="Competition Assistant"
+      greeting="Hi! Ask me anything about the competition — active offers, competitor menus and prices, offer trends…"
+    />
   </main>
 </div>

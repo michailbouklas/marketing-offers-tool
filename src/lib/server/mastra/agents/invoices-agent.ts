@@ -1,7 +1,6 @@
 import { Agent } from "@mastra/core/agent";
-import { Memory } from "@mastra/memory";
-import { PostgresStore } from "@mastra/pg";
-import { getAiChatEnv, getDatabaseUrl } from "../env";
+import { getAiChatEnv } from "../env";
+import { getChatMemory } from "../memory";
 import { queryInvoicesSql } from "../tools/query-invoices-sql";
 import { sharedTools } from "../tools/shared";
 
@@ -77,42 +76,6 @@ proven query patterns.
 - Do not show the SQL unless the user asks for it.
 `.trim();
 
-const globalForInvoicesMemory = globalThis as typeof globalThis & {
-  invoicesMemoryCache?: Memory;
-};
-
-/**
- * Conversation memory shared across requests: threads/messages live in the
- * app's PostgreSQL database under the dedicated "mastra" schema so Prisma
- * migrations (which manage "public") never see drift.
- *
- * Resolved lazily (the agent config takes a function) so importing this
- * module never touches DATABASE_URL — SvelteKit imports server modules
- * during `vite build`, where no env is available (e.g. the Docker builder
- * stage). Same reasoning as the lazy proxy in $lib/server/prisma.
- */
-function getInvoicesMemory(): Memory {
-  globalForInvoicesMemory.invoicesMemoryCache ??= new Memory({
-    storage: new PostgresStore({
-      id: "ai-chat-memory",
-      connectionString: getDatabaseUrl(),
-      schemaName: "mastra",
-    }),
-    options: {
-      lastMessages: 20,
-      // Titles label the per-user session list in the chat widget. Pinned to
-      // a cheap model regardless of AI_CHAT_MODEL.
-      generateTitle: {
-        model: "openai/gpt-4o-mini",
-        instructions:
-          "Generate a concise title (max 6 words) summarizing what the user is asking about. Plain text, no quotes.",
-      },
-    },
-  });
-
-  return globalForInvoicesMemory.invoicesMemoryCache;
-}
-
 /**
  * Chat agent for /aggregator-offers/invoices. Registered on the shared
  * Mastra instance in ../index.ts; exposed to the UI via the chat registry.
@@ -123,5 +86,5 @@ export const invoicesAgent = new Agent({
   instructions,
   model: getAiChatEnv().AI_CHAT_MODEL,
   tools: { ...sharedTools, queryInvoicesSql },
-  memory: () => getInvoicesMemory(),
+  memory: () => getChatMemory(),
 });

@@ -9,4 +9,10 @@ export const chatAgents: Record<string, { permissions: AppPermissions }> = {
   "invoices-agent": {
     permissions: { aggregatorInvoices: ["view"] },
   },
+  "google-reviews-agent": {
+    permissions: { googleReviews: ["view"] },
+  },
+  "competition-agent": {
+    permissions: { competition: ["view"] },
+  },
 };

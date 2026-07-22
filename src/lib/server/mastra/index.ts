@@ -14,6 +14,8 @@ import {
 import { PostgresStore } from "@mastra/pg";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { competitionAgent } from "./agents/competition-agent";
+import { googleReviewsAgent } from "./agents/google-reviews-agent";
 import { invoicesAgent } from "./agents/invoices-agent";
 import { getAiChatEnv, getClickhouseEnv, getDatabaseUrl } from "./env";
 
@@ -110,7 +112,11 @@ function createMastra(): Mastra {
 
   return new Mastra({
     workspace,
-    agents: { "invoices-agent": invoicesAgent },
+    agents: {
+      "invoices-agent": invoicesAgent,
+      "google-reviews-agent": googleReviewsAgent,
+      "competition-agent": competitionAgent,
+    },
     storage: createStorage(),
     observability: new Observability({
       configs: {

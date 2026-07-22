@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import AvgRatingPerDayChart from "$lib/components/google-reviews/widgets/avg-rating-per-day-chart.svelte";
   import ReviewsPerDayChart from "$lib/components/google-reviews/widgets/reviews-per-day-chart.svelte";
   import SentimentDistributionWidget from "$lib/components/google-reviews/widgets/sentiment-distribution-widget.svelte";
@@ -75,5 +76,11 @@
     </section>
 
     <TopBusinessesWidget data={stats.topBusinesses} />
+
+    <ChatWidget
+      agentId="google-reviews-agent"
+      title="Google Reviews Assistant"
+      greeting="Hi! Ask me anything about the Google reviews — ratings, sentiment, businesses, negative-review categories…"
+    />
   </main>
 </div>
