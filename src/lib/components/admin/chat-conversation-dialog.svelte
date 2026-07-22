@@ -1,4 +1,9 @@
 <script lang="ts">
+  import {
+    EXCEL_TOOL_PART_TYPE,
+    excelErrorText,
+    excelOutput,
+  } from "$lib/components/ai-chat/excel-tool";
   import { renderMarkdown } from "$lib/components/ai-chat/markdown";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
@@ -11,6 +16,7 @@
     type UserChatThread,
   } from "$lib/services/chat-usage";
   import DatabaseIcon from "@lucide/svelte/icons/database";
+  import FileSpreadsheetIcon from "@lucide/svelte/icons/file-spreadsheet";
   import { SvelteMap } from "svelte/reactivity";
 
   let {
@@ -135,6 +141,29 @@
                       <!-- eslint-disable-next-line svelte/no-at-html-tags — sanitized in renderMarkdown -->
                       {@html renderMarkdown(part.text)}
                     </div>
+                  {:else if part.type === EXCEL_TOOL_PART_TYPE}
+                    {@const output = excelOutput(part)}
+                    {@const errorText = excelErrorText(part)}
+                    {#if output?.ok}
+                      <a
+                        href={output.downloadUrl}
+                        download={output.filename}
+                        class="bg-muted hover:bg-accent inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium"
+                      >
+                        <FileSpreadsheetIcon class="text-primary size-3.5" />
+                        {output.filename}
+                      </a>
+                    {:else}
+                      <p class="text-muted-foreground text-xs">
+                        Excel export {output || errorText
+                          ? "failed"
+                          : "did not complete"}{errorText
+                          ? `: ${errorText}`
+                          : output && !output.ok
+                            ? `: ${output.error}`
+                            : ""}
+                      </p>
+                    {/if}
                   {:else if part.type.startsWith("tool-") || part.type === "dynamic-tool"}
                     <p
                       class="text-muted-foreground flex items-center gap-1.5 text-xs"

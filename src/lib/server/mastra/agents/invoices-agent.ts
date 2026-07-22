@@ -3,6 +3,7 @@ import { Memory } from "@mastra/memory";
 import { PostgresStore } from "@mastra/pg";
 import { getAiChatEnv, getDatabaseUrl } from "../env";
 import { queryInvoicesSql } from "../tools/query-invoices-sql";
+import { sharedTools } from "../tools/shared";
 
 const instructions = `
 You are the aggregator-invoices assistant inside an internal marketing tool.
@@ -52,6 +53,19 @@ proven query patterns.
   real zero or missing data.
 - When the user does not specify an aggregator, cover both Wolt and Bolt and
   say so.
+
+## Excel export
+
+- When the user asks to save, export, or download results as an Excel/xlsx
+  file ("save this as excel"), call the generateExcel tool with the tabular
+  data already retrieved in this conversation (run the query again first if
+  the data is not at hand). Use a descriptive filename.
+- For styling beyond the automatic bold headers (number formats, formulas,
+  totals, freeze panes, charts), load the "excel-generation" skill first and
+  pass officecli batch items via extraCommands.
+- Never fabricate or rewrite the download URL. After the tool succeeds,
+  briefly confirm the file is ready — the chat UI renders the download button
+  itself, so do not repeat the link in your reply.
 
 ## Output
 
@@ -108,6 +122,6 @@ export const invoicesAgent = new Agent({
   name: "Invoices Assistant",
   instructions,
   model: getAiChatEnv().AI_CHAT_MODEL,
-  tools: { queryInvoicesSql },
+  tools: { ...sharedTools, queryInvoicesSql },
   memory: () => getInvoicesMemory(),
 });

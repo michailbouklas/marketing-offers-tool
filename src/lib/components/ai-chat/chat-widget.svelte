@@ -6,8 +6,14 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
+  import {
+    EXCEL_TOOL_PART_TYPE,
+    excelErrorText,
+    excelOutput,
+  } from "$lib/components/ai-chat/excel-tool";
   import { renderMarkdown } from "$lib/components/ai-chat/markdown";
   import DatabaseIcon from "@lucide/svelte/icons/database";
+  import FileSpreadsheetIcon from "@lucide/svelte/icons/file-spreadsheet";
   import HistoryIcon from "@lucide/svelte/icons/history";
   import Maximize2Icon from "@lucide/svelte/icons/maximize-2";
   import Minimize2Icon from "@lucide/svelte/icons/minimize-2";
@@ -312,6 +318,31 @@
                     <!-- eslint-disable-next-line svelte/no-at-html-tags — sanitized in renderMarkdown -->
                     {@html renderMarkdown(part.text)}
                   </div>
+                {:else if part.type === EXCEL_TOOL_PART_TYPE}
+                  {@const output = excelOutput(part)}
+                  {@const errorText = excelErrorText(part)}
+                  {#if output?.ok}
+                    <a
+                      href={output.downloadUrl}
+                      download={output.filename}
+                      class="bg-muted hover:bg-accent inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium"
+                    >
+                      <FileSpreadsheetIcon class="text-primary size-3.5" />
+                      {output.filename}
+                    </a>
+                  {:else if output || errorText}
+                    <p class="text-destructive text-xs">
+                      Excel export failed: {errorText ??
+                        (output && !output.ok ? output.error : "unknown error")}
+                    </p>
+                  {:else}
+                    <p
+                      class="text-muted-foreground flex animate-pulse items-center gap-1.5 text-xs"
+                    >
+                      <FileSpreadsheetIcon class="size-3" />
+                      Generating Excel…
+                    </p>
+                  {/if}
                 {:else if part.type.startsWith("tool-") || part.type === "dynamic-tool"}
                   <p
                     class="text-muted-foreground flex items-center gap-1.5 text-xs"

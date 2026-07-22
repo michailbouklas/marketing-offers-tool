@@ -46,7 +46,14 @@ export type UserChatAgentGroup = {
 export type ChatConversationMessage = {
   id?: string;
   role: string;
-  parts: { type: string; text?: string }[];
+  parts: {
+    type: string;
+    text?: string;
+    /** Tool parts: lifecycle state, result, and thrown-error text. */
+    state?: string;
+    output?: unknown;
+    errorText?: string;
+  }[];
 };
 
 export type ChatConversationResponse = {

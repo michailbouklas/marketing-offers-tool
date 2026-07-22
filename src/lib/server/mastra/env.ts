@@ -101,6 +101,33 @@ export function getDatabaseUrl(): string {
   return url;
 }
 
+/**
+ * Supabase Storage config for the shared object store, mirroring
+ * `getStorageEnv()` in src/lib/server/env.ts. When any value is missing the
+ * store falls back to the local filesystem under {@link getUploadsDir}.
+ */
+export function getStorageEnv(): {
+  SUPABASE_URL?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
+  SUPABASE_STORAGE_BUCKET?: string;
+} {
+  return {
+    SUPABASE_URL: readEnv("SUPABASE_URL"),
+    SUPABASE_SERVICE_ROLE_KEY: readEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    SUPABASE_STORAGE_BUCKET: readEnv("SUPABASE_STORAGE_BUCKET"),
+  };
+}
+
+/** Local-filesystem storage root; same default as the image-generator env. */
+export function getUploadsDir(): string {
+  return readEnv("UPLOADS_DIR") ?? "./uploads";
+}
+
+/** Path to the officecli binary; defaults to resolving via PATH. */
+export function getOfficeCliPath(): string {
+  return readEnv("OFFICECLI_PATH") ?? "officecli";
+}
+
 export interface AiChatClickhouseEnv {
   url: string;
   username: string;
