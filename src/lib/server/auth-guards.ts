@@ -106,6 +106,23 @@ export async function requireSuperUser(event: RequestEvent) {
 }
 
 /**
+ * API guard: throws 403 unless the user holds the `superUser` role. Coarse,
+ * role-based counterpart of `requireSuperUser` for API routes (which must
+ * error rather than redirect).
+ */
+export async function requireApiSuperUser(event: RequestEvent) {
+  const { user, session } = requireAuthenticatedApiUser(event);
+
+  const role = await getAuthenticatedUserRole(event);
+
+  if (!hasAnyRole(role, [superUserRole])) {
+    error(403, "Forbidden");
+  }
+
+  return { session, user };
+}
+
+/**
  * Returns whether the current user's role(s) grant every requested
  * permission. The user's `role` may be a comma-separated list of roles
  * (Better Auth's native multi-role form); `userHasPermission` evaluates the

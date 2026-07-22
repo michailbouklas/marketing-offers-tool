@@ -1,4 +1,8 @@
-import { hasPermission, requireAdminSection } from "$lib/server/auth-guards";
+import {
+  hasPermission,
+  hasSuperUserRole,
+  requireAdminSection,
+} from "$lib/server/auth-guards";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
@@ -13,6 +17,7 @@ export const load: PageServerLoad = async (event) => {
     metrics,
     promptGallery,
     urlsToScrape,
+    chatUsage,
   ] = await Promise.all([
     hasPermission(event, { submission: ["approve"] }),
     hasPermission(event, { submission: ["approve"] }),
@@ -22,6 +27,7 @@ export const load: PageServerLoad = async (event) => {
     hasPermission(event, { metrics: ["view"] }),
     hasPermission(event, { promptGallery: ["manage"] }),
     hasPermission(event, { urlsToScrape: ["manage"] }),
+    hasSuperUserRole(event),
   ]);
 
   return {
@@ -34,6 +40,7 @@ export const load: PageServerLoad = async (event) => {
       metrics,
       promptGallery,
       urlsToScrape,
+      chatUsage,
     },
   };
 };

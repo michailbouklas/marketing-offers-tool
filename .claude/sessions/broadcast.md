@@ -107,13 +107,17 @@
 📁 `C:\work\marketing-offers-tool\prisma\merchant-scrapes\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ
 
 ## 2026-07-21T11:54:37Z [4bab69a3-473]
+
 📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ
 
 ## 2026-07-21T11:55:09Z [4bab69a3-473]
+
 📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ
 
 ## 2026-07-21T11:56:07Z [4bab69a3-473]
+
 📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ
 
 ## 2026-07-21T11:56:29Z [4bab69a3-473]
+
 📁 `C:\work\marketing-offers-tool\prisma\schema.prisma` が変更されました: パターン 'schema.prisma' にマッチ

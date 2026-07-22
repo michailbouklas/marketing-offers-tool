@@ -8,6 +8,7 @@
   import LightbulbIcon from "@lucide/svelte/icons/lightbulb";
   import ActivityIcon from "@lucide/svelte/icons/activity";
   import LinkIcon from "@lucide/svelte/icons/link";
+  import MessageSquareIcon from "@lucide/svelte/icons/message-square";
   import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
   import type { Component } from "svelte";
   import type { PageData } from "./$types";
@@ -78,6 +79,14 @@
         "See per-user activity such as last login, active sessions, and account age across every account.",
       icon: ActivityIcon,
       accessKey: "metrics",
+    },
+    {
+      href: "/admin/chat-usage",
+      title: "AI chat usage",
+      description:
+        "See every AI conversation across the tool — totals, per-agent and per-user breakdowns, and full transcripts.",
+      icon: MessageSquareIcon,
+      accessKey: "chatUsage",
     },
     {
       href: "/admin/urls-to-scrape",
