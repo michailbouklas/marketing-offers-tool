@@ -1,10 +1,15 @@
 import { Agent } from "@mastra/core/agent";
+import type { RequestContext } from "@mastra/core/request-context";
+import {
+  BRAND_SCOPE_NAMES_RUNTIME_KEY,
+  BRAND_SCOPE_RUNTIME_KEY,
+} from "../chat-registry";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
 import { querySalesSql } from "../tools/query-sales-sql";
 import { sharedTools } from "../tools/shared";
 
-const instructions = `
+const baseInstructions = `
 You are the sales assistant inside an internal marketing tool for PHC
 Franchised Restaurants (Cyprus). You help the team explore the group's POS
 sales data — revenue, transactions, items, brands, stores, channels, offers,
@@ -105,14 +110,81 @@ question touches its area:
 - Do not show the SQL unless the user asks for it.
 `.trim();
 
+/** A brand as published by the chat endpoint: warehouse code + display name. */
+type ScopedBrand = { alias: string; name: string };
+
+function resolveStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((entry): entry is string => typeof entry === "string");
+}
+
+/**
+ * Brand scope is injected at request time by the chat endpoint via
+ * requestContext (never trusted from the client). Aliases and names are
+ * index-aligned; a missing names array falls back to the aliases.
+ */
+function resolveScopedBrands(requestContext?: RequestContext): ScopedBrand[] {
+  const aliases = resolveStringArray(
+    requestContext?.get(BRAND_SCOPE_RUNTIME_KEY),
+  );
+  const names = resolveStringArray(
+    requestContext?.get(BRAND_SCOPE_NAMES_RUNTIME_KEY),
+  );
+
+  return aliases.map((alias, index) => ({
+    alias,
+    name: names[index] ?? alias,
+  }));
+}
+
+function buildBrandScopeSection(brands: ScopedBrand[]): string {
+  if (brands.length === 0) {
+    return [
+      "## Brand scope",
+      "",
+      "The current user has no assigned brands. Tell them there is no sales",
+      "data available to them and do NOT run any query or call any tool.",
+    ].join("\n");
+  }
+
+  const displayList = brands
+    .map((brand) => `${brand.name} (\`${brand.alias}\`)`)
+    .join(", ");
+  const aliasIn = brands
+    .map((brand) => `'${brand.alias.toLowerCase()}'`)
+    .join(", ");
+
+  return [
+    "## Brand scope",
+    "",
+    `You are restricted to these brands ONLY: ${displayList}.`,
+    "",
+    `- EVERY query you run MUST filter to these brands — add`,
+    `  \`lower(brand) IN (${aliasIn})\` (both tables carry \`brand\`). Never`,
+    "  report, aggregate, or reveal data for any brand outside this list,",
+    "  even if asked, and never run a query without this brand filter.",
+    "- If the user asks about a brand that is NOT in this list, reply with",
+    '  exactly: "You\'re not assigned to this brand" — and do NOT call any',
+    "  tool or run any query for that request.",
+    '- If the user asks which brands they have (e.g. "which are my brands"),',
+    "  answer with the list above only — no database work is needed.",
+  ].join("\n");
+}
+
 /**
  * Chat agent for /sales/chat. Registered on the shared Mastra instance
- * in ../index.ts; exposed to the UI via the chat registry.
+ * in ../index.ts; exposed to the UI via the chat registry (brandScoped).
  */
 export const salesAgent = new Agent({
   id: "sales-agent",
   name: "Sales Assistant",
-  instructions,
+  instructions: ({ requestContext }) => {
+    const brands = resolveScopedBrands(requestContext);
+    return `${baseInstructions}\n\n${buildBrandScopeSection(brands)}`;
+  },
   model: getAiChatEnv().AI_CHAT_MODEL,
   tools: { ...sharedTools, querySalesSql },
   memory: () => getChatMemory(),

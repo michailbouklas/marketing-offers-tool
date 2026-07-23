@@ -27,6 +27,13 @@ export type ChatAgentConfig = {
 export const BRAND_SCOPE_RUNTIME_KEY = "allowedBrandAliases";
 
 /**
+ * Companion RequestContext key carrying the display names of the same brands
+ * (index-aligned with the aliases). Brand-scoped agents use it to answer
+ * "which are my brands?" with friendly names instead of raw codes.
+ */
+export const BRAND_SCOPE_NAMES_RUNTIME_KEY = "allowedBrandNames";
+
+/**
  * Chat agents the API is allowed to route to, and the permission (if any) a
  * user must hold to talk to each one. The chat widget picks the agent for its
  * section; this map is the server-side allowlist backing that routing.
@@ -47,7 +54,10 @@ export const chatAgents: Record<string, ChatAgentConfig> = {
   "offers-data-quality-agent": {
     brandScoped: true,
   },
+  // Brand-scoped on top of the permission gate: answers are limited to the
+  // caller's assigned brands (superUser/admin get all active brands).
   "sales-agent": {
     permissions: { sales: ["view"] },
+    brandScoped: true,
   },
 };

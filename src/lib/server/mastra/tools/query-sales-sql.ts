@@ -1,11 +1,13 @@
 import { createClient, type ClickHouseClient } from "@clickhouse/client";
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
+import { BRAND_SCOPE_RUNTIME_KEY } from "../chat-registry";
 import { getSalesClickhouseEnv } from "../env";
 
 const MAX_ROWS = 200;
 const MAX_EXECUTION_TIME_S = 15;
 const REQUEST_TIMEOUT_MS = 20_000;
+const KNOWN_BRANDS_TTL_MS = 10 * 60_000;
 
 /**
  * Verbs, table functions, and escape hatches that must never appear in
@@ -40,6 +42,7 @@ export type SalesSqlResult =
 
 const globalForSalesSql = globalThis as typeof globalThis & {
   salesSqlClient?: ClickHouseClient;
+  salesKnownBrands?: { brands: Set<string>; fetchedAt: number };
 };
 
 /**
@@ -192,15 +195,138 @@ function toSerializable(value: unknown, columnType?: string): unknown {
   return value;
 }
 
-/** Executes a validated read-only query with row cap + execution timeout. */
+/**
+ * All distinct brand codes present in the warehouse, cached with a short TTL.
+ * Used to tell brand string literals apart from other literals ('Delivery',
+ * dates, item names) when validating the brand scope. Returns null when the
+ * lookup fails so the caller can skip literal classification (the
+ * filter-presence check below still applies).
+ */
+async function getKnownBrandCodes(
+  client: ClickHouseClient,
+): Promise<Set<string> | null> {
+  const cached = globalForSalesSql.salesKnownBrands;
+
+  if (cached && Date.now() - cached.fetchedAt < KNOWN_BRANDS_TTL_MS) {
+    return cached.brands;
+  }
+
+  try {
+    const result = await client.query({
+      query: "SELECT DISTINCT lower(brand) AS brand FROM transactions",
+      format: "JSON",
+    });
+    const payload = (await result.json()) as { data: { brand: string }[] };
+    const brands = new Set(
+      payload.data
+        .map((row) => row.brand.trim())
+        .filter((brand) => brand.length > 0),
+    );
+
+    globalForSalesSql.salesKnownBrands = { brands, fetchedAt: Date.now() };
+    return brands;
+  } catch (cause) {
+    console.error(
+      `[sales-sql] known-brands lookup failed: ${cause instanceof Error ? cause.message : String(cause)}`,
+    );
+    return cached?.brands ?? null;
+  }
+}
+
+/** Single-quoted string literals in the SQL, unescaped ('') and lowercased. */
+function extractStringLiterals(sql: string): string[] {
+  const literals: string[] = [];
+
+  for (const match of sql.matchAll(/'((?:[^']|'')*)'/g)) {
+    const literal = match[1].replaceAll("''", "'").trim().toLowerCase();
+
+    if (literal.length > 0) {
+      literals.push(literal);
+    }
+  }
+
+  return literals;
+}
+
+/**
+ * Hard brand-scope guardrail, defense-in-depth on top of the agent's
+ * instructions: any literal that names a known brand outside the allowed set
+ * is rejected, and every query must reference at least one allowed brand (the
+ * instructions mandate a `lower(brand) IN (...)` filter on every query).
+ * Literal scanning is not a SQL parser — e.g. `brand != 'x'` with an allowed
+ * literal elsewhere passes — it targets the realistic leak vectors.
+ */
+function validateBrandScope(
+  sql: string,
+  allowedBrands: string[],
+  knownBrands: Set<string> | null,
+): { ok: true } | { ok: false; error: string } {
+  const allowed = new Set(
+    allowedBrands.map((brand) => brand.trim().toLowerCase()),
+  );
+  const literals = extractStringLiterals(sql);
+
+  if (knownBrands) {
+    for (const literal of literals) {
+      if (knownBrands.has(literal) && !allowed.has(literal)) {
+        return {
+          ok: false,
+          error:
+            `Brand '${literal}' is not among the user's assigned brands. ` +
+            `Do not retry this query. Reply to the user with exactly: ` +
+            `You're not assigned to this brand`,
+        };
+      }
+    }
+  }
+
+  if (!literals.some((literal) => allowed.has(literal))) {
+    const aliasIn = [...allowed].map((brand) => `'${brand}'`).join(", ");
+    return {
+      ok: false,
+      error:
+        `Every query must be restricted to the user's assigned brands. ` +
+        `Add a brand filter such as lower(brand) IN (${aliasIn}) and retry.`,
+    };
+  }
+
+  return { ok: true };
+}
+
+/**
+ * Executes a validated read-only query with row cap + execution timeout,
+ * restricted to the caller's assigned brands. `allowedBrands` comes from the
+ * chat endpoint via requestContext — undefined (no scope published) fails
+ * closed; in the `mastra dev` playground set `allowedBrandAliases` in the
+ * runtime-context panel to test.
+ */
 export async function runReadOnlySalesQuery(
   sql: string,
+  allowedBrands: string[] | undefined,
 ): Promise<SalesSqlResult> {
   const validation = validateReadOnlySalesSql(sql);
 
   if (!validation.ok) {
     console.warn(`[sales-sql] rejected: ${validation.error}\n${sql}`);
     return { ok: false, error: validation.error };
+  }
+
+  if (allowedBrands === undefined) {
+    return {
+      ok: false,
+      error:
+        "Brand scope is missing for this request — the query was not run. " +
+        "Tell the user their sales data cannot be accessed right now.",
+    };
+  }
+
+  if (allowedBrands.length === 0) {
+    return {
+      ok: false,
+      error:
+        "The current user has no assigned brands — no sales data is " +
+        "available to them. Do not run any query.",
+    };
   }
 
   const client = getClient();
@@ -211,6 +337,19 @@ export async function runReadOnlySalesQuery(
       error:
         "The sales database is not configured (CLICKHOUSE_URL is missing).",
     };
+  }
+
+  const brandScope = validateBrandScope(
+    validation.sql,
+    allowedBrands,
+    await getKnownBrandCodes(client),
+  );
+
+  if (!brandScope.ok) {
+    console.warn(
+      `[sales-sql] brand-scope rejected: ${brandScope.error}\n${sql}`,
+    );
+    return { ok: false, error: brandScope.error };
   }
 
   console.log(`[sales-sql] query:\n${validation.sql}`);
@@ -270,6 +409,9 @@ export const querySalesSql = createTool({
     "transactions.pk = transaction_details.transactionid). " +
     "Both tables are partitioned by month on their date column — ALWAYS include " +
     "a date filter so partitions can be pruned. " +
+    "Queries are restricted to the user's assigned brands: every query must " +
+    "include the brand filter from the Brand scope section, and queries " +
+    "naming any other brand are rejected. " +
     `Returns at most ${MAX_ROWS} rows — use aggregations (sum, count, GROUP BY) for totals instead of fetching raw rows.`,
   inputSchema: z.object({
     sql: z
@@ -281,7 +423,14 @@ export const querySalesSql = createTool({
           "WHERE tran_date >= toDate('2026-01-01').",
       ),
   }),
-  execute: async ({ sql }) => {
-    return runReadOnlySalesQuery(sql);
+  execute: async ({ sql }, context) => {
+    // Brand scope is published by the chat endpoint (never client-supplied);
+    // anything other than a string array fails closed inside the runner.
+    const raw = context?.requestContext?.get(BRAND_SCOPE_RUNTIME_KEY);
+    const allowedBrands = Array.isArray(raw)
+      ? raw.filter((value): value is string => typeof value === "string")
+      : undefined;
+
+    return runReadOnlySalesQuery(sql, allowedBrands);
   },
 });
