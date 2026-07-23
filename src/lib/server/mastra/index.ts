@@ -17,6 +17,7 @@ import { dirname, join } from "node:path";
 import { competitionAgent } from "./agents/competition-agent";
 import { googleReviewsAgent } from "./agents/google-reviews-agent";
 import { invoicesAgent } from "./agents/invoices-agent";
+import { offersDataQualityAgent } from "./agents/offers-data-quality-agent";
 import { salesAgent } from "./agents/sales-agent";
 import { getAiChatEnv, getClickhouseEnv, getDatabaseUrl } from "./env";
 
@@ -117,6 +118,7 @@ function createMastra(): Mastra {
       "invoices-agent": invoicesAgent,
       "google-reviews-agent": googleReviewsAgent,
       "competition-agent": competitionAgent,
+      "offers-data-quality-agent": offersDataQualityAgent,
       "sales-agent": salesAgent,
     },
     storage: createStorage(),
