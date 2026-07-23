@@ -212,3 +212,28 @@ export function getCompetitionClickhouseEnv(): AiChatClickhouseEnv | null {
 
   return { ...base, database };
 }
+
+/**
+ * Same ClickHouse server as {@link getClickhouseEnv} but pointed at the
+ * database holding the Novasero POS sales tables (transactions,
+ * transaction_details), so the sales SQL tool's unqualified table names
+ * resolve there. Returns null when unconfigured so the tool can fail soft at
+ * execute time.
+ */
+export function getSalesClickhouseEnv(): AiChatClickhouseEnv | null {
+  const base = getClickhouseEnv();
+
+  if (!base) {
+    return null;
+  }
+
+  const database = readEnv("CLICKHOUSE_SALES_DATABASE") ?? "default";
+
+  if (!IDENTIFIER_PATTERN.test(database)) {
+    throw new Error(
+      `Invalid CLICKHOUSE_SALES_DATABASE: must match ${IDENTIFIER_PATTERN}`,
+    );
+  }
+
+  return { ...base, database };
+}

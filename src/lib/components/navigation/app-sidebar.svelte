@@ -7,6 +7,7 @@
     competitionRoles,
     googleReviewsRoles,
     hasAnyRole,
+    salesRoles,
     type UserRole,
   } from "$lib/auth/roles";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
@@ -21,6 +22,7 @@
   import TrendingUpIcon from "@lucide/svelte/icons/trending-up";
   import StarIcon from "@lucide/svelte/icons/star";
   import GaugeIcon from "@lucide/svelte/icons/gauge";
+  import ChartColumnIcon from "@lucide/svelte/icons/chart-column";
   import type { Component } from "svelte";
 
   // `roles` lists the role(s) that may see the item. Omit it for items visible
@@ -163,6 +165,12 @@
           roles: ["admin", "superUser"],
         },
       ],
+    },
+    {
+      href: "/sales/chat",
+      label: "Sales Chat",
+      icon: ChartColumnIcon,
+      roles: salesRoles,
     },
   ];
 

@@ -17,6 +17,7 @@ import { dirname, join } from "node:path";
 import { competitionAgent } from "./agents/competition-agent";
 import { googleReviewsAgent } from "./agents/google-reviews-agent";
 import { invoicesAgent } from "./agents/invoices-agent";
+import { salesAgent } from "./agents/sales-agent";
 import { getAiChatEnv, getClickhouseEnv, getDatabaseUrl } from "./env";
 
 const globalForMastra = globalThis as typeof globalThis & {
@@ -116,6 +117,7 @@ function createMastra(): Mastra {
       "invoices-agent": invoicesAgent,
       "google-reviews-agent": googleReviewsAgent,
       "competition-agent": competitionAgent,
+      "sales-agent": salesAgent,
     },
     storage: createStorage(),
     observability: new Observability({

@@ -15,4 +15,7 @@ export const chatAgents: Record<string, { permissions: AppPermissions }> = {
   "competition-agent": {
     permissions: { competition: ["view"] },
   },
+  "sales-agent": {
+    permissions: { sales: ["view"] },
+  },
 };

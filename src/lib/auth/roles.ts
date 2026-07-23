@@ -87,6 +87,19 @@ export const aggregatorInvoicesRoles: UserRole[] = [
   superUserRole,
 ];
 
+/**
+ * Roles that may access the `/sales/chat` section (AI chat over the Novasero
+ * POS sales data in ClickHouse). Like the KPI/invoices sections, `admin` is
+ * included explicitly — the marker admin role is granted the matching
+ * `sales: ["view"]` permission in `permissions.ts`. `superUser` is the
+ * admin-equivalent that holds every resource permission.
+ */
+export const salesRoles: UserRole[] = [
+  "analyticsViewer",
+  adminUserRole,
+  superUserRole,
+];
+
 export const roleLabels: Record<UserRole, string> = {
   user: "User",
   admin: "Admin",
