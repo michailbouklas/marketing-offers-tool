@@ -1,10 +1,18 @@
 import { error, json } from "@sveltejs/kit";
 import { handleChatStream } from "@mastra/ai-sdk";
 import { toAISdkMessages } from "@mastra/ai-sdk/ui";
+import { RequestContext } from "@mastra/core/request-context";
 import { createUIMessageStreamResponse } from "ai";
-import { requireApiPermission } from "$lib/server/auth-guards";
+import {
+  requireApiPermission,
+  requireAuthenticatedApiUser,
+} from "$lib/server/auth-guards";
 import { getMastra } from "$lib/server/mastra";
-import { chatAgents } from "$lib/server/mastra/chat-registry";
+import {
+  BRAND_SCOPE_RUNTIME_KEY,
+  chatAgents,
+} from "$lib/server/mastra/chat-registry";
+import { listBrandsForUser } from "$lib/services/brands.server";
 import { z } from "zod";
 import type { RequestEvent, RequestHandler } from "./$types";
 
@@ -39,7 +47,39 @@ async function authorizeAgent(event: RequestEvent, agentId: string) {
     error(400, `Unknown chat agent "${agentId}"`);
   }
 
-  return requireApiPermission(event, agent.permissions);
+  // A configured permission gates the agent; when omitted, any authenticated
+  // user may talk to it (mirrors the agent's page guard).
+  if (agent.permissions) {
+    return requireApiPermission(event, agent.permissions);
+  }
+
+  return requireAuthenticatedApiUser(event);
+}
+
+/**
+ * For `brandScoped` agents, publish the caller's assigned brand aliases into
+ * a RequestContext the agent reads in its dynamic instructions. The brand list
+ * is always derived server-side from the authenticated user id — it is never
+ * taken from the request body — so a user can only ever scope to their own
+ * brands. Returns undefined for non-brand-scoped agents (no override).
+ */
+async function buildBrandRequestContext(
+  agentId: string,
+  userId: string,
+): Promise<RequestContext | undefined> {
+  if (!chatAgents[agentId]?.brandScoped) {
+    return undefined;
+  }
+
+  const brands = await listBrandsForUser(userId);
+  const aliases = brands
+    .map((brand) => brand.alias.trim())
+    .filter((alias) => alias.length > 0);
+
+  const requestContext = new RequestContext();
+  requestContext.set(BRAND_SCOPE_RUNTIME_KEY, aliases);
+
+  return requestContext;
 }
 
 export const POST: RequestHandler = async (event) => {
@@ -54,6 +94,8 @@ export const POST: RequestHandler = async (event) => {
   const { agentId, sessionKey } = body.data;
   const { user } = await authorizeAgent(event, agentId);
 
+  const requestContext = await buildBrandRequestContext(agentId, user.id);
+
   const stream = await handleChatStream({
     mastra: getMastra(),
     agentId,
@@ -62,6 +104,7 @@ export const POST: RequestHandler = async (event) => {
       // Cast: the zod pass-through type is looser than Mastra's UIMessage.
       messages: body.data.messages as never,
       maxSteps: 8,
+      ...(requestContext ? { requestContext } : {}),
       memory: {
         thread: threadIdFor(agentId, user.id, sessionKey),
         resource: user.id,

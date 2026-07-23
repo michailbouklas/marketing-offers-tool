@@ -242,8 +242,14 @@ Before every new task, use the SymDex MCP server to reindex the project so the s
 - `src/lib/services/competition/active-offers-by-day.ts`: Browser-safe client for asynchronously loading the Competition dashboard active-offers-by-day-by-aggregator chart from its API endpoint.
 - `src/lib/services/competition/active-offers-timeseries.server.ts`: Server-only ClickHouse query service for the Competition dashboard 45-day active-offers-by-aggregator time series.
 - `src/lib/services/aggregator-invoices/invoice-details.ts`: Browser-safe API client for loading individual invoice details and period-filtered per-store invoice metrics.
+- `src/lib/server/mastra/chat-registry.ts`: Server-side allowlist of chat agents the `/api/ai/chat` endpoint may route to. Each entry is a `ChatAgentConfig` with an optional `permissions` (omit to allow any authenticated user) and optional `brandScoped` flag; also exports `BRAND_SCOPE_RUNTIME_KEY`, the RequestContext key under which the endpoint publishes the caller's brand aliases.
+- `src/lib/server/mastra/agents/offers-data-quality-agent.ts`: Mastra "Data Quality Assistant" agent for `/offers-data-quality`. Available to any authenticated user and brand-scoped via dynamic instructions that read the caller's brand aliases from the RequestContext. Uses the two data-quality SQL tools plus the shared Excel tool.
+- `src/lib/server/mastra/tools/query-data-quality-sql.ts`: Mastra tool running read-only PostgreSQL SELECTs against the data-quality workflow tables (`dq_missing_offers_pricing`, `dim_offers_staging`, `dim_offers_audit`, and the channel/category/subcategory lookups). Own pg pool, read-only transaction, 200-row cap.
+- `src/lib/server/mastra/tools/query-dim-offers-sql.ts`: Mastra tool running read-only ClickHouse SELECTs against the current offer pricing (`dim_offers`) plus `transaction_details` and `apidata_replica.dim_items`. Uses the default ClickHouse database, `readonly=2`, and a 200-row cap.
+- `src/lib/server/mastra/workspace/skills/data-quality-sql/SKILL.md` and `.../dim-offers-sql/SKILL.md`: Schema references and proven query patterns for the two data-quality SQL tools (PostgreSQL workflow tables and ClickHouse pricing tables respectively).
 
 <!-- gitnexus:start -->
+
 # GitNexus — Code Intelligence
 
 This project is indexed by GitNexus as **marketing-offers-tool** (5386 symbols, 9672 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
@@ -267,41 +273,41 @@ This project is indexed by GitNexus as **marketing-offers-tool** (5386 symbols, 
 
 ## Resources
 
-| Resource | Use for |
-|----------|---------|
-| `gitnexus://repo/marketing-offers-tool/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/marketing-offers-tool/clusters` | All functional areas |
-| `gitnexus://repo/marketing-offers-tool/processes` | All execution flows |
-| `gitnexus://repo/marketing-offers-tool/process/{name}` | Step-by-step execution trace |
+| Resource                                               | Use for                                  |
+| ------------------------------------------------------ | ---------------------------------------- |
+| `gitnexus://repo/marketing-offers-tool/context`        | Codebase overview, check index freshness |
+| `gitnexus://repo/marketing-offers-tool/clusters`       | All functional areas                     |
+| `gitnexus://repo/marketing-offers-tool/processes`      | All execution flows                      |
+| `gitnexus://repo/marketing-offers-tool/process/{name}` | Step-by-step execution trace             |
 
 ## CLI
 
-| Task | Read this skill file |
-|------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
-| Work in the Services area (218 symbols) | `.claude/skills/generated/services/SKILL.md` |
-| Work in the Server area (143 symbols) | `.claude/skills/generated/server/SKILL.md` |
-| Work in the Aggregator-kpis area (126 symbols) | `.claude/skills/generated/aggregator-kpis/SKILL.md` |
-| Work in the Image-generator area (78 symbols) | `.claude/skills/generated/image-generator/SKILL.md` |
-| Work in the Image-providers area (53 symbols) | `.claude/skills/generated/image-providers/SKILL.md` |
-| Work in the Competition area (52 symbols) | `.claude/skills/generated/competition/SKILL.md` |
-| Work in the Google-reviews area (36 symbols) | `.claude/skills/generated/google-reviews/SKILL.md` |
-| Work in the Aggregator-invoices area (33 symbols) | `.claude/skills/generated/aggregator-invoices/SKILL.md` |
-| Work in the Notifications area (32 symbols) | `.claude/skills/generated/notifications/SKILL.md` |
-| Work in the Inspiration area (19 symbols) | `.claude/skills/generated/inspiration/SKILL.md` |
-| Work in the Copywriter area (17 symbols) | `.claude/skills/generated/copywriter/SKILL.md` |
-| Work in the Scripts area (13 symbols) | `.claude/skills/generated/scripts/SKILL.md` |
-| Work in the Brand-context area (11 symbols) | `.claude/skills/generated/brand-context/SKILL.md` |
-| Work in the Text-providers area (10 symbols) | `.claude/skills/generated/text-providers/SKILL.md` |
-| Work in the State area (5 symbols) | `.claude/skills/generated/state/SKILL.md` |
-| Work in the Guidelines area (5 symbols) | `.claude/skills/generated/guidelines/SKILL.md` |
-| Work in the Stream area (5 symbols) | `.claude/skills/generated/stream/SKILL.md` |
-| Work in the Auth area (4 symbols) | `.claude/skills/generated/auth/SKILL.md` |
-| Work in the Punctuality area (4 symbols) | `.claude/skills/generated/punctuality/SKILL.md` |
+| Task                                              | Read this skill file                                        |
+| ------------------------------------------------- | ----------------------------------------------------------- |
+| Understand architecture / "How does X work?"      | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md`       |
+| Blast radius / "What breaks if I change X?"       | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?"                  | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md`       |
+| Rename / extract / split / refactor               | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md`     |
+| Tools, resources, schema reference                | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md`           |
+| Index, status, clean, wiki CLI commands           | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md`             |
+| Work in the Services area (218 symbols)           | `.claude/skills/generated/services/SKILL.md`                |
+| Work in the Server area (143 symbols)             | `.claude/skills/generated/server/SKILL.md`                  |
+| Work in the Aggregator-kpis area (126 symbols)    | `.claude/skills/generated/aggregator-kpis/SKILL.md`         |
+| Work in the Image-generator area (78 symbols)     | `.claude/skills/generated/image-generator/SKILL.md`         |
+| Work in the Image-providers area (53 symbols)     | `.claude/skills/generated/image-providers/SKILL.md`         |
+| Work in the Competition area (52 symbols)         | `.claude/skills/generated/competition/SKILL.md`             |
+| Work in the Google-reviews area (36 symbols)      | `.claude/skills/generated/google-reviews/SKILL.md`          |
+| Work in the Aggregator-invoices area (33 symbols) | `.claude/skills/generated/aggregator-invoices/SKILL.md`     |
+| Work in the Notifications area (32 symbols)       | `.claude/skills/generated/notifications/SKILL.md`           |
+| Work in the Inspiration area (19 symbols)         | `.claude/skills/generated/inspiration/SKILL.md`             |
+| Work in the Copywriter area (17 symbols)          | `.claude/skills/generated/copywriter/SKILL.md`              |
+| Work in the Scripts area (13 symbols)             | `.claude/skills/generated/scripts/SKILL.md`                 |
+| Work in the Brand-context area (11 symbols)       | `.claude/skills/generated/brand-context/SKILL.md`           |
+| Work in the Text-providers area (10 symbols)      | `.claude/skills/generated/text-providers/SKILL.md`          |
+| Work in the State area (5 symbols)                | `.claude/skills/generated/state/SKILL.md`                   |
+| Work in the Guidelines area (5 symbols)           | `.claude/skills/generated/guidelines/SKILL.md`              |
+| Work in the Stream area (5 symbols)               | `.claude/skills/generated/stream/SKILL.md`                  |
+| Work in the Auth area (4 symbols)                 | `.claude/skills/generated/auth/SKILL.md`                    |
+| Work in the Punctuality area (4 symbols)          | `.claude/skills/generated/punctuality/SKILL.md`             |
 
 <!-- gitnexus:end -->

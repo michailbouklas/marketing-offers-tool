@@ -12,6 +12,7 @@
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
+  import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import { fetchGapQueue } from "$lib/services/offers-data-quality-list";
   import type {
     GapListItem,
@@ -572,5 +573,11 @@
         {/if}
       </Card.Content>
     </Card.Root>
+
+    <ChatWidget
+      agentId="offers-data-quality-agent"
+      title="Data Quality Assistant"
+      greeting="Hi! Ask me about pricing gaps, submission status, and current offer pricing for your brands…"
+    />
   </main>
 </div>
