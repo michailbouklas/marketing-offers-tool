@@ -152,8 +152,10 @@ interface OfficeCliBatchOutput {
       success: boolean;
       output?: string;
       error?: string;
+      /** The batch item that failed (echoed back by officecli ≥1.0.140). */
+      item?: Record<string, unknown>;
     }[];
-    summary?: { total: number; failed: number };
+    summary?: { total: number; failed: number; atomicRolledBack?: boolean };
   };
 }
 
@@ -300,7 +302,16 @@ export async function generateExcelFile(input: {
     const stdout = await runOfficeCli(
       ["batch", xlsxPath, "--input", batchPath, "--json", "--stop-on-error"],
       BATCH_TIMEOUT_MS,
-    );
+    ).catch((cause) => {
+      // A failed batch exits non-zero (rejecting execFile) but still prints
+      // its per-command JSON report on stdout — recover it so the failing
+      // command is reported instead of Node's generic "Command failed".
+      const execError = cause as { stdout?: unknown };
+      if (typeof execError.stdout === "string" && execError.stdout.trim()) {
+        return execError.stdout;
+      }
+      throw cause;
+    });
     await closeResident(xlsxPath);
 
     let parsed: OfficeCliBatchOutput;
@@ -318,9 +329,15 @@ export async function generateExcelFile(input: {
       (parsed.data?.summary?.failed ?? 0) > 0 ||
       failed
     ) {
+      const failedItem = failed?.item
+        ? ` — failing command: ${JSON.stringify(failed.item).slice(0, 300)}`
+        : "";
+      const rolledBack = parsed.data?.summary?.atomicRolledBack
+        ? " The batch was rolled back — no changes were written; fix the failing command and retry the full export."
+        : "";
       return {
         ok: false,
-        error: `officecli batch failed: ${failed?.error ?? failed?.output ?? "unknown error"}`,
+        error: `officecli batch failed: ${failed?.error ?? failed?.output ?? "unknown error"}${failedItem}.${rolledBack}`,
       };
     }
 

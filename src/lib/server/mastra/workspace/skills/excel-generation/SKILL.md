@@ -106,10 +106,16 @@ Sort a range by its first column (header row excluded from the range):
 { "command": "set", "path": "/Data/A2:D101", "props": { "sort": "A asc" } }
 ```
 
-Column width (`set` on a column path):
+Column width (`set` on a column RANGE — a bare column letter like `/Data/A`
+fails with "Element not found"; always use the `A:A` range form, even for a
+single column):
 
 ```json
-{ "command": "set", "path": "/Data/A", "props": { "width": "20" } }
+{ "command": "set", "path": "/Data/A:A", "props": { "width": "20" } }
+```
+
+```json
+{ "command": "set", "path": "/Data/B:E", "props": { "width": "14" } }
 ```
 
 Chart anchored on the sheet (`x,y,w,h` in cells):
