@@ -38,6 +38,7 @@ type GetOpenGapListOptions = {
   brandAliases?: string[];
   sortBy?: GapListSortField;
   sortDir?: GapListSortDirection;
+  statuses?: Array<GapListItem["status"]>;
 };
 
 const statusSortOrder = new Map<GapListItem["status"], number>([
@@ -373,15 +374,28 @@ export async function getOpenGapList(
     ),
   );
 
-  const totalItems = sortedItems.length;
+  // Count before the status filter so the "awaiting approval" badge reflects
+  // the current brand filter even when the status filter is not applied.
+  const submittedCount = sortedItems.filter(
+    (item) => item.status === "submitted",
+  ).length;
+  const statusFilter = options.statuses?.length
+    ? new Set(options.statuses)
+    : null;
+  const visibleItems = statusFilter
+    ? sortedItems.filter((item) => statusFilter.has(item.status))
+    : sortedItems;
+
+  const totalItems = visibleItems.length;
   const normalizedPageSize = Math.max(1, pageSize);
   const totalPages = Math.max(1, Math.ceil(totalItems / normalizedPageSize));
   const normalizedPage = Math.min(Math.max(1, page), totalPages);
   const startIndex = (normalizedPage - 1) * normalizedPageSize;
 
   return {
-    items: sortedItems.slice(startIndex, startIndex + normalizedPageSize),
+    items: visibleItems.slice(startIndex, startIndex + normalizedPageSize),
     totalItems,
+    submittedCount,
     page: normalizedPage,
     pageSize: normalizedPageSize,
     totalPages,

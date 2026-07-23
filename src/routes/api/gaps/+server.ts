@@ -16,6 +16,7 @@ const searchParamsSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   sortBy: z.enum(gapListSortFields).default("brand"),
   sortDir: z.enum(gapListSortDirections).default("asc"),
+  status: z.enum(["submitted"]).optional(),
 });
 
 export const GET: RequestHandler = async (event) => {
@@ -29,10 +30,12 @@ export const GET: RequestHandler = async (event) => {
     page: event.url.searchParams.get("page") ?? 1,
     sortBy: event.url.searchParams.get("sortBy") ?? undefined,
     sortDir: event.url.searchParams.get("sortDir") ?? undefined,
+    status: event.url.searchParams.get("status") ?? undefined,
   });
   const page = parseResult.success ? parseResult.data.page : 1;
   const sortBy = parseResult.success ? parseResult.data.sortBy : "brand";
   const sortDir = parseResult.success ? parseResult.data.sortDir : "asc";
+  const status = parseResult.success ? parseResult.data.status : undefined;
   const brands = await listBrandsForUser(user.id);
   const selectedBrandAliases = getSelectedBrandAliases(
     event.url.searchParams.getAll("brandAlias"),
@@ -42,6 +45,7 @@ export const GET: RequestHandler = async (event) => {
     brandAliases: selectedBrandAliases,
     sortBy,
     sortDir,
+    statuses: status ? [status] : undefined,
   });
 
   return json({

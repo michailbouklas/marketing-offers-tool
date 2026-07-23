@@ -9,6 +9,7 @@ type FetchGapQueueInput = {
   page: number;
   sortBy: GapListSortField;
   sortDir: GapListSortDirection;
+  status?: "submitted";
 };
 
 export async function fetchGapQueue(
@@ -31,6 +32,10 @@ export async function fetchGapQueue(
 
   if (input.sortDir !== "asc") {
     params.set("sortDir", input.sortDir);
+  }
+
+  if (input.status) {
+    params.set("status", input.status);
   }
 
   const response = await fetchFn(`/api/gaps?${params.toString()}`);

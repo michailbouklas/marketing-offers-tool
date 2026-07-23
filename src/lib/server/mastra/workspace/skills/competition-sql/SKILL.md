@@ -20,45 +20,45 @@ the table alias (`FROM offer AS o FINAL` — ClickHouse rejects `FINAL` before
 The UI calls these "processors" — treat aggregator/processor/platform as
 synonyms. Display name: `coalesce(nullIf(a.display_name, ''), a.name)`.
 
-| Column       | Type              | Notes                          |
-| ------------ | ----------------- | ------------------------------ |
-| id           | Int32             | Primary key                    |
-| name         | String            | Internal name                  |
-| display_name | String            | May be empty — coalesce        |
-| base_domain  | String            |                                |
-| rating_scale | Nullable(Float64) | e.g. 5 or 10                   |
+| Column       | Type              | Notes                   |
+| ------------ | ----------------- | ----------------------- |
+| id           | Int32             | Primary key             |
+| name         | String            | Internal name           |
+| display_name | String            | May be empty — coalesce |
+| base_domain  | String            |                         |
+| rating_scale | Nullable(Float64) | e.g. 5 or 10            |
 
 ### restaurant — one row per restaurant PER aggregator
 
 The same real-world restaurant appears once per aggregator it is listed on.
 
-| Column               | Type              | Notes                              |
-| -------------------- | ----------------- | ---------------------------------- |
-| id                   | Int32             | Primary key                        |
-| aggregator_id        | Int32             | → aggregator.id                    |
-| name                 | String            |                                    |
-| slug                 | String            |                                    |
-| source_url           | String            | Listing page URL                   |
-| provider_external_id | Nullable(String)  |                                    |
-| page_title           | Nullable(String)  |                                    |
-| rating_value         | Nullable(Float64) | On rating_scale                    |
-| rating_count         | Nullable(Int32)   |                                    |
-| rating_scale         | Nullable(Float64) |                                    |
-| delivery_info        | Nullable(String)  | Free text (fee / time)             |
-| minimum_order        | Nullable(Float64) | EUR                                |
+| Column               | Type              | Notes                  |
+| -------------------- | ----------------- | ---------------------- |
+| id                   | Int32             | Primary key            |
+| aggregator_id        | Int32             | → aggregator.id        |
+| name                 | String            |                        |
+| slug                 | String            |                        |
+| source_url           | String            | Listing page URL       |
+| provider_external_id | Nullable(String)  |                        |
+| page_title           | Nullable(String)  |                        |
+| rating_value         | Nullable(Float64) | On rating_scale        |
+| rating_count         | Nullable(Int32)   |                        |
+| rating_scale         | Nullable(Float64) |                        |
+| delivery_info        | Nullable(String)  | Free text (fee / time) |
+| minimum_order        | Nullable(Float64) | EUR                    |
 
 ### offer — current state of each detected offer
 
-| Column        | Type             | Notes                                       |
-| ------------- | ---------------- | ------------------------------------------- |
-| id            | Int32            | Primary key                                 |
-| restaurant_id | Int32            | → restaurant.id                             |
+| Column        | Type             | Notes                                                     |
+| ------------- | ---------------- | --------------------------------------------------------- |
+| id            | Int32            | Primary key                                               |
+| restaurant_id | Int32            | → restaurant.id                                           |
 | product_id    | Nullable(Int32)  | → product.id (offers without a matched product have NULL) |
-| title         | String           |                                             |
-| description   | Nullable(String) |                                             |
-| first_seen_at | DateTime64(6)    | First scrape that saw the offer             |
-| last_seen_at  | DateTime64(6)    | Most recent scrape that saw it              |
-| is_active     | UInt8            | 1 = currently running                       |
+| title         | String           |                                                           |
+| description   | Nullable(String) |                                                           |
+| first_seen_at | DateTime64(6)    | First scrape that saw the offer                           |
+| last_seen_at  | DateTime64(6)    | Most recent scrape that saw it                            |
+| is_active     | UInt8            | 1 = currently running                                     |
 
 ### offer_snapshot — per-scrape offer history (the biggest table)
 
@@ -67,63 +67,63 @@ current state. Always scope joins/filters (by offer, restaurant, or
 `ORDER BY recorded_at DESC LIMIT n`) — unscoped scans can hit the 15 s
 timeout.
 
-| Column      | Type             | Notes                                  |
-| ----------- | ---------------- | -------------------------------------- |
-| id          | Int32            | Primary key                            |
-| offer_id    | Int32            | → offer.id                             |
-| product_id  | Nullable(Int32)  | → product.id                           |
-| session_id  | Int32            | → scrape_session.id                    |
-| title       | String           |                                        |
-| is_active   | UInt8            | Status observed at that scrape         |
-| recorded_at | DateTime64(6)    | When the scrape observed it            |
+| Column      | Type            | Notes                          |
+| ----------- | --------------- | ------------------------------ |
+| id          | Int32           | Primary key                    |
+| offer_id    | Int32           | → offer.id                     |
+| product_id  | Nullable(Int32) | → product.id                   |
+| session_id  | Int32           | → scrape_session.id            |
+| title       | String          |                                |
+| is_active   | UInt8           | Status observed at that scrape |
+| recorded_at | DateTime64(6)   | When the scrape observed it    |
 
 ### product — menu items
 
-| Column        | Type             | Notes                     |
-| ------------- | ---------------- | ------------------------- |
-| id            | Int32            | Primary key               |
-| restaurant_id | Int32            | → restaurant.id           |
-| category_id   | Int32            | → restaurant_category.id  |
-| title         | String           |                           |
-| description   | Nullable(String) |                           |
-| is_offer      | UInt8            | Item is offer-flagged     |
-| first_seen_at | DateTime64(6)    |                           |
-| last_seen_at  | DateTime64(6)    |                           |
+| Column        | Type             | Notes                    |
+| ------------- | ---------------- | ------------------------ |
+| id            | Int32            | Primary key              |
+| restaurant_id | Int32            | → restaurant.id          |
+| category_id   | Int32            | → restaurant_category.id |
+| title         | String           |                          |
+| description   | Nullable(String) |                          |
+| is_offer      | UInt8            | Item is offer-flagged    |
+| first_seen_at | DateTime64(6)    |                          |
+| last_seen_at  | DateTime64(6)    |                          |
 
 ### product_price — price time-series (the ONLY place prices live)
 
-| Column      | Type              | Notes                          |
-| ----------- | ----------------- | ------------------------------ |
-| id          | Int32             | Primary key                    |
-| product_id  | Int32             | → product.id                   |
-| session_id  | Int32             | → scrape_session.id            |
+| Column      | Type              | Notes                           |
+| ----------- | ----------------- | ------------------------------- |
+| id          | Int32             | Primary key                     |
+| product_id  | Int32             | → product.id                    |
+| session_id  | Int32             | → scrape_session.id             |
 | price       | Nullable(Float64) | Frequently NULL — see Semantics |
-| recorded_at | DateTime64(6)     |                                |
+| recorded_at | DateTime64(6)     |                                 |
 
 ### restaurant_category — menu sections
 
-| Column            | Type   | Notes                    |
-| ----------------- | ------ | ------------------------ |
-| id                | Int32  | Primary key              |
-| restaurant_id     | Int32  | → restaurant.id          |
-| name              | String |                          |
-| item_count        | Int32  |                          |
-| is_offer_category | UInt8  | Category holds offers    |
+| Column            | Type   | Notes                 |
+| ----------------- | ------ | --------------------- |
+| id                | Int32  | Primary key           |
+| restaurant_id     | Int32  | → restaurant.id       |
+| name              | String |                       |
+| item_count        | Int32  |                       |
+| is_offer_category | UInt8  | Category holds offers |
 
 ### scrape_session — scrape runs (data freshness)
 
-| Column         | Type             | Notes                                       |
-| -------------- | ---------------- | ------------------------------------------- |
-| id             | Int32            | Primary key                                 |
-| restaurant_id  | Nullable(Int32)  | NULL for aggregator-wide runs               |
-| aggregator_id  | Int32            | → aggregator.id                             |
-| language       | String           | en / el                                     |
-| scraped_at     | DateTime64(6)    |                                             |
-| category_count | Int32            |                                             |
-| item_count     | Int32            |                                             |
-| offer_count    | Int32            |                                             |
+| Column         | Type             | Notes                                                               |
+| -------------- | ---------------- | ------------------------------------------------------------------- |
+| id             | Int32            | Primary key                                                         |
+| restaurant_id  | Nullable(Int32)  | NULL for aggregator-wide runs                                       |
+| aggregator_id  | Int32            | → aggregator.id                                                     |
+| language       | String           | en / el                                                             |
+| scraped_at     | DateTime64(6)    |                                                                     |
+| category_count | Int32            |                                                                     |
+| item_count     | Int32            |                                                                     |
+| offer_count    | Int32            |                                                                     |
 | status         | String           | Free-form — inspect `SELECT DISTINCT status` before filtering on it |
-| error_message  | Nullable(String) |                                             |
+| error_message  | Nullable(String) |                                                                     |
 
 ### Do NOT query
 
@@ -145,9 +145,10 @@ reads; joining through them produces misleading results.
   ```
 
   Always scope it (`WHERE product_id IN (SELECT id FROM product FINAL WHERE
-  restaurant_id = …)`) so the aggregation stays bounded. It yields NULL only
+restaurant_id = …)`) so the aggregation stays bounded. It yields NULL only
   when the product has never carried a price — report that as "no known
   price", never 0.
+
 - **Point-in-time price for a snapshot** joins on BOTH keys:
   `pp.product_id = os.product_id AND pp.session_id = os.session_id`.
 - No currency is stored anywhere — prices are EUR.

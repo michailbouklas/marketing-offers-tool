@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-07-22T12:25:02Z",
-  "changed_file": "src/lib/server/mastra/chat-registry.ts",
+  "timestamp": "2026-07-23T08:23:46Z",
+  "changed_file": "src/lib/services/offers-data-quality-list.ts",
   "test_command": "npx vitest run --reporter=verbose",
   "related_test": "",
   "recommendation": "テストの実行を推奨します"

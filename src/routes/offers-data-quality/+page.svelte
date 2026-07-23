@@ -30,10 +30,12 @@
   let queuePage = $state<GapListPage>({
     items: [],
     totalItems: 0,
+    submittedCount: 0,
     page: 1,
     pageSize: 50,
     totalPages: 1,
   });
+  let onlySubmitted = $state(false);
   let currentSortBy = $state<GapListSortField>("brand");
   let currentSortDir = $state<GapListSortDirection>("asc");
   let isRefreshing = $state(false);
@@ -47,6 +49,7 @@
   const totalPages = $derived(queuePage.totalPages);
   const sortBy = $derived(currentSortBy);
   const sortDir = $derived(currentSortDir);
+  const submittedCount = $derived(queuePage.submittedCount);
   const selectedBrandAliases = $derived(new Set(selectedAliases));
   const appliedBrandAliases = $derived(new Set(appliedAliases));
 
@@ -69,6 +72,7 @@
     queuePage = data.gapsPage;
     currentSortBy = data.sortBy;
     currentSortDir = data.sortDir;
+    onlySubmitted = data.statusFilter === "submitted";
   });
 
   function getBrandFilterSummary() {
@@ -109,11 +113,13 @@
     nextSortBy = currentSortBy,
     nextSortDir = currentSortDir,
     nextPage = page,
+    nextOnlySubmitted = onlySubmitted,
   }: {
     aliases?: string[];
     nextSortBy?: GapListSortField;
     nextSortDir?: GapListSortDirection;
     nextPage?: number;
+    nextOnlySubmitted?: boolean;
   } = {}) {
     const requestId = ++latestRefreshRequestId;
 
@@ -125,6 +131,7 @@
         page: nextPage,
         sortBy: nextSortBy,
         sortDir: nextSortDir,
+        status: nextOnlySubmitted ? "submitted" : undefined,
       });
 
       if (requestId !== latestRefreshRequestId) {
@@ -136,6 +143,7 @@
       selectedAliases = [...result.selectedBrandAliases];
       currentSortBy = result.sortBy;
       currentSortDir = result.sortDir;
+      onlySubmitted = nextOnlySubmitted;
     } catch (error) {
       if (requestId !== latestRefreshRequestId) {
         return;
@@ -172,6 +180,14 @@
     selectedAliases = allAliases;
     appliedAliases = allAliases;
     await refreshQueue({ aliases: allAliases, nextPage: 1 });
+  }
+
+  async function toggleOnlySubmitted() {
+    await refreshQueue({
+      aliases: appliedAliases,
+      nextPage: 1,
+      nextOnlySubmitted: !onlySubmitted,
+    });
   }
 
   function getNextSortDirection(
@@ -297,6 +313,22 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant={onlySubmitted ? "default" : "outline"}
+                size="sm"
+                aria-pressed={onlySubmitted}
+                onclick={toggleOnlySubmitted}
+              >
+                Awaiting approval
+                <Badge
+                  variant={onlySubmitted ? "secondary" : "outline"}
+                  class="ml-1.5 px-1.5"
+                >
+                  {submittedCount}
+                </Badge>
+              </Button>
+
               <Popover.Root bind:open={brandFilterOpen}>
                 <Popover.Trigger
                   class={`${buttonVariants({ variant: "outline" })} min-w-52 justify-between`}
@@ -491,6 +523,8 @@
                       href={gap.dq_id > 0
                         ? `/offers-data-quality/${gap.dq_id}`
                         : `/offers-data-quality/open/${gap.trde_item}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       size="sm"
                     >
                       {gap.status === "submitted" ? "Review" : "Open form"}

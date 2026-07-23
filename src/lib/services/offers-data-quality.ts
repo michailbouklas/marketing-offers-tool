@@ -86,6 +86,8 @@ export type GapListItem = {
 export type GapListPage = {
   items: GapListItem[];
   totalItems: number;
+  /** Submitted gaps awaiting approval under the current brand filter (all pages). */
+  submittedCount: number;
   page: number;
   pageSize: number;
   totalPages: number;
@@ -119,6 +121,7 @@ export const gapListItemSchema = z.object({
 export const gapListPageSchema = z.object({
   items: z.array(gapListItemSchema),
   totalItems: z.number().int().nonnegative(),
+  submittedCount: z.number().int().nonnegative(),
   page: z.number().int().positive(),
   pageSize: z.number().int().positive(),
   totalPages: z.number().int().positive(),

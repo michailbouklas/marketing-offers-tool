@@ -281,10 +281,17 @@
         },
       );
 
-      const result = (await response.json()) as { error?: string };
+      const result = (await response.json()) as {
+        error?: string;
+        message?: string;
+      };
 
       if (!response.ok) {
-        throw new Error(result.error ?? `Unable to ${mode} submission`);
+        // SvelteKit's error() helper (e.g. the 403 auth guard) puts the text
+        // in `message`; our handlers use `error`.
+        throw new Error(
+          result.error ?? result.message ?? `Unable to ${mode} submission`,
+        );
       }
 
       toast.success(

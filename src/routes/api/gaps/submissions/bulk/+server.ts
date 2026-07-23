@@ -1,5 +1,5 @@
 import { json } from "@sveltejs/kit";
-import { requireApiAdminPermission } from "$lib/server/auth-guards";
+import { requireApiPermission } from "$lib/server/auth-guards";
 import {
   approveGapSubmission,
   rejectGapSubmission,
@@ -12,7 +12,7 @@ import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async (event) => {
   // Bulk can approve or reject, so require the full submission capability.
-  const { user } = await requireApiAdminPermission(event, {
+  const { user } = await requireApiPermission(event, {
     submission: ["approve", "reject"],
   });
 
