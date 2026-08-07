@@ -113,7 +113,8 @@ export type MonitorSection = (typeof MonitorSection)[keyof typeof MonitorSection
 
 export const BrandEntityType = {
   competitionRestaurant: 'competitionRestaurant',
-  googleReviewsBusiness: 'googleReviewsBusiness'
+  googleReviewsBusiness: 'googleReviewsBusiness',
+  aggregatorStore: 'aggregatorStore'
 } as const
 
 export type BrandEntityType = (typeof BrandEntityType)[keyof typeof BrandEntityType]

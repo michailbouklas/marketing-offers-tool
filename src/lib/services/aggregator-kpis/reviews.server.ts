@@ -8,7 +8,10 @@ import type {
   ReviewRow,
   ReviewSortField,
 } from "$lib/services/aggregator-kpis/aggregator-kpis";
-import { storeWhere } from "$lib/services/aggregator-kpis/kpi-shared.server";
+import {
+  getKpiStore,
+  storeWhere,
+} from "$lib/services/aggregator-kpis/kpi-shared.server";
 
 export type ReviewsQuery = KpiFilters & {
   page: number;
@@ -19,17 +22,6 @@ export type ReviewsQuery = KpiFilters & {
   query: string | null;
   sortBy: ReviewSortField;
   sortDir: KpiSortDirection;
-};
-
-export type ReviewStoreDetail = {
-  id: number;
-  name: string | null;
-  aggregator: AggregatorValue;
-  externalId: string;
-  slug: string | null;
-  url: string | null;
-  createdAt: string;
-  updatedAt: string;
 };
 
 /** `where.reviewedAt` fragment for the filter's inclusive date range. */
@@ -112,38 +104,12 @@ function mapReviewRow(row: ReviewQueryRow): ReviewRow {
   };
 }
 
-export async function getReviewStore(
-  storeId: number,
-): Promise<ReviewStoreDetail | null> {
-  const store = await merchantScrapesPrisma.store.findUnique({
-    where: { id: storeId },
-    select: {
-      id: true,
-      name: true,
-      aggregator: true,
-      externalId: true,
-      slug: true,
-      url: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-
-  if (!store) {
-    return null;
-  }
-
-  return {
-    id: store.id,
-    name: store.name,
-    aggregator: store.aggregator as AggregatorValue,
-    externalId: store.externalId,
-    slug: store.slug,
-    url: store.url,
-    createdAt: store.createdAt.toISOString(),
-    updatedAt: store.updatedAt.toISOString(),
-  };
-}
+/**
+ * Store header for the reviews detail page. Re-exports {@link getKpiStore} so
+ * the brand lookup (and any future field) lives in exactly one place — the two
+ * were byte-identical queries before.
+ */
+export const getReviewStore = getKpiStore;
 
 /** Paginated list of individual reviews, filtered by store/rating/date/text. */
 export async function listReviews(

@@ -5,6 +5,7 @@ import {
   getBrandGuidelines,
   listBrandAssets,
 } from "$lib/services/brand-context/brand-context.server";
+import { resolveAggregatorStoreNames } from "$lib/services/aggregator-kpis/brand-stores.server";
 import { listBrandAssignments } from "$lib/services/brand-entities.server";
 import type { PageServerLoad } from "./$types";
 
@@ -27,7 +28,12 @@ export const load: PageServerLoad = async (event) => {
   const [assets, guidelines, assignments] = await Promise.all([
     listBrandAssets(brand.id),
     brand.slug ? getBrandGuidelines(brand.slug) : Promise.resolve(null),
-    listBrandAssignments({ brandId: brand.id }),
+    // Store names live in the merchant-scrapes replica, which the assignment
+    // service deliberately doesn't reach into — inject the resolver here.
+    listBrandAssignments(
+      { brandId: brand.id },
+      { aggregatorStore: resolveAggregatorStoreNames },
+    ),
   ]);
 
   return {

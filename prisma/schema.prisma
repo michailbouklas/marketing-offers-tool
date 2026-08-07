@@ -100,7 +100,7 @@ model store_names {
 
 model wolt_regex_patters {
   id       Int     @id @default(autoincrement())
-  regex    String
+  regex    String  @unique
   example  String?
   category String
 }
@@ -705,17 +705,26 @@ model notification_cursor {
 }
 
 // --- Brand grouping of scraped entities. Administrators assign disjointed
-// scraped entities (a competition restaurant, or a Google reviews business)
-// to a `brand` so analytics can roll up across sections and aggregators.
+// scraped entities (a competition restaurant, a Google reviews business, or an
+// aggregator-KPI store) to a `brand` so analytics can roll up across sections
+// and aggregators.
 // `entityId` is the section's stable identifier as a string, matching the
 // `user_monitor` encoding: for `competitionRestaurant` it is the ClickHouse
 // composite `"${processorId}:${restaurantId}"`; for `googleReviewsBusiness`
-// it is `businesses.cid` (a numeric-looking string — never coerce to number).
+// it is `businesses.cid` (a numeric-looking string — never coerce to number);
+// for `aggregatorStore` it is the merchant-scrapes composite
+// `"${aggregator}:${externalId}"` (e.g. "FOODY:FY_CY;493",
+// "WOLT:pizza-hut-strovolos"). That natural key is used rather than
+// `Store.id` because the merchant-scrapes DB is a read-only mirror owned by
+// the scraper repo — its autoincrement ids would silently re-point every
+// assignment at the wrong store after a re-seed. Decode on the FIRST colon
+// only: `externalId` itself contains `;`, `-`, and may contain `:`.
 // The `@@unique([entityType, entityId])` enforces that each entity belongs to
 // at most one brand, so assigning is an upsert that moves the entity.
 enum BrandEntityType {
   competitionRestaurant
   googleReviewsBusiness
+  aggregatorStore
 }
 
 enum EnumTokenType {

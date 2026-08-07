@@ -62,6 +62,11 @@
       (assignment) => assignment.entityType === "googleReviewsBusiness",
     ),
   );
+  const aggregatorStoreAssignments = $derived(
+    data.assignments.filter(
+      (assignment) => assignment.entityType === "aggregatorStore",
+    ),
+  );
 
   function openAssignDialog(entityType: BrandEntityType) {
     assignEntityType = entityType;
@@ -523,6 +528,13 @@
         >
           Assign Google reviews business
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => openAssignDialog("aggregatorStore")}
+        >
+          Assign aggregator KPI store
+        </Button>
       </div>
     </Card.Header>
     <Card.Content class="space-y-6">
@@ -533,6 +545,10 @@
       {@render assignmentGroup(
         "Google reviews businesses",
         googleReviewsAssignments,
+      )}
+      {@render assignmentGroup(
+        "Aggregator KPI stores",
+        aggregatorStoreAssignments,
       )}
     </Card.Content>
   </Card.Root>

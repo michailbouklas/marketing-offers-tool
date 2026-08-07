@@ -219,13 +219,13 @@ export type wolt_regex_pattersOrderByWithRelationInput = {
 
 export type wolt_regex_pattersWhereUniqueInput = Prisma.AtLeast<{
   id?: number
+  regex?: string
   AND?: Prisma.wolt_regex_pattersWhereInput | Prisma.wolt_regex_pattersWhereInput[]
   OR?: Prisma.wolt_regex_pattersWhereInput[]
   NOT?: Prisma.wolt_regex_pattersWhereInput | Prisma.wolt_regex_pattersWhereInput[]
-  regex?: Prisma.StringFilter<"wolt_regex_patters"> | string
   example?: Prisma.StringNullableFilter<"wolt_regex_patters"> | string | null
   category?: Prisma.StringFilter<"wolt_regex_patters"> | string
-}, "id">
+}, "id" | "regex">
 
 export type wolt_regex_pattersOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

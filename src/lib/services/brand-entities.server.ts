@@ -97,13 +97,24 @@ type ListBrandAssignmentsFilters = {
   entityType?: BrandEntityType;
 };
 
+/** Batch name lookup for one entity type, keyed by `entityId`. */
+export type EntityNameResolver = (
+  entityIds: string[],
+) => Promise<Map<string, ResolvedName>>;
+
 /**
  * Lists brand→entity assignments (optionally filtered by brand and/or type),
- * resolving each entity's display name from the relevant ClickHouse replica in
- * one batch query per entity type.
+ * resolving each entity's display name in one batch query per entity type.
+ *
+ * The two ClickHouse-backed types resolve natively. `aggregatorStore` lives in
+ * the merchant-scrapes replica, so its resolver is **injected** by the caller
+ * (`resolveAggregatorStoreNames` from `aggregator-kpis/brand-stores.server`) —
+ * that module already depends on this one, and importing it back would create
+ * a cycle. An unresolved type simply yields `displayName: null`.
  */
 export async function listBrandAssignments(
   filters: ListBrandAssignmentsFilters = {},
+  resolvers: Partial<Record<BrandEntityType, EntityNameResolver>> = {},
 ): Promise<BrandAssignmentRow[]> {
   const assignments = await prisma.brand_entity.findMany({
     where: {
@@ -126,23 +137,34 @@ export async function listBrandAssignments(
     return [];
   }
 
-  const competitionIds = assignments
-    .filter((row) => row.entityType === "competitionRestaurant")
-    .map((row) => row.entityId);
-  const googleCids = assignments
-    .filter((row) => row.entityType === "googleReviewsBusiness")
-    .map((row) => row.entityId);
+  const activeResolvers: Partial<Record<BrandEntityType, EntityNameResolver>> =
+    {
+      competitionRestaurant: resolveCompetitionNames,
+      googleReviewsBusiness: resolveGoogleBusinessNames,
+      ...resolvers,
+    };
 
-  const [competitionNames, googleNames] = await Promise.all([
-    resolveCompetitionNames(competitionIds),
-    resolveGoogleBusinessNames(googleCids),
-  ]);
+  // One batch lookup per entity type actually present in the result.
+  const idsByType = new Map<BrandEntityType, string[]>();
+  for (const row of assignments) {
+    const bucket = idsByType.get(row.entityType) ?? [];
+    bucket.push(row.entityId);
+    idsByType.set(row.entityType, bucket);
+  }
+
+  const resolvedByType = new Map<BrandEntityType, Map<string, ResolvedName>>();
+  await Promise.all(
+    [...idsByType].map(async ([entityType, entityIds]) => {
+      const resolver = activeResolvers[entityType];
+      if (!resolver) {
+        return;
+      }
+      resolvedByType.set(entityType, await resolver(entityIds));
+    }),
+  );
 
   return assignments.map((row) => {
-    const resolved =
-      row.entityType === "competitionRestaurant"
-        ? competitionNames.get(row.entityId)
-        : googleNames.get(row.entityId);
+    const resolved = resolvedByType.get(row.entityType)?.get(row.entityId);
 
     return {
       id: row.id,

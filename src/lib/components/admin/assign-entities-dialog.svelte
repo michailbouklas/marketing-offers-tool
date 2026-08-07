@@ -35,6 +35,11 @@
       placeholder: "Search businesses by name… (e.g. kfc)",
       subLabelHeader: "Category",
     },
+    aggregatorStore: {
+      title: "Assign aggregator KPI stores",
+      placeholder: "Search stores by name… (e.g. kfc)",
+      subLabelHeader: "Platform · external id",
+    },
   };
 
   const view = $derived(config[entityType]);

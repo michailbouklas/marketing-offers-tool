@@ -1,5 +1,9 @@
 import { error, json } from "@sveltejs/kit";
-import { brandEntityTypes } from "$lib/services/brand-entities";
+import { searchAggregatorStoreCandidates } from "$lib/services/aggregator-kpis/brand-stores.server";
+import {
+  brandEntityTypes,
+  type BrandEntityType,
+} from "$lib/services/brand-entities";
 import {
   searchCompetitionRestaurantCandidates,
   searchGoogleBusinessCandidates,
@@ -7,10 +11,20 @@ import {
 import { requireApiPermission } from "$lib/server/auth-guards";
 import type { RequestHandler } from "./$types";
 
+const searchers: Record<
+  BrandEntityType,
+  (query: string) => Promise<unknown[]>
+> = {
+  competitionRestaurant: searchCompetitionRestaurantCandidates,
+  googleReviewsBusiness: searchGoogleBusinessCandidates,
+  aggregatorStore: searchAggregatorStoreCandidates,
+};
+
 /**
  * GET /api/admin/brand-entities/search?entityType=&q= — fuzzy-search candidate
- * entities (competition restaurants or Google businesses) to assign to a
- * brand. Each result is annotated with its current brand assignment.
+ * entities (competition restaurants, Google businesses, or aggregator KPI
+ * stores) to assign to a brand. Each result is annotated with its current
+ * brand assignment.
  */
 export const GET: RequestHandler = async (event) => {
   await requireApiPermission(event, { brand: ["manage"] });
@@ -24,11 +38,7 @@ export const GET: RequestHandler = async (event) => {
   }
 
   const query = event.url.searchParams.get("q") ?? "";
-
-  const items =
-    entityType === "competitionRestaurant"
-      ? await searchCompetitionRestaurantCandidates(query)
-      : await searchGoogleBusinessCandidates(query);
+  const items = await searchers[entityType as BrandEntityType](query);
 
   return json({ items });
 };

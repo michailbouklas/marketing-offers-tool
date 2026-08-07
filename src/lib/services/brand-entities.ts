@@ -8,11 +8,15 @@
  *  - `competitionRestaurant` → `"${processorId}:${restaurantId}"`
  *  - `googleReviewsBusiness` → `businesses.cid` (a numeric-looking string —
  *    never coerce it to a number; precision loss).
+ *  - `aggregatorStore` → `"${aggregator}:${externalId}"` in the
+ *    merchant-scrapes DB (e.g. `"FOODY:FY_CY;493"`).
  */
+import type { AggregatorValue } from "$lib/services/aggregator-kpis/aggregator-kpis";
 
 export const brandEntityTypes = [
   "competitionRestaurant",
   "googleReviewsBusiness",
+  "aggregatorStore",
 ] as const;
 
 export type BrandEntityType = (typeof brandEntityTypes)[number];
@@ -57,8 +61,61 @@ export function decodeCompetitionEntityId(
 }
 
 /**
+ * Aggregators the KPI section scrapes. Declared locally (rather than importing
+ * the runtime `aggregators` tuple) to keep this leaf module off the large
+ * `aggregator-kpis.ts` import graph; `satisfies` makes drift a compile error.
+ */
+const storeAggregators = [
+  "FOODY",
+  "WOLT",
+] as const satisfies readonly AggregatorValue[];
+
+export type AggregatorStoreKey = {
+  aggregator: AggregatorValue;
+  externalId: string;
+};
+
+/** Encodes a merchant-scrapes store into its stable `entityId`. */
+export function encodeAggregatorStoreEntityId(
+  aggregator: AggregatorValue,
+  externalId: string,
+): string {
+  return `${aggregator}:${externalId}`;
+}
+
+/**
+ * Decodes an `aggregatorStore` entityId back into its parts. Splits on the
+ * **first** colon only: `Aggregator` is a colon-free `[A-Z]+` alphabet, but
+ * `externalId` contains `;` / `-` and may itself contain `:`. Returns null for
+ * an unknown aggregator or an empty externalId.
+ */
+export function decodeAggregatorStoreEntityId(
+  entityId: string,
+): AggregatorStoreKey | null {
+  const separator = entityId.indexOf(":");
+
+  if (separator <= 0) {
+    return null;
+  }
+
+  const aggregator = entityId.slice(0, separator);
+  const externalId = entityId.slice(separator + 1);
+
+  if (!(storeAggregators as readonly string[]).includes(aggregator)) {
+    return null;
+  }
+
+  if (externalId.length === 0) {
+    return null;
+  }
+
+  return { aggregator: aggregator as AggregatorValue, externalId };
+}
+
+/**
  * Validates an `entityId` for the given type. Competition ids must be the
- * `"<int>:<int>"` composite; Google business ids are any non-empty cid string.
+ * `"<int>:<int>"` composite; aggregator store ids must be
+ * `"<AGGREGATOR>:<externalId>"`; Google business ids are any non-empty cid.
  */
 export function isValidEntityId(
   entityType: BrandEntityType,
@@ -66,6 +123,10 @@ export function isValidEntityId(
 ): boolean {
   if (entityType === "competitionRestaurant") {
     return decodeCompetitionEntityId(entityId) !== null;
+  }
+
+  if (entityType === "aggregatorStore") {
+    return decodeAggregatorStoreEntityId(entityId) !== null;
   }
 
   return entityId.trim().length > 0;
@@ -78,9 +139,12 @@ export type BrandAssignmentRow = {
   brandName: string;
   entityType: BrandEntityType;
   entityId: string;
-  /** Resolved from the ClickHouse replica; null when the entity is unknown. */
+  /** Resolved from the replica holding the entity; null when it is unknown. */
   displayName: string | null;
-  /** Secondary label: aggregator name (competition) or category (google). */
+  /**
+   * Secondary label: aggregator name (competition), category (google), or the
+   * external store id (aggregator store).
+   */
   subLabel: string | null;
   createdBy: string | null;
   createdAt: string; // UTC ISO string

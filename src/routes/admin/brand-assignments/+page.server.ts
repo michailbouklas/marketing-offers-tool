@@ -1,23 +1,33 @@
 import { requirePermission } from "$lib/server/auth-guards";
-import { listBrandAssignments } from "$lib/services/brand-entities.server";
+import { parseAggregatorValue } from "$lib/services/aggregator-kpis/aggregator-cookie";
+import { listAggregatorStoreAssignments } from "$lib/services/aggregator-kpis/brand-stores.server";
 import { listBrands } from "$lib/services/brands.server";
 import type { PageServerLoad } from "./$types";
 
 /**
- * Brand-assignment admin tool: group scraped entities (competition restaurants
- * and Google reviews businesses) under a brand. Gated on `brand: ["manage"]`,
- * so `superUser`, `brandManager`, and `admin` may reach it.
+ * Store → brand assignment tool. A physical restaurant is scraped separately on
+ * each platform, with unrelated external ids, so grouping those rows under a
+ * brand is what lets the KPI section report on "KFC" rather than on each
+ * storefront.
  *
- * Only the gated `load` exists for now — the interactive UI (`+page.svelte`) is
- * a follow-up. Mutations are served by `/api/admin/brand-entities`.
+ * Gated on `brand: ["manage"]`, so `superUser`, `brandManager`, and `admin` may
+ * reach it. Mutations are served by `/api/admin/brand-entities`.
+ *
+ * The platform comes from a URL param rather than the `kpi_aggregator` cookie:
+ * this is an admin tool, and reusing the cookie would silently change which
+ * platform the admin's own KPI pages show.
  */
 export const load: PageServerLoad = async (event) => {
   await requirePermission(event, { brand: ["manage"] });
 
-  const [brands, assignments] = await Promise.all([
-    listBrands(),
-    listBrandAssignments(),
+  const aggregator = parseAggregatorValue(
+    event.url.searchParams.get("aggregator"),
+  );
+
+  const [brands, rows] = await Promise.all([
+    listBrands({ active: true }),
+    listAggregatorStoreAssignments(aggregator),
   ]);
 
-  return { brands, assignments };
+  return { aggregator, brands, rows };
 };

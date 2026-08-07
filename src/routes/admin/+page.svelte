@@ -57,6 +57,14 @@
       accessKey: "brands",
     },
     {
+      href: "/admin/brand-assignments",
+      title: "Store → brand assignments",
+      description:
+        "Group the aggregator KPI stores under a brand so Foody and Wolt storefronts of the same restaurant report together.",
+      icon: StoreIcon,
+      accessKey: "brands",
+    },
+    {
       href: "/admin/image-generator-usage",
       title: "Image generator usage",
       description:

@@ -3,11 +3,13 @@ import {
   kpiSortDirections,
   reviewSortFields,
 } from "$lib/services/aggregator-kpis/aggregator-kpis";
+import { withBrandStores } from "$lib/services/aggregator-kpis/brand-stores.server";
 import {
   listStores,
   parseKpiFilters,
 } from "$lib/services/aggregator-kpis/kpi-shared.server";
 import { listReviews } from "$lib/services/aggregator-kpis/reviews.server";
+import { listBrands } from "$lib/services/brands.server";
 import { z } from "zod";
 import type { PageServerLoad } from "./$types";
 
@@ -42,7 +44,12 @@ const extraParamsSchema = z.object({
 export const load: PageServerLoad = async (event) => {
   await requirePermission(event, { aggregatorKpis: ["view"] });
 
-  const filters = parseKpiFilters(event.url.searchParams);
+  // Reviews span both platforms (the aggregator is a filter, not a cookie), so
+  // the brand scope is resolved across every aggregator.
+  const filters = await withBrandStores(
+    parseKpiFilters(event.url.searchParams),
+    null,
+  );
   const params = event.url.searchParams;
 
   const parsed = extraParamsSchema.safeParse({
@@ -59,7 +66,7 @@ export const load: PageServerLoad = async (event) => {
   const sortBy = parsed.success ? parsed.data.sortBy : "reviewed_at";
   const sortDir = parsed.success ? parsed.data.sortDir : "desc";
 
-  const [reviewsPage, stores] = await Promise.all([
+  const [reviewsPage, allStores, brands] = await Promise.all([
     listReviews({
       ...filters,
       page,
@@ -70,7 +77,24 @@ export const load: PageServerLoad = async (event) => {
       sortDir,
     }),
     listStores(null),
+    listBrands({ active: true }),
   ]);
 
-  return { filters, stores, rating, query, sortBy, sortDir, reviewsPage };
+  // Narrow the store dropdown to the brand's stores (see `loadPeriodScope`).
+  const scopedIds = filters.storeIds;
+  const stores =
+    scopedIds === null
+      ? allStores
+      : allStores.filter((store) => scopedIds.includes(store.id));
+
+  return {
+    filters,
+    stores,
+    brands,
+    rating,
+    query,
+    sortBy,
+    sortDir,
+    reviewsPage,
+  };
 };

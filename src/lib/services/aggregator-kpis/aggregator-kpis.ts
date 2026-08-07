@@ -51,8 +51,23 @@ export type StoreRef = {
   aggregator: AggregatorValue;
 };
 
+/**
+ * Brand scope shared by both filter shapes. `brandId` is what the URL carries
+ * and the filter bar echoes back; `storeIds` is resolved server-side from it by
+ * `withBrandStores`.
+ *
+ * The `storeIds` contract (same as the competition section):
+ *  - `null` — no brand filter; every store is in scope.
+ *  - `[]`   — a brand is selected but owns no store on this platform, so the
+ *             query must return **zero rows**. Never treat this as "all".
+ */
+export type BrandScopeFilters = {
+  brandId: number | null;
+  storeIds: number[] | null;
+};
+
 /** Filters shared by every KPI view, parsed from URL search params. */
-export type KpiFilters = {
+export type KpiFilters = BrandScopeFilters & {
   aggregator: AggregatorValue | null;
   storeId: number | null;
   /** UTC day, "YYYY-MM-DD"; inclusive lower bound. */
@@ -79,7 +94,7 @@ export const periodKinds = ["week", "month"] as const;
 export type PeriodKind = (typeof periodKinds)[number];
 
 /** Filters for the Foody period views, parsed from URL search params. */
-export type PeriodFilters = {
+export type PeriodFilters = BrandScopeFilters & {
   /** Single store to scope to; null = all Foody stores. */
   storeId: number | null;
   /** Week or month lane; defaults to "week". */
@@ -230,6 +245,8 @@ export type KpiStoreDetail = {
   url: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Brand this store is grouped under; null when unassigned. */
+  brand: { brandId: number; brandName: string } | null;
 };
 
 export type RejectionRow = StoreKpiBase & {

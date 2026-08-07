@@ -14,6 +14,7 @@
     type KpiSortDirection,
     type ReviewSortField,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
+  import { formatBrandLabel } from "$lib/services/brands";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import SearchIcon from "@lucide/svelte/icons/search";
   import type { PageData } from "./$types";
@@ -39,6 +40,23 @@
 
   function submitSearchForm() {
     searchForm?.requestSubmit();
+  }
+
+  /**
+   * Changing the brand clears the store first: a store picked under the old
+   * brand may not belong to the new one, and that pair resolves to an empty
+   * scope. The select is reset in the DOM so the GET form submits it empty.
+   */
+  function handleBrandChange(event: Event) {
+    const storeSelect = (
+      event.currentTarget as HTMLSelectElement
+    ).form?.elements.namedItem("storeId");
+
+    if (storeSelect instanceof HTMLSelectElement) {
+      storeSelect.value = "";
+    }
+
+    handleSearchChange();
   }
 
   function handleSearchInput() {
@@ -260,6 +278,25 @@
                 {/each}
               </NativeSelect.Root>
             </div>
+
+            {#if data.brands.length > 0}
+              <div class="space-y-2">
+                <label class="text-sm font-medium" for="brandId">Brand</label>
+                <NativeSelect.Root
+                  id="brandId"
+                  name="brandId"
+                  value={data.filters.brandId?.toString() ?? ""}
+                  onchange={handleBrandChange}
+                >
+                  <NativeSelect.Option value="">All brands</NativeSelect.Option>
+                  {#each data.brands as brand (brand.id)}
+                    <NativeSelect.Option value={brand.id.toString()}>
+                      {formatBrandLabel(brand)}
+                    </NativeSelect.Option>
+                  {/each}
+                </NativeSelect.Root>
+              </div>
+            {/if}
 
             <div class="space-y-2">
               <label class="text-sm font-medium" for="storeId">Store</label>

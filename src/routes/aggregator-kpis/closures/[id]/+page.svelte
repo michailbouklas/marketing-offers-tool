@@ -121,6 +121,12 @@
               </dd>
             </div>
             <div class="flex justify-between gap-4">
+              <dt class="text-muted-foreground shrink-0">Brand</dt>
+              <dd class="text-right font-medium">
+                {store.brand?.brandName ?? "Unassigned"}
+              </dd>
+            </div>
+            <div class="flex justify-between gap-4">
               <dt class="text-muted-foreground shrink-0">Store id</dt>
               <dd class="text-right font-mono text-xs">{store.id}</dd>
             </div>

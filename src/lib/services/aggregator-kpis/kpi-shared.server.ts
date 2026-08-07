@@ -3,6 +3,7 @@
  * against the merchant-scrapes Postgres database via `merchantScrapesPrisma`.
  */
 import { merchantScrapesPrisma } from "$lib/server/merchant-scrapes-prisma";
+import { getBrandRefsByStoreIds } from "$lib/services/aggregator-kpis/brand-stores.server";
 import {
   aggregators,
   type AggregatorValue,
@@ -30,11 +31,31 @@ export function toNumber(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-/** `where` fragment restricting a `Store` relation by the shared filters. */
+/**
+ * `where` fragment restricting a `Store` relation by the shared filters.
+ *
+ * The single-store and brand scopes are **intersected**, not merged: spreading
+ * both as `id` would silently drop one. When a store is picked that the brand
+ * does not own, the intersection is empty and the query returns nothing —
+ * consistent with `storeIdsFilterSql`'s `AND FALSE`.
+ */
 export function storeWhere(filters: KpiFilters) {
+  const ids =
+    filters.storeIds !== null
+      ? filters.storeId !== null
+        ? filters.storeIds.includes(filters.storeId)
+          ? [filters.storeId]
+          : []
+        : filters.storeIds
+      : null;
+
   return {
     ...(filters.aggregator ? { aggregator: filters.aggregator } : {}),
-    ...(filters.storeId ? { id: filters.storeId } : {}),
+    ...(ids !== null
+      ? { id: { in: ids } }
+      : filters.storeId
+        ? { id: filters.storeId }
+        : {}),
   };
 }
 
@@ -127,6 +148,9 @@ const kpiFiltersSchema = z.object({
   storeId: z
     .preprocess(emptyToUndefined, z.coerce.number().int().positive().optional())
     .catch(undefined),
+  brandId: z
+    .preprocess(emptyToUndefined, z.coerce.number().int().positive().optional())
+    .catch(undefined),
   from: z
     .preprocess(emptyToUndefined, z.string().regex(dayPattern).optional())
     .catch(undefined),
@@ -135,11 +159,16 @@ const kpiFiltersSchema = z.object({
     .catch(undefined),
 });
 
-/** Parses the shared KPI filters (aggregator, store, date range) from a URL. */
+/**
+ * Parses the shared KPI filters (aggregator, store, brand, date range) from a
+ * URL. Pure and synchronous — `storeIds` is resolved from `brandId` by the
+ * loader via `withBrandStores` (see `parsePeriodFilters` for the same split).
+ */
 export function parseKpiFilters(searchParams: URLSearchParams): KpiFilters {
   const result = kpiFiltersSchema.safeParse({
     aggregator: searchParams.get("aggregator") ?? undefined,
     storeId: searchParams.get("storeId") ?? undefined,
+    brandId: searchParams.get("brandId") ?? undefined,
     from: searchParams.get("from") ?? undefined,
     to: searchParams.get("to") ?? undefined,
   });
@@ -149,6 +178,8 @@ export function parseKpiFilters(searchParams: URLSearchParams): KpiFilters {
   return {
     aggregator: data.aggregator ?? null,
     storeId: data.storeId ?? null,
+    brandId: data.brandId ?? null,
+    storeIds: null,
     from: data.from ?? null,
     to: data.to ?? null,
   };
@@ -176,6 +207,9 @@ export async function getKpiStore(
     return null;
   }
 
+  // Resolved here rather than per-page: all six `[id]` detail routes call this.
+  const brandRefs = await getBrandRefsByStoreIds([store.id]);
+
   return {
     id: store.id,
     name: store.name,
@@ -185,6 +219,7 @@ export async function getKpiStore(
     url: store.url,
     createdAt: store.createdAt.toISOString(),
     updatedAt: store.updatedAt.toISOString(),
+    brand: brandRefs.get(store.id) ?? null,
   };
 }
 

@@ -21,7 +21,7 @@ import { toNumber } from "$lib/services/aggregator-kpis/kpi-shared.server";
 import {
   PERIOD_TREND_LIMIT,
   periodDaysSql,
-  storeFilterSql,
+  periodScopeSql,
 } from "$lib/services/aggregator-kpis/period-shared.server";
 
 /** Raw shape of a per-store metrics row (dates cast to text in SQL). */
@@ -76,7 +76,7 @@ async function periodSumTrends(
                SUM(sales)          AS sales,
                SUM(orders)         AS orders
         FROM foody_metrics_by_period
-        WHERE ${periodDaysSql(filters.period)} ${storeFilterSql(filters.storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
         GROUP BY "periodStart", "periodEnd", period_days
         ORDER BY "periodStart" DESC
         LIMIT ${PERIOD_TREND_LIMIT[filters.period]}
@@ -114,7 +114,7 @@ async function latestPeriodRows(filters: PeriodFilters): Promise<MetricRow[]> {
       WITH latest AS (
         SELECT MAX("periodStart") AS ps
         FROM foody_metrics_by_period
-        WHERE ${periodDaysSql(filters.period)} ${storeFilterSql(filters.storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       )
       SELECT v."storeId"                 AS "storeId",
              v.name                      AS "storeName",
@@ -128,7 +128,7 @@ async function latestPeriodRows(filters: PeriodFilters): Promise<MetricRow[]> {
              v."completedOrders"         AS "completedOrders"
       FROM foody_metrics_by_period v
       JOIN latest ON v."periodStart" = latest.ps
-      WHERE ${periodDaysSql(filters.period)} ${storeFilterSql(filters.storeId)}
+      WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       ORDER BY v.name ASC`,
   );
 
@@ -227,7 +227,7 @@ async function woltPeriodSumTrends(
                SUM(sales)          AS sales,
                SUM(orders)         AS orders
         FROM wolt_metrics_by_period
-        WHERE ${periodDaysSql(filters.period)} ${storeFilterSql(filters.storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
         GROUP BY "periodStart", "periodEnd", period_days
         ORDER BY "periodStart" DESC
         LIMIT ${PERIOD_TREND_LIMIT[filters.period]}
@@ -282,12 +282,12 @@ async function woltLatestPeriodRows(
       WITH latest AS (
         SELECT MAX("periodStart") AS ps
         FROM wolt_metrics_by_period
-        WHERE ${periodDaysSql(filters.period)} ${storeFilterSql(filters.storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       )
       SELECT v."storeId" AS "storeId", v.name AS "storeName", ${woltMetricColumnsSql}
       FROM wolt_metrics_by_period v
       JOIN latest ON v."periodStart" = latest.ps
-      WHERE ${periodDaysSql(filters.period)} ${storeFilterSql(filters.storeId)}
+      WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       ORDER BY v.name ASC`,
   );
 

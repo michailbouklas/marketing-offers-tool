@@ -27,7 +27,8 @@ import {
 import {
   PERIOD_TREND_LIMIT,
   periodDaysSql,
-  storeFilterSql,
+  periodScopeSql,
+  singleStoreFilters,
 } from "$lib/services/aggregator-kpis/period-shared.server";
 
 /** Reason rows -> value slices (count or €), non-null only, sorted desc. */
@@ -379,8 +380,7 @@ const rejectionColumnsSql = Prisma.sql`
 
 /** Total lost sales (€) per period across the scope (a summable flow). */
 async function getRejectionsPeriodTrend(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<PeriodPoint[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<
     {
@@ -398,11 +398,11 @@ async function getRejectionsPeriodTrend(
                period_days         AS "periodDays",
                SUM("lostSales")    AS lost
         FROM foody_rejections_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
           AND "lostSales" IS NOT NULL
         GROUP BY "periodStart", "periodEnd", period_days
         ORDER BY "periodStart" DESC
-        LIMIT ${PERIOD_TREND_LIMIT[period]}
+        LIMIT ${PERIOD_TREND_LIMIT[filters.period]}
       ) t
       ORDER BY "periodStart" ASC`,
   );
@@ -424,20 +424,19 @@ async function getRejectionsPeriodTrend(
 
 /** Latest completed period's rejections per store within the scope. */
 async function getRejectionsLatestPeriodRows(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<RejectionRow[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<RejectionPeriodRawRow[]>(
     Prisma.sql`
       WITH latest AS (
         SELECT MAX("periodStart") AS ps
         FROM foody_rejections_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       )
       SELECT v."storeId" AS "storeId", v.name AS "storeName", ${rejectionColumnsSql}
       FROM foody_rejections_by_period v
       JOIN latest ON v."periodStart" = latest.ps
-      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       ORDER BY v.name ASC`,
   );
 
@@ -466,8 +465,7 @@ async function getRejectionsPeriodHistory(
  * joining `CancellationReason` on the view's `rejections_snapshot_id`.
  */
 async function getRejectionsLostSalesByReasonPeriod(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<LostSalesByReasonRow[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<
     { reason: string; salesLoss: unknown; storeCount: unknown }[]
@@ -476,7 +474,7 @@ async function getRejectionsLostSalesByReasonPeriod(
       WITH latest AS (
         SELECT MAX("periodStart") AS ps
         FROM foody_rejections_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       )
       SELECT cr.reason                      AS reason,
              SUM(cr."salesLoss")            AS "salesLoss",
@@ -485,7 +483,7 @@ async function getRejectionsLostSalesByReasonPeriod(
       JOIN latest ON v."periodStart" = latest.ps
       JOIN "CancellationReason" cr
         ON cr."orderRejectionsSnapshotId" = v.rejections_snapshot_id
-      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
         AND cr."salesLoss" IS NOT NULL AND cr."salesLoss" > 0
       GROUP BY cr.reason
       ORDER BY "salesLoss" DESC`,
@@ -576,8 +574,7 @@ const woltRejectionColumnsSql = Prisma.sql`
 
 /** Total lost sales (€) per period across the scope, from the Wolt view. */
 async function getWoltRejectionsPeriodTrend(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<PeriodPoint[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<
     {
@@ -595,11 +592,11 @@ async function getWoltRejectionsPeriodTrend(
                period_days         AS "periodDays",
                SUM(loss_amount)    AS lost
         FROM wolt_rejections_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
           AND loss_amount IS NOT NULL
         GROUP BY "periodStart", "periodEnd", period_days
         ORDER BY "periodStart" DESC
-        LIMIT ${PERIOD_TREND_LIMIT[period]}
+        LIMIT ${PERIOD_TREND_LIMIT[filters.period]}
       ) t
       ORDER BY "periodStart" ASC`,
   );
@@ -621,8 +618,7 @@ async function getWoltRejectionsPeriodTrend(
 
 /** Latest completed period's Wolt rejections per store within the scope. */
 async function getWoltRejectionsLatestPeriodRows(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<RejectionRow[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<
     WoltRejectionPeriodRawRow[]
@@ -631,12 +627,12 @@ async function getWoltRejectionsLatestPeriodRows(
       WITH latest AS (
         SELECT MAX("periodStart") AS ps
         FROM wolt_rejections_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       )
       SELECT v."storeId" AS "storeId", v.name AS "storeName", ${woltRejectionColumnsSql}
       FROM wolt_rejections_by_period v
       JOIN latest ON v."periodStart" = latest.ps
-      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       ORDER BY v.name ASC`,
   );
 
@@ -668,8 +664,7 @@ async function getWoltRejectionsPeriodHistory(
  * produce rows — an absent date inside the period is a real zero (§4.4).
  */
 async function getWoltRejectionsPerDay(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<WoltRejectionDay[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<
     {
@@ -683,7 +678,7 @@ async function getWoltRejectionsPerDay(
       WITH latest AS (
         SELECT MAX("periodStart") AS ps
         FROM wolt_rejections_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       )
       SELECT d.date::text                  AS date,
              SUM(d."autoRejected")         AS "autoRejected",
@@ -692,7 +687,7 @@ async function getWoltRejectionsPerDay(
       FROM wolt_rejections_by_period v
       JOIN latest ON v."periodStart" = latest.ps
       JOIN "RejectionDay" d ON d."orderRejectionsSnapshotId" = v.rejections_id
-      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       GROUP BY d.date
       ORDER BY d.date ASC`,
   );
@@ -712,9 +707,9 @@ export async function getRejectionsPeriodView(
 ): Promise<RejectionsPeriodView> {
   if (aggregator === "WOLT") {
     const [rows, trend, perDay] = await Promise.all([
-      getWoltRejectionsLatestPeriodRows(filters.period, filters.storeId),
-      getWoltRejectionsPeriodTrend(filters.period, filters.storeId),
-      getWoltRejectionsPerDay(filters.period, filters.storeId),
+      getWoltRejectionsLatestPeriodRows(filters),
+      getWoltRejectionsPeriodTrend(filters),
+      getWoltRejectionsPerDay(filters),
     ]);
 
     // Wolt's CancellationReason rows carry no € loss, so there is no €-by-reason
@@ -729,9 +724,9 @@ export async function getRejectionsPeriodView(
   }
 
   const [rows, trend, lostSalesByReason] = await Promise.all([
-    getRejectionsLatestPeriodRows(filters.period, filters.storeId),
-    getRejectionsPeriodTrend(filters.period, filters.storeId),
-    getRejectionsLostSalesByReasonPeriod(filters.period, filters.storeId),
+    getRejectionsLatestPeriodRows(filters),
+    getRejectionsPeriodTrend(filters),
+    getRejectionsLostSalesByReasonPeriod(filters),
   ]);
 
   return { period: filters.period, rows, trend, lostSalesByReason };
@@ -743,11 +738,13 @@ export async function getRejectionsPeriodStoreView(
   period: PeriodKind,
   aggregator: AggregatorValue = "FOODY",
 ): Promise<RejectionsPeriodStoreView> {
+  const scope = singleStoreFilters(storeId, period);
+
   if (aggregator === "WOLT") {
     const [rows, trend, perDay] = await Promise.all([
       getWoltRejectionsPeriodHistory(period, storeId),
-      getWoltRejectionsPeriodTrend(period, storeId),
-      getWoltRejectionsPerDay(period, storeId),
+      getWoltRejectionsPeriodTrend(scope),
+      getWoltRejectionsPerDay(scope),
     ]);
 
     return {
@@ -762,7 +759,7 @@ export async function getRejectionsPeriodStoreView(
 
   const [rows, trend, reasonBreakdown, reasonTrend] = await Promise.all([
     getRejectionsPeriodHistory(period, storeId),
-    getRejectionsPeriodTrend(period, storeId),
+    getRejectionsPeriodTrend(scope),
     getCancellationReasonBreakdown(storeId),
     getCancellationReasonTrend(storeId),
   ]);

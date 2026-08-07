@@ -1,6 +1,7 @@
 import { merchantScrapesPrisma } from "$lib/server/merchant-scrapes-prisma";
 import { Prisma } from "../../../generated/merchant-scrapes-prisma/client";
 import type {
+  BrandScopeFilters,
   PeriodFilters,
   PeriodKind,
   PeriodPoint,
@@ -11,8 +12,10 @@ import type {
 import { toNumber } from "$lib/services/aggregator-kpis/kpi-shared.server";
 import {
   PERIOD_TREND_LIMIT,
+  allStoresFilters,
   periodDaysSql,
-  storeFilterSql,
+  periodScopeSql,
+  singleStoreFilters,
 } from "$lib/services/aggregator-kpis/period-shared.server";
 
 // --- Period-based reads (Foody foody_pro_growth_by_period view) ---
@@ -71,20 +74,19 @@ const proGrowthColumnsSql = Prisma.sql`
 
 /** Latest completed period's pro-growth per store within the scope. */
 async function getProGrowthLatestPeriodRows(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<ProGrowthRow[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<ProGrowthPeriodRawRow[]>(
     Prisma.sql`
       WITH latest AS (
         SELECT MAX("periodStart") AS ps
         FROM foody_pro_growth_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       )
       SELECT v."storeId" AS "storeId", v.name AS "storeName", ${proGrowthColumnsSql}
       FROM foody_pro_growth_by_period v
       JOIN latest ON v."periodStart" = latest.ps
-      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       ORDER BY v.name ASC`,
   );
 
@@ -136,8 +138,7 @@ function mapShareTrend(rows: ShareTrendRawRow[]): PeriodPoint[] {
  * summed numerator/denominator, never average per-store shares.
  */
 async function getProShareTrend(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<PeriodPoint[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<ShareTrendRawRow[]>(
     Prisma.sql`
@@ -149,11 +150,11 @@ async function getProShareTrend(
                100 * SUM("proOrders")
                    / NULLIF(SUM("proOrders" + "nonProOrders"), 0) AS pct
         FROM foody_pro_growth_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
           AND "proOrders" IS NOT NULL AND "nonProOrders" IS NOT NULL
         GROUP BY "periodStart", "periodEnd", period_days
         ORDER BY "periodStart" DESC
-        LIMIT ${PERIOD_TREND_LIMIT[period]}
+        LIMIT ${PERIOD_TREND_LIMIT[filters.period]}
       ) t
       ORDER BY "periodStart" ASC`,
   );
@@ -166,8 +167,7 @@ async function getProShareTrend(
  * denominator — independent of the Pro block and of metrics orders.
  */
 async function getNewShareTrend(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<PeriodPoint[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<ShareTrendRawRow[]>(
     Prisma.sql`
@@ -179,12 +179,12 @@ async function getNewShareTrend(
                100 * SUM("newCustomerOrders")
                    / NULLIF(SUM("newCustomerOrders" + "returningCustomerOrders"), 0) AS pct
         FROM foody_pro_growth_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
           AND "newCustomerOrders" IS NOT NULL
           AND "returningCustomerOrders" IS NOT NULL
         GROUP BY "periodStart", "periodEnd", period_days
         ORDER BY "periodStart" DESC
-        LIMIT ${PERIOD_TREND_LIMIT[period]}
+        LIMIT ${PERIOD_TREND_LIMIT[filters.period]}
       ) t
       ORDER BY "periodStart" ASC`,
   );
@@ -197,9 +197,9 @@ export async function getProGrowthPeriodView(
   filters: PeriodFilters,
 ): Promise<ProGrowthPeriodView> {
   const [rows, proShareTrend, newShareTrend] = await Promise.all([
-    getProGrowthLatestPeriodRows(filters.period, filters.storeId),
-    getProShareTrend(filters.period, filters.storeId),
-    getNewShareTrend(filters.period, filters.storeId),
+    getProGrowthLatestPeriodRows(filters),
+    getProShareTrend(filters),
+    getNewShareTrend(filters),
   ]);
 
   return { period: filters.period, rows, proShareTrend, newShareTrend };
@@ -210,10 +210,12 @@ export async function getProGrowthPeriodStoreView(
   storeId: number,
   period: PeriodKind,
 ): Promise<ProGrowthPeriodStoreView> {
+  const scope = singleStoreFilters(storeId, period);
+
   const [rows, proShareTrend, newShareTrend] = await Promise.all([
     getProGrowthPeriodHistory(period, storeId),
-    getProShareTrend(period, storeId),
-    getNewShareTrend(period, storeId),
+    getProShareTrend(scope),
+    getNewShareTrend(scope),
   ]);
 
   return { period, rows, proShareTrend, newShareTrend };
@@ -224,6 +226,11 @@ export async function getProGrowthPeriodStoreView(
  * landing dashboard to compute the company-wide Pro order share. View-based (no
  * `ProGrowthSnapshot` model dependency).
  */
-export async function getProGrowthLatestRows(): Promise<ProGrowthRow[]> {
-  return getProGrowthLatestPeriodRows("week", null);
+export async function getProGrowthLatestRows(
+  scope: BrandScopeFilters,
+): Promise<ProGrowthRow[]> {
+  return getProGrowthLatestPeriodRows({
+    ...allStoresFilters("week"),
+    ...scope,
+  });
 }

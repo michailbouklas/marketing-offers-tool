@@ -3,6 +3,7 @@ import { Prisma } from "../../../generated/merchant-scrapes-prisma/client";
 import type {
   AggregatorValue,
   KpiFilters,
+  PeriodFilters,
   RatingRow,
   RatingsStoreView,
   RatingsView,
@@ -15,7 +16,7 @@ import {
   storeWhere,
   toNumber,
 } from "$lib/services/aggregator-kpis/kpi-shared.server";
-import { storeFilterSql } from "$lib/services/aggregator-kpis/period-shared.server";
+import { periodScopeSql } from "$lib/services/aggregator-kpis/period-shared.server";
 
 /** Latest rating snapshot per store, filtered by aggregator/store. */
 export async function getRatingsLatestByStore(
@@ -224,7 +225,7 @@ export async function getRatingsView(
 
 /** Current Foody store ratings from the view, one row per store. */
 async function getFoodyRatingRows(
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<RatingRow[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<
     {
@@ -242,7 +243,7 @@ async function getFoodyRatingRows(
              "storeRating"   AS "storeRating",
              "totalReviews"  AS "totalReviews"
       FROM foody_rating_latest
-      WHERE TRUE ${storeFilterSql(storeId)}
+      WHERE TRUE ${periodScopeSql(filters)}
       ORDER BY name ASC`,
   );
 
@@ -258,7 +259,7 @@ async function getFoodyRatingRows(
 
 /** Star distribution summed across the latest Foody rating snapshot per store. */
 async function getFoodyRatingDistribution(
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<StarBucket[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<
     { stars: number; count: unknown }[]
@@ -267,7 +268,7 @@ async function getFoodyRatingDistribution(
       SELECT b.stars AS stars, SUM(b.count) AS count
       FROM foody_rating_latest v
       JOIN "RatingStarBucket" b ON b."ratingSnapshotId" = v.rating_snapshot_id
-      WHERE TRUE ${storeFilterSql(storeId)}
+      WHERE TRUE ${periodScopeSql(filters)}
       GROUP BY b.stars`,
   );
 
@@ -296,18 +297,20 @@ async function getFoodyRatingDistribution(
  * (a level, not a per-period flow — see spec rule 3).
  */
 export async function getRatingsFoodyView(
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<RatingsView> {
   const foodyFilters: KpiFilters = {
     aggregator: "FOODY",
-    storeId,
+    storeId: filters.storeId,
+    brandId: filters.brandId,
+    storeIds: filters.storeIds,
     from: null,
     to: null,
   };
 
   const [rows, distribution, trend] = await Promise.all([
-    getFoodyRatingRows(storeId),
-    getFoodyRatingDistribution(storeId),
+    getFoodyRatingRows(filters),
+    getFoodyRatingDistribution(filters),
     getRatingsTrend(foodyFilters),
   ]);
 

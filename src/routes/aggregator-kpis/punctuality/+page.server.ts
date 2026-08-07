@@ -1,18 +1,12 @@
 import { requirePermission } from "$lib/server/auth-guards";
-import { listStores } from "$lib/services/aggregator-kpis/kpi-shared.server";
+import { loadPeriodScope } from "$lib/services/aggregator-kpis/period-shared.server";
 import { getPunctualityPeriodView } from "$lib/services/aggregator-kpis/punctuality.server";
-import {
-  parsePeriodFilters,
-  resolveAggregator,
-} from "$lib/services/aggregator-kpis/period-shared.server";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
   await requirePermission(event, { aggregatorKpis: ["view"] });
 
-  const filters = parsePeriodFilters(event.url.searchParams);
-  const aggregator = resolveAggregator(event);
-  const stores = await listStores(aggregator);
+  const { filters, aggregator, brands, stores } = await loadPeriodScope(event);
 
   // Wolt has no punctuality section — the analogs (late-orders, prep-time) live
   // on the rejections KPI. Show an empty state instead of Foody data.
@@ -20,6 +14,7 @@ export const load: PageServerLoad = async (event) => {
     return {
       filters,
       aggregator,
+      brands,
       stores,
       unavailableForWolt: true,
       view: { period: filters.period, rows: [], trend: [] },
@@ -28,5 +23,12 @@ export const load: PageServerLoad = async (event) => {
 
   const view = await getPunctualityPeriodView(filters);
 
-  return { filters, aggregator, stores, unavailableForWolt: false, view };
+  return {
+    filters,
+    aggregator,
+    brands,
+    stores,
+    unavailableForWolt: false,
+    view,
+  };
 };

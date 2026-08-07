@@ -22,7 +22,8 @@ import {
 import {
   PERIOD_TREND_LIMIT,
   periodDaysSql,
-  storeFilterSql,
+  periodScopeSql,
+  singleStoreFilters,
 } from "$lib/services/aggregator-kpis/period-shared.server";
 
 /** Latest punctuality snapshot per store, filtered by aggregator/store. */
@@ -202,8 +203,7 @@ const punctualityColumnsSql = Prisma.sql`
  * weight each store's percentage by its `totalOrders`.
  */
 async function getPunctualityPeriodTrend(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<PeriodPoint[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<
     {
@@ -222,11 +222,11 @@ async function getPunctualityPeriodTrend(
                100 * SUM("avoidableWaitOrdersPct" / 100.0 * "totalOrders")
                    / NULLIF(SUM("totalOrders"), 0) AS pct
         FROM foody_punctuality_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
           AND "avoidableWaitOrdersPct" IS NOT NULL AND "totalOrders" IS NOT NULL
         GROUP BY "periodStart", "periodEnd", period_days
         ORDER BY "periodStart" DESC
-        LIMIT ${PERIOD_TREND_LIMIT[period]}
+        LIMIT ${PERIOD_TREND_LIMIT[filters.period]}
       ) t
       ORDER BY "periodStart" ASC`,
   );
@@ -248,20 +248,19 @@ async function getPunctualityPeriodTrend(
 
 /** Latest completed period's punctuality per store within the scope. */
 async function getPunctualityLatestPeriodRows(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<PunctualityRow[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<PunctualityPeriodRawRow[]>(
     Prisma.sql`
       WITH latest AS (
         SELECT MAX("periodStart") AS ps
         FROM foody_punctuality_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       )
       SELECT v."storeId" AS "storeId", v.name AS "storeName", ${punctualityColumnsSql}
       FROM foody_punctuality_by_period v
       JOIN latest ON v."periodStart" = latest.ps
-      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       ORDER BY v.name ASC`,
   );
 
@@ -290,8 +289,8 @@ export async function getPunctualityPeriodView(
   filters: PeriodFilters,
 ): Promise<PunctualityPeriodView> {
   const [rows, trend] = await Promise.all([
-    getPunctualityLatestPeriodRows(filters.period, filters.storeId),
-    getPunctualityPeriodTrend(filters.period, filters.storeId),
+    getPunctualityLatestPeriodRows(filters),
+    getPunctualityPeriodTrend(filters),
   ]);
 
   return { period: filters.period, rows, trend };
@@ -304,7 +303,7 @@ export async function getPunctualityPeriodStoreView(
 ): Promise<PunctualityPeriodStoreView> {
   const [rows, trend] = await Promise.all([
     getPunctualityPeriodHistory(period, storeId),
-    getPunctualityPeriodTrend(period, storeId),
+    getPunctualityPeriodTrend(singleStoreFilters(storeId, period)),
   ]);
 
   return { period, rows, trend };

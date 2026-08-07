@@ -24,7 +24,8 @@ import {
 import {
   PERIOD_TREND_LIMIT,
   periodDaysSql,
-  storeFilterSql,
+  periodScopeSql,
+  singleStoreFilters,
 } from "$lib/services/aggregator-kpis/period-shared.server";
 
 /** Latest closures snapshot per store, filtered by aggregator/store. */
@@ -238,8 +239,7 @@ function mapClosurePeriodRow(row: ClosurePeriodRawRow): ClosureRow {
 
 /** Total offline hours per period across the scope (a summable flow). */
 async function getClosuresPeriodTrend(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<PeriodPoint[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<
     {
@@ -257,11 +257,11 @@ async function getClosuresPeriodTrend(
                period_days         AS "periodDays",
                SUM("offlineDurationSeconds")::float8 / 3600.0 AS hours
         FROM foody_closures_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
           AND "offlineDurationSeconds" IS NOT NULL
         GROUP BY "periodStart", "periodEnd", period_days
         ORDER BY "periodStart" DESC
-        LIMIT ${PERIOD_TREND_LIMIT[period]}
+        LIMIT ${PERIOD_TREND_LIMIT[filters.period]}
       ) t
       ORDER BY "periodStart" ASC`,
   );
@@ -283,15 +283,14 @@ async function getClosuresPeriodTrend(
 
 /** Latest completed period's closures per store within the scope. */
 async function getClosuresLatestPeriodRows(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<ClosureRow[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<ClosurePeriodRawRow[]>(
     Prisma.sql`
       WITH latest AS (
         SELECT MAX("periodStart") AS ps
         FROM foody_closures_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       )
       SELECT v."storeId"                 AS "storeId",
              v.name                      AS "storeName",
@@ -305,7 +304,7 @@ async function getClosuresLatestPeriodRows(
              v."unreachableSeconds"      AS "unreachableSeconds"
       FROM foody_closures_by_period v
       JOIN latest ON v."periodStart" = latest.ps
-      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       ORDER BY v.name ASC`,
   );
 
@@ -404,8 +403,7 @@ const woltClosureColumnsSql = Prisma.sql`
 
 /** Total offline hours per period across the scope, from the Wolt view. */
 async function getWoltClosuresPeriodTrend(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<PeriodPoint[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<
     {
@@ -423,11 +421,11 @@ async function getWoltClosuresPeriodTrend(
                period_days         AS "periodDays",
                SUM(unavailable_seconds)::float8 / 3600.0 AS hours
         FROM wolt_closures_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
           AND unavailable_seconds IS NOT NULL
         GROUP BY "periodStart", "periodEnd", period_days
         ORDER BY "periodStart" DESC
-        LIMIT ${PERIOD_TREND_LIMIT[period]}
+        LIMIT ${PERIOD_TREND_LIMIT[filters.period]}
       ) t
       ORDER BY "periodStart" ASC`,
   );
@@ -449,20 +447,19 @@ async function getWoltClosuresPeriodTrend(
 
 /** Latest completed period's Wolt closures per store within the scope. */
 async function getWoltClosuresLatestPeriodRows(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<ClosureRow[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<WoltClosurePeriodRawRow[]>(
     Prisma.sql`
       WITH latest AS (
         SELECT MAX("periodStart") AS ps
         FROM wolt_closures_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       )
       SELECT v."storeId" AS "storeId", v.name AS "storeName", ${woltClosureColumnsSql}
       FROM wolt_closures_by_period v
       JOIN latest ON v."periodStart" = latest.ps
-      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       ORDER BY v.name ASC`,
   );
 
@@ -492,8 +489,7 @@ async function getWoltClosuresPeriodHistory(
  * zero-closure day. Returns [] when the per-day chart never rendered (§4.4).
  */
 async function getWoltClosuresPerDay(
-  period: PeriodKind,
-  storeId: number | null,
+  filters: PeriodFilters,
 ): Promise<WoltClosureDay[]> {
   const rows = await merchantScrapesPrisma.$queryRaw<
     {
@@ -507,7 +503,7 @@ async function getWoltClosuresPerDay(
       WITH latest AS (
         SELECT MAX("periodStart") AS ps
         FROM wolt_closures_by_period
-        WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+        WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       )
       SELECT d.date::text                       AS date,
              SUM(d."appNotLiveSeconds")         AS "appNotLiveSeconds",
@@ -516,7 +512,7 @@ async function getWoltClosuresPerDay(
       FROM wolt_closures_by_period v
       JOIN latest ON v."periodStart" = latest.ps
       JOIN "ClosureDay" d ON d."closuresSnapshotId" = v.closures_id
-      WHERE ${periodDaysSql(period)} ${storeFilterSql(storeId)}
+      WHERE ${periodDaysSql(filters.period)} ${periodScopeSql(filters)}
       GROUP BY d.date
       ORDER BY d.date ASC`,
   );
@@ -536,17 +532,17 @@ export async function getClosuresPeriodView(
 ): Promise<ClosuresPeriodView> {
   if (aggregator === "WOLT") {
     const [rows, trend, perDay] = await Promise.all([
-      getWoltClosuresLatestPeriodRows(filters.period, filters.storeId),
-      getWoltClosuresPeriodTrend(filters.period, filters.storeId),
-      getWoltClosuresPerDay(filters.period, filters.storeId),
+      getWoltClosuresLatestPeriodRows(filters),
+      getWoltClosuresPeriodTrend(filters),
+      getWoltClosuresPerDay(filters),
     ]);
 
     return { period: filters.period, rows, trend, perDay };
   }
 
   const [rows, trend] = await Promise.all([
-    getClosuresLatestPeriodRows(filters.period, filters.storeId),
-    getClosuresPeriodTrend(filters.period, filters.storeId),
+    getClosuresLatestPeriodRows(filters),
+    getClosuresPeriodTrend(filters),
   ]);
 
   return { period: filters.period, rows, trend };
@@ -558,11 +554,13 @@ export async function getClosuresPeriodStoreView(
   period: PeriodKind,
   aggregator: AggregatorValue = "FOODY",
 ): Promise<ClosuresPeriodStoreView> {
+  const scope = singleStoreFilters(storeId, period);
+
   if (aggregator === "WOLT") {
     const [rows, trend, perDay] = await Promise.all([
       getWoltClosuresPeriodHistory(period, storeId),
-      getWoltClosuresPeriodTrend(period, storeId),
-      getWoltClosuresPerDay(period, storeId),
+      getWoltClosuresPeriodTrend(scope),
+      getWoltClosuresPerDay(scope),
     ]);
 
     // Wolt has no closure-reason carousel (its breakdown is per-day).
@@ -571,7 +569,7 @@ export async function getClosuresPeriodStoreView(
 
   const [rows, trend, reasonBreakdown] = await Promise.all([
     getClosuresPeriodHistory(period, storeId),
-    getClosuresPeriodTrend(period, storeId),
+    getClosuresPeriodTrend(scope),
     getClosureReasonBreakdown(storeId),
   ]);
 

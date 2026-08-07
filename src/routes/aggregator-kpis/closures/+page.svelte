@@ -114,6 +114,7 @@
 
     <KpiPeriodFilterBar
       stores={data.stores}
+      brands={data.brands}
       filters={data.filters}
       basePath="/aggregator-kpis/closures"
     />

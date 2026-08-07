@@ -1,0 +1,37 @@
+-- Reconcile pre-existing drift: a UNIQUE index on wolt_regex_patters(regex) was
+-- created directly in the shared database (aggregator_invoices) and never
+-- recorded in a migration, which made `prisma migrate dev` abort with
+-- "Drift detected ... We need to reset the public schema". This migration
+-- adopts the existing index into the migration history so the shadow database
+-- and the live database agree again. Nothing is dropped or rewritten.
+--
+-- Verified against the live database before writing this file:
+--   index name : wolt_regex_patters_regex_key   (Prisma's default name)
+--   definition : CREATE UNIQUE INDEX ... USING btree (regex)
+--                — a plain index, not a UNIQUE constraint, not partial,
+--                  not an expression index, no NULLS NOT DISTINCT
+--   duplicates : 0 rows share a regex value (55 rows total)
+--
+-- IF NOT EXISTS follows the precedent in 20260312170000_link_aggregator_offers_to_brand
+-- and 20260721130000_add_ai_chat_history_views: on the shared database the index
+-- already exists so this is a genuine no-op, while the shadow database used by
+-- `prisma migrate dev` -- and any environment that lacks the index -- still gets it.
+-- The alternative (unguarded DDL + `migrate resolve --applied`) would need a
+-- manual resolve on every database that already has the index, and a single
+-- missed one would fail with "relation already exists", leaving a failed
+-- migration that blocks all future deploys there (P3009).
+--
+-- NOTE: IF NOT EXISTS is name-based only -- PostgreSQL does no structural
+-- comparison -- so the name below must match the live index exactly, or a
+-- redundant second index would be created. It was verified via pg_indexes.
+--
+-- NOTE: no CONCURRENTLY. Prisma Migrate wraps each migration in a transaction
+-- and CREATE INDEX CONCURRENTLY cannot run inside one. The table is a tiny
+-- lookup (55 rows), so the brief lock is irrelevant.
+--
+-- PRE-FLIGHT on any database that does NOT already have this index:
+--   SELECT regex, count(*) FROM public.wolt_regex_patters GROUP BY 1 HAVING count(*) > 1;
+-- If that returns rows this migration fails, by design -- choosing which
+-- duplicate wins is a data decision for a human, not for a migration.
+CREATE UNIQUE INDEX IF NOT EXISTS "wolt_regex_patters_regex_key"
+  ON "public"."wolt_regex_patters"("regex");

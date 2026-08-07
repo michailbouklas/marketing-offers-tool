@@ -9,13 +9,18 @@
     type KpiFilters,
     type StoreRef,
   } from "$lib/services/aggregator-kpis/aggregator-kpis";
+  import { formatBrandLabel, type BrandOption } from "$lib/services/brands";
 
   let {
     stores,
+    brands,
     filters,
     basePath,
   }: {
+    /** Already narrowed to the selected brand by the loader. */
     stores: StoreRef[];
+    /** Active brands to scope by; empty hides the brand select. */
+    brands: BrandOption[];
     filters: KpiFilters;
     /** Route these filters navigate to, e.g. "/aggregator-kpis/closures". */
     basePath: string;
@@ -34,6 +39,10 @@
 
     if (merged.aggregator) {
       params.set("aggregator", merged.aggregator);
+    }
+
+    if (merged.brandId) {
+      params.set("brandId", merged.brandId.toString());
     }
 
     if (merged.storeId) {
@@ -68,6 +77,18 @@
     );
   }
 
+  function onBrandChange(event: Event) {
+    const value = (event.currentTarget as HTMLSelectElement).value;
+    // Clear the store: one picked under the previous brand may not belong to
+    // the new one, and that combination resolves to an empty scope.
+    goto(
+      buildHref({
+        brandId: value === "" ? null : Number(value),
+        storeId: null,
+      }),
+    );
+  }
+
   function onStoreChange(event: Event) {
     const value = (event.currentTarget as HTMLSelectElement).value;
     goto(buildHref({ storeId: value === "" ? null : Number(value) }));
@@ -94,6 +115,24 @@
       {/each}
     </NativeSelect.Root>
   </div>
+
+  {#if brands.length > 0}
+    <div class="space-y-2">
+      <label class="text-sm font-medium" for="brandId">Brand</label>
+      <NativeSelect.Root
+        id="brandId"
+        value={filters.brandId?.toString() ?? ""}
+        onchange={onBrandChange}
+      >
+        <NativeSelect.Option value="">All brands</NativeSelect.Option>
+        {#each brands as brand (brand.id)}
+          <NativeSelect.Option value={brand.id.toString()}>
+            {formatBrandLabel(brand)}
+          </NativeSelect.Option>
+        {/each}
+      </NativeSelect.Root>
+    </div>
+  {/if}
 
   <div class="space-y-2">
     <label class="text-sm font-medium" for="storeId">Store</label>
