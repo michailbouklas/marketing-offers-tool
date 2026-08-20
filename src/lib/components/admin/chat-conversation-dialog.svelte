@@ -5,6 +5,7 @@
     excelOutput,
   } from "$lib/components/ai-chat/excel-tool";
   import { renderMarkdown } from "$lib/components/ai-chat/markdown";
+  import ToolPart from "$lib/components/ai-chat/tool-part.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Skeleton } from "$lib/components/ui/skeleton/index.js";
@@ -15,7 +16,6 @@
     type ChatConversationResponse,
     type UserChatThread,
   } from "$lib/services/chat-usage";
-  import DatabaseIcon from "@lucide/svelte/icons/database";
   import FileSpreadsheetIcon from "@lucide/svelte/icons/file-spreadsheet";
   import { SvelteMap } from "svelte/reactivity";
 
@@ -165,12 +165,7 @@
                       </p>
                     {/if}
                   {:else if part.type.startsWith("tool-") || part.type === "dynamic-tool"}
-                    <p
-                      class="text-muted-foreground flex items-center gap-1.5 text-xs"
-                    >
-                      <DatabaseIcon class="size-3" />
-                      Queried the database
-                    </p>
+                    <ToolPart {part} />
                   {/if}
                 {/each}
               </div>

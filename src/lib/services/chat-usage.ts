@@ -49,8 +49,9 @@ export type ChatConversationMessage = {
   parts: {
     type: string;
     text?: string;
-    /** Tool parts: lifecycle state, result, and thrown-error text. */
+    /** Tool parts: lifecycle state, call input, result, and error text. */
     state?: string;
+    input?: unknown;
     output?: unknown;
     errorText?: string;
   }[];

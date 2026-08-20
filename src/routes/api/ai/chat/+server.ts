@@ -202,3 +202,35 @@ export const GET: RequestHandler = async (event) => {
 
   return json({ sessions });
 };
+
+/**
+ * Permanently removes one of the caller's own stored conversations. The
+ * thread id is namespaced per agent + user (threadIdFor), so a client key
+ * can never address another user's thread. Idempotent: deleting a missing
+ * thread still returns 204. Deletion goes through the Mastra memory API —
+ * the Prisma ai_chat_* views over this storage are read-only.
+ */
+export const DELETE: RequestHandler = async (event) => {
+  const agentId = event.url.searchParams.get("agentId") ?? "";
+  const { user } = await authorizeAgent(event, agentId);
+
+  const sessionKey = sessionKeySchema.safeParse(
+    event.url.searchParams.get("session"),
+  );
+
+  if (!sessionKey.success) {
+    error(400, "Invalid session key");
+  }
+
+  const memory = await getMastra().getAgentById(agentId).getMemory();
+
+  if (memory) {
+    try {
+      await memory.deleteThread(threadIdFor(agentId, user.id, sessionKey.data));
+    } catch {
+      // Unknown or already-deleted thread — treat as success.
+    }
+  }
+
+  return new Response(null, { status: 204 });
+};

@@ -154,7 +154,7 @@ export async function getRawThreadMessages(
   }));
 }
 
-function parseMessageParts(content: string): { type: string; text?: string }[] {
+function parseMessageParts(content: string): ChatConversationMessage["parts"] {
   try {
     const parsed: unknown = JSON.parse(content);
 
@@ -168,7 +168,7 @@ function parseMessageParts(content: string): { type: string; text?: string }[] {
       if (Array.isArray(parts)) {
         return parts
           .filter(
-            (part): part is { type: string; text?: string } =>
+            (part): part is Record<string, unknown> & { type: string } =>
               !!part &&
               typeof part === "object" &&
               typeof (part as { type?: unknown }).type === "string",
@@ -176,6 +176,11 @@ function parseMessageParts(content: string): { type: string; text?: string }[] {
           .map((part) => ({
             type: part.type,
             text: typeof part.text === "string" ? part.text : undefined,
+            state: typeof part.state === "string" ? part.state : undefined,
+            input: part.input,
+            output: part.output,
+            errorText:
+              typeof part.errorText === "string" ? part.errorText : undefined,
           }));
       }
     }
