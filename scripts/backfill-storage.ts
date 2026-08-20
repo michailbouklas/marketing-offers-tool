@@ -1,5 +1,7 @@
 import { config } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+import type { WebSocketLikeConstructor } from "@supabase/realtime-js";
+import ws from "ws";
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, relative, sep, extname } from "node:path";
 
@@ -65,6 +67,9 @@ async function main() {
 
   const client = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
+    // Realtime is unused, but createClient constructs it anyway and it
+    // hard-fails on Node < 22 without a WebSocket transport.
+    realtime: { transport: ws as unknown as WebSocketLikeConstructor },
   });
   const bucket = client.storage.from(SUPABASE_STORAGE_BUCKET!);
 

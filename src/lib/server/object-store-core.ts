@@ -1,4 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { WebSocketLikeConstructor } from "@supabase/realtime-js";
+import ws from "ws";
 import {
   copyFile,
   mkdir,
@@ -277,6 +279,10 @@ export function getSupabaseClient(
   }
   const client = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    // Only Storage is used, but createClient still constructs a Realtime
+    // client, which hard-fails on Node < 22 without a WebSocket transport.
+    // The `ws` constructor is runtime-compatible; only its overloads differ.
+    realtime: { transport: ws as unknown as WebSocketLikeConstructor },
   });
   globalForStore.supabaseStorageClient = client;
   globalForStore.supabaseStorageClientUrl = url;
