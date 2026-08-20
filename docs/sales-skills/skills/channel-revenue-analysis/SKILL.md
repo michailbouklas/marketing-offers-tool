@@ -26,6 +26,7 @@ tags:
 ## Examples
 
 ### Revenue by channel (Dine In / Delivery / Drive Through) for a brand this month
+
 ```sql
 SELECT dim_division_group_channel, sum(tran_net) AS revenue, count() AS txn_count
 FROM transactions
@@ -36,6 +37,7 @@ ORDER BY revenue DESC
 ```
 
 ### Revenue by payment method for a brand this year
+
 ```sql
 SELECT cash_method_description, sum(tran_net) AS revenue, count() AS txn_count
 FROM transactions
@@ -46,6 +48,7 @@ ORDER BY revenue DESC
 ```
 
 ### Online vs in-store revenue comparison
+
 ```sql
 SELECT
   if(tran_online_factor = 1, 'Online', 'In-Store') AS channel,
@@ -58,6 +61,7 @@ ORDER BY revenue DESC
 ```
 
 ### Hourly sales distribution (Athens local time)
+
 ```sql
 SELECT toHour(toTimeZone(trans_order_time, 'Europe/Athens')) AS hour_of_day,
        count() AS txn_count, sum(tran_net) AS revenue
@@ -69,6 +73,7 @@ ORDER BY hour_of_day
 ```
 
 ### Items sold via a specific channel (JOIN)
+
 ```sql
 SELECT td.trde_item, anyLast(td.item_name) AS item_name,
        sum(td.trde_gross_value) AS gross_total, sum(td.trde_qty) AS qty
@@ -85,6 +90,7 @@ LIMIT 20
 ```
 
 ### Revenue by store and mall
+
 ```sql
 SELECT location_name, store_mall, sum(tran_net) AS revenue
 FROM transactions

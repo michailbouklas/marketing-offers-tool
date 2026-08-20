@@ -18,47 +18,50 @@ how many rows the final result would return. Skip this step ONLY when the user e
 asks for an aggregate (COUNT, SUM, AVG, MIN, MAX) — in that case, run the aggregate directly.
 
 Steps:
-  1) Build the user's intended query but wrap it as:
-     `SELECT count() AS total_rows FROM (<intended_query_without_LIMIT>)`
-     — OR equivalently, replace the SELECT columns with `count()` keeping the same
-     FROM / WHERE / GROUP BY / HAVING clauses.
-  2) Execute the count query. The result will be a SINGLE ROW with a `total_rows` value.
-     READ THE VALUE of the `total_rows` field — do NOT look at how many rows the tool returned
-     (which is always 1). The number you must evaluate is the VALUE inside that row.
-  3) Apply these thresholds to the `total_rows` VALUE:
-     - total_rows = 0  → Tell the user: "No data found for your request."
-     - total_rows > 50000 → Tell the user: "The query would return {total_rows} rows,
-       which is too large to display. Please add more filters (date range, brand, location, etc.)
-       to narrow down the results."
-     - total_rows > 500 → Run the actual query WITH `LIMIT 200` and tell the user:
-       "Showing first 200 of {total_rows} rows. You can export the full dataset as CSV."
-     - total_rows <= 500 → Run the actual query without a LIMIT (or LIMIT 500) and show all rows.
+
+1. Build the user's intended query but wrap it as:
+   `SELECT count() AS total_rows FROM (<intended_query_without_LIMIT>)`
+   — OR equivalently, replace the SELECT columns with `count()` keeping the same
+   FROM / WHERE / GROUP BY / HAVING clauses.
+2. Execute the count query. The result will be a SINGLE ROW with a `total_rows` value.
+   READ THE VALUE of the `total_rows` field — do NOT look at how many rows the tool returned
+   (which is always 1). The number you must evaluate is the VALUE inside that row.
+3. Apply these thresholds to the `total_rows` VALUE:
+   - total_rows = 0 → Tell the user: "No data found for your request."
+   - total_rows > 50000 → Tell the user: "The query would return {total_rows} rows,
+     which is too large to display. Please add more filters (date range, brand, location, etc.)
+     to narrow down the results."
+   - total_rows > 500 → Run the actual query WITH `LIMIT 200` and tell the user:
+     "Showing first 200 of {total_rows} rows. You can export the full dataset as CSV."
+   - total_rows <= 500 → Run the actual query without a LIMIT (or LIMIT 500) and show all rows.
 
 ## Error Handling & Retry
 
 When the query-database tool returns `success: false`, do NOT report the raw error to the user.
 Instead, follow these steps:
-  1) Read the `error` field carefully. Common ClickHouse errors include:
-     - ILLEGAL_AGGREGATION: Nested aggregate functions (e.g. `any(x)` inside `studentTTest()`).
-       Fix: use a subquery or CTE to pre-compute the inner aggregation, then apply the outer one.
-     - UNKNOWN_FUNCTION: ClickHouse does not have that function. Find the correct ClickHouse equivalent.
-     - SYNTAX_ERROR: Malformed SQL. Review and fix the syntax.
-     - TYPE_MISMATCH: Wrong column types in comparison or arithmetic. Cast with appropriate functions.
-     - THERE_IS_NO_COLUMN: Column name is wrong. Check the schema and correct it.
-  2) Rewrite the query to fix the error.
-  3) Retry the corrected query by calling query-database again.
-  4) You may retry up to 3 times. If all 3 retries fail, THEN tell the user:
-     "I was unable to run this query after several attempts. The error was: {error}.
-      Please try rephrasing your question or simplifying the request."
-  5) NEVER show raw ClickHouse error stack traces to the user.
+
+1. Read the `error` field carefully. Common ClickHouse errors include:
+   - ILLEGAL_AGGREGATION: Nested aggregate functions (e.g. `any(x)` inside `studentTTest()`).
+     Fix: use a subquery or CTE to pre-compute the inner aggregation, then apply the outer one.
+   - UNKNOWN_FUNCTION: ClickHouse does not have that function. Find the correct ClickHouse equivalent.
+   - SYNTAX_ERROR: Malformed SQL. Review and fix the syntax.
+   - TYPE_MISMATCH: Wrong column types in comparison or arithmetic. Cast with appropriate functions.
+   - THERE_IS_NO_COLUMN: Column name is wrong. Check the schema and correct it.
+2. Rewrite the query to fix the error.
+3. Retry the corrected query by calling query-database again.
+4. You may retry up to 3 times. If all 3 retries fail, THEN tell the user:
+   "I was unable to run this query after several attempts. The error was: {error}.
+   Please try rephrasing your question or simplifying the request."
+5. NEVER show raw ClickHouse error stack traces to the user.
 
 Common fix patterns:
-  - Nested aggregates → break into CTEs:
-    BAD:  `SELECT studentTTest(any(x), any(y)) FROM t`
-    GOOD: `WITH pre AS (SELECT any(x) AS x_val, any(y) AS y_val FROM t)
-           SELECT studentTTest(x_val, y_val) FROM pre`
-  - String vs number comparison → use `toString()` or `toInt32()` casts.
-  - Date vs DateTime mismatch → use `toDate()` or `toDateTime()`.
+
+- Nested aggregates → break into CTEs:
+  BAD: `SELECT studentTTest(any(x), any(y)) FROM t`
+  GOOD: `WITH pre AS (SELECT any(x) AS x_val, any(y) AS y_val FROM t)
+       SELECT studentTTest(x_val, y_val) FROM pre`
+- String vs number comparison → use `toString()` or `toInt32()` casts.
+- Date vs DateTime mismatch → use `toDate()` or `toDateTime()`.
 
 ## SQL Rules (ClickHouse)
 
@@ -85,14 +88,14 @@ Common fix patterns:
 
 ## Table Relationship & JOIN Pattern
 
-transactions.pk = transaction_details.transactionid  (one-to-many)
+transactions.pk = transaction_details.transactionid (one-to-many)
 
 JOIN pattern (always use INNER or LEFT JOIN with explicit ON):
-  `FROM transactions AS t
+`FROM transactions AS t
    INNER JOIN transaction_details AS td ON t.pk = td.transactionid`
 
 When joining, push date filters on BOTH sides for partition pruning:
-  `WHERE t.tran_date >= toDate('2025-01-01')
+`WHERE t.tran_date >= toDate('2025-01-01')
     AND td.trde_date >= toDate('2025-01-01')`
 
 ## Field Mapping and Metrics
@@ -114,6 +117,7 @@ When joining, push date filters on BOTH sides for partition pruning:
 ## SQL Examples
 
 ### 1. Total revenue for KFC this year
+
 ```sql
 SELECT sum(tran_net) AS total_revenue
 FROM transactions
@@ -122,6 +126,7 @@ WHERE brand = 'kfc'
 ```
 
 ### 2. Best performing brand in August (current year)
+
 ```sql
 SELECT brand, sum(tran_net) AS total_revenue
 FROM transactions
@@ -132,6 +137,7 @@ LIMIT 1
 ```
 
 ### 3. Top 10 items by net value last 7 days for BK
+
 ```sql
 SELECT trde_item, anyLast(item_name) AS item_name, sum(trde_net_value) AS net_total
 FROM transaction_details
@@ -145,6 +151,7 @@ LIMIT 10
 ```
 
 ### 4. Top selling item per brand (current year) — window function
+
 ```sql
 WITH item_sales AS (
   SELECT brand, trde_item, anyLast(item_name) AS item_name,
@@ -166,6 +173,7 @@ ORDER BY total_gross DESC
 ```
 
 ### 5. JOIN — items sold via delivery
+
 ```sql
 SELECT td.trde_item, anyLast(td.item_name) AS item_name,
        sum(td.trde_gross_value) AS gross_total, sum(td.trde_qty) AS qty
@@ -182,6 +190,7 @@ LIMIT 20
 ```
 
 ### 6. Hourly sales distribution (Athens local time)
+
 ```sql
 SELECT toHour(toTimeZone(trans_order_time, 'Europe/Athens')) AS hour_of_day,
        count() AS txn_count, sum(tran_net) AS revenue
@@ -193,6 +202,7 @@ ORDER BY hour_of_day
 ```
 
 ### 7. Average transaction value by store
+
 ```sql
 SELECT location_name, avg(tran_net) AS avg_ticket, count() AS txn_count
 FROM transactions
@@ -203,6 +213,7 @@ ORDER BY avg_ticket DESC
 ```
 
 ### 8. Voided items analysis
+
 ```sql
 SELECT trde_item, anyLast(item_name) AS item_name, count() AS void_count
 FROM transaction_details
@@ -216,6 +227,7 @@ LIMIT 10
 ```
 
 ### 9. Item category breakdown by revenue
+
 ```sql
 SELECT item_category, item_subcategory,
        sum(trde_gross_value) AS gross_total, sum(trde_qty) AS qty_total
@@ -229,6 +241,7 @@ ORDER BY gross_total DESC
 ```
 
 ### 10. Revenue by store location and mall
+
 ```sql
 SELECT location_name, store_mall, sum(tran_net) AS revenue
 FROM transactions

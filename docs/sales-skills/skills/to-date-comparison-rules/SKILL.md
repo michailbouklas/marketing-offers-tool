@@ -6,7 +6,9 @@ description: Rules and ClickHouse SQL patterns for MTD, YTD, QTD, WTD, and YoY-t
 # to-date-comparison-rules
 
 ## Purpose
+
 Use this skill for any query involving:
+
 - MTD / month-to-date
 - YTD / year-to-date
 - QTD / quarter-to-date
@@ -19,6 +21,7 @@ Use this skill for any query involving:
 This skill ensures the agent compares equivalent date ranges when the warehouse data is not current to the calendar date.
 
 ## Core business rule
+
 - The warehouse is typically 1 day behind the calendar date.
 - Therefore, do **not** assume data exists through the current calendar date.
 - For to-date analysis, **always use the latest available warehouse date as the cutoff date**.
@@ -26,6 +29,7 @@ This skill ensures the agent compares equivalent date ranges when the warehouse 
 - Never compare a partial current period to a longer prior period.
 
 ## Default cutoff logic
+
 - Preferred approach: determine the latest available date from the relevant table and use it as the cutoff date.
 - Fallback approach: if a dynamic max-date check is not practical, use `today() - 1`.
 - Use:
@@ -34,7 +38,9 @@ This skill ensures the agent compares equivalent date ranges when the warehouse 
 - If joining tables, use cutoff logic appropriate to the grain of the analysis and ensure both tables are filtered consistently.
 
 ## Interpretation rules
+
 Unless the user explicitly provides fixed dates, interpret:
+
 - “today” as the latest available warehouse date
 - “current MTD” as month start through latest available warehouse date
 - “current YTD” as year start through latest available warehouse date
@@ -44,21 +50,27 @@ Unless the user explicitly provides fixed dates, interpret:
 If the user gives explicit calendar dates, use those exact dates instead of automatic to-date logic.
 
 ## Comparison rules
+
 ### YoY to-date
+
 - current period end = latest available date
 - prior-year period end = same relative date one year earlier
 
 ### Prior-period comparisons
+
 - Compare equal-length windows only.
 - If the current period is incomplete, truncate the comparison period to the same relative cutoff.
 
 ### Never do this
+
 - current YTD through March 5 vs prior YTD through March 6
 - current MTD through March 5 vs full March last year
 - current WTD through Tuesday vs prior week through Sunday
 
 ## Date range examples
+
 If latest available date = `2026-03-05`:
+
 - YTD current = `2026-01-01` to `2026-03-05`
 - YTD prior year = `2025-01-01` to `2025-03-05`
 - MTD current = `2026-03-01` to `2026-03-05`
@@ -69,9 +81,11 @@ If latest available date = `2026-03-05`:
 - WTD prior year or prior week = equivalent weekday cutoff only
 
 ## ClickHouse date patterns
+
 Use ClickHouse date functions only.
 
 Useful functions:
+
 - `today()`
 - `addDays(date, n)`
 - `addYears(date, n)`
@@ -238,7 +252,9 @@ WHERE td.trde_date BETWEEN r.prior_start AND r.prior_end
 ```
 
 ## Joined query rules
+
 When joining `transactions` and `transaction_details`:
+
 - Join on:
   - `t.pk = td.transactionid`
   - `t.tran_date = td.trde_date`
@@ -279,22 +295,27 @@ ORDER BY revenue DESC
 ```
 
 ## WTD guidance
+
 - WTD can be ambiguous depending on business week definition.
 - Default to ClickHouse `toStartOfWeek()` unless business instructions specify otherwise.
 - For WTD comparisons, always compare through the same weekday cutoff.
 - Do not compare a partial current week to a full previous week.
 
 ## QTD guidance
+
 - Use `toStartOfQuarter(max_date)` for the current quarter start.
 - Prior-year QTD ends on `addYears(max_date, -1)`.
 
 ## Leap year guidance
+
 - Prefer using `addYears(max_date, -1)` for prior-year cutoff logic.
 - This handles date shifting more safely than manually reconstructing month/day values.
 - If a leap-year edge case affects business interpretation, mention it briefly in the response.
 
 ## Prechecks before running to-date queries
+
 Before executing a to-date query:
+
 1. Identify whether the query is transaction-level or item-level.
 2. Determine the correct cutoff source:
    - `max(tran_date)`
@@ -307,6 +328,7 @@ Before executing a to-date query:
 6. If joining, filter dates on both tables.
 
 ## Common mistakes to avoid
+
 - Using calendar today instead of latest available data date
 - Comparing current partial month to prior full month
 - Comparing current partial year to prior full year
@@ -316,6 +338,7 @@ Before executing a to-date query:
 - Forgetting `tran_sales_factor = 1` for sales-focused transaction queries
 
 ## Response guidance
+
 - If the user asks for MTD/YTD/QTD/WTD without fixed dates, assume dynamic to-date logic based on latest available data.
 - If relevant, briefly mention the cutoff date used.
 - Example: “Using latest available data through 2026-03-05 for equal-period comparison.”

@@ -15,17 +15,17 @@ description: "Skill for the Google-reviews area of marketing-offers-tool. 36 sym
 
 ## Key Files
 
-| File | Symbols |
-|------|---------|
-| `src/lib/services/google-reviews/businesses.server.ts` | items, categories, reviewsPerDay, avgRatingPerDay, sentimentPerDay (+8) |
-| `src/lib/services/google-reviews/reviews.server.ts` | mapReviewRow, normalizeMonitoredBusinessCids, buildEmptyReviewsPage, getSortExpression, buildFilterClauses (+2) |
-| `src/lib/server/google-reviews-db.ts` | parseNullableNumber, parseCount, buildWhereClause, utcIsoExpression |
-| `src/lib/services/google-reviews/categories.server.ts` | getSortExpression, buildFilterClauses, buildFilterParams, listNegativeReviewCategories |
-| `src/lib/services/google-reviews/dashboard.server.ts` | getDashboardStats, mapTimeseries, topBusinesses |
-| `src/routes/google-reviews/negative-reviews-categories/+page.server.ts` | exclusiveUpperBound, load |
-| `src/routes/google-reviews/+page.server.ts` | load |
-| `src/routes/google-reviews/businesses/[cid]/categories/[categoryId]/reviews/+server.ts` | GET |
-| `src/routes/google-reviews/businesses/[cid]/+page.server.ts` | load |
+| File                                                                                    | Symbols                                                                                                         |
+| --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `src/lib/services/google-reviews/businesses.server.ts`                                  | items, categories, reviewsPerDay, avgRatingPerDay, sentimentPerDay (+8)                                         |
+| `src/lib/services/google-reviews/reviews.server.ts`                                     | mapReviewRow, normalizeMonitoredBusinessCids, buildEmptyReviewsPage, getSortExpression, buildFilterClauses (+2) |
+| `src/lib/server/google-reviews-db.ts`                                                   | parseNullableNumber, parseCount, buildWhereClause, utcIsoExpression                                             |
+| `src/lib/services/google-reviews/categories.server.ts`                                  | getSortExpression, buildFilterClauses, buildFilterParams, listNegativeReviewCategories                          |
+| `src/lib/services/google-reviews/dashboard.server.ts`                                   | getDashboardStats, mapTimeseries, topBusinesses                                                                 |
+| `src/routes/google-reviews/negative-reviews-categories/+page.server.ts`                 | exclusiveUpperBound, load                                                                                       |
+| `src/routes/google-reviews/+page.server.ts`                                             | load                                                                                                            |
+| `src/routes/google-reviews/businesses/[cid]/categories/[categoryId]/reviews/+server.ts` | GET                                                                                                             |
+| `src/routes/google-reviews/businesses/[cid]/+page.server.ts`                            | load                                                                                                            |
 
 ## Entry Points
 
@@ -39,49 +39,49 @@ Start here when exploring this area:
 
 ## Key Symbols
 
-| Symbol | Type | File | Line |
-|--------|------|------|------|
-| `load` | Function | `src/routes/google-reviews/+page.server.ts` | 4 |
-| `parseNullableNumber` | Function | `src/lib/server/google-reviews-db.ts` | 52 |
-| `parseCount` | Function | `src/lib/server/google-reviews-db.ts` | 72 |
-| `mapReviewRow` | Function | `src/lib/services/google-reviews/reviews.server.ts` | 151 |
-| `getDashboardStats` | Function | `src/lib/services/google-reviews/dashboard.server.ts` | 58 |
-| `mapTimeseries` | Function | `src/lib/services/google-reviews/dashboard.server.ts` | 191 |
-| `topBusinesses` | Function | `src/lib/services/google-reviews/dashboard.server.ts` | 213 |
-| `items` | Function | `src/lib/services/google-reviews/businesses.server.ts` | 282 |
-| `categories` | Function | `src/lib/services/google-reviews/businesses.server.ts` | 552 |
-| `reviewsPerDay` | Function | `src/lib/services/google-reviews/businesses.server.ts` | 561 |
-| `avgRatingPerDay` | Function | `src/lib/services/google-reviews/businesses.server.ts` | 566 |
-| `sentimentPerDay` | Function | `src/lib/services/google-reviews/businesses.server.ts` | 571 |
-| `buildWhereClause` | Function | `src/lib/server/google-reviews-db.ts` | 86 |
-| `listBusinessesPage` | Function | `src/lib/services/google-reviews/businesses.server.ts` | 221 |
-| `listReviewsPage` | Function | `src/lib/services/google-reviews/reviews.server.ts` | 165 |
-| `GET` | Function | `src/routes/google-reviews/businesses/[cid]/categories/[categoryId]/reviews/+server.ts` | 17 |
-| `load` | Function | `src/routes/google-reviews/negative-reviews-categories/+page.server.ts` | 62 |
-| `listNegativeReviewCategories` | Function | `src/lib/services/google-reviews/categories.server.ts` | 95 |
-| `utcIsoExpression` | Function | `src/lib/server/google-reviews-db.ts` | 96 |
-| `getBusinessDetail` | Function | `src/lib/services/google-reviews/businesses.server.ts` | 303 |
+| Symbol                         | Type     | File                                                                                    | Line |
+| ------------------------------ | -------- | --------------------------------------------------------------------------------------- | ---- |
+| `load`                         | Function | `src/routes/google-reviews/+page.server.ts`                                             | 4    |
+| `parseNullableNumber`          | Function | `src/lib/server/google-reviews-db.ts`                                                   | 52   |
+| `parseCount`                   | Function | `src/lib/server/google-reviews-db.ts`                                                   | 72   |
+| `mapReviewRow`                 | Function | `src/lib/services/google-reviews/reviews.server.ts`                                     | 151  |
+| `getDashboardStats`            | Function | `src/lib/services/google-reviews/dashboard.server.ts`                                   | 58   |
+| `mapTimeseries`                | Function | `src/lib/services/google-reviews/dashboard.server.ts`                                   | 191  |
+| `topBusinesses`                | Function | `src/lib/services/google-reviews/dashboard.server.ts`                                   | 213  |
+| `items`                        | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 282  |
+| `categories`                   | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 552  |
+| `reviewsPerDay`                | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 561  |
+| `avgRatingPerDay`              | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 566  |
+| `sentimentPerDay`              | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 571  |
+| `buildWhereClause`             | Function | `src/lib/server/google-reviews-db.ts`                                                   | 86   |
+| `listBusinessesPage`           | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 221  |
+| `listReviewsPage`              | Function | `src/lib/services/google-reviews/reviews.server.ts`                                     | 165  |
+| `GET`                          | Function | `src/routes/google-reviews/businesses/[cid]/categories/[categoryId]/reviews/+server.ts` | 17   |
+| `load`                         | Function | `src/routes/google-reviews/negative-reviews-categories/+page.server.ts`                 | 62   |
+| `listNegativeReviewCategories` | Function | `src/lib/services/google-reviews/categories.server.ts`                                  | 95   |
+| `utcIsoExpression`             | Function | `src/lib/server/google-reviews-db.ts`                                                   | 96   |
+| `getBusinessDetail`            | Function | `src/lib/services/google-reviews/businesses.server.ts`                                  | 303  |
 
 ## Execution Flows
 
-| Flow | Type | Steps |
-|------|------|-------|
-| `Load → GetGoogleReviewsDatabase` | cross_community | 4 |
-| `Load → BuildSentimentClause` | cross_community | 4 |
-| `Load → GetGoogleReviewsDatabase` | cross_community | 4 |
-| `Load → GetGoogleReviewsDatabase` | cross_community | 4 |
-| `Load → ParseNullableNumber` | intra_community | 4 |
-| `Load → GetGoogleReviewsDatabase` | cross_community | 4 |
-| `Load → ParseCount` | cross_community | 3 |
-| `Load → RequireAuthenticatedUser` | cross_community | 3 |
-| `Load → HasPermission` | cross_community | 3 |
-| `Load → BuildWhereClause` | cross_community | 3 |
+| Flow                              | Type            | Steps |
+| --------------------------------- | --------------- | ----- |
+| `Load → GetGoogleReviewsDatabase` | cross_community | 4     |
+| `Load → BuildSentimentClause`     | cross_community | 4     |
+| `Load → GetGoogleReviewsDatabase` | cross_community | 4     |
+| `Load → GetGoogleReviewsDatabase` | cross_community | 4     |
+| `Load → ParseNullableNumber`      | intra_community | 4     |
+| `Load → GetGoogleReviewsDatabase` | cross_community | 4     |
+| `Load → ParseCount`               | cross_community | 3     |
+| `Load → RequireAuthenticatedUser` | cross_community | 3     |
+| `Load → HasPermission`            | cross_community | 3     |
+| `Load → BuildWhereClause`         | cross_community | 3     |
 
 ## Connected Areas
 
-| Area | Connections |
-|------|-------------|
-| Services | 10 calls |
+| Area     | Connections |
+| -------- | ----------- |
+| Services | 10 calls    |
 
 ## How to Explore
 

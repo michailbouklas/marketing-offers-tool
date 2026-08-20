@@ -136,7 +136,15 @@ export const POST: RequestHandler = async (event) => {
     },
   });
 
-  return createUIMessageStreamResponse({ stream });
+  // SSE headers: X-Accel-Buffering tells nginx to never buffer this stream
+  // even when a location block forgets `proxy_buffering off`.
+  return createUIMessageStreamResponse({
+    stream,
+    headers: {
+      "Cache-Control": "no-cache",
+      "X-Accel-Buffering": "no",
+    },
+  });
 };
 
 export type ChatSessionSummary = {

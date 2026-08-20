@@ -47,6 +47,7 @@ AND often: trde_item = trde_combo_item
 > The coupon marker row defines the promotional logic and carries the coupon code. It does **not** carry revenue.
 
 **Practical rule — coupon marker:**
+
 ```
 item_category LIKE '%Coupon%'
 AND trde_coupon IS NOT EMPTY
@@ -77,22 +78,22 @@ AND (
 
 ## Field Reference
 
-| Field | Role in Coupon Structure |
-|---|---|
-| `transactionid` | Groups all rows in the same transaction |
-| `trde_line` | Identifies the main line within the transaction |
-| `trde_sub_line` | Distinguishes parent rows from subordinate rows |
-| `trde_item` | Item code of the current row |
-| `trde_combo_item` | Acts as promotional parent reference; equals `trde_item` on the coupon marker row |
-| `trde_coupon` | The explicit coupon/promo code — primary field for coupon analysis |
-| `trde_coupon_group` | Grouping field; often defaults to `0` — not reliable as a primary key |
-| `trde_net_value` | `0` on coupon marker rows; `> 0` on affected sale rows |
-| `trde_discount` | Discount applied to an affected sale row |
-| `trde_line_discount` | Line-level discount on an affected sale row |
-| `trde_is_master_item` | Not a reliable indicator of coupon header rows — do not use as primary key |
-| `item_name` | Describes the promotion on marker rows; product name on sale rows |
-| `item_category` | Contains `'Coupon'` for coupon marker rows |
-| `brand` | Coupon structure implementation may vary by brand |
+| Field                 | Role in Coupon Structure                                                          |
+| --------------------- | --------------------------------------------------------------------------------- |
+| `transactionid`       | Groups all rows in the same transaction                                           |
+| `trde_line`           | Identifies the main line within the transaction                                   |
+| `trde_sub_line`       | Distinguishes parent rows from subordinate rows                                   |
+| `trde_item`           | Item code of the current row                                                      |
+| `trde_combo_item`     | Acts as promotional parent reference; equals `trde_item` on the coupon marker row |
+| `trde_coupon`         | The explicit coupon/promo code — primary field for coupon analysis                |
+| `trde_coupon_group`   | Grouping field; often defaults to `0` — not reliable as a primary key             |
+| `trde_net_value`      | `0` on coupon marker rows; `> 0` on affected sale rows                            |
+| `trde_discount`       | Discount applied to an affected sale row                                          |
+| `trde_line_discount`  | Line-level discount on an affected sale row                                       |
+| `trde_is_master_item` | Not a reliable indicator of coupon header rows — do not use as primary key        |
+| `item_name`           | Describes the promotion on marker rows; product name on sale rows                 |
+| `item_category`       | Contains `'Coupon'` for coupon marker rows                                        |
+| `brand`               | Coupon structure implementation may vary by brand                                 |
 
 ---
 
@@ -100,13 +101,14 @@ AND (
 
 `trde_coupon` is the most direct field representing the coupon or promo code applied in a transaction.
 
-| Context | Behaviour |
-|---|---|
-| Coupon marker row | Always populated |
+| Context           | Behaviour                               |
+| ----------------- | --------------------------------------- |
+| Coupon marker row | Always populated                        |
 | Affected sale row | Often also populated with the same code |
-| Not involved | Empty / null |
+| Not involved      | Empty / null                            |
 
 **Key use cases for `trde_coupon`:**
+
 - Count usage frequency per coupon code
 - Identify which products were affected by a specific coupon
 - Measure discount and revenue impact by coupon code
@@ -115,10 +117,10 @@ AND (
 
 ## Financial Behaviour
 
-| Row Type | `trde_net_value` | Discount Fields | Purpose |
-|---|---|---|---|
-| Coupon marker | `= 0` | Usually empty | Promotion marker / discount container |
-| Affected sale row | `> 0` | `trde_discount` and/or `trde_line_discount` populated | Carries actual revenue and discount |
+| Row Type          | `trde_net_value` | Discount Fields                                       | Purpose                               |
+| ----------------- | ---------------- | ----------------------------------------------------- | ------------------------------------- |
+| Coupon marker     | `= 0`            | Usually empty                                         | Promotion marker / discount container |
+| Affected sale row | `> 0`            | `trde_discount` and/or `trde_line_discount` populated | Carries actual revenue and discount   |
 
 > ⚠️ Do not measure coupon revenue impact from the coupon marker row. Always use the affected sale rows.
 
@@ -128,14 +130,15 @@ AND (
 
 The relationship between the coupon marker and the affected items is reconstructed using a combination of fields:
 
-| Field | Linkage Role |
-|---|---|
-| `trde_coupon` | Shared coupon code across marker and affected rows |
-| `trde_combo_item` | Affected rows point to coupon marker's `trde_item` |
-| `transactionid` | Scopes all rows to the same transaction |
+| Field                         | Linkage Role                                                       |
+| ----------------------------- | ------------------------------------------------------------------ |
+| `trde_coupon`                 | Shared coupon code across marker and affected rows                 |
+| `trde_combo_item`             | Affected rows point to coupon marker's `trde_item`                 |
+| `transactionid`               | Scopes all rows to the same transaction                            |
 | `trde_line` / `trde_sub_line` | Supports parent–child reconstruction when other metadata is absent |
 
 **Typical linkage pattern:**
+
 ```
 Coupon marker:   trde_item = trde_combo_item = [coupon offer code]
 Affected row:    trde_combo_item = [coupon offer code]
@@ -146,11 +149,11 @@ Affected row:    trde_combo_item = [coupon offer code]
 
 ## Fields to Deprioritise for Coupon Analysis
 
-| Field | Why to Deprioritise |
-|---|---|
+| Field                 | Why to Deprioritise                                                                            |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
 | `trde_combo_item_pos` | Less consistently meaningful for coupons than for structured combos; `-999` appears frequently |
-| `trde_coupon_group` | Often defaults to `0`; insufficient variation observed to be a reliable key |
-| `trde_is_master_item` | Did not reliably distinguish coupon marker rows from affected sale rows in reviewed data |
+| `trde_coupon_group`   | Often defaults to `0`; insufficient variation observed to be a reliable key                    |
+| `trde_is_master_item` | Did not reliably distinguish coupon marker rows from affected sale rows in reviewed data       |
 
 For coupon analysis, prioritise `trde_coupon`, `trde_combo_item`, and `transactionid` instead.
 
@@ -159,11 +162,13 @@ For coupon analysis, prioritise `trde_coupon`, `trde_combo_item`, and `transacti
 ## Step-by-Step Logic for Identifying Coupons
 
 **Step 1 — Detect candidate coupon transactions**
+
 ```sql
 WHERE item_category LIKE '%Coupon%'
 ```
 
 **Step 2 — Identify the coupon marker row**
+
 ```sql
 WHERE trde_coupon IS NOT NULL
   AND trde_net_value = 0
@@ -172,6 +177,7 @@ WHERE trde_coupon IS NOT NULL
 ```
 
 **Step 3 — Identify affected sold items**
+
 ```sql
 WHERE trde_coupon = [coupon marker's trde_coupon]
 -- and/or
@@ -182,6 +188,7 @@ AND trde_net_value > 0
 **Step 4 — Measure commercial impact**
 
 Using the affected sale rows, calculate:
+
 - Discounted revenue (`trde_net_value`)
 - Total discount value (`trde_discount` / `trde_line_discount`)
 - Coupon usage frequency (count by `trde_coupon`)

@@ -15,10 +15,10 @@ description: "Skill for the Guidelines area of marketing-offers-tool. 5 symbols 
 
 ## Key Files
 
-| File | Symbols |
-|------|---------|
+| File                                                          | Symbols                                |
+| ------------------------------------------------------------- | -------------------------------------- |
 | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | parseBrandId, brandSlugOr404, GET, PUT |
-| `src/lib/services/brand-context/brand-context.server.ts` | setBrandGuidelines |
+| `src/lib/services/brand-context/brand-context.server.ts`      | setBrandGuidelines                     |
 
 ## Entry Points
 
@@ -30,36 +30,36 @@ Start here when exploring this area:
 
 ## Key Symbols
 
-| Symbol | Type | File | Line |
-|--------|------|------|------|
-| `setBrandGuidelines` | Function | `src/lib/services/brand-context/brand-context.server.ts` | 134 |
-| `GET` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 44 |
-| `PUT` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 53 |
-| `parseBrandId` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 16 |
-| `brandSlugOr404` | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 27 |
+| Symbol               | Type     | File                                                          | Line |
+| -------------------- | -------- | ------------------------------------------------------------- | ---- |
+| `setBrandGuidelines` | Function | `src/lib/services/brand-context/brand-context.server.ts`      | 134  |
+| `GET`                | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 44   |
+| `PUT`                | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 53   |
+| `parseBrandId`       | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 16   |
+| `brandSlugOr404`     | Function | `src/routes/api/admin/brands/[brandId]/guidelines/+server.ts` | 27   |
 
 ## Execution Flows
 
-| Flow | Type | Steps |
-|------|------|-------|
-| `GET → AssertSafeKey` | cross_community | 6 |
-| `GET → LoadEnvFileValues` | cross_community | 6 |
-| `PUT → AssertSafeKey` | cross_community | 6 |
-| `PUT → From` | cross_community | 6 |
-| `PUT → LoadEnvFileValues` | cross_community | 6 |
-| `GET → From` | cross_community | 5 |
-| `GET → EnsureSafeSlug` | cross_community | 5 |
-| `PUT → EnsureSafeSlug` | cross_community | 5 |
-| `GET → GetText` | cross_community | 4 |
-| `GET → GetSupabaseClient` | cross_community | 4 |
+| Flow                      | Type            | Steps |
+| ------------------------- | --------------- | ----- |
+| `GET → AssertSafeKey`     | cross_community | 6     |
+| `GET → LoadEnvFileValues` | cross_community | 6     |
+| `PUT → AssertSafeKey`     | cross_community | 6     |
+| `PUT → From`              | cross_community | 6     |
+| `PUT → LoadEnvFileValues` | cross_community | 6     |
+| `GET → From`              | cross_community | 5     |
+| `GET → EnsureSafeSlug`    | cross_community | 5     |
+| `PUT → EnsureSafeSlug`    | cross_community | 5     |
+| `GET → GetText`           | cross_community | 4     |
+| `GET → GetSupabaseClient` | cross_community | 4     |
 
 ## Connected Areas
 
-| Area | Connections |
-|------|-------------|
-| Server | 2 calls |
-| Services | 2 calls |
-| Brand-context | 1 calls |
+| Area          | Connections |
+| ------------- | ----------- |
+| Server        | 2 calls     |
+| Services      | 2 calls     |
+| Brand-context | 1 calls     |
 
 ## How to Explore
 

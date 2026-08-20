@@ -48,6 +48,7 @@ item_category IN (
 When querying offer-related rows, **do not apply** a filter such as `trde_net_price != 0` or `trde_net_value != 0`. Offer structures routinely include rows where both values are `0` — these are structurally significant and must be retained.
 
 Rows where `trde_net_price = 0` or `trde_net_value = 0` can represent:
+
 - The **offer header/parent row** (which often carries `trde_net_value > 0` but may not always)
 - **Component rows** inside the offer bundle (which typically have `trde_net_value = 0`)
 - **Promotional or structural rows** that define the offer but carry no independent revenue
@@ -83,6 +84,7 @@ trde_combo_item_pos = -1
 When this value is present, it almost always confirms the row is the **combo name/header**, not a component.
 
 **Practical rule — offer header:**
+
 ```
 trde_item = trde_combo_item
 AND/OR trde_combo_item_pos = -1
@@ -105,18 +107,18 @@ The `trde_combo_item` field on the component row points back to the `trde_item` 
 
 ## Field Reference
 
-| Field | Role in Offer Structure |
-|---|---|
-| `transactionid` | Groups all rows belonging to the same transaction |
-| `trde_line` | Identifies the main line within the transaction |
-| `trde_sub_line` | Distinguishes parent rows from subordinate rows |
-| `trde_item` | Item code of the current row |
-| `trde_combo_item` | Parent offer/combo reference; equals `trde_item` on the header row |
-| `trde_combo_item_pos` | `-1` = offer header; `1, 2, 3…` = component position; `-999` = not used |
+| Field                   | Role in Offer Structure                                                       |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| `transactionid`         | Groups all rows belonging to the same transaction                             |
+| `trde_line`             | Identifies the main line within the transaction                               |
+| `trde_sub_line`         | Distinguishes parent rows from subordinate rows                               |
+| `trde_item`             | Item code of the current row                                                  |
+| `trde_combo_item`       | Parent offer/combo reference; equals `trde_item` on the header row            |
+| `trde_combo_item_pos`   | `-1` = offer header; `1, 2, 3…` = component position; `-999` = not used       |
 | `trde_combo_item_group` | Logical grouping inside the offer (e.g. main, side, drink); `-999` = not used |
-| `item_name` | Business-readable name of the item or offer |
-| `item_category` | Contains `'Offers'` for offer-related rows |
-| `brand` | Offer structure implementation may vary by brand |
+| `item_name`             | Business-readable name of the item or offer                                   |
+| `item_category`         | Contains `'Offers'` for offer-related rows                                    |
+| `brand`                 | Offer structure implementation may vary by brand                              |
 
 ---
 
@@ -154,31 +156,33 @@ LEFT JOIN (
 
 ## `trde_combo_item_pos` Value Meanings
 
-| Value | Meaning |
-|---|---|
-| `-1` | Offer/combo header row (strongest indicator) |
+| Value        | Meaning                                               |
+| ------------ | ----------------------------------------------------- |
+| `-1`         | Offer/combo header row (strongest indicator)          |
 | `1, 2, 3, …` | Component items inside the combo, in positional order |
-| `-999` | Positional structure not populated / not applicable |
+| `-999`       | Positional structure not populated / not applicable   |
 
 ---
 
 ## `trde_combo_item_group` Value Meanings
 
-| Value | Meaning |
-|---|---|
+| Value     | Meaning                                                             |
+| --------- | ------------------------------------------------------------------- |
 | `1, 2, …` | Active grouping in use (e.g. main item, side, drink, upgrade group) |
-| `-999` | Grouping not populated / not applicable |
+| `-999`    | Grouping not populated / not applicable                             |
 
 ---
 
 ## Financial Behaviour
 
 **Header row** — carries the commercial value of the offer:
+
 - `trde_net_value` — revenue of the combo/offer
 - `trde_normal_price` — standard price before adjustments
 - `trde_discount` / `trde_line_discount` — any discounts applied
 
 **Component rows** — typically informational/structural:
+
 - `trde_net_value = 0` in most cases
 - They exist to record what was included in the bundle, not to carry independent revenue
 
@@ -197,9 +201,9 @@ The most explicit and consistent structure:
 - Child rows link back to the parent via `trde_combo_item`
 - `trde_combo_item_pos` is meaningfully populated
 
-| Row Type | Typical Field Values |
-|---|---|
-| Header | `trde_item = trde_combo_item`, `trde_combo_item_pos = -1`, `trde_net_value > 0` |
+| Row Type  | Typical Field Values                                                                  |
+| --------- | ------------------------------------------------------------------------------------- |
+| Header    | `trde_item = trde_combo_item`, `trde_combo_item_pos = -1`, `trde_net_value > 0`       |
 | Component | `trde_combo_item = parent item code`, `trde_combo_item_pos > 0`, `trde_net_value = 0` |
 
 ### Pattern B — Parent/Subline Offer Model
@@ -210,9 +214,9 @@ A looser structure where combo-position metadata is absent:
 - `trde_combo_item_pos` and `trde_combo_item_group` are both `-999`
 - Structure must be reconstructed using `transactionid`, `trde_line`, `trde_sub_line`, and `trde_combo_item`
 
-| Row Type | Typical Field Values |
-|---|---|
-| Header | `trde_item = trde_combo_item` |
+| Row Type  | Typical Field Values                                                                          |
+| --------- | --------------------------------------------------------------------------------------------- |
+| Header    | `trde_item = trde_combo_item`                                                                 |
 | Component | `trde_combo_item = parent item`, `trde_combo_item_pos = -999`, `trde_combo_item_group = -999` |
 
 ---
@@ -220,6 +224,7 @@ A looser structure where combo-position metadata is absent:
 ## Step-by-Step Logic for Identifying Offers
 
 **Step 1 — Detect candidate offer rows**
+
 ```sql
 WHERE item_category IN (
     'FOODY RMS', 'Offers NER', 'Offers PAU', 'Offers PDE', 'Offers TAV',
@@ -236,6 +241,7 @@ WHERE item_category IN (
 ```
 
 **Step 2 — Identify the offer header**
+
 ```sql
 WHERE trde_item = trde_combo_item
 -- and/or
@@ -243,18 +249,21 @@ WHERE trde_combo_item_pos = -1
 ```
 
 **Step 3 — Identify included components**
+
 ```sql
 WHERE trde_combo_item = [parent trde_item]
   AND trde_item != trde_combo_item
 ```
 
 **Step 4 — Use position/group metadata when available**
+
 - Use `trde_combo_item_pos` to distinguish header (`-1`) from components (`> 0`)
 - Use `trde_combo_item_group` to separate logical groups within the offer
 
 **Step 5 — Fall back to line/subline logic when metadata is absent**
 
 When `trde_combo_item_pos = -999` or `trde_combo_item_group = -999`, reconstruct the relationship using:
+
 - `transactionid`
 - `trde_line`
 - `trde_sub_line`
@@ -280,7 +289,8 @@ OFFER COMPONENT:
 
 > In `transaction_details`, offers are modelled as a parent item plus child component rows. The parent offer row self-references through `trde_combo_item`, while included items reference that parent offer item in their own `trde_combo_item` field. When available, `trde_combo_item_pos = -1` indicates the offer header row, and positive positions indicate included components. Implementation details may vary by brand, so the logic should be applied with flexibility.
 
-## Example query   to pull  top 3 items that belong in a '1 plus 1' offer
+## Example query to pull top 3 items that belong in a '1 plus 1' offer
+
 ```sql
  SELECT
      td.item_name AS pizza_item,
@@ -300,7 +310,7 @@ OFFER COMPONENT:
          AND od.trde_date >= toDate('2026-01-01')
          AND od.trde_date <= toDate('2026-12-31')
          AND od.trde_item != '-1'
-         AND od.item_category in ( 
+         AND od.item_category in (
 'FOODY RMS','Offers NER','Offers PAU','Offers PDE','Offers TAV','Pair Offers',
 			'Coupons PH','PH Offers','Single Item Offers','Discount Offers','Offers KFC','Call Center Offers KFC','Amount Of Money Offers',
 			'Coupons NER','Coupons','Online Offers','Coupons TAV','Offers VER','Wolt Offers','Taco Bell Offers','FOODY Offers PH','Bolt Offers PH',
@@ -313,5 +323,4 @@ OFFER COMPONENT:
  GROUP BY td.item_name
  ORDER BY qty_sold DESC, revenue_eur DESC
  LIMIT 3
- ```
- 
+```

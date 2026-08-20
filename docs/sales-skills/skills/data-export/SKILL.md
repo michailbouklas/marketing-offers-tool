@@ -24,6 +24,7 @@ When a user says "export this", "save as CSV", "download", or similar after resu
 3. ALWAYS include the `downloadUrl` returned by the tool in your response. Do not omit it.
 
 Example filename conventions:
+
 - `bk_revenue_jan_2026`
 - `top_items_kfc_this_month`
 - `discount_card_usage_nero`
@@ -37,6 +38,7 @@ When a user asks for an Excel file (.xlsx), spreadsheet, or multi-sheet workbook
 3. Include the `downloadUrl` from the response.
 
 Use Excel export when:
+
 - The user needs multiple sheets (e.g., one per brand)
 - The user needs formatted cells, totals rows, or color-coded data
 - The user explicitly asks for .xlsx or "Excel"
@@ -50,6 +52,7 @@ When a user asks for JSON output, structured data, or says "export as JSON":
 3. Include the `downloadUrl` from the response.
 
 Use JSON export when:
+
 - The user is a developer or wants to feed data into another system
 - The user explicitly asks for JSON or structured/machine-readable format
 

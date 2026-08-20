@@ -32,6 +32,7 @@ tags:
 ## Query Examples
 
 ### Top combo meals by revenue (last 30 days)
+
 ```sql
 SELECT trde_combo_item, anyLast(item_name) AS combo_name,
        count() AS items_sold, sum(trde_gross_value) AS gross_total
@@ -47,6 +48,7 @@ LIMIT 10
 ```
 
 ### Master combo items sold (combo-level aggregation)
+
 ```sql
 SELECT trde_item, anyLast(item_name) AS item_name,
        sum(trde_qty) AS qty_sold, sum(trde_gross_value) AS gross_total
@@ -62,6 +64,7 @@ LIMIT 20
 ```
 
 ### Component breakdown for a specific combo
+
 ```sql
 SELECT trde_item, anyLast(item_name) AS item_name,
        sum(trde_qty) AS qty, sum(trde_gross_value) AS gross_total
@@ -75,6 +78,7 @@ ORDER BY qty DESC
 ```
 
 ### Combo vs standalone item revenue
+
 ```sql
 SELECT
   if(trde_combo_item != '', 'Combo Component', 'Standalone') AS item_type,

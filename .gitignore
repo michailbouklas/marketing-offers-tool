@@ -29,3 +29,6 @@ uploads/*
 
 # Mastra dev playground output
 .mastra/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+graft/

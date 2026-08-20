@@ -38,11 +38,14 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
+# nodejs: adapter-node's server must run under Node — Bun's node:http shim
+# tears down streamed (SSE) responses abruptly, which the reverse proxy
+# surfaces to browsers as ERR_HTTP2_PROTOCOL_ERROR after AI chat streams.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libicu76 \
+    && apt-get install -y --no-install-recommends libicu76 nodejs ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=officecli /usr/local/bin/officecli /usr/local/bin/officecli
 COPY --from=install /temp/prod/node_modules ./node_modules
 COPY --from=builder /app/build ./build
 EXPOSE 3000
-CMD ["bun", "build/index.js"]
+CMD ["node", "build/index.js"]

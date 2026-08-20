@@ -22,6 +22,7 @@ All brands share the same `transactions` and `transaction_details` tables. There
 ## Revenue Comparison Examples
 
 ### Revenue by brand — current year
+
 ```sql
 SELECT brand, sum(tran_net) AS total_revenue, count() AS txn_count,
        avg(tran_net) AS avg_ticket
@@ -32,6 +33,7 @@ ORDER BY total_revenue DESC
 ```
 
 ### Revenue by brand — specific month
+
 ```sql
 SELECT brand, sum(tran_net) AS total_revenue, count() AS txn_count
 FROM transactions
@@ -41,6 +43,7 @@ ORDER BY total_revenue DESC
 ```
 
 ### Month-over-month brand comparison (current vs previous month)
+
 ```sql
 SELECT brand,
   sumIf(tran_net, toMonth(tran_date) = toMonth(today())) AS current_month,
@@ -53,6 +56,7 @@ ORDER BY current_month DESC
 ```
 
 ### Brand performance by channel
+
 ```sql
 SELECT brand, dim_division_group_channel,
        sum(tran_net) AS revenue, count() AS txn_count
@@ -63,6 +67,7 @@ ORDER BY brand, revenue DESC
 ```
 
 ### Top item per brand (this year)
+
 ```sql
 WITH item_sales AS (
   SELECT brand, trde_item, anyLast(item_name) AS item_name,

@@ -15,6 +15,7 @@ tags:
 ## Key Fields
 
 On `transactions`:
+
 - `tran_discount_cust` (String) — the discount card identifier used on this transaction
 - `tran_discount` (Decimal) — total discount amount applied via the card
 - `tran_manual_disc_perc` (Decimal) — manual discount percentage applied
@@ -23,6 +24,7 @@ On `transactions`:
 - `tran_barter_card` (String) — barter card number
 
 On `transaction_details`:
+
 - `trde_discount` (Decimal) — discount amount on this individual line item
 - `trde_line_discount` (Decimal) — line-level discount
 - `trde_coupon` (String) — coupon code used
@@ -35,6 +37,7 @@ On `transaction_details`:
 ## Query Examples
 
 ### Top 10 discount cards by total discount this year
+
 ```sql
 SELECT tran_discount_cust, sum(tran_discount) AS total_discount, count() AS txn_count
 FROM transactions
@@ -47,6 +50,7 @@ LIMIT 10
 ```
 
 ### Cards with high transaction frequency (potential flagging)
+
 ```sql
 SELECT tran_discount_cust, count() AS txn_count, sum(tran_discount) AS total_discount,
        min(tran_date) AS first_use, max(tran_date) AS last_use
@@ -60,6 +64,7 @@ LIMIT 50
 ```
 
 ### Discount card usage across all brands
+
 ```sql
 SELECT brand, tran_discount_cust, count() AS txn_count, sum(tran_discount) AS total_discount
 FROM transactions
@@ -71,6 +76,7 @@ LIMIT 100
 ```
 
 ### Average discount per transaction by brand
+
 ```sql
 SELECT brand,
        avg(tran_discount) AS avg_discount,
@@ -84,6 +90,7 @@ ORDER BY avg_discount DESC
 ```
 
 ### Coupon redemption summary
+
 ```sql
 SELECT trde_coupon, count() AS redemption_count, sum(trde_discount) AS total_discount
 FROM transaction_details
