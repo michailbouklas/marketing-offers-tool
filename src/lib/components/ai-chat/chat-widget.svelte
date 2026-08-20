@@ -12,7 +12,10 @@
     excelOutput,
   } from "$lib/components/ai-chat/excel-tool";
   import { renderMarkdown } from "$lib/components/ai-chat/markdown";
-  import DatabaseIcon from "@lucide/svelte/icons/database";
+  import SessionList, {
+    type ChatSession,
+  } from "$lib/components/ai-chat/session-list.svelte";
+  import ToolPart from "$lib/components/ai-chat/tool-part.svelte";
   import FileSpreadsheetIcon from "@lucide/svelte/icons/file-spreadsheet";
   import HistoryIcon from "@lucide/svelte/icons/history";
   import Maximize2Icon from "@lucide/svelte/icons/maximize-2";
@@ -21,12 +24,6 @@
   import SparklesIcon from "@lucide/svelte/icons/sparkles";
   import SquarePenIcon from "@lucide/svelte/icons/square-pen";
   import XIcon from "@lucide/svelte/icons/x";
-
-  type ChatSession = {
-    key: string;
-    title: string;
-    updatedAt: string | null;
-  };
 
   interface Props {
     /** Backend agent this section routes its messages to. */
@@ -110,6 +107,17 @@
     sessionKey = crypto.randomUUID();
     chat.messages = [];
     historyOpen = false;
+  }
+
+  // After a delete: refresh the list, and if the open conversation was the
+  // one removed, reset to a fresh thread (same as newConversation).
+  async function handleDeleted(key: string) {
+    if (key === sessionKey) {
+      sessionKey = crypto.randomUUID();
+      chat.messages = [];
+    }
+
+    await fetchSessions();
   }
 
   // On first open, resume the most recent conversation (if any).
@@ -227,31 +235,16 @@
               {/snippet}
             </Popover.Trigger>
             <Popover.Content align="end" class="w-72 p-1">
-              {#if sessions.length === 0}
-                <p class="text-muted-foreground px-3 py-2 text-sm">
-                  No previous conversations yet.
-                </p>
-              {:else}
-                <div class="max-h-64 overflow-y-auto overscroll-contain">
-                  {#each sessions as session (session.key)}
-                    <button
-                      type="button"
-                      class={[
-                        "hover:bg-accent flex w-full flex-col gap-0.5 rounded-md px-3 py-2 text-left",
-                        session.key === sessionKey ? "bg-accent" : "",
-                      ].join(" ")}
-                      onclick={() => loadSession(session.key)}
-                    >
-                      <span class="truncate text-sm">{session.title}</span>
-                      {#if session.updatedAt}
-                        <span class="text-muted-foreground text-xs">
-                          {new Date(session.updatedAt).toLocaleString()}
-                        </span>
-                      {/if}
-                    </button>
-                  {/each}
-                </div>
-              {/if}
+              <div class="max-h-64 overflow-y-auto overscroll-contain">
+                <SessionList
+                  {agentId}
+                  {sessions}
+                  activeKey={sessionKey}
+                  disabled={busy}
+                  onSelect={loadSession}
+                  onDeleted={handleDeleted}
+                />
+              </div>
             </Popover.Content>
           </Popover.Root>
           <Button
@@ -344,12 +337,7 @@
                     </p>
                   {/if}
                 {:else if part.type.startsWith("tool-") || part.type === "dynamic-tool"}
-                  <p
-                    class="text-muted-foreground flex items-center gap-1.5 text-xs"
-                  >
-                    <DatabaseIcon class="size-3" />
-                    Queried the database
-                  </p>
+                  <ToolPart {part} />
                 {/if}
               {/each}
             </div>
