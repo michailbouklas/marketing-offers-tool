@@ -6,6 +6,9 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
+  import CopyMessageButton from "$lib/components/ai-chat/copy-message-button.svelte";
+  import MessageTimestamp from "$lib/components/ai-chat/message-timestamp.svelte";
+  import UserMessageActions from "$lib/components/ai-chat/user-message-actions.svelte";
   import {
     EXCEL_TOOL_PART_TYPE,
     excelErrorText,
@@ -168,6 +171,67 @@
     }
   }
 
+  let editingMessageId = $state<string | null>(null);
+  let editDraft = $state("");
+
+  function messageText(message: (typeof chat.messages)[number]) {
+    return message.parts
+      .flatMap((part) => (part.type === "text" ? [part.text] : []))
+      .join("\n\n");
+  }
+
+  // Re-asks from this user message: the conversation is truncated to just
+  // before it and the same text is submitted again for a fresh answer.
+  function retryMessage(messageIndex: number) {
+    const text = messageText(chat.messages[messageIndex]);
+
+    if (!text || busy) {
+      return;
+    }
+
+    cancelEditing();
+    chat.messages = chat.messages.slice(0, messageIndex);
+    void chat.sendMessage({ text }, { body: { agentId, sessionKey } });
+  }
+
+  function startEditing(message: (typeof chat.messages)[number]) {
+    if (busy) {
+      return;
+    }
+
+    editingMessageId = message.id;
+    editDraft = messageText(message);
+  }
+
+  function cancelEditing() {
+    editingMessageId = null;
+    editDraft = "";
+  }
+
+  // Sending an edit truncates the conversation from the edited message on and
+  // submits the new text, so the answer is regenerated for the edited prompt.
+  function submitEdit(messageIndex: number) {
+    const text = editDraft.trim();
+
+    if (!text || busy) {
+      return;
+    }
+
+    chat.messages = chat.messages.slice(0, messageIndex);
+    cancelEditing();
+    void chat.sendMessage({ text }, { body: { agentId, sessionKey } });
+  }
+
+  function handleEditKeydown(event: KeyboardEvent, messageIndex: number) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      submitEdit(messageIndex);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      cancelEditing();
+    }
+  }
+
   // Grow the composer with its content (capped; scrolls beyond the cap).
   // Explicit height also covers browsers without `field-sizing: content`.
   $effect(() => {
@@ -292,16 +356,52 @@
 
         {#each chat.messages as message, messageIndex (message.id ?? messageIndex)}
           {#if message.role === "user"}
-            <div class="flex justify-end">
-              <div
-                class="bg-primary text-primary-foreground max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap"
-              >
-                {#each message.parts as part, partIndex (partIndex)}
-                  {#if part.type === "text"}{part.text}{/if}
-                {/each}
+            {@const userText = messageText(message)}
+            {#if editingMessageId === message.id}
+              <div class="bg-muted/30 space-y-2 rounded-lg border p-2">
+                <Textarea
+                  bind:value={editDraft}
+                  class="min-h-14 resize-none text-sm"
+                  aria-label="Edit message"
+                  onkeydown={(event) => handleEditKeydown(event, messageIndex)}
+                />
+                <div class="flex justify-end gap-2">
+                  <Button variant="ghost" size="sm" onclick={cancelEditing}>
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={!editDraft.trim() || busy}
+                    onclick={() => submitEdit(messageIndex)}
+                  >
+                    Send
+                  </Button>
+                </div>
               </div>
-            </div>
+            {:else}
+              <div class="space-y-1">
+                <div class="flex justify-end">
+                  <div
+                    class="bg-primary text-primary-foreground max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap"
+                  >
+                    {#each message.parts as part, partIndex (partIndex)}
+                      {#if part.type === "text"}{part.text}{/if}
+                    {/each}
+                  </div>
+                </div>
+                <UserMessageActions
+                  text={userText}
+                  metadata={message.metadata}
+                  disabled={busy}
+                  onRetry={() => retryMessage(messageIndex)}
+                  onEdit={() => startEditing(message)}
+                />
+              </div>
+            {/if}
           {:else if message.role === "assistant"}
+            {@const answerMarkdown = message.parts
+              .flatMap((part) => (part.type === "text" ? [part.text] : []))
+              .join("\n\n")}
             <div class="space-y-1">
               {#each message.parts as part, partIndex (partIndex)}
                 {#if part.type === "text"}
@@ -340,6 +440,12 @@
                   <ToolPart {part} />
                 {/if}
               {/each}
+              {#if answerMarkdown && !(messageIndex === chat.messages.length - 1 && busy)}
+                <div class="flex items-center gap-1.5">
+                  <CopyMessageButton text={answerMarkdown} />
+                  <MessageTimestamp metadata={message.metadata} />
+                </div>
+              {/if}
             </div>
           {/if}
         {/each}

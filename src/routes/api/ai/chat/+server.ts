@@ -182,7 +182,26 @@ export const GET: RequestHandler = async (event) => {
         resourceId: user.id,
       });
 
-      return json(toAISdkMessages(recalled?.messages ?? [], { version: "v6" }));
+      const stored = recalled?.messages ?? [];
+
+      // UIMessage has no timestamp field, so surface each stored message's
+      // createdAt through metadata for the client to render.
+      const createdAtById = new Map(
+        stored.map((message) => [
+          message.id,
+          message.createdAt ? new Date(message.createdAt).toISOString() : null,
+        ]),
+      );
+
+      return json(
+        toAISdkMessages(stored, { version: "v6" }).map((message) => ({
+          ...message,
+          metadata: {
+            ...(typeof message.metadata === "object" ? message.metadata : {}),
+            createdAt: createdAtById.get(message.id) ?? null,
+          },
+        })),
+      );
     } catch {
       // Unknown/empty thread — an empty conversation, not an error.
       return json([]);
