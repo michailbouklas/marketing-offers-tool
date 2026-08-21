@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fb923c" />
+      <stop offset="1" stop-color="#c2410c" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)" />
+  <!-- offer tag pointing down-right, with hole cut out (evenodd) -->
+  <g transform="translate(32 32) rotate(45) scale(1.15)">
+    <path
+      fill="#fff"
+      fill-rule="evenodd"
+      d="M -16 -7
+         Q -16 -11 -12 -11
+         L 6 -11
+         Q 9 -11 11.5 -8.5
+         L 17 -2.5
+         Q 19.5 0 17 2.5
+         L 11.5 8.5
+         Q 9 11 6 11
+         L -12 11
+         Q -16 11 -16 7
+         Z
+         M -13.7 0 A 2.2 2.2 0 1 0 -9.3 0 A 2.2 2.2 0 1 0 -13.7 0 Z"
+    />
+  </g>
+  <!-- upright percent sign, gradient-filled so it reads as cut out of the tag -->
+  <path
+    fill="url(#bg)"
+    d="M 27.3 30.5 A 3.2 3.2 0 1 0 33.7 30.5 A 3.2 3.2 0 1 0 27.3 30.5 Z
+       M 39.3 42.5 A 3.2 3.2 0 1 0 45.7 42.5 A 3.2 3.2 0 1 0 39.3 42.5 Z
+       M 31.56 43.56 L 43.56 31.56 L 41.44 29.44 L 29.44 41.44 Z"
+  />
+</svg>
