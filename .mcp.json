@@ -2,7 +2,17 @@
   "mcpServers": {
     "graft": {
       "command": "npx",
-      "args": ["-y", "@nanonets/graft", "mcp"]
+      "args": [
+        "-y",
+        "@nanonets/graft",
+        "mcp"
+      ]
+    },
+    "memory": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\mbouklas\\AppData\\Local\\nvm\\v22.23.2\\node_modules\\claude-db\\dist\\mcp\\server.js"
+      ]
     }
   }
 }
