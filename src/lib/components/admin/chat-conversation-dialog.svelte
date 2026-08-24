@@ -4,6 +4,11 @@
     excelErrorText,
     excelOutput,
   } from "$lib/components/ai-chat/excel-tool";
+  import {
+    THREEJS_REPORT_TOOL_PART_TYPE,
+    threeJsReportErrorText,
+    threeJsReportOutput,
+  } from "$lib/components/ai-chat/threejs-report-tool";
   import { renderMarkdown } from "$lib/components/ai-chat/markdown";
   import ToolPart from "$lib/components/ai-chat/tool-part.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
@@ -16,6 +21,8 @@
     type ChatConversationResponse,
     type UserChatThread,
   } from "$lib/services/chat-usage";
+  import ChartColumnIcon from "@lucide/svelte/icons/chart-column";
+  import DownloadIcon from "@lucide/svelte/icons/download";
   import FileSpreadsheetIcon from "@lucide/svelte/icons/file-spreadsheet";
   import { SvelteMap } from "svelte/reactivity";
 
@@ -161,6 +168,42 @@
                           ? `: ${errorText}`
                           : output && !output.ok
                             ? `: ${output.error}`
+                            : ""}
+                      </p>
+                    {/if}
+                  {:else if part.type === THREEJS_REPORT_TOOL_PART_TYPE}
+                    {@const report = threeJsReportOutput(part)}
+                    {@const reportError = threeJsReportErrorText(part)}
+                    {#if report?.ok}
+                      <span class="inline-flex items-center gap-1">
+                        <a
+                          href={report.openUrl}
+                          target="_blank"
+                          rel="noopener"
+                          title="Open the interactive 3D report in a new tab"
+                          class="bg-muted hover:bg-accent inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium"
+                        >
+                          <ChartColumnIcon class="text-primary size-3.5" />
+                          {report.filename}
+                        </a>
+                        <a
+                          href={report.downloadUrl}
+                          download={report.filename}
+                          aria-label="Download report"
+                          title="Download report"
+                          class="bg-muted hover:bg-accent inline-flex items-center rounded-md border p-1.5"
+                        >
+                          <DownloadIcon class="size-3.5" />
+                        </a>
+                      </span>
+                    {:else}
+                      <p class="text-muted-foreground text-xs">
+                        3D report {report || reportError
+                          ? "failed"
+                          : "did not complete"}{reportError
+                          ? `: ${reportError}`
+                          : report && !report.ok
+                            ? `: ${report.error}`
                             : ""}
                       </p>
                     {/if}

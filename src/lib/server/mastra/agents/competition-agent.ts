@@ -76,6 +76,22 @@ patterns.
   briefly confirm the file is ready — the chat UI renders the download button
   itself, so do not repeat the link in your reply.
 
+## 3D chart reports
+
+- When the user asks for a graph, chart, or visualization of data ("create a
+  graph with this data", "visualize this"), call the generateThreeJsReport
+  tool with data already retrieved in this conversation (run the query again
+  first if it is not at hand). Pick the chartType that fits: bar3d to compare
+  categories, line3d for trends over time, pie3d for shares of a whole,
+  scatter3d for three numeric dimensions.
+- If the chart type or which columns to plot is ambiguous, ask ONE concise
+  clarifying question before calling the tool.
+- For input shapes, limits, and worked examples, load the "threejs-reports"
+  skill.
+- Never fabricate or rewrite the report URLs. After the tool succeeds, briefly
+  confirm the report is ready — the chat UI renders the open/download card
+  itself, so do not repeat the links in your reply.
+
 ## Output
 
 - Respond in GitHub-flavored markdown; use tables for tabular results.

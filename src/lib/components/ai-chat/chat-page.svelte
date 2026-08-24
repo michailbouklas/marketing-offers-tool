@@ -12,11 +12,18 @@
     excelErrorText,
     excelOutput,
   } from "$lib/components/ai-chat/excel-tool";
+  import {
+    THREEJS_REPORT_TOOL_PART_TYPE,
+    threeJsReportErrorText,
+    threeJsReportOutput,
+  } from "$lib/components/ai-chat/threejs-report-tool";
   import { renderMarkdown } from "$lib/components/ai-chat/markdown";
   import SessionList, {
     type ChatSession,
   } from "$lib/components/ai-chat/session-list.svelte";
   import ToolPart from "$lib/components/ai-chat/tool-part.svelte";
+  import ChartColumnIcon from "@lucide/svelte/icons/chart-column";
+  import DownloadIcon from "@lucide/svelte/icons/download";
   import FileSpreadsheetIcon from "@lucide/svelte/icons/file-spreadsheet";
   import HistoryIcon from "@lucide/svelte/icons/history";
   import SendHorizontalIcon from "@lucide/svelte/icons/send-horizontal";
@@ -410,6 +417,44 @@
                     >
                       <FileSpreadsheetIcon class="size-3" />
                       Generating Excel…
+                    </p>
+                  {/if}
+                {:else if part.type === THREEJS_REPORT_TOOL_PART_TYPE}
+                  {@const report = threeJsReportOutput(part)}
+                  {@const reportError = threeJsReportErrorText(part)}
+                  {#if report?.ok}
+                    <span class="inline-flex items-center gap-1">
+                      <a
+                        href={report.openUrl}
+                        target="_blank"
+                        rel="noopener"
+                        title="Open the interactive 3D report in a new tab"
+                        class="bg-muted hover:bg-accent inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium"
+                      >
+                        <ChartColumnIcon class="text-primary size-3.5" />
+                        {report.filename}
+                      </a>
+                      <a
+                        href={report.downloadUrl}
+                        download={report.filename}
+                        aria-label="Download report"
+                        title="Download report"
+                        class="bg-muted hover:bg-accent inline-flex items-center rounded-md border p-1.5"
+                      >
+                        <DownloadIcon class="size-3.5" />
+                      </a>
+                    </span>
+                  {:else if report || reportError}
+                    <p class="text-destructive text-xs">
+                      3D report failed: {reportError ??
+                        (report && !report.ok ? report.error : "unknown error")}
+                    </p>
+                  {:else}
+                    <p
+                      class="text-muted-foreground flex animate-pulse items-center gap-1.5 text-xs"
+                    >
+                      <ChartColumnIcon class="size-3" />
+                      Building 3D report…
                     </p>
                   {/if}
                 {:else if part.type.startsWith("tool-") || part.type === "dynamic-tool"}

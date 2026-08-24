@@ -290,6 +290,18 @@ props), so a Word capability would be a straight clone of the Excel pattern:
    (`chat-widget.svelte`, `chat-page.svelte`) and the admin conversation
    dialog, mirroring the excel three-state rendering (§5).
 
+This extension path has since been exercised once (not for Word): the
+`generateThreeJsReport` tool (`tools/generate-threejs-report.ts`) produces a
+standalone interactive 3D chart HTML page (three.js + OrbitControls embedded
+as base64 importmap entries, offline-capable) stored under the same
+`ai-exports/<uuid>/<filename>` keys. The download route now accepts `.html`
+alongside `.xlsx`: HTML is served `inline` with a sandboxing CSP
+(`sandbox allow-scripts`, opaque origin — its scripts cannot make
+credentialed same-origin requests) unless `?download=1` forces an
+attachment. UI branches live behind `THREEJS_REPORT_TOOL_PART_TYPE` in
+`ai-chat/threejs-report-tool.ts`; the deep model-facing reference is
+`workspace/skills/threejs-reports/SKILL.md`.
+
 ## 4. How files are served to the user
 
 ### 4.1 Route

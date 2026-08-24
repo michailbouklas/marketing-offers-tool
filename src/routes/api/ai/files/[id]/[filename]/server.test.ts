@@ -21,6 +21,8 @@ const FILENAME = "wolt payouts.xlsx";
 const XLSX_BYTES = Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]);
 const XLSX_MIME =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+const HTML_FILENAME = "sales-report.html";
+const HTML_BYTES = Buffer.from("<!doctype html><title>r</title>", "utf8");
 
 let workdir: string;
 
@@ -28,6 +30,10 @@ beforeEach(() => {
   workdir = mkdtempSync(join(tmpdir(), "ai-files-"));
   mkdirSync(join(workdir, "ai-exports", FILE_ID), { recursive: true });
   writeFileSync(join(workdir, "ai-exports", FILE_ID, FILENAME), XLSX_BYTES);
+  writeFileSync(
+    join(workdir, "ai-exports", FILE_ID, HTML_FILENAME),
+    HTML_BYTES,
+  );
   mockEnv.mockReturnValue({ UPLOADS_DIR: workdir });
 });
 
@@ -40,8 +46,9 @@ function buildEvent(
   id: string,
   filename: string,
   overrides: Partial<RequestEvent["locals"]> = {},
+  query = "",
 ): RequestEvent {
-  const url = `http://localhost/api/ai/files/${encodeURIComponent(id)}/${encodeURIComponent(filename)}`;
+  const url = `http://localhost/api/ai/files/${encodeURIComponent(id)}/${encodeURIComponent(filename)}${query}`;
   return {
     locals: {
       session: { id: "session-1", userId: "user-1" },
@@ -104,5 +111,46 @@ describe("GET /api/ai/files/[id]/[filename]", () => {
     );
     const buf = Buffer.from(await response.arrayBuffer());
     expect(buf.equals(XLSX_BYTES)).toBe(true);
+  });
+
+  it("keeps the xlsx response free of the HTML report policy headers", async () => {
+    const response = await (GET as (e: RequestEvent) => Promise<Response>)(
+      buildEvent(FILE_ID, FILENAME),
+    );
+
+    expect(response.headers.get("content-security-policy")).toBeNull();
+  });
+
+  it("serves html reports inline with a sandboxing CSP", async () => {
+    const response = await (GET as (e: RequestEvent) => Promise<Response>)(
+      buildEvent(FILE_ID, HTML_FILENAME),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe(
+      "text/html; charset=utf-8",
+    );
+    expect(response.headers.get("content-disposition")).toBe(
+      `inline; filename="${HTML_FILENAME}"`,
+    );
+    const csp = response.headers.get("content-security-policy") ?? "";
+    expect(csp).toContain("sandbox allow-scripts");
+    expect(csp).toContain("connect-src 'none'");
+    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    const buf = Buffer.from(await response.arrayBuffer());
+    expect(buf.equals(HTML_BYTES)).toBe(true);
+  });
+
+  it("forces an attachment for html reports when ?download=1", async () => {
+    const response = await (GET as (e: RequestEvent) => Promise<Response>)(
+      buildEvent(FILE_ID, HTML_FILENAME, {}, "?download=1"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-disposition")).toBe(
+      `attachment; filename="${HTML_FILENAME}"`,
+    );
+    expect(response.headers.get("content-security-policy")).toBeNull();
   });
 });

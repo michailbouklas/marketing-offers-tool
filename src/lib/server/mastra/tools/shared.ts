@@ -1,4 +1,5 @@
 import { generateExcel } from "./generate-excel";
+import { generateThreeJsReport } from "./generate-threejs-report";
 
 /**
  * Tools every chat agent gets, spread into each agent's `tools` map
@@ -9,4 +10,4 @@ import { generateExcel } from "./generate-excel";
  * type (`tool-generateExcel`) — renaming a key breaks the matching branches
  * in chat-widget.svelte and admin/chat-conversation-dialog.svelte.
  */
-export const sharedTools = { generateExcel };
+export const sharedTools = { generateExcel, generateThreeJsReport };

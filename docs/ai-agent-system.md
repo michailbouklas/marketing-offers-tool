@@ -665,6 +665,14 @@ Everything needed to hook the system into a host app:
       permission.
    5. Mount `<ChatWidget agentId="<domain>-agent" ... />` on the section page.
    6. Restart the dev server (the `globalThis` cache ignores HMR).
+8. **Adding a new export tool** — the recipe was exercised twice: `generateExcel`
+   and `generateThreeJsReport` (interactive 3D chart HTML, three.js embedded
+   via base64 importmap so the download works offline). Clone the tool under
+   `tools/`, register in `tools/shared.ts` (key = UI part type), add the
+   extension to the files route (HTML gets `inline` + a sandboxing CSP,
+   `?download=1` forces attachment), add a client helper beside
+   `ai-chat/excel-tool.ts`, branch all three renderers, add an agent
+   instruction section and a `workspace/skills/<name>/SKILL.md`.
 
 ## 11. Gotchas worth knowing before you hit them
 
