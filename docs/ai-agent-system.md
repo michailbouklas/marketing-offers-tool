@@ -648,6 +648,8 @@ Everything needed to hook the system into a host app:
    - `OFFICECLI_PATH` — officecli binary for Excel generation.
    - `MASTRA_WORKSPACE_DIR` — set in deployments where the built app's cwd
      doesn't contain `src/lib/server/mastra/workspace`.
+   - `OPENWEBUI_*` / `PUBLIC_BASE_URL` — only for the Open WebUI bridge; see
+     `docs/openwebui-integration.md`.
 5. **Scripts.** `"mastra:dev": "mastra dev --dir src/lib/server/mastra/dev --env .env"`
    (playground on port 4123; to test brand-scoped agents there, set
    `allowedBrandAliases` in the playground's runtime-context panel).
@@ -673,6 +675,14 @@ Everything needed to hook the system into a host app:
    `?download=1` forces attachment), add a client helper beside
    `ai-chat/excel-tool.ts`, branch all three renderers, add an agent
    instruction section and a `workspace/skills/<name>/SKILL.md`.
+9. **External callers (Open WebUI).** The `sales-agent` is also reachable
+   without a cookie session through an OpenAI-compatible endpoint
+   (`/api/openai/v1`) and an OpenAPI tool server (`/api/openwebui-tools`).
+   Both authenticate with a bearer token (`src/lib/server/external-auth.ts`),
+   reuse `buildBrandScopeRequestContext` (`src/lib/server/brand-scope.server.ts`,
+   the same helper the chat route uses) and set `CHANNEL_RUNTIME_KEY =
+"openwebui"`, which the agent's instructions and the routes' `activeTools`
+   use to switch off file exports. Full setup in `docs/openwebui-integration.md`.
 
 ## 11. Gotchas worth knowing before you hit them
 
@@ -697,3 +707,14 @@ Everything needed to hook the system into a host app:
 - **Excel data cells are always literals** — the leading-`=` space-prefix in
   `toLiteralCellValue` is a deliberate formula-injection guard; formulas are
   only possible through the vetted `extraCommands` path.
+- **`memory.thread` needs `memory.resource`.** Passing only one of them makes
+  Mastra throw (`AGENT_MEMORY_MISSING_RESOURCE_ID`); omitting `memory`
+  entirely is the supported stateless path (nothing recalled or persisted),
+  even when the agent has memory configured.
+- **`src/lib/server/mastra/` must stay `$env`-free** so `mastra dev` can
+  bundle it — anything that needs Prisma/env (e.g. the brand-scope helper)
+  lives in `src/lib/server/` and is passed in via `RequestContext`.
+- **Open WebUI bridge specifics** — external system messages are dropped
+  before reaching the agent; the task header (`x-openwebui-task`) must be
+  handled _before_ memory so title/tag requests never run SQL or pollute a
+  thread. See `docs/openwebui-integration.md`.

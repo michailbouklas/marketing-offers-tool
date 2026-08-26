@@ -34,6 +34,16 @@ export const BRAND_SCOPE_RUNTIME_KEY = "allowedBrandAliases";
 export const BRAND_SCOPE_NAMES_RUNTIME_KEY = "allowedBrandNames";
 
 /**
+ * RequestContext key naming the surface a conversation comes from. Agents may
+ * adapt their instructions per channel — e.g. the Open WebUI bridge cannot
+ * serve file downloads, so file-producing tools are described as unavailable
+ * there. Absent (the in-app widget) means `"app"`.
+ */
+export const CHANNEL_RUNTIME_KEY = "channel";
+
+export type ChatChannel = "app" | "openwebui";
+
+/**
  * Chat agents the API is allowed to route to, and the permission (if any) a
  * user must hold to talk to each one. The chat widget picks the agent for its
  * section; this map is the server-side allowlist backing that routing.

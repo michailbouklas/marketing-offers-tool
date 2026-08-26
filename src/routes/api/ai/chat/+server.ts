@@ -1,21 +1,16 @@
 import { error, json } from "@sveltejs/kit";
 import { handleChatStream } from "@mastra/ai-sdk";
 import { toAISdkMessages } from "@mastra/ai-sdk/ui";
-import { RequestContext } from "@mastra/core/request-context";
+import type { RequestContext } from "@mastra/core/request-context";
 import { createUIMessageStreamResponse } from "ai";
-import { adminRoles, hasAnyRole } from "$lib/auth/roles";
 import {
   getAuthenticatedUserRole,
   requireApiPermission,
   requireAuthenticatedApiUser,
 } from "$lib/server/auth-guards";
+import { buildBrandScopeRequestContext } from "$lib/server/brand-scope.server";
 import { getMastra } from "$lib/server/mastra";
-import {
-  BRAND_SCOPE_NAMES_RUNTIME_KEY,
-  BRAND_SCOPE_RUNTIME_KEY,
-  chatAgents,
-} from "$lib/server/mastra/chat-registry";
-import { listBrands, listBrandsForUser } from "$lib/services/brands.server";
+import { chatAgents } from "$lib/server/mastra/chat-registry";
 import { z } from "zod";
 import type { RequestEvent, RequestHandler } from "./$types";
 
@@ -62,12 +57,10 @@ async function authorizeAgent(event: RequestEvent, agentId: string) {
 /**
  * For `brandScoped` agents, publish the caller's assigned brand aliases (and
  * their display names) into a RequestContext the agent reads in its dynamic
- * instructions and the SQL tools read as a hard guardrail. The brand list is
- * always derived server-side from the authenticated user — it is never taken
- * from the request body — so a user can only ever scope to their own brands.
- * superUser/admin callers are scoped to ALL active brands instead of their
- * explicit assignments (applies to every brandScoped agent). Returns
- * undefined for non-brand-scoped agents (no override).
+ * instructions and the SQL tools read as a hard guardrail. The scope is
+ * always derived server-side from the authenticated user (see
+ * `buildBrandScopeRequestContext`). Returns undefined for non-brand-scoped
+ * agents (no override).
  */
 async function buildBrandRequestContext(
   event: RequestEvent,
@@ -79,25 +72,10 @@ async function buildBrandRequestContext(
   }
 
   const role = await getAuthenticatedUserRole(event);
-  const brands = hasAnyRole(role, adminRoles)
-    ? await listBrands({ active: true })
-    : await listBrandsForUser(userId);
-
-  // Keep the two arrays index-aligned: a brand without an alias cannot be
-  // filtered on in the warehouse, so it is dropped from both lists.
-  const scoped = brands
-    .map((brand) => ({ alias: brand.alias.trim(), name: brand.name.trim() }))
-    .filter((brand) => brand.alias.length > 0);
-
-  const requestContext = new RequestContext();
-  requestContext.set(
-    BRAND_SCOPE_RUNTIME_KEY,
-    scoped.map((brand) => brand.alias),
-  );
-  requestContext.set(
-    BRAND_SCOPE_NAMES_RUNTIME_KEY,
-    scoped.map((brand) => brand.name || brand.alias),
-  );
+  const { requestContext } = await buildBrandScopeRequestContext({
+    id: userId,
+    role,
+  });
 
   return requestContext;
 }

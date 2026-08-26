@@ -138,10 +138,22 @@ export async function hasPermission(
     return false;
   }
 
+  return userHasPermissionById(user.id, permissions);
+}
+
+/**
+ * Permission check by user id — no session or RequestEvent required. Shared
+ * by the session guards above and by external (bearer-token) callers such as
+ * the Open WebUI bridge (`external-auth.ts`).
+ */
+export async function userHasPermissionById(
+  userId: string,
+  permissions: AppPermissions,
+) {
   // Pass the user id so Better Auth evaluates the union across all of the
   // user's stored roles (the `role` column may be a comma-separated list).
   const result = await auth.api.userHasPermission({
-    body: { userId: user.id, permissions },
+    body: { userId, permissions },
   });
 
   return result.success;

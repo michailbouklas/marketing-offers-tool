@@ -3,6 +3,7 @@ import type { RequestContext } from "@mastra/core/request-context";
 import {
   BRAND_SCOPE_NAMES_RUNTIME_KEY,
   BRAND_SCOPE_RUNTIME_KEY,
+  CHANNEL_RUNTIME_KEY,
 } from "../chat-registry";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
@@ -191,6 +192,30 @@ function buildBrandScopeSection(brands: ScopedBrand[]): string {
 }
 
 /**
+ * Extra instructions for conversations relayed from Open WebUI. That surface
+ * cannot open the app's authenticated download links, and the bridge also
+ * removes the file tools from the active set — this section keeps the model
+ * from attempting (or promising) an export.
+ */
+const openWebUiChannelSection = [
+  "## Channel: Open WebUI (external chat)",
+  "",
+  "- Excel exports and interactive 3D chart reports are NOT available in this",
+  "  channel. Do not call generateExcel or generateThreeJsReport and never",
+  "  output /api/ai/files links.",
+  "- If the user asks for a file, chart, or export, present the data as a",
+  "  markdown table instead and mention that downloadable exports are",
+  "  available in the marketing tool's Sales Chat.",
+  "- Reply in plain GitHub-flavored markdown only.",
+].join("\n");
+
+function buildChannelSection(requestContext?: RequestContext): string {
+  return requestContext?.get(CHANNEL_RUNTIME_KEY) === "openwebui"
+    ? `\n\n${openWebUiChannelSection}`
+    : "";
+}
+
+/**
  * Chat agent for /sales/chat. Registered on the shared Mastra instance
  * in ../index.ts; exposed to the UI via the chat registry (brandScoped).
  */
@@ -199,7 +224,7 @@ export const salesAgent = new Agent({
   name: "Sales Assistant",
   instructions: ({ requestContext }) => {
     const brands = resolveScopedBrands(requestContext);
-    return `${baseInstructions}\n\n${buildBrandScopeSection(brands)}`;
+    return `${baseInstructions}\n\n${buildBrandScopeSection(brands)}${buildChannelSection(requestContext)}`;
   },
   model: getAiChatEnv().AI_CHAT_MODEL,
   tools: { ...sharedTools, querySalesSql },

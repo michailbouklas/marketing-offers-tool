@@ -237,3 +237,66 @@ export function getRemoteScraperUrl(): string | undefined {
 
   return absoluteUrl.replace(/\/+$/, "");
 }
+
+/**
+ * Configuration for the Open WebUI bridge — the OpenAI-compatible endpoint
+ * under `/api/openai/v1` and the OpenAPI tool server under
+ * `/api/openwebui-tools`. See `docs/openwebui-integration.md`.
+ *
+ * `OPENWEBUI_SHARED_SECRET` unset disables the bridge entirely (both route
+ * families answer 503). Header names are compared lowercase (Fetch headers
+ * are case-insensitive anyway).
+ */
+export interface OpenWebUiEnv {
+  OPENWEBUI_SHARED_SECRET?: string;
+  OPENWEBUI_USER_EMAIL_HEADER: string;
+  OPENWEBUI_TASK_HEADER: string;
+  OPENWEBUI_CHAT_ID_HEADER: string;
+  /** Browser origins allowed to call the tool server directly (CORS). */
+  OPENWEBUI_ORIGIN: string[];
+  /** Wall-clock budget for one tool-server `ask-sales` call. */
+  OPENWEBUI_ASK_TIMEOUT_MS: number;
+  /** Public base URL used in the OpenAPI `servers[].url`; falls back to ORIGIN. */
+  PUBLIC_BASE_URL?: string;
+}
+
+function readHeaderName(name: string, fallback: string): string {
+  return (readEnv(name) ?? fallback).trim().toLowerCase();
+}
+
+function readPositiveInt(name: string, fallback: number): number {
+  const raw = readEnv(name);
+  const parsed = raw === undefined ? Number.NaN : Number.parseInt(raw, 10);
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+export function getOpenWebUiEnv(): OpenWebUiEnv {
+  const secret = readEnv("OPENWEBUI_SHARED_SECRET")?.trim();
+  const baseUrl = (readEnv("PUBLIC_BASE_URL") ?? readEnv("ORIGIN"))?.trim();
+
+  return {
+    OPENWEBUI_SHARED_SECRET: secret ? secret : undefined,
+    OPENWEBUI_USER_EMAIL_HEADER: readHeaderName(
+      "OPENWEBUI_USER_EMAIL_HEADER",
+      "x-openwebui-user-email",
+    ),
+    OPENWEBUI_TASK_HEADER: readHeaderName(
+      "OPENWEBUI_TASK_HEADER",
+      "x-openwebui-task",
+    ),
+    OPENWEBUI_CHAT_ID_HEADER: readHeaderName(
+      "OPENWEBUI_CHAT_ID_HEADER",
+      "x-openwebui-chat-id",
+    ),
+    OPENWEBUI_ORIGIN: (readEnv("OPENWEBUI_ORIGIN") ?? "")
+      .split(",")
+      .map((origin) => origin.trim().replace(/\/+$/, ""))
+      .filter((origin) => origin.length > 0),
+    OPENWEBUI_ASK_TIMEOUT_MS: readPositiveInt(
+      "OPENWEBUI_ASK_TIMEOUT_MS",
+      90_000,
+    ),
+    PUBLIC_BASE_URL: baseUrl ? baseUrl.replace(/\/+$/, "") : undefined,
+  };
+}
