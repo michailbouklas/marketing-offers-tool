@@ -37,9 +37,30 @@ describe("corsHeaders", () => {
     const headers = corsHeaders(makeEvent({ origin: ALLOWED }));
 
     expect(headers["Access-Control-Allow-Origin"]).toBe(ALLOWED);
-    expect(headers["Access-Control-Allow-Headers"]).toContain("Authorization");
-    expect(headers.Vary).toBe("Origin");
+    expect(headers["Access-Control-Allow-Headers"]).toContain("authorization");
+    expect(headers["Access-Control-Allow-Headers"]).toContain("x-session-id");
+    expect(headers.Vary).toContain("Origin");
     expect(headers["Access-Control-Allow-Credentials"]).toBeUndefined();
+  });
+
+  it("echoes extra headers the browser requests in the preflight", () => {
+    const headers = corsHeaders(
+      makeEvent({
+        origin: ALLOWED,
+        "access-control-request-headers":
+          "authorization, X-Session-Id, x-custom",
+      }),
+    );
+
+    const allowed = headers["Access-Control-Allow-Headers"]
+      .split(",")
+      .map((name) => name.trim());
+
+    expect(allowed).toContain("authorization");
+    expect(allowed).toContain("content-type");
+    expect(allowed).toContain("x-session-id");
+    expect(allowed).toContain("x-custom");
+    expect(new Set(allowed).size).toBe(allowed.length);
   });
 
   it("returns nothing for a disallowed or missing origin", () => {

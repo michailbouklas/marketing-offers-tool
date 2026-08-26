@@ -13,8 +13,35 @@ import { externalErrorResponse } from "$lib/server/external-api-error";
  */
 
 const ALLOW_METHODS = "GET, POST, OPTIONS";
-const ALLOW_HEADERS =
-  "Authorization, Content-Type, X-OpenWebUI-User-Email, X-OpenWebUI-Chat-Id";
+const DEFAULT_ALLOW_HEADERS = [
+  "authorization",
+  "content-type",
+  "x-openwebui-user-email",
+  "x-openwebui-chat-id",
+  "x-session-id",
+];
+
+/**
+ * Allowed request headers = our defaults plus whatever the browser asked for
+ * in the preflight. Open WebUI adds client headers over time (`X-Session-Id`
+ * appeared in a recent release) and a fixed list turns each one into an
+ * opaque "Failed to fetch". Echoing is safe: these routes never accept
+ * cookies, so the header set carries no ambient credentials.
+ */
+function allowHeaders(event: RequestEvent): string {
+  const merged = new Set(DEFAULT_ALLOW_HEADERS);
+  const requested = event.request.headers.get("access-control-request-headers");
+
+  for (const header of requested?.split(",") ?? []) {
+    const name = header.trim().toLowerCase();
+
+    if (name) {
+      merged.add(name);
+    }
+  }
+
+  return [...merged].join(", ");
+}
 
 function allowedOrigin(event: RequestEvent): string | null {
   const origin = event.request.headers.get("origin")?.trim();
@@ -40,9 +67,9 @@ export function corsHeaders(event: RequestEvent): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": ALLOW_METHODS,
-    "Access-Control-Allow-Headers": ALLOW_HEADERS,
+    "Access-Control-Allow-Headers": allowHeaders(event),
     "Access-Control-Max-Age": "600",
-    Vary: "Origin",
+    Vary: "Origin, Access-Control-Request-Headers",
   };
 }
 
