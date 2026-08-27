@@ -5,6 +5,7 @@
     aggregatorKpisRoles,
     canAccessAdminSection,
     competitionRoles,
+    forecastsRoles,
     googleReviewsRoles,
     hasAnyRole,
     salesRoles,
@@ -23,6 +24,7 @@
   import StarIcon from "@lucide/svelte/icons/star";
   import GaugeIcon from "@lucide/svelte/icons/gauge";
   import ChartColumnIcon from "@lucide/svelte/icons/chart-column";
+  import ChartSplineIcon from "@lucide/svelte/icons/chart-spline";
   import type { Component } from "svelte";
 
   // `roles` lists the role(s) that may see the item. Omit it for items visible
@@ -171,6 +173,16 @@
       label: "Sales Chat",
       icon: ChartColumnIcon,
       roles: salesRoles,
+    },
+    {
+      href: "/forecasts",
+      label: "Sales Forecasts",
+      icon: ChartSplineIcon,
+      roles: forecastsRoles,
+      children: [
+        { href: "/forecasts", label: "Overview" },
+        { href: "/forecasts/compare", label: "Compare models" },
+      ],
     },
   ];
 

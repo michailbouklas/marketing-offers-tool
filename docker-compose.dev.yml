@@ -1,0 +1,9 @@
+# Local development overlay: publishes the forecast sidecar so `bun run dev`
+# (FORECAST_SERVICE_URL=http://localhost:8000) can reach it.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build forecast
+#
+services:
+  forecast:
+    ports:
+      - "8000:8000"

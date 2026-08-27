@@ -11,3 +11,6 @@ offers-network.txt
 offers-after-fix-console.txt
 offers-after-fix-network.txt
 npm-debug.log*
+# Python forecast sidecar (has its own Dockerfile/.dockerignore)
+forecast-service/.venv
+forecast-service/tests

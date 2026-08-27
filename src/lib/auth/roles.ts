@@ -100,6 +100,20 @@ export const salesRoles: UserRole[] = [
   superUserRole,
 ];
 
+/**
+ * Roles that may access the `/forecasts` section (per-brand sales forecasts
+ * computed by the Python forecast sidecar from the ClickHouse POS sales data).
+ * Like the sales section, `admin` is included explicitly — the marker admin
+ * role is granted the matching `forecasts: ["view"]` permission in
+ * `permissions.ts`. `superUser` is the admin-equivalent that holds every
+ * resource permission.
+ */
+export const forecastsRoles: UserRole[] = [
+  "analyticsViewer",
+  adminUserRole,
+  superUserRole,
+];
+
 export const roleLabels: Record<UserRole, string> = {
   user: "User",
   admin: "Admin",

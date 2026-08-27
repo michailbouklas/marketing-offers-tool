@@ -1,0 +1,440 @@
+{
+  "$defs": {
+    "ForecastAccuracy": {
+      "properties": {
+        "biasPct": {
+          "title": "Biaspct",
+          "type": "number"
+        },
+        "coverage80Pct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Coverage80Pct"
+        },
+        "folds": {
+          "title": "Folds",
+          "type": "integer"
+        },
+        "grade": {
+          "enum": ["high", "medium", "low"],
+          "title": "Grade",
+          "type": "string"
+        },
+        "gradeLabel": {
+          "title": "Gradelabel",
+          "type": "string"
+        },
+        "holdoutDays": {
+          "title": "Holdoutdays",
+          "type": "integer"
+        },
+        "mae": {
+          "title": "Mae",
+          "type": "number"
+        },
+        "mapePct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Mapepct"
+        },
+        "wapePct": {
+          "title": "Wapepct",
+          "type": "number"
+        }
+      },
+      "required": [
+        "holdoutDays",
+        "folds",
+        "wapePct",
+        "mapePct",
+        "mae",
+        "biasPct",
+        "coverage80Pct",
+        "grade",
+        "gradeLabel"
+      ],
+      "title": "ForecastAccuracy",
+      "type": "object"
+    },
+    "ForecastPoint": {
+      "properties": {
+        "ds": {
+          "format": "date",
+          "title": "Ds",
+          "type": "string"
+        },
+        "hi80": {
+          "title": "Hi80",
+          "type": "number"
+        },
+        "hi95": {
+          "title": "Hi95",
+          "type": "number"
+        },
+        "lo80": {
+          "title": "Lo80",
+          "type": "number"
+        },
+        "lo95": {
+          "title": "Lo95",
+          "type": "number"
+        },
+        "yhat": {
+          "title": "Yhat",
+          "type": "number"
+        }
+      },
+      "required": ["ds", "yhat", "lo80", "hi80", "lo95", "hi95"],
+      "title": "ForecastPoint",
+      "type": "object"
+    },
+    "ForecastSeasonality": {
+      "properties": {
+        "holidaysUsed": {
+          "title": "Holidaysused",
+          "type": "boolean"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "strongestWeekday": {
+          "title": "Strongestweekday",
+          "type": "string"
+        },
+        "upcomingHolidays": {
+          "items": {
+            "$ref": "#/$defs/UpcomingHoliday"
+          },
+          "title": "Upcomingholidays",
+          "type": "array"
+        },
+        "weakestWeekday": {
+          "title": "Weakestweekday",
+          "type": "string"
+        },
+        "weekdayUpliftPct": {
+          "title": "Weekdayupliftpct",
+          "type": "number"
+        },
+        "yearlySeasonalityUsed": {
+          "title": "Yearlyseasonalityused",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "strongestWeekday",
+        "weakestWeekday",
+        "weekdayUpliftPct",
+        "yearlySeasonalityUsed",
+        "holidaysUsed",
+        "upcomingHolidays",
+        "notes"
+      ],
+      "title": "ForecastSeasonality",
+      "type": "object"
+    },
+    "ForecastSummary": {
+      "properties": {
+        "averageDaily": {
+          "title": "Averagedaily",
+          "type": "number"
+        },
+        "averageOrderValue": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Averageordervalue"
+        },
+        "horizonLower80": {
+          "title": "Horizonlower80",
+          "type": "number"
+        },
+        "horizonTotal": {
+          "title": "Horizontotal",
+          "type": "number"
+        },
+        "horizonUpper80": {
+          "title": "Horizonupper80",
+          "type": "number"
+        },
+        "lowDay": {
+          "format": "date",
+          "title": "Lowday",
+          "type": "string"
+        },
+        "lowDayValue": {
+          "title": "Lowdayvalue",
+          "type": "number"
+        },
+        "peakDay": {
+          "format": "date",
+          "title": "Peakday",
+          "type": "string"
+        },
+        "peakDayValue": {
+          "title": "Peakdayvalue",
+          "type": "number"
+        },
+        "samePeriodLastYear": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sameperiodlastyear"
+        },
+        "trailingPeriodTotal": {
+          "title": "Trailingperiodtotal",
+          "type": "number"
+        },
+        "vsLastYearPct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Vslastyearpct"
+        },
+        "vsTrailingPct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Vstrailingpct"
+        }
+      },
+      "required": [
+        "horizonTotal",
+        "horizonLower80",
+        "horizonUpper80",
+        "samePeriodLastYear",
+        "vsLastYearPct",
+        "trailingPeriodTotal",
+        "vsTrailingPct",
+        "averageDaily",
+        "peakDay",
+        "peakDayValue",
+        "lowDay",
+        "lowDayValue",
+        "averageOrderValue"
+      ],
+      "title": "ForecastSummary",
+      "type": "object"
+    },
+    "ForecastWarning": {
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "details": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Details"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": ["code", "message"],
+      "title": "ForecastWarning",
+      "type": "object"
+    },
+    "HistoryPoint": {
+      "properties": {
+        "ds": {
+          "format": "date",
+          "title": "Ds",
+          "type": "string"
+        },
+        "fitted": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Fitted"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": ["ds", "y", "fitted"],
+      "title": "HistoryPoint",
+      "type": "object"
+    },
+    "UpcomingHoliday": {
+      "properties": {
+        "ds": {
+          "format": "date",
+          "title": "Ds",
+          "type": "string"
+        },
+        "expectedEffectPct": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Expectedeffectpct"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": ["ds", "name", "expectedEffectPct"],
+      "title": "UpcomingHoliday",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "accuracy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ForecastAccuracy"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cutoffDate": {
+      "format": "date",
+      "title": "Cutoffdate",
+      "type": "string"
+    },
+    "engineVersion": {
+      "title": "Engineversion",
+      "type": "string"
+    },
+    "forecast": {
+      "items": {
+        "$ref": "#/$defs/ForecastPoint"
+      },
+      "title": "Forecast",
+      "type": "array"
+    },
+    "generatedAt": {
+      "format": "date-time",
+      "title": "Generatedat",
+      "type": "string"
+    },
+    "history": {
+      "items": {
+        "$ref": "#/$defs/HistoryPoint"
+      },
+      "title": "History",
+      "type": "array"
+    },
+    "horizonDays": {
+      "title": "Horizondays",
+      "type": "integer"
+    },
+    "modelId": {
+      "title": "Modelid",
+      "type": "string"
+    },
+    "modelName": {
+      "title": "Modelname",
+      "type": "string"
+    },
+    "modelVersion": {
+      "title": "Modelversion",
+      "type": "string"
+    },
+    "runtimeMs": {
+      "title": "Runtimems",
+      "type": "integer"
+    },
+    "seasonality": {
+      "$ref": "#/$defs/ForecastSeasonality"
+    },
+    "summary": {
+      "$ref": "#/$defs/ForecastSummary"
+    },
+    "trendDirection": {
+      "enum": ["up", "flat", "down"],
+      "title": "Trenddirection",
+      "type": "string"
+    },
+    "trendPctPer30d": {
+      "title": "Trendpctper30D",
+      "type": "number"
+    },
+    "warnings": {
+      "items": {
+        "$ref": "#/$defs/ForecastWarning"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "modelId",
+    "modelName",
+    "modelVersion",
+    "engineVersion",
+    "horizonDays",
+    "cutoffDate",
+    "history",
+    "forecast",
+    "summary",
+    "accuracy",
+    "trendDirection",
+    "trendPctPer30d",
+    "seasonality",
+    "warnings",
+    "runtimeMs",
+    "generatedAt"
+  ],
+  "title": "ForecastResult",
+  "type": "object"
+}

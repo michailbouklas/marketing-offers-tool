@@ -22,6 +22,17 @@ bun run svelte-autofixer # prettier --write .
 bun run build            # production build
 ```
 
+### Sales forecasts (Python sidecar)
+
+The `/forecasts` section runs its models in a separate Python service (`forecast-service/`, FastAPI + Prophet + statsforecast). The SvelteKit server owns ClickHouse access and brand authorization; it sends each brand's daily sales series to the sidecar and renders the result. Details: [`docs/forecast-service.md`](./docs/forecast-service.md).
+
+```bash
+bun run forecast:setup   # once: installs uv (if missing) and syncs forecast-service/.venv
+bun run dev:all          # web (vite) + forecast service (uvicorn --reload, port 8000) side by side
+```
+
+Frontend-only developers can run the sidecar in Docker instead: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up forecast`, then `bun run dev`. Either way set `FORECAST_SERVICE_URL=http://localhost:8000` and, for local dev only, `FORECAST_ALLOW_NO_AUTH=1` in `.env`. In production `docker compose up --build` starts both containers; `app` waits for `forecast` to become healthy and reaches it on the internal network as `http://forecast:8000` with a shared `FORECAST_SERVICE_TOKEN`.
+
 ## Building
 
 ```bash

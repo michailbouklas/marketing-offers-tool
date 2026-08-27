@@ -12,6 +12,27 @@ services:
       # adapter-node defaults to 512K, which rejects image uploads
       # (prompt-gallery items, brand assets) with a mid-read stream error.
       BODY_SIZE_LIMIT: ${BODY_SIZE_LIMIT:-20M}
+      # Python forecast sidecar (internal network only).
+      FORECAST_SERVICE_URL: http://forecast:8000
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
+    depends_on:
+      forecast:
+        condition: service_healthy
+    restart: unless-stopped
+
+  forecast:
+    build:
+      context: ./forecast-service
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      FORECAST_WORKERS: ${FORECAST_WORKERS:-3}
+      FORECAST_TIMEOUT_S: ${FORECAST_TIMEOUT_S:-60}
+      FORECAST_MAX_INFLIGHT: ${FORECAST_MAX_INFLIGHT:-6}
+    # Internal only; never `ports:` in prod. docker-compose.dev.yml publishes it for local dev.
+    expose:
+      - "8000"
+    mem_limit: 2g
     restart: unless-stopped

@@ -21,15 +21,35 @@ export type BrandScope = {
 };
 
 /**
+ * Resolves the brands a subject may query in the warehouse. The list is always
+ * derived server-side from the user — never from a request body — so a caller
+ * can only ever scope to their own brands. superUser/admin subjects are scoped
+ * to ALL active brands instead of their explicit assignments.
+ *
+ * A brand without an alias cannot be filtered on in the warehouse, so it is
+ * dropped. Shared by the brand-scoped chat agents
+ * (`buildBrandScopeRequestContext`) and the Sales Forecasts scope helper.
+ */
+export async function listScopedBrands(
+  subject: BrandScopeSubject,
+): Promise<ScopedBrand[]> {
+  const brands = hasAnyRole(subject.role, adminRoles)
+    ? await listBrands({ active: true })
+    : await listBrandsForUser(subject.id);
+
+  return brands
+    .map((brand) => ({ alias: brand.alias.trim(), name: brand.name.trim() }))
+    .filter((brand) => brand.alias.length > 0);
+}
+
+/**
  * Publishes the subject's brand scope into a Mastra RequestContext so
  * brand-scoped agents can read it in their dynamic instructions and the SQL
  * tools can enforce it as a hard guardrail (`query-sales-sql.ts` fails closed
  * when the key is missing).
  *
- * The brand list is always derived server-side from the user — never from a
- * request body — so a caller can only ever scope to their own brands.
- * superUser/admin subjects are scoped to ALL active brands instead of their
- * explicit assignments.
+ * The brand list comes from `listScopedBrands` (server-derived, admins see all
+ * active brands).
  *
  * Lives outside `src/lib/server/mastra/` on purpose: it pulls in Prisma-backed
  * services (and therefore `$env/dynamic/private`), which that directory must
@@ -39,15 +59,8 @@ export async function buildBrandScopeRequestContext(
   subject: BrandScopeSubject,
   requestContext: RequestContext = new RequestContext(),
 ): Promise<BrandScope> {
-  const brands = hasAnyRole(subject.role, adminRoles)
-    ? await listBrands({ active: true })
-    : await listBrandsForUser(subject.id);
-
-  // Keep the two arrays index-aligned: a brand without an alias cannot be
-  // filtered on in the warehouse, so it is dropped from both lists.
-  const scoped: ScopedBrand[] = brands
-    .map((brand) => ({ alias: brand.alias.trim(), name: brand.name.trim() }))
-    .filter((brand) => brand.alias.length > 0);
+  // Keep the two arrays index-aligned (alias-less brands are already dropped).
+  const scoped = await listScopedBrands(subject);
 
   requestContext.set(
     BRAND_SCOPE_RUNTIME_KEY,

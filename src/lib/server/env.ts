@@ -9,14 +9,32 @@ const globalForEnv = globalThis as typeof globalThis & {
   imageGeneratorEnvWarned?: boolean;
 };
 
-function loadEnvFileValues(): Record<string, string> {
-  const envFilePath = join(process.cwd(), ".env");
+/**
+ * Strips an inline comment from a raw `.env` value, dotenv-style: a quoted
+ * value ends at its closing quote (anything after it is ignored), an unquoted
+ * value ends at the first ` #`. `#` inside quotes is preserved.
+ */
+function parseEnvFileValue(rawValue: string): string {
+  const value = rawValue.trim();
+  const quote =
+    value.startsWith('"') || value.startsWith("'") ? value[0] : null;
 
-  if (!existsSync(envFilePath)) {
-    return {};
+  if (quote) {
+    const closingIndex = value.indexOf(quote, 1);
+    if (closingIndex > 0) {
+      return value.slice(1, closingIndex);
+    }
+    return value;
   }
 
-  const fileContents = readFileSync(envFilePath, "utf8");
+  const commentMatch = /\s#/.exec(value);
+  return commentMatch ? value.slice(0, commentMatch.index).trim() : value;
+}
+
+/** Parses `.env` file contents into key/value pairs (exported for tests). */
+export function parseEnvFileContents(
+  fileContents: string,
+): Record<string, string> {
   const values: Record<string, string> = {};
 
   for (const rawLine of fileContents.split(/\r?\n/)) {
@@ -32,20 +50,24 @@ function loadEnvFileValues(): Record<string, string> {
       continue;
     }
 
-    const key = line.slice(0, separatorIndex).trim();
-    let value = line.slice(separatorIndex + 1).trim();
-
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-
-    values[key] = value;
+    const key = line
+      .slice(0, separatorIndex)
+      .trim()
+      .replace(/^export\s+/, "");
+    values[key] = parseEnvFileValue(line.slice(separatorIndex + 1));
   }
 
   return values;
+}
+
+function loadEnvFileValues(): Record<string, string> {
+  const envFilePath = join(process.cwd(), ".env");
+
+  if (!existsSync(envFilePath)) {
+    return {};
+  }
+
+  return parseEnvFileContents(readFileSync(envFilePath, "utf8"));
 }
 
 function readEnv(name: string): string | undefined {
@@ -269,6 +291,73 @@ function readPositiveInt(name: string, fallback: number): number {
   const parsed = raw === undefined ? Number.NaN : Number.parseInt(raw, 10);
 
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+/**
+ * Configuration for the Sales Forecasts feature — the Python forecast sidecar
+ * (`forecast-service/`) plus the ClickHouse lookback and server-side caches.
+ * See `docs/forecast-service.md`.
+ *
+ * `FORECAST_SERVICE_URL` unset means the feature is not configured; callers
+ * surface `NOT_CONFIGURED` rather than crashing. The URL is normalised like
+ * `getRemoteScraperUrl` (protocol defaults to http://, trailing slash trimmed)
+ * so endpoint paths can be concatenated directly.
+ */
+export interface ForecastEnv {
+  FORECAST_SERVICE_URL?: string;
+  /** Shared bearer secret; omitted header when empty (dev with FORECAST_ALLOW_NO_AUTH=1). */
+  FORECAST_SERVICE_TOKEN?: string;
+  /** Node-side wall-clock budget per engine call; keep above FORECAST_TIMEOUT_S * 1000. */
+  FORECAST_TIMEOUT_MS: number;
+  /** ClickHouse lookback (calendar days ending at the brand's latest sales date). */
+  FORECAST_HISTORY_DAYS: number;
+  /** TTL of the server-side forecast result cache. */
+  FORECAST_CACHE_TTL_MS: number;
+  /** TTL of the engine model-catalog cache. */
+  FORECAST_MODELS_TTL_MS: number;
+  /** ISO country code used for holiday calendars. */
+  FORECAST_DEFAULT_COUNTRY: string;
+  /** ClickHouse database holding the POS `transactions` table (identifier). */
+  CLICKHOUSE_SALES_DATABASE: string;
+}
+
+function normaliseBaseUrl(value: string | undefined): string | undefined {
+  const trimmedValue = value?.trim();
+
+  if (!trimmedValue) {
+    return undefined;
+  }
+
+  const hasProtocol = /^[a-z][a-z\d+.-]*:\/\//i.test(trimmedValue);
+  const absoluteUrl = hasProtocol ? trimmedValue : `http://${trimmedValue}`;
+
+  return absoluteUrl.replace(/\/+$/, "");
+}
+
+export function getForecastEnv(): ForecastEnv {
+  const token = readEnv("FORECAST_SERVICE_TOKEN")?.trim();
+  const country = readEnv("FORECAST_DEFAULT_COUNTRY")?.trim().toUpperCase();
+  const salesDatabase = readEnv("CLICKHOUSE_SALES_DATABASE")?.trim();
+
+  return {
+    FORECAST_SERVICE_URL: normaliseBaseUrl(readEnv("FORECAST_SERVICE_URL")),
+    FORECAST_SERVICE_TOKEN: token ? token : undefined,
+    FORECAST_TIMEOUT_MS: readPositiveInt("FORECAST_TIMEOUT_MS", 75_000),
+    FORECAST_HISTORY_DAYS: readPositiveInt("FORECAST_HISTORY_DAYS", 1095),
+    FORECAST_CACHE_TTL_MS: readPositiveInt("FORECAST_CACHE_TTL_MS", 21_600_000),
+    FORECAST_MODELS_TTL_MS: readPositiveInt("FORECAST_MODELS_TTL_MS", 600_000),
+    FORECAST_DEFAULT_COUNTRY: country ? country : "CY",
+    CLICKHOUSE_SALES_DATABASE: salesDatabase ? salesDatabase : "default",
+  };
+}
+
+/**
+ * Test helper — drops the memoised `.env` file snapshot so the next
+ * `getForecastEnv()` re-reads the environment. Values themselves are not
+ * cached; only the `.env` file contents are (shared with the other getters).
+ */
+export function resetForecastEnvForTesting(): void {
+  globalForEnv.imageGeneratorEnvFileValues = undefined;
 }
 
 export function getOpenWebUiEnv(): OpenWebUiEnv {

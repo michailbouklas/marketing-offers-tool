@@ -1,0 +1,55 @@
+[project]
+name = "forecast-service"
+version = "0.1.0"
+description = "Stateless sales-forecast engine (FastAPI sidecar + --stdin CLI) for marketing-offers-tool"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "statsforecast>=2.0",
+  "prophet>=1.1.6",
+  "holidays>=0.50",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.2",
+  "pytest-asyncio>=0.24",
+  "httpx>=0.27",
+  "ruff>=0.6",
+]
+
+[tool.uv]
+# The service is run from its source tree (`uv run ...` / WORKDIR /app), never installed as a wheel.
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["forecast_service", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "SIM", "PL", "RUF"]
+ignore = [
+  "PLR0913", # many keyword args on model constructors are the API
+  "PLR2004", # magic-value comparisons are the statistical thresholds themselves
+  "RUF012",  # pydantic model_config / registry dicts
+  "PLC0415", # heavy libraries (prophet, statsforecast) are imported lazily inside models on purpose
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLR0915"]
+# Deliberately linear pipelines; splitting them would only hide the step order.
+"forecast_service/core.py" = ["PLR0912", "PLR0915"]
+"forecast_service/preprocess.py" = ["PLR0912", "PLR0915"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning"]

@@ -3,6 +3,7 @@ import {
   aggregatorKpisRoles,
   canAccessAdminSection,
   competitionRoles,
+  forecastsRoles,
   googleReviewsRoles,
   hasAnyRole,
   isAdminRole,
@@ -132,5 +133,18 @@ describe("aggregatorKpisRoles", () => {
     expect(hasAnyRole("user", aggregatorKpisRoles)).toBe(false);
     expect(hasAnyRole("offerEditor", aggregatorKpisRoles)).toBe(false);
     expect(hasAnyRole(null, aggregatorKpisRoles)).toBe(false);
+  });
+});
+
+describe("forecastsRoles", () => {
+  it("grants the forecasts section to analyticsViewer, admin, and superUser", () => {
+    expect(hasAnyRole("analyticsViewer", forecastsRoles)).toBe(true);
+    expect(hasAnyRole("admin", forecastsRoles)).toBe(true);
+    expect(hasAnyRole("superUser", forecastsRoles)).toBe(true);
+    expect(hasAnyRole("user,analyticsViewer", forecastsRoles)).toBe(true);
+    expect(hasAnyRole("user", forecastsRoles)).toBe(false);
+    expect(hasAnyRole("offerEditor", forecastsRoles)).toBe(false);
+    expect(hasAnyRole("brandManager", forecastsRoles)).toBe(false);
+    expect(hasAnyRole(null, forecastsRoles)).toBe(false);
   });
 });
