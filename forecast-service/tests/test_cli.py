@@ -33,7 +33,7 @@ def test_list_models_matches_registry() -> None:
     proc = run_cli("--list-models")
     assert proc.returncode == 0, proc.stderr
     ids = [m["id"] for m in json.loads(proc.stdout)]
-    assert ids == ["seasonal_trend", "statistical_baseline"]
+    assert ids == ["seasonal_trend", "statistical_baseline", "calendar_boost", "blend"]
     with_internal = json.loads(run_cli("--list-models", "--include-internal").stdout)
     assert "seasonal_naive" in {m["id"] for m in with_internal}
 

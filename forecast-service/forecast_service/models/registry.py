@@ -31,7 +31,8 @@ def get_model(model_id: str) -> ForecastModel:
 
 def list_models(include_internal: bool = False) -> list[ModelInfo]:
     _ensure_loaded()
-    return [m.info for m in _REGISTRY.values() if include_internal or not m.info.internal]
+    infos = [m.info for m in _REGISTRY.values() if include_internal or not m.info.internal]
+    return sorted(infos, key=lambda info: (info.sort_order, info.id))
 
 
 def _ensure_loaded() -> None:

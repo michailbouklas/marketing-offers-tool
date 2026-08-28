@@ -27,6 +27,7 @@ class SeasonalTrendModel:
         min_history_days=60,
         recommended_horizons=[7, 14, 30, 90],
         supports_holidays=True,
+        sort_order=10,
     )
 
     def fit_predict(

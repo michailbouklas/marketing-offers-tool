@@ -23,6 +23,8 @@ class ModelInfo:
     supports_holidays: bool
     internal: bool = False
     """Internal models are runnable but hidden from ``GET /models``."""
+    sort_order: int = 100
+    """Catalog position (ascending) in ``GET /models``; the UI defaults to the first two."""
 
 
 @dataclass

@@ -179,7 +179,15 @@ Exit codes: `0` ok, `1` engine failure, `2` bad input (404/422 class), `3` timeo
 | ---------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------- |
 | `seasonal_trend`       | Seasonal Trend       | Prophet, weekly + yearly (>= 400 days), multiplicative, `changepoint_prior_scale=0.05`; both bands from `predictive_samples` percentiles | 60 days | yes (`make_holidays_df`, default `CY`) |
 | `statistical_baseline` | Statistical Baseline | statsforecast `MSTL(season_length=[7,365] if >= 730 days else [7], trend_forecaster=AutoETS("ZZN"))`, `fallback_model=SeasonalNaive(7)`  | 60 days | no                                     |
+| `calendar_boost`       | Calendar Boost       | mlforecast + sklearn `HistGradientBoostingRegressor`; lags 7/14/21/28 (+364 at >= 730 days), rolling means, calendar features (weekday, day of month, payday window 25th–3rd, yearly Fourier) and holiday distance features (eve, day after, bridge day, ±7 days); conformal 80/95 bands | 120 days | yes (`holidays_for`, default `CY`) |
+| `blend`                | Blend                | Equal-weight mean of `seasonal_trend`, `statistical_baseline`, `calendar_boost` (point forecast, band bounds and fitted values); a member that cannot run is skipped with `FALLBACK_MODEL_USED`, fewer than 2 → `MODEL_FAILED` | 120 days | inherited                              |
 | `seasonal_naive`       | (internal)           | Same-weekday average of the last 4 weeks; reference / template                                                                           | 56 days | no                                     |
+
+Why these models for QSR: sales are driven by *known calendar events* — holiday eves and bridge
+days, Easter week, month-end paydays — that pure curve-fitters (Prophet, MSTL) only see as noise.
+`calendar_boost` learns them as features; `blend` averages the approaches so no single one's
+blind spot drives the headline number. Catalog order (`ModelInfo.sort_order`) keeps
+`seasonal_trend` + `statistical_baseline` as the two UI defaults.
 
 Data hygiene before any model runs (`preprocess.py`): validate -> trim leading zero
 days -> reindex to a complete daily calendar (missing = 0) -> clip negatives -> closures
@@ -198,7 +206,7 @@ flagged -> minimum 56 days.
    class MyModel:
        info = ModelInfo(id="my_model", name="My Model", description="One line for the card.",
                         version="1.0.0", min_history_days=60, recommended_horizons=[7, 14, 30],
-                        supports_holidays=False)
+                        supports_holidays=False, sort_order=50)  # catalog position; default 100
 
        def fit_predict(self, series: CleanSeries, horizon: int, level: list[int],
                        ctx: RunContext) -> ModelOutput:
@@ -232,7 +240,8 @@ uvicorn runs one process. `POST /forecast` runs `run_forecast_json` in a
 has completed its warm-up fit; compose only starts `app` after that.
 
 Typical cost per request with a 3-year daily series: Prophet ≈ 1–3 s (2 fits: backtest +
-final), MSTL ≈ 0.3–1 s. Memory: ~300–500 MB per warm worker (`mem_limit: 2g` for 3 workers).
+final), MSTL ≈ 0.3–1 s, Calendar Boost ≈ 1–2 s (conformal windows + final fit), Blend ≈ the
+sum of its members (it re-runs them; results are not shared with the page's separate runs). Memory: ~300–500 MB per warm worker (`mem_limit: 2g` for 3 workers).
 
 ## Testing
 

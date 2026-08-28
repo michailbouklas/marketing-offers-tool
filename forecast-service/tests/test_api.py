@@ -37,7 +37,12 @@ async def test_models_lists_public_catalog(monkeypatch) -> None:
         assert r.status_code == 200
         body = r.json()
         assert isinstance(body, list)
-        assert [m["id"] for m in body] == ["seasonal_trend", "statistical_baseline"]
+        assert [m["id"] for m in body] == [
+            "seasonal_trend",
+            "statistical_baseline",
+            "calendar_boost",
+            "blend",
+        ]
         assert set(body[0]) == {
             "id", "name", "description", "version", "minHistoryDays", "recommendedHorizons",
             "supportsHolidays",

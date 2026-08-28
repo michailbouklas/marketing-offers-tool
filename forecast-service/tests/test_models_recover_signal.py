@@ -25,7 +25,13 @@ def result(request, series_430):
 
 def test_public_catalog_hides_internal_models() -> None:
     public = {m.id for m in list_models()}
-    assert public == {"seasonal_trend", "statistical_baseline"}
+    assert [m.id for m in list_models()] == [
+        "seasonal_trend",
+        "statistical_baseline",
+        "calendar_boost",
+        "blend",
+    ]
+    assert public == {"seasonal_trend", "statistical_baseline", "calendar_boost", "blend"}
     assert "seasonal_naive" in {m.id for m in list_models(include_internal=True)}
     assert get_model("seasonal_naive").info.internal
 

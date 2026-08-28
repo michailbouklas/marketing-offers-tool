@@ -27,6 +27,7 @@ class StatisticalBaselineModel:
         min_history_days=60,
         recommended_horizons=[7, 14, 30],
         supports_holidays=False,
+        sort_order=20,
     )
 
     def fit_predict(
