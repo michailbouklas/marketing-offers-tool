@@ -37,6 +37,8 @@
     /** Greeting shown before the first message. */
     greeting?: string;
     placeholder?: string;
+    /** Optional page state sent with every message as `context` (see ChatWidget). */
+    context?: Record<string, unknown>;
   }
 
   let {
@@ -44,6 +46,7 @@
     title = "AI Assistant",
     greeting = "Hi! Ask me anything about this data.",
     placeholder = "Ask a question…",
+    context,
   }: Props = $props();
 
   let input = $state("");
@@ -152,7 +155,10 @@
 
     // agentId/sessionKey ride along per request (instead of on the transport)
     // so they are read at send time, keeping them reactive.
-    void chat.sendMessage({ text }, { body: { agentId, sessionKey } });
+    void chat.sendMessage(
+      { text },
+      { body: { agentId, sessionKey, ...(context ? { context } : {}) } },
+    );
     input = "";
   }
 
@@ -184,7 +190,10 @@
 
     cancelEditing();
     chat.messages = chat.messages.slice(0, messageIndex);
-    void chat.sendMessage({ text }, { body: { agentId, sessionKey } });
+    void chat.sendMessage(
+      { text },
+      { body: { agentId, sessionKey, ...(context ? { context } : {}) } },
+    );
   }
 
   function startEditing(message: (typeof chat.messages)[number]) {
@@ -212,7 +221,10 @@
 
     chat.messages = chat.messages.slice(0, messageIndex);
     cancelEditing();
-    void chat.sendMessage({ text }, { body: { agentId, sessionKey } });
+    void chat.sendMessage(
+      { text },
+      { body: { agentId, sessionKey, ...(context ? { context } : {}) } },
+    );
   }
 
   function handleEditKeydown(event: KeyboardEvent, messageIndex: number) {

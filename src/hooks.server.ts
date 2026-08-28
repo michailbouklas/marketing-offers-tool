@@ -6,6 +6,7 @@ import {
   isApiPath,
   isPublicPath,
 } from "$lib/server/auth-guards";
+import { installForecastGateway } from "$lib/server/forecast-gateway.server";
 import { startScheduler } from "$lib/server/scheduler.server";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from "$app/environment";
@@ -15,6 +16,10 @@ import { sequence } from "@sveltejs/kit/hooks";
 // Bootstrap the offer-notification digest cron once, at server start. No-op
 // during build and when the digest transport is not configured.
 startScheduler();
+
+// Gives the Forecasts Assistant's Mastra tools access to the Sales Forecasts
+// services (they cannot import them directly — see forecast-gateway.server.ts).
+installForecastGateway();
 
 const sessionHandle: Handle = async ({ event, resolve }) => {
   let sessionData;

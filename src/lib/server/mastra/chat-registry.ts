@@ -15,6 +15,14 @@ import type { AppPermissions } from "$lib/auth/permissions";
 export type ChatAgentConfig = {
   permissions?: AppPermissions;
   brandScoped?: boolean;
+  /**
+   * When true, the chat endpoint accepts an optional `context` object from
+   * the widget (the page's current filters), validates it, drops any brand
+   * outside the caller's scope and publishes it under
+   * `FORECAST_PAGE_CONTEXT_RUNTIME_KEY`. A hint for defaults only — never an
+   * authorisation input.
+   */
+  pageContext?: boolean;
 };
 
 /**
@@ -44,6 +52,25 @@ export const CHANNEL_RUNTIME_KEY = "channel";
 export type ChatChannel = "app" | "openwebui";
 
 /**
+ * RequestContext key carrying the Sales Forecasts page filters the user is
+ * looking at (brand, store, horizon, selected models) so the Forecasts
+ * Assistant can default to them. Published only for agents with
+ * `pageContext: true`, after server-side validation.
+ */
+export const FORECAST_PAGE_CONTEXT_RUNTIME_KEY = "forecastPageContext";
+
+export type ForecastPageContext = {
+  /** Brand alias, already checked against the caller's scope (else null). */
+  brand: string | null;
+  /** `tran_location` id; null = all stores. */
+  location: number | null;
+  /** 7 | 14 | 30 | 90, or null when the page did not say. */
+  horizon: number | null;
+  /** Model ids selected on the page (may be empty). */
+  models: string[];
+};
+
+/**
  * Chat agents the API is allowed to route to, and the permission (if any) a
  * user must hold to talk to each one. The chat widget picks the agent for its
  * section; this map is the server-side allowlist backing that routing.
@@ -69,5 +96,12 @@ export const chatAgents: Record<string, ChatAgentConfig> = {
   "sales-agent": {
     permissions: { sales: ["view"] },
     brandScoped: true,
+  },
+  // Forecasts Assistant on /forecasts: same permission as the page, brand
+  // scoped like the sales agent, and it receives the page's filters as hints.
+  "forecasts-agent": {
+    permissions: { forecasts: ["view"] },
+    brandScoped: true,
+    pageContext: true,
   },
 };

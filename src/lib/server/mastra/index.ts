@@ -15,6 +15,7 @@ import { PostgresStore } from "@mastra/pg";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { competitionAgent } from "./agents/competition-agent";
+import { forecastsAgent } from "./agents/forecasts-agent";
 import { googleReviewsAgent } from "./agents/google-reviews-agent";
 import { invoicesAgent } from "./agents/invoices-agent";
 import { offersDataQualityAgent } from "./agents/offers-data-quality-agent";
@@ -120,6 +121,7 @@ function createMastra(): Mastra {
       "competition-agent": competitionAgent,
       "offers-data-quality-agent": offersDataQualityAgent,
       "sales-agent": salesAgent,
+      "forecasts-agent": forecastsAgent,
     },
     storage: createStorage(),
     observability: new Observability({

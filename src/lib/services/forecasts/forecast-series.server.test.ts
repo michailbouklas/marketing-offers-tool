@@ -280,3 +280,65 @@ describe("getSalesHistorySummary", () => {
     expect(queryMock).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("getLocationHistoryCoverage", () => {
+  beforeEach(() => {
+    series.__clearForecastLocationCoverageCache();
+  });
+
+  it("returns one row per location with coerced counts, from a single grouped query", async () => {
+    mockRows([
+      {
+        id: "3",
+        name: "Limassol Marina",
+        first_ds: "2024-01-05",
+        latest_ds: "2026-08-27",
+        days_with_sales: "900",
+      },
+      {
+        id: 9,
+        name: "",
+        first_ds: "2026-06-01",
+        latest_ds: "2026-08-27",
+        days_with_sales: 80,
+      },
+    ]);
+
+    const coverage = await series.getLocationHistoryCoverage("BK", {
+      now: new Date("2026-08-28T10:00:00Z"),
+    });
+
+    expect(coverage).toEqual([
+      {
+        id: 3,
+        name: "Limassol Marina",
+        firstSalesDate: "2024-01-05",
+        latestSalesDate: "2026-08-27",
+        daysWithSales: 900,
+      },
+      {
+        id: 9,
+        name: "Location 9",
+        firstSalesDate: "2026-06-01",
+        latestSalesDate: "2026-08-27",
+        daysWithSales: 80,
+      },
+    ]);
+    expect(queryMock).toHaveBeenCalledTimes(1);
+    const { sql, params } = lastQuery();
+    expect(sql).toContain("uniqExact(tran_date) AS days_with_sales");
+    expect(sql).toContain("GROUP BY tran_location");
+    expect(sql).toContain("lower(brand) = {brand:String}");
+    expect(params).toEqual({ from: "2023-08-29", brand: "bk" });
+  });
+
+  it("serves the second call for the same brand from the cache", async () => {
+    mockRows([]);
+    const now = new Date("2026-08-28T10:00:00Z");
+
+    await series.getLocationHistoryCoverage("bk", { now });
+    await series.getLocationHistoryCoverage("bk", { now });
+
+    expect(queryMock).toHaveBeenCalledTimes(1);
+  });
+});

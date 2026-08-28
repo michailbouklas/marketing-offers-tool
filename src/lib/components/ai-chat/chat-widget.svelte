@@ -42,6 +42,12 @@
     /** Greeting shown before the first message. */
     greeting?: string;
     placeholder?: string;
+    /**
+     * Optional page state (e.g. the current filters) sent with every message
+     * as `context`; the server validates it and passes it to agents that opt
+     * in (`pageContext` in the chat registry) as a hint for defaults.
+     */
+    context?: Record<string, unknown>;
   }
 
   let {
@@ -49,6 +55,7 @@
     title = "AI Assistant",
     greeting = "Hi! Ask me anything about this page's data.",
     placeholder = "Ask a question…",
+    context,
   }: Props = $props();
 
   let open = $state(false);
@@ -166,7 +173,10 @@
 
     // agentId/sessionKey ride along per request (instead of on the transport)
     // so they are read at send time, keeping them reactive.
-    void chat.sendMessage({ text }, { body: { agentId, sessionKey } });
+    void chat.sendMessage(
+      { text },
+      { body: { agentId, sessionKey, ...(context ? { context } : {}) } },
+    );
     input = "";
   }
 
@@ -198,7 +208,10 @@
 
     cancelEditing();
     chat.messages = chat.messages.slice(0, messageIndex);
-    void chat.sendMessage({ text }, { body: { agentId, sessionKey } });
+    void chat.sendMessage(
+      { text },
+      { body: { agentId, sessionKey, ...(context ? { context } : {}) } },
+    );
   }
 
   function startEditing(message: (typeof chat.messages)[number]) {
@@ -226,7 +239,10 @@
 
     chat.messages = chat.messages.slice(0, messageIndex);
     cancelEditing();
-    void chat.sendMessage({ text }, { body: { agentId, sessionKey } });
+    void chat.sendMessage(
+      { text },
+      { body: { agentId, sessionKey, ...(context ? { context } : {}) } },
+    );
   }
 
   function handleEditKeydown(event: KeyboardEvent, messageIndex: number) {

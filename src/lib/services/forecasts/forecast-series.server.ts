@@ -377,3 +377,95 @@ export async function listBrandLocations(
   locationsCache.set(brand, { at: now.getTime(), locations });
   return locations;
 }
+
+// ---------------------------------------------------------------------------
+// Per-location history coverage (Forecasts Assistant)
+// ---------------------------------------------------------------------------
+
+export type LocationHistoryCoverage = ForecastLocation & {
+  firstSalesDate: string;
+  latestSalesDate: string;
+  /** Distinct days with sales inside the lookback window. */
+  daysWithSales: number;
+};
+
+type LocationCoverageCacheEntry = {
+  at: number;
+  coverage: LocationHistoryCoverage[];
+};
+const locationCoverageCache = new Map<string, LocationCoverageCacheEntry>();
+
+/** Test helper — drops the per-brand location coverage cache. */
+export function __clearForecastLocationCoverageCache(): void {
+  locationCoverageCache.clear();
+}
+
+/**
+ * Every location of a brand with its first/last sales day and the number of
+ * days with sales inside the lookback window — one grouped query instead of
+ * a probe per location. Lets the Forecasts Assistant answer "which stores
+ * have enough history for model X?" without running a forecast. Cached per
+ * brand for {@link LOCATIONS_CACHE_TTL_MS}.
+ */
+export async function getLocationHistoryCoverage(
+  brandAlias: string,
+  options: { now?: Date; historyDays?: number } = {},
+): Promise<LocationHistoryCoverage[]> {
+  const env = getForecastEnv();
+  const brand = normaliseBrand(brandAlias);
+  const now = options.now ?? new Date();
+  const cached = locationCoverageCache.get(brand);
+  if (cached && now.getTime() - cached.at < LOCATIONS_CACHE_TTL_MS) {
+    return cached.coverage;
+  }
+
+  const table = salesTransactionsTable(env.CLICKHOUSE_SALES_DATABASE);
+  const historyDays = options.historyDays ?? env.FORECAST_HISTORY_DAYS;
+  const result = await clickhouse.query({
+    query: `
+      SELECT tran_location AS id,
+             anyLast(location_name) AS name,
+             min(tran_date) AS first_ds,
+             max(tran_date) AS latest_ds,
+             uniqExact(tran_date) AS days_with_sales
+      FROM ${table}
+      WHERE tran_date >= {from:Date}
+        AND tran_date <= today()
+        AND lower(brand) = {brand:String}
+        AND tran_sales_factor = 1
+      GROUP BY tran_location
+      ORDER BY name, id
+    `,
+    query_params: { from: addDays(toIsoDate(now), -historyDays), brand },
+    format: "JSONEachRow",
+  });
+
+  const rows = await result.json<{
+    id: string | number;
+    name: string | null;
+    first_ds: string;
+    latest_ds: string;
+    days_with_sales: string | number;
+  }>();
+  const coverage: LocationHistoryCoverage[] = rows
+    .map((row) => {
+      const id = Math.trunc(toNumber(row.id));
+      const name = (row.name ?? "").trim();
+      return {
+        id,
+        name: name.length > 0 ? name : `Location ${id}`,
+        firstSalesDate: row.first_ds,
+        latestSalesDate: row.latest_ds,
+        daysWithSales: Math.trunc(toNumber(row.days_with_sales)),
+      };
+    })
+    .filter(
+      (location) =>
+        Number.isSafeInteger(location.id) &&
+        ISO_DATE_PATTERN.test(location.firstSalesDate) &&
+        ISO_DATE_PATTERN.test(location.latestSalesDate),
+    );
+
+  locationCoverageCache.set(brand, { at: now.getTime(), coverage });
+  return coverage;
+}

@@ -1,7 +1,7 @@
 import { error, json } from "@sveltejs/kit";
 import { handleChatStream } from "@mastra/ai-sdk";
 import { toAISdkMessages } from "@mastra/ai-sdk/ui";
-import type { RequestContext } from "@mastra/core/request-context";
+import { RequestContext } from "@mastra/core/request-context";
 import { createUIMessageStreamResponse } from "ai";
 import {
   getAuthenticatedUserRole,
@@ -9,8 +9,12 @@ import {
   requireAuthenticatedApiUser,
 } from "$lib/server/auth-guards";
 import { buildBrandScopeRequestContext } from "$lib/server/brand-scope.server";
+import { resolvePageContext } from "$lib/server/chat-page-context";
 import { getMastra } from "$lib/server/mastra";
-import { chatAgents } from "$lib/server/mastra/chat-registry";
+import {
+  chatAgents,
+  FORECAST_PAGE_CONTEXT_RUNTIME_KEY,
+} from "$lib/server/mastra/chat-registry";
 import { z } from "zod";
 import type { RequestEvent, RequestHandler } from "./$types";
 
@@ -26,6 +30,8 @@ const requestSchema = z.object({
   agentId: z.string(),
   sessionKey: sessionKeySchema,
   messages: z.array(z.record(z.string(), z.unknown())).min(1),
+  /** Page state hint (only honoured for agents with `pageContext`). */
+  context: z.record(z.string(), z.unknown()).optional(),
 });
 
 /**
@@ -55,27 +61,47 @@ async function authorizeAgent(event: RequestEvent, agentId: string) {
 }
 
 /**
- * For `brandScoped` agents, publish the caller's assigned brand aliases (and
- * their display names) into a RequestContext the agent reads in its dynamic
- * instructions and the SQL tools read as a hard guardrail. The scope is
- * always derived server-side from the authenticated user (see
- * `buildBrandScopeRequestContext`). Returns undefined for non-brand-scoped
- * agents (no override).
+ * Per-request context for the agent:
+ *
+ * - `brandScoped` agents get the caller's assigned brand aliases (and display
+ *   names) — read by the dynamic instructions and enforced by the SQL /
+ *   forecast tools as a hard guardrail. Always derived server-side from the
+ *   authenticated user (see `buildBrandScopeRequestContext`).
+ * - `pageContext` agents additionally get the widget's `context` payload,
+ *   validated and with any brand outside the scope dropped — a hint for
+ *   defaults, never an authorisation input.
+ *
+ * Returns undefined for agents that use neither (no override).
  */
-async function buildBrandRequestContext(
+async function buildAgentRequestContext(
   event: RequestEvent,
   agentId: string,
   userId: string,
+  rawPageContext: unknown,
 ): Promise<RequestContext | undefined> {
-  if (!chatAgents[agentId]?.brandScoped) {
+  const config = chatAgents[agentId];
+  if (!config?.brandScoped && !config?.pageContext) {
     return undefined;
   }
 
-  const role = await getAuthenticatedUserRole(event);
-  const { requestContext } = await buildBrandScopeRequestContext({
-    id: userId,
-    role,
-  });
+  const requestContext = new RequestContext();
+  let scopedAliases: string[] = [];
+
+  if (config.brandScoped) {
+    const role = await getAuthenticatedUserRole(event);
+    const scope = await buildBrandScopeRequestContext(
+      { id: userId, role },
+      requestContext,
+    );
+    scopedAliases = scope.brands.map((brand) => brand.alias);
+  }
+
+  if (config.pageContext && rawPageContext !== undefined) {
+    const pageContext = resolvePageContext(rawPageContext, scopedAliases);
+    if (pageContext) {
+      requestContext.set(FORECAST_PAGE_CONTEXT_RUNTIME_KEY, pageContext);
+    }
+  }
 
   return requestContext;
 }
@@ -92,10 +118,11 @@ export const POST: RequestHandler = async (event) => {
   const { agentId, sessionKey } = body.data;
   const { user } = await authorizeAgent(event, agentId);
 
-  const requestContext = await buildBrandRequestContext(
+  const requestContext = await buildAgentRequestContext(
     event,
     agentId,
     user.id,
+    body.data.context,
   );
 
   const stream = await handleChatStream({

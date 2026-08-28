@@ -175,15 +175,15 @@ Exit codes: `0` ok, `1` engine failure, `2` bad input (404/422 class), `3` timeo
 
 ## Models
 
-| id                     | Name                 | Library                                                                                                                                  | Needs   | Holidays                               |
-| ---------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------- |
-| `seasonal_trend`       | Seasonal Trend       | Prophet, weekly + yearly (>= 400 days), multiplicative, `changepoint_prior_scale=0.05`; both bands from `predictive_samples` percentiles | 60 days | yes (`make_holidays_df`, default `CY`) |
-| `statistical_baseline` | Statistical Baseline | statsforecast `MSTL(season_length=[7,365] if >= 730 days else [7], trend_forecaster=AutoETS("ZZN"))`, `fallback_model=SeasonalNaive(7)`  | 60 days | no                                     |
-| `calendar_boost`       | Calendar Boost       | mlforecast + sklearn `HistGradientBoostingRegressor`; lags 7/14/21/28 (+364 at >= 730 days), rolling means, calendar features (weekday, day of month, payday window 25th–3rd, yearly Fourier) and holiday distance features (eve, day after, bridge day, ±7 days); conformal 80/95 bands | 120 days | yes (`holidays_for`, default `CY`) |
-| `blend`                | Blend                | Equal-weight mean of `seasonal_trend`, `statistical_baseline`, `calendar_boost` (point forecast, band bounds and fitted values); a member that cannot run is skipped with `FALLBACK_MODEL_USED`, fewer than 2 → `MODEL_FAILED` | 120 days | inherited                              |
-| `seasonal_naive`       | (internal)           | Same-weekday average of the last 4 weeks; reference / template                                                                           | 56 days | no                                     |
+| id                     | Name                 | Library                                                                                                                                                                                                                                                                                  | Needs    | Holidays                               |
+| ---------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
+| `seasonal_trend`       | Seasonal Trend       | Prophet, weekly + yearly (>= 400 days), multiplicative, `changepoint_prior_scale=0.05`; both bands from `predictive_samples` percentiles                                                                                                                                                 | 60 days  | yes (`make_holidays_df`, default `CY`) |
+| `statistical_baseline` | Statistical Baseline | statsforecast `MSTL(season_length=[7,365] if >= 730 days else [7], trend_forecaster=AutoETS("ZZN"))`, `fallback_model=SeasonalNaive(7)`                                                                                                                                                  | 60 days  | no                                     |
+| `calendar_boost`       | Calendar Boost       | mlforecast + sklearn `HistGradientBoostingRegressor`; lags 7/14/21/28 (+364 at >= 730 days), rolling means, calendar features (weekday, day of month, payday window 25th–3rd, yearly Fourier) and holiday distance features (eve, day after, bridge day, ±7 days); conformal 80/95 bands | 120 days | yes (`holidays_for`, default `CY`)     |
+| `blend`                | Blend                | Equal-weight mean of `seasonal_trend`, `statistical_baseline`, `calendar_boost` (point forecast, band bounds and fitted values); a member that cannot run is skipped with `FALLBACK_MODEL_USED`, fewer than 2 → `MODEL_FAILED`                                                           | 120 days | inherited                              |
+| `seasonal_naive`       | (internal)           | Same-weekday average of the last 4 weeks; reference / template                                                                                                                                                                                                                           | 56 days  | no                                     |
 
-Why these models for QSR: sales are driven by *known calendar events* — holiday eves and bridge
+Why these models for QSR: sales are driven by _known calendar events_ — holiday eves and bridge
 days, Easter week, month-end paydays — that pure curve-fitters (Prophet, MSTL) only see as noise.
 `calendar_boost` learns them as features; `blend` averages the approaches so no single one's
 blind spot drives the headline number. Catalog order (`ModelInfo.sort_order`) keeps
@@ -229,6 +229,41 @@ flagged -> minimum 56 days.
 
 No API, CLI, compose or UI change is needed: `GET /models` and the checkbox cards read
 the registry. `seasonal_naive.py` is the minimal reference implementation.
+
+If the new model changes how a metric or warning should be explained, also update the
+Forecasts Assistant's knowledge skill (below).
+
+## Forecasts Assistant (chat)
+
+`/forecasts` embeds a chat widget backed by the Mastra agent `forecasts-agent`
+(`src/lib/server/mastra/agents/forecasts-agent.ts`). It answers three kinds of question:
+read a forecast ("what will BK do over the next 30 days?"), compare models ("which number
+should I plan with?") and explain the system ("what does WAPE 9 % mean?", "how does Blend
+work?"). Recorded sales can be queried too (the sales agent's `querySalesSql` tool) when the
+forecast's own actuals are not enough.
+
+- **Tools** (`src/lib/server/mastra/tools/forecast-tools.ts`): `listForecastModels`,
+  `getSalesHistoryCoverage` (brand/store history + eligible models, no forecast run),
+  `getForecastSummary` (one model → compact summary, weekly buckets for 30/90 days) and
+  `compareForecastModels` (2–4 models, concurrency 2, returns the Compare-page table and
+  recommendation). Output is pre-rounded and pre-worded by `forecast-narrative.ts`
+  (`tools/forecast-compact.ts`) so the model relays numbers rather than computing them.
+- **Gateway**: the tools cannot import the `*.server.ts` forecast services (they use
+  SvelteKit `$env`, which would break `mastra dev`). They call a `ForecastGateway`
+  interface (`tools/forecast-gateway.ts`) that `src/lib/server/forecast-gateway.server.ts`
+  implements over `getForecastForBrand` & co. and `src/hooks.server.ts` installs at server
+  start. In the `mastra dev` playground no gateway is installed: explain questions work,
+  forecast tools fail closed with a clear message.
+- **Scope**: registered in `chat-registry.ts` with `forecasts: ["view"]`, `brandScoped`
+  and `pageContext`. Every tool authorises the brand against the scope published in the
+  RequestContext and fails closed when it is missing. The widget sends the page's current
+  filters as `context`; the endpoint validates them and drops any brand outside the scope
+  (`src/lib/server/chat-page-context.ts`).
+- **Knowledge**: `src/lib/server/mastra/workspace/skills/forecast-models/SKILL.md` explains
+  the models, metrics, grades, warning codes and limitations in plain language — keep it in
+  step with the Models table above and `forecastWarningCopy` in `forecast-narrative.ts`.
+- Nothing is persisted, so the assistant cannot report on past forecasts' accuracy; it
+  says so.
 
 ## Concurrency and limits
 

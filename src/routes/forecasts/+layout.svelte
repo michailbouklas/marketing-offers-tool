@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import ForecastControlsBar from "$lib/components/forecasts/widgets/forecast-controls-bar.svelte";
   import * as Alert from "$lib/components/ui/alert/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
@@ -146,5 +147,20 @@
     </nav>
 
     {@render children()}
+
+    <!-- The assistant receives the page's current filters as defaults; brand
+         access is still enforced server-side against the user's scope. -->
+    <ChatWidget
+      agentId="forecasts-agent"
+      title="Forecast Assistant"
+      greeting="Hi! Ask about a forecast, compare the models, or ask what a metric or warning means."
+      placeholder="e.g. Which number should I plan with for the next 30 days?"
+      context={{
+        brand: pageFilters.brand,
+        location: pageFilters.location,
+        horizon: urlFilters.horizon,
+        models: urlFilters.models,
+      }}
+    />
   </main>
 </div>
