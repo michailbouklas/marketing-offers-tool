@@ -39,6 +39,8 @@ export type ForecastSyncInput = {
   brand: string | null;
   horizonDays: ForecastHorizonDays;
   modelIds: string[];
+  /** `tran_location` id; null = all locations of the brand. */
+  locationId?: number | null;
 };
 
 export type ForecastRunsDeps = {
@@ -85,7 +87,9 @@ export class ForecastRuns {
 
   #brand: string | null = null;
   #horizonDays: ForecastHorizonDays | null = null;
-  #historyBrand: string | null = null;
+  #locationId: number | null = null;
+  /** `brand|location` the current history state belongs to. */
+  #historyScope: string | null = null;
 
   readonly #controllers = new Map<string, AbortController>();
   #historyController: AbortController | null = null;
@@ -131,27 +135,33 @@ export class ForecastRuns {
    */
   sync(input: ForecastSyncInput): void {
     const { brand, horizonDays, modelIds } = input;
+    const locationId = input.locationId ?? null;
 
     if (brand === null) {
       this.cancelAll();
       this.#brand = null;
       this.#horizonDays = null;
-      this.#historyBrand = null;
+      this.#locationId = null;
+      this.#historyScope = null;
       this.history = { status: "idle" };
       return;
     }
 
     const scopeChanged =
-      brand !== this.#brand || horizonDays !== this.#horizonDays;
+      brand !== this.#brand ||
+      horizonDays !== this.#horizonDays ||
+      locationId !== this.#locationId;
     if (scopeChanged) {
       this.#abortAllModels();
       this.results = {};
       this.#brand = brand;
       this.#horizonDays = horizonDays;
+      this.#locationId = locationId;
     }
 
-    if (brand !== this.#historyBrand) {
-      this.#loadHistory(brand);
+    const historyScope = `${brand}|${locationId ?? "all"}`;
+    if (historyScope !== this.#historyScope) {
+      this.#loadHistory(brand, locationId, historyScope);
     }
 
     const wanted = new Set(modelIds);
@@ -166,13 +176,15 @@ export class ForecastRuns {
       if (this.results[id]) {
         continue;
       }
-      const cached = this.#cache.get(this.#cacheKey(brand, id, horizonDays));
+      const cached = this.#cache.get(
+        this.#cacheKey(brand, id, horizonDays, locationId),
+      );
       if (cached) {
-        this.#touchCache(brand, id, horizonDays, cached);
+        this.#touchCache(brand, id, horizonDays, locationId, cached);
         this.results[id] = { status: "ready", result: cached };
         continue;
       }
-      this.#run(brand, id, horizonDays);
+      this.#run(brand, id, horizonDays, locationId);
     }
   }
 
@@ -182,8 +194,10 @@ export class ForecastRuns {
       return;
     }
     this.#abortModel(modelId);
-    this.#cache.delete(this.#cacheKey(this.#brand, modelId, this.#horizonDays));
-    this.#run(this.#brand, modelId, this.#horizonDays);
+    this.#cache.delete(
+      this.#cacheKey(this.#brand, modelId, this.#horizonDays, this.#locationId),
+    );
+    this.#run(this.#brand, modelId, this.#horizonDays, this.#locationId);
   }
 
   /** Abort every in-flight request (page teardown). Keeps the LRU cache. */
@@ -193,23 +207,29 @@ export class ForecastRuns {
     this.#historyController = null;
     if (this.history.status === "loading") {
       this.history = { status: "idle" };
-      this.#historyBrand = null;
+      this.#historyScope = null;
     }
   }
 
   // -------------------------------------------------------------------------
 
-  #cacheKey(brand: string, modelId: string, horizonDays: number): string {
-    return `${brand}|${modelId}|${horizonDays}`;
+  #cacheKey(
+    brand: string,
+    modelId: string,
+    horizonDays: number,
+    locationId: number | null,
+  ): string {
+    return `${brand}|${locationId ?? "all"}|${modelId}|${horizonDays}`;
   }
 
   #touchCache(
     brand: string,
     modelId: string,
     horizonDays: number,
+    locationId: number | null,
     result: ForecastResult,
   ): void {
-    const key = this.#cacheKey(brand, modelId, horizonDays);
+    const key = this.#cacheKey(brand, modelId, horizonDays, locationId);
     this.#cache.delete(key);
     this.#cache.set(key, result);
     while (this.#cache.size > this.#cacheSize) {
@@ -236,13 +256,18 @@ export class ForecastRuns {
     this.#controllers.clear();
   }
 
-  #run(brand: string, modelId: string, horizonDays: ForecastHorizonDays): void {
+  #run(
+    brand: string,
+    modelId: string,
+    horizonDays: ForecastHorizonDays,
+    locationId: number | null,
+  ): void {
     const controller = new AbortController();
     this.#controllers.set(modelId, controller);
     this.results[modelId] = { status: "loading" };
 
     void this.#fetchForecast(
-      { brandAlias: brand, modelId, horizonDays },
+      { brandAlias: brand, modelId, horizonDays, locationId },
       { signal: controller.signal },
     )
       .then((result) => {
@@ -253,7 +278,7 @@ export class ForecastRuns {
           return;
         }
         this.#controllers.delete(modelId);
-        this.#touchCache(brand, modelId, horizonDays, result);
+        this.#touchCache(brand, modelId, horizonDays, locationId, result);
         this.results[modelId] = { status: "ready", result };
       })
       .catch((error: unknown) => {
@@ -268,15 +293,15 @@ export class ForecastRuns {
       });
   }
 
-  #loadHistory(brand: string): void {
+  #loadHistory(brand: string, locationId: number | null, scope: string): void {
     this.#historyController?.abort();
     const controller = new AbortController();
     this.#historyController = controller;
-    this.#historyBrand = brand;
+    this.#historyScope = scope;
     this.history = { status: "loading" };
 
     void this.#fetchForecastHistory(
-      { brand, days: this.#historyDays },
+      { brand, days: this.#historyDays, locationId },
       { signal: controller.signal },
     )
       .then((data) => {

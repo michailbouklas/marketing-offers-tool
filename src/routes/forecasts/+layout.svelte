@@ -8,6 +8,7 @@
     buildForecastHref,
     parseForecastFilters,
     type ForecastFilters,
+    type ForecastLocation,
   } from "$lib/services/forecasts/forecast-types";
   import TriangleAlertIcon from "@lucide/svelte/icons/triangle-alert";
   import type { Snippet } from "svelte";
@@ -32,7 +33,12 @@
   const urlFilters = $derived<ForecastFilters>({
     ...parseForecastFilters(page.url.searchParams, models),
     brand: pageFilters.brand,
+    location: pageFilters.location,
   });
+
+  const locations = $derived(
+    (page.data.locations as ForecastLocation[] | undefined) ?? [],
+  );
 
   const historyDays = $derived(
     (page.data.historyDays as number | null | undefined) ?? null,
@@ -116,6 +122,7 @@
       brands={data.brands}
       {models}
       filters={urlFilters}
+      {locations}
       {historyDays}
       basePath={page.url.pathname}
       compareBasePath={COMPARE_PATH}

@@ -6,30 +6,25 @@ import {
 } from "$lib/services/forecasts/forecast-engine.server";
 import { forecastErrorResponse } from "$lib/services/forecasts/forecast-run.server";
 import { resolveForecastBrand } from "$lib/services/forecasts/forecast-scope.server";
-import { getSalesHistorySummary } from "$lib/services/forecasts/forecast-series.server";
+import { listBrandLocations } from "$lib/services/forecasts/forecast-series.server";
 import {
-  forecastHistoryRequestSchema,
-  type ForecastHistoryResponse,
+  forecastLocationsRequestSchema,
+  type ForecastLocationsResponse,
 } from "$lib/services/forecasts/forecast-types";
 import type { RequestHandler } from "./$types";
 
 /**
- * GET /api/forecasts/history?brand=<alias>&days=90&location=<id> — recent
- * actual sales for one scoped brand (optionally one location) plus the count
- * of days with sales in the lookback window.
- * Fetched once per brand by the page: keeps the actuals line visible even when
- * every model fails and drives the "model needs N days" disabling.
+ * GET /api/forecasts/locations?brand=<alias> — the brand's locations
+ * (`tran_location` + `location_name`) that recorded sales inside the forecast
+ * lookback window. Populates the location filter once a brand is selected.
  *
- * 400 bad query · 401/403 from the guard (403 as a typed envelope) · 422
- * `NO_SALES_DATA` when the brand has no rows.
+ * 400 bad query · 401/403 from the guard (403 as a typed envelope).
  */
 export const GET: RequestHandler = async (event) => {
   requireAuthenticatedApiUser(event);
 
-  const parsed = forecastHistoryRequestSchema.safeParse({
+  const parsed = forecastLocationsRequestSchema.safeParse({
     brand: event.url.searchParams.get("brand") ?? undefined,
-    days: event.url.searchParams.get("days") ?? undefined,
-    location: event.url.searchParams.get("location") ?? undefined,
   });
   if (!parsed.success) {
     return forecastErrorResponse(
@@ -52,26 +47,9 @@ export const GET: RequestHandler = async (event) => {
       );
     }
 
-    const locationId = parsed.data.location ?? null;
-    const summary = await getSalesHistorySummary(brand.alias, {
-      recentDays: parsed.data.days,
-      locationId,
-    });
-    if (!summary) {
-      return forecastErrorResponse(
-        new ForecastError(
-          "NO_SALES_DATA",
-          `No sales were found for ${brand.name || brand.alias}.`,
-        ),
-      );
-    }
-
-    const body: ForecastHistoryResponse = {
+    const body: ForecastLocationsResponse = {
       brandAlias: brand.alias,
-      latestSalesDate: summary.latestSalesDate,
-      historyDays: summary.historyDays,
-      points: summary.points,
-      locationId,
+      locations: await listBrandLocations(brand.alias),
     };
     return json(body);
   } catch (err) {
@@ -87,9 +65,9 @@ export const GET: RequestHandler = async (event) => {
       throw err;
     }
 
-    console.error("[forecasts] GET /api/forecasts/history failed", err);
+    console.error("[forecasts] GET /api/forecasts/locations failed", err);
     return forecastErrorResponse(
-      new ForecastError("INTERNAL", "Could not load the sales history."),
+      new ForecastError("INTERNAL", "Could not load the brand's locations."),
     );
   }
 };

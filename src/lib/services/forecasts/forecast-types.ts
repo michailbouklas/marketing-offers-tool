@@ -176,6 +176,9 @@ export const forecastResultSchema = z.object({
   brandName: z.string().optional(),
   cached: z.boolean().optional(),
   missingDays: z.number().int().nonnegative().optional(),
+  /** Location filter the forecast was computed for (null = all locations). */
+  locationId: z.number().int().nullable().optional(),
+  locationName: z.string().nullable().optional(),
 });
 export type ForecastResult = z.infer<typeof forecastResultSchema>;
 
@@ -192,12 +195,15 @@ export const forecastRunRequestSchema = z.object({
     z.literal(30),
     z.literal(90),
   ]),
+  /** `tran_location` id; null/absent = every location of the brand. */
+  locationId: z.number().int().positive().nullable().optional(),
 });
 export type ForecastRunRequest = z.infer<typeof forecastRunRequestSchema>;
 
 export const forecastHistoryRequestSchema = z.object({
   brand: z.string().trim().min(1).max(64),
   days: z.coerce.number().int().min(7).max(730).default(90),
+  location: z.coerce.number().int().positive().optional(),
 });
 
 export const dailySalesPointSchema = z.object({
@@ -213,9 +219,35 @@ export const forecastHistoryResponseSchema = z.object({
   /** Total days of usable sales history the brand has (drives "model needs N days"). */
   historyDays: z.number().int().nonnegative(),
   points: z.array(dailySalesPointSchema),
+  /** Echo of the requested location filter (null = all locations). */
+  locationId: z.number().int().nullable().optional(),
 });
 export type ForecastHistoryResponse = z.infer<
   typeof forecastHistoryResponseSchema
+>;
+
+// ---------------------------------------------------------------------------
+// Locations of a brand (GET /api/forecasts/locations)
+// ---------------------------------------------------------------------------
+
+export const forecastLocationSchema = z.object({
+  /** `transactions.tran_location` */
+  id: z.number().int(),
+  /** `transactions.location_name` (falls back to "Location <id>") */
+  name: z.string(),
+});
+export type ForecastLocation = z.infer<typeof forecastLocationSchema>;
+
+export const forecastLocationsRequestSchema = z.object({
+  brand: z.string().trim().min(1).max(64),
+});
+
+export const forecastLocationsResponseSchema = z.object({
+  brandAlias: z.string(),
+  locations: z.array(forecastLocationSchema),
+});
+export type ForecastLocationsResponse = z.infer<
+  typeof forecastLocationsResponseSchema
 >;
 
 // ---------------------------------------------------------------------------
@@ -263,6 +295,8 @@ export type ForecastFilters = {
   /** Selected model ids, normalised to catalog order. */
   models: string[];
   horizon: ForecastHorizonDays;
+  /** `tran_location` id, or null for all locations of the brand. */
+  location: number | null;
 };
 
 export const FORECAST_DEFAULT_MODEL_COUNT = 2;
@@ -274,7 +308,7 @@ export function defaultForecastModelIds(catalog: ForecastModel[]): string[] {
 }
 
 /**
- * Parses `?brand=&models=&horizon=` from the URL. Unknown model ids are
+ * Parses `?brand=&models=&horizon=&location=` from the URL. Unknown model ids are
  * dropped and the remaining ids are re-ordered to catalog order; a missing
  * `models` param selects the first two catalog models; a bad horizon falls
  * back to the default. The brand alias is trimmed and lowercased but NOT
@@ -307,7 +341,24 @@ export function parseForecastFilters(
     ? rawHorizon
     : defaultForecastHorizonDays;
 
-  return { brand, models, horizon };
+  const location = parseLocationParam(searchParams.get("location"));
+
+  return { brand, models, horizon, location };
+}
+
+/** Positive integer location id, else null (= all locations). */
+export function parseLocationParam(
+  raw: string | null | undefined,
+): number | null {
+  if (raw === null || raw === undefined) {
+    return null;
+  }
+  const trimmed = raw.trim();
+  if (!/^\d+$/.test(trimmed)) {
+    return null;
+  }
+  const value = Number.parseInt(trimmed, 10);
+  return Number.isSafeInteger(value) && value > 0 ? value : null;
 }
 
 /**
@@ -332,6 +383,9 @@ export function buildForecastHref(
   }
   if (filters.horizon !== defaultForecastHorizonDays) {
     params.set("horizon", String(filters.horizon));
+  }
+  if (filters.location !== null && filters.location !== undefined) {
+    params.set("location", String(filters.location));
   }
   const query = params.toString();
   return query.length > 0 ? `${basePath}?${query}` : basePath;

@@ -34,7 +34,7 @@ vi.mock(
     ...(await importOriginal<
       typeof import("$lib/services/forecasts/forecast-series.server")
     >()),
-    getSalesHistorySummary: vi.fn(),
+    listBrandLocations: vi.fn(),
   }),
 );
 
@@ -46,7 +46,7 @@ const { GET } = await import("./+server");
 
 const requireUserMock = vi.mocked(guards.requireAuthenticatedApiUser);
 const resolveBrandMock = vi.mocked(scope.resolveForecastBrand);
-const summaryMock = vi.mocked(seriesModule.getSalesHistorySummary);
+const locationsMock = vi.mocked(seriesModule.listBrandLocations);
 
 function httpError(status: number, message: string): unknown {
   try {
@@ -59,7 +59,7 @@ function httpError(status: number, message: string): unknown {
 
 function makeEvent(search: string) {
   return {
-    url: new URL(`http://test.local/api/forecasts/history${search}`),
+    url: new URL(`http://test.local/api/forecasts/locations${search}`),
     locals: { session: {}, user: { id: "user-1" } },
   } as unknown as Parameters<typeof GET>[0];
 }
@@ -85,59 +85,28 @@ beforeEach(() => {
     brands: [{ alias: "bk", name: "Burger King" }],
     brand: { alias: "bk", name: "Burger King" },
   });
-  summaryMock.mockResolvedValue({
-    latestSalesDate: "2026-08-25",
-    historyDays: 900,
-    points: [{ ds: "2026-08-25", revenue: 100, orders: 8 }],
-  });
+  locationsMock.mockResolvedValue([
+    { id: 12, name: "Limassol Marina" },
+    { id: 3, name: "Nicosia Mall" },
+  ]);
 });
 
-describe("GET /api/forecasts/history", () => {
-  it("returns the history summary for a scoped brand", async () => {
-    const response = await GET(makeEvent("?brand=BK&days=120"));
+describe("GET /api/forecasts/locations", () => {
+  it("returns the scoped brand's locations", async () => {
+    const response = await GET(makeEvent("?brand=BK"));
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       brandAlias: "bk",
-      latestSalesDate: "2026-08-25",
-      historyDays: 900,
-      points: [{ ds: "2026-08-25", revenue: 100, orders: 8 }],
-      locationId: null,
+      locations: [
+        { id: 12, name: "Limassol Marina" },
+        { id: 3, name: "Nicosia Mall" },
+      ],
     });
     expect(resolveBrandMock).toHaveBeenCalledWith(expect.anything(), "BK", {
       guard: "api",
     });
-    expect(summaryMock).toHaveBeenCalledWith("bk", {
-      recentDays: 120,
-      locationId: null,
-    });
-  });
-
-  it("defaults days to 90", async () => {
-    await GET(makeEvent("?brand=bk"));
-
-    expect(summaryMock).toHaveBeenCalledWith("bk", {
-      recentDays: 90,
-      locationId: null,
-    });
-  });
-
-  it("scopes the summary to one location when requested", async () => {
-    const response = await GET(makeEvent("?brand=bk&location=12"));
-
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toMatchObject({ locationId: 12 });
-    expect(summaryMock).toHaveBeenCalledWith("bk", {
-      recentDays: 90,
-      locationId: 12,
-    });
-  });
-
-  it("answers 400 for a non-positive location", async () => {
-    const response = await GET(makeEvent("?brand=bk&location=0"));
-
-    expect(response.status).toBe(400);
-    expect(summaryMock).not.toHaveBeenCalled();
+    expect(locationsMock).toHaveBeenCalledWith("bk");
   });
 
   it("answers 401 when there is no session", async () => {
@@ -148,15 +117,13 @@ describe("GET /api/forecasts/history", () => {
     expect(await statusOf(GET(makeEvent("?brand=bk")))).toBe(401);
   });
 
-  it("answers 400 when brand is missing or days is out of range", async () => {
-    const missing = await GET(makeEvent(""));
-    expect(missing.status).toBe(400);
-    await expect(missing.json()).resolves.toMatchObject({
+  it("answers 400 when brand is missing", async () => {
+    const response = await GET(makeEvent(""));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
       error: { code: "BAD_REQUEST" },
     });
-
-    const outOfRange = await GET(makeEvent("?brand=bk&days=5000"));
-    expect(outOfRange.status).toBe(400);
     expect(resolveBrandMock).not.toHaveBeenCalled();
   });
 
@@ -174,22 +141,11 @@ describe("GET /api/forecasts/history", () => {
         message: "This brand is not assigned to you.",
       },
     });
-    expect(summaryMock).not.toHaveBeenCalled();
-  });
-
-  it("answers 422 NO_SALES_DATA when the brand has no sales", async () => {
-    summaryMock.mockResolvedValue(null);
-
-    const response = await GET(makeEvent("?brand=bk"));
-
-    expect(response.status).toBe(422);
-    await expect(response.json()).resolves.toMatchObject({
-      error: { code: "NO_SALES_DATA" },
-    });
+    expect(locationsMock).not.toHaveBeenCalled();
   });
 
   it("answers 500 with a generic envelope for unexpected failures", async () => {
-    summaryMock.mockRejectedValue(new Error("clickhouse exploded"));
+    locationsMock.mockRejectedValue(new Error("clickhouse exploded"));
 
     const response = await GET(makeEvent("?brand=bk"));
 

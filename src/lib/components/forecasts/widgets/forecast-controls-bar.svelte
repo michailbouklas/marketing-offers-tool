@@ -14,9 +14,11 @@
     modelStroke,
     type ForecastFilters,
     type ForecastHorizonDays,
+    type ForecastLocation,
     type ForecastModel,
   } from "$lib/services/forecasts/forecast-types";
   import GitCompareArrowsIcon from "@lucide/svelte/icons/git-compare-arrows";
+  import ForecastLocationCombobox from "./forecast-location-combobox.svelte";
   import ForecastModelCheckboxCard from "./forecast-model-checkbox-card.svelte";
 
   type BrandRef = { alias: string; name: string };
@@ -25,6 +27,7 @@
     brands,
     models,
     filters,
+    locations = [],
     historyDays = null,
     basePath,
     compareBasePath = "/forecasts/compare",
@@ -37,6 +40,8 @@
     /** Engine catalog (empty when the engine is unavailable). */
     models: ForecastModel[];
     filters: ForecastFilters;
+    /** Locations of the selected brand (empty until a brand is selected). */
+    locations?: ForecastLocation[];
     /** Days of usable history for the selected brand; null while unknown. */
     historyDays?: number | null;
     /** Route the filters navigate to (usually the current pathname). */
@@ -68,7 +73,8 @@
 
   function onBrandChange(event: Event) {
     const value = (event.currentTarget as HTMLSelectElement).value;
-    navigate({ brand: value.length > 0 ? value : null });
+    // A location belongs to one brand: switching brand resets to all locations.
+    navigate({ brand: value.length > 0 ? value : null, location: null });
   }
 
   function toggleModel(modelId: string, checked: boolean) {
@@ -148,6 +154,19 @@
           {/each}
         </NativeSelect.Root>
       {/if}
+    </div>
+
+    <div class="space-y-2">
+      <label class="text-sm font-medium" for="forecast-location-{brandId}">
+        Location
+      </label>
+      <ForecastLocationCombobox
+        id="forecast-location-{brandId}"
+        {locations}
+        value={filters.location}
+        disabled={!filters.brand || locations.length === 0}
+        onSelect={(location) => navigate({ location })}
+      />
     </div>
 
     <div class="space-y-2">

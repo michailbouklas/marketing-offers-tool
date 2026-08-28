@@ -27,6 +27,7 @@
     const input = {
       brand: data.filters.brand,
       horizonDays: data.filters.horizon,
+      locationId: data.filters.location,
       modelIds: [...data.filters.models],
     };
     untrack(() => runs.sync(input));

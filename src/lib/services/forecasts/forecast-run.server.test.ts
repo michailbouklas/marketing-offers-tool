@@ -181,6 +181,7 @@ describe("getForecastForBrand", () => {
       brandAlias: "bk",
       from: "2023-08-27",
       to: "2026-08-25",
+      locationId: null,
     });
     expect(runForecastMock).toHaveBeenCalledTimes(1);
     expect(runForecastMock.mock.calls[0]?.[0]).toEqual({
@@ -200,6 +201,8 @@ describe("getForecastForBrand", () => {
       brandAlias: "bk",
       brandName: "Burger King",
       cached: false,
+      locationId: null,
+      locationName: null,
     });
     // 2026-06-01 .. 2026-08-25 = 86 days, 61 present.
     expect(result.missingDays).toBe(25);
@@ -253,6 +256,33 @@ describe("getForecastForBrand", () => {
 
     expect(runForecastMock).toHaveBeenCalledTimes(3);
     expect(sameBrandDifferentCase.cached).toBe(true);
+  });
+
+  it("keys the cache by location and forwards it to ClickHouse and the engine", async () => {
+    const all = await run.getForecastForBrand(input, { now: 1_000 });
+    const located = await run.getForecastForBrand(
+      { ...input, locationId: 12, locationName: "Limassol Marina" },
+      { now: 1_000 },
+    );
+
+    expect(all.cached).toBe(false);
+    expect(located.cached).toBe(false);
+    expect(runForecastMock).toHaveBeenCalledTimes(2);
+    expect(latestMock).toHaveBeenLastCalledWith(
+      "bk",
+      expect.objectContaining({ locationId: 12 }),
+    );
+    expect(seriesMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ brandAlias: "bk", locationId: 12 }),
+    );
+    expect(runForecastMock.mock.calls[1]?.[0]).toMatchObject({
+      seriesLabel: "bk@12",
+    });
+    expect(all).toMatchObject({ locationId: null, locationName: null });
+    expect(located).toMatchObject({
+      locationId: 12,
+      locationName: "Limassol Marina",
+    });
   });
 
   it("dedupes concurrent runs for the same key into one engine call", async () => {

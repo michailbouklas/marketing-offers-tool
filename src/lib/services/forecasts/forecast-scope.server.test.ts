@@ -148,6 +148,7 @@ describe("loadForecastPageContext", () => {
       brand: "kfc",
       models: ["seasonal_trend"],
       horizon: 90,
+      location: null,
     });
     expect(requirePermissionMock).toHaveBeenCalledTimes(1);
   });

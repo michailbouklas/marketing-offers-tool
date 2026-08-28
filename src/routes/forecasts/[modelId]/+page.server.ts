@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { loadForecastPageContext } from "$lib/services/forecasts/forecast-scope.server";
-import { loadHistoryDays } from "../history-days.server";
+import { loadForecastPageData } from "../page-data.server";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
@@ -16,18 +16,16 @@ export const load: PageServerLoad = async (event) => {
     error(404, "Unknown forecast model.");
   }
 
-  const { brands, brand, filters } = await loadForecastPageContext(
-    event,
-    models,
-  );
+  const context = await loadForecastPageContext(event, models);
+  const pageData = await loadForecastPageData(context);
 
   return {
-    brands,
-    brand,
+    brands: context.brands,
+    brand: context.brand,
+    ...pageData,
     // The deep-dive is single-model by design; the layout keeps the URL's
     // wider selection for its links.
-    filters: { ...filters, models: [model.id] },
+    filters: { ...pageData.filters, models: [model.id] },
     model,
-    historyDays: await loadHistoryDays(brand?.alias),
   };
 };

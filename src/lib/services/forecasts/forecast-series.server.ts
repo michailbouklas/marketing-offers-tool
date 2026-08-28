@@ -1,6 +1,6 @@
 import { clickhouse } from "$lib/server/clickhouse";
 import { getForecastEnv } from "$lib/server/env";
-import type { DailySalesPoint } from "./forecast-types";
+import type { DailySalesPoint, ForecastLocation } from "./forecast-types";
 
 /**
  * Server-only ClickHouse reads for the Sales Forecasts feature. Pulls the
@@ -119,11 +119,33 @@ function normaliseBrand(brandAlias: string): string {
   return brandAlias.trim().toLowerCase();
 }
 
+/**
+ * Optional `tran_location` predicate. `null`/`undefined` = every location of
+ * the brand. The id is bound as a query parameter (Int16 like the column).
+ */
+function locationFilter(locationId: number | null | undefined): {
+  sql: string;
+  params: Record<string, number>;
+} {
+  if (locationId === null || locationId === undefined) {
+    return { sql: "", params: {} };
+  }
+  if (!Number.isSafeInteger(locationId)) {
+    throw new Error(`Invalid location id: ${String(locationId)}`);
+  }
+  return {
+    sql: "AND tran_location = {location:Int16}",
+    params: { location: locationId },
+  };
+}
+
 async function queryLatestSalesDate(
   table: string,
   brand: string,
   probeFrom: string,
+  locationId?: number | null,
 ): Promise<string | null> {
+  const location = locationFilter(locationId);
   const result = await clickhouse.query({
     query: `
       SELECT tran_date AS ds
@@ -132,10 +154,11 @@ async function queryLatestSalesDate(
         AND tran_date <= today()
         AND lower(brand) = {brand:String}
         AND tran_sales_factor = 1
+        ${location.sql}
       ORDER BY tran_date DESC
       LIMIT 1
     `,
-    query_params: { probe_from: probeFrom, brand },
+    query_params: { probe_from: probeFrom, brand, ...location.params },
     format: "JSONEachRow",
   });
 
@@ -155,7 +178,11 @@ async function queryLatestSalesDate(
  */
 export async function getLatestSalesDate(
   brandAlias: string,
-  options: { now?: Date; historyDays?: number } = {},
+  options: {
+    now?: Date;
+    historyDays?: number;
+    locationId?: number | null;
+  } = {},
 ): Promise<string | null> {
   const env = getForecastEnv();
   const table = salesTransactionsTable(env.CLICKHOUSE_SALES_DATABASE);
@@ -167,6 +194,7 @@ export async function getLatestSalesDate(
     table,
     brand,
     addDays(today, -LATEST_SALES_PROBE_DAYS),
+    options.locationId,
   );
   if (recent !== null) {
     return recent;
@@ -176,21 +204,29 @@ export async function getLatestSalesDate(
     return null;
   }
 
-  return queryLatestSalesDate(table, brand, addDays(today, -historyDays));
+  return queryLatestSalesDate(
+    table,
+    brand,
+    addDays(today, -historyDays),
+    options.locationId,
+  );
 }
 
 /**
- * Daily revenue (`sum(tran_net)`) and order count for one brand between two
- * inclusive ISO dates. Sparse: days without sales are absent.
+ * Daily revenue (`sum(tran_net)`) and order count for one brand — optionally
+ * one `tran_location` of it — between two inclusive ISO dates. Sparse: days
+ * without sales are absent.
  */
 export async function getDailySalesSeries(params: {
   brandAlias: string;
   from: string;
   to: string;
+  locationId?: number | null;
 }): Promise<DailySalesPoint[]> {
   const table = salesTransactionsTable();
   parseIsoDate(params.from);
   parseIsoDate(params.to);
+  const location = locationFilter(params.locationId);
 
   const result = await clickhouse.query({
     query: `
@@ -199,6 +235,7 @@ export async function getDailySalesSeries(params: {
       WHERE tran_date BETWEEN {from:Date} AND {to:Date}
         AND lower(brand) = {brand:String}
         AND tran_sales_factor = 1
+        ${location.sql}
       GROUP BY tran_date
       ORDER BY tran_date
     `,
@@ -206,6 +243,7 @@ export async function getDailySalesSeries(params: {
       from: params.from,
       to: params.to,
       brand: normaliseBrand(params.brandAlias),
+      ...location.params,
     },
     format: "JSONEachRow",
   });
@@ -239,13 +277,20 @@ export type SalesHistorySummary = {
  */
 export async function getSalesHistorySummary(
   brandAlias: string,
-  options: { historyDays?: number; recentDays: number; now?: Date },
+  options: {
+    historyDays?: number;
+    recentDays: number;
+    now?: Date;
+    locationId?: number | null;
+  },
 ): Promise<SalesHistorySummary | null> {
   const historyDays =
     options.historyDays ?? getForecastEnv().FORECAST_HISTORY_DAYS;
+  const locationId = options.locationId ?? null;
   const latestSalesDate = await getLatestSalesDate(brandAlias, {
     now: options.now,
     historyDays,
+    locationId,
   });
 
   if (latestSalesDate === null) {
@@ -253,7 +298,11 @@ export async function getSalesHistorySummary(
   }
 
   const window = computeHistoryWindow(latestSalesDate, historyDays);
-  const series = await getDailySalesSeries({ brandAlias, ...window });
+  const series = await getDailySalesSeries({
+    brandAlias,
+    ...window,
+    locationId,
+  });
   const recent = Math.max(0, Math.floor(options.recentDays));
 
   return {
@@ -261,4 +310,70 @@ export async function getSalesHistorySummary(
     historyDays: series.length,
     points: recent > 0 ? series.slice(-recent) : [],
   };
+}
+
+// ---------------------------------------------------------------------------
+// Locations
+// ---------------------------------------------------------------------------
+
+/** How long a brand's location list is reused before ClickHouse is asked again. */
+export const LOCATIONS_CACHE_TTL_MS = 10 * 60 * 1000;
+
+type LocationsCacheEntry = { at: number; locations: ForecastLocation[] };
+const locationsCache = new Map<string, LocationsCacheEntry>();
+
+/** Test helper — drops the per-brand location cache. */
+export function __clearForecastLocationsCache(): void {
+  locationsCache.clear();
+}
+
+/**
+ * Locations (`tran_location` + `location_name`) of one brand that recorded
+ * sales inside the forecast lookback window, alphabetically by name. Cached
+ * per brand for {@link LOCATIONS_CACHE_TTL_MS}. Used to populate the location
+ * filter and to validate a requested location before it is queried.
+ */
+export async function listBrandLocations(
+  brandAlias: string,
+  options: { now?: Date; historyDays?: number } = {},
+): Promise<ForecastLocation[]> {
+  const env = getForecastEnv();
+  const brand = normaliseBrand(brandAlias);
+  const now = options.now ?? new Date();
+  const cached = locationsCache.get(brand);
+  if (cached && now.getTime() - cached.at < LOCATIONS_CACHE_TTL_MS) {
+    return cached.locations;
+  }
+
+  const table = salesTransactionsTable(env.CLICKHOUSE_SALES_DATABASE);
+  const historyDays = options.historyDays ?? env.FORECAST_HISTORY_DAYS;
+  const result = await clickhouse.query({
+    query: `
+      SELECT tran_location AS id, anyLast(location_name) AS name
+      FROM ${table}
+      WHERE tran_date >= {from:Date}
+        AND tran_date <= today()
+        AND lower(brand) = {brand:String}
+        AND tran_sales_factor = 1
+      GROUP BY tran_location
+      ORDER BY name, id
+    `,
+    query_params: { from: addDays(toIsoDate(now), -historyDays), brand },
+    format: "JSONEachRow",
+  });
+
+  const rows = await result.json<{
+    id: string | number;
+    name: string | null;
+  }>();
+  const locations: ForecastLocation[] = rows
+    .map((row) => {
+      const id = Math.trunc(toNumber(row.id));
+      const name = (row.name ?? "").trim();
+      return { id, name: name.length > 0 ? name : `Location ${id}` };
+    })
+    .filter((location) => Number.isSafeInteger(location.id));
+
+  locationsCache.set(brand, { at: now.getTime(), locations });
+  return locations;
 }

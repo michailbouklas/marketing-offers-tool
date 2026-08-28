@@ -24,6 +24,10 @@ vi.mock("$lib/server/clickhouse", () => ({
   clickhouse: { query: vi.fn() },
 }));
 
+vi.mock("$lib/services/forecasts/forecast-series.server", () => ({
+  listBrandLocations: vi.fn(),
+}));
+
 vi.mock("$lib/services/forecasts/forecast-scope.server", () => ({
   FORECASTS_PERMISSION: { forecasts: ["view"] },
   resolveForecastBrand: vi.fn(),
@@ -44,7 +48,10 @@ const scope = await import("$lib/services/forecasts/forecast-scope.server");
 const runModule = await import("$lib/services/forecasts/forecast-run.server");
 const { ForecastError } =
   await import("$lib/services/forecasts/forecast-engine.server");
+const seriesModule =
+  await import("$lib/services/forecasts/forecast-series.server");
 const { POST } = await import("./+server");
+const locationsMock = vi.mocked(seriesModule.listBrandLocations);
 
 const requireUserMock = vi.mocked(guards.requireAuthenticatedApiUser);
 const resolveBrandMock = vi.mocked(scope.resolveForecastBrand);
@@ -169,7 +176,54 @@ describe("POST /api/forecasts/run", () => {
       brandName: "Burger King",
       modelId: "seasonal_trend",
       horizonDays: 30,
+      locationId: null,
+      locationName: null,
     });
+    expect(locationsMock).not.toHaveBeenCalled();
+  });
+
+  it("resolves a location of the brand and forwards it", async () => {
+    locationsMock.mockResolvedValue([
+      { id: 12, name: "Limassol Marina" },
+      { id: 3, name: "Nicosia Mall" },
+    ]);
+
+    const response = await POST(
+      makeEvent({
+        brandAlias: "bk",
+        modelId: "seasonal_trend",
+        horizonDays: 30,
+        locationId: 12,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(locationsMock).toHaveBeenCalledWith("bk");
+    expect(getForecastMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        locationId: 12,
+        locationName: "Limassol Marina",
+      }),
+    );
+  });
+
+  it("answers 400 when the location does not belong to the brand", async () => {
+    locationsMock.mockResolvedValue([{ id: 3, name: "Nicosia Mall" }]);
+
+    const response = await POST(
+      makeEvent({
+        brandAlias: "bk",
+        modelId: "seasonal_trend",
+        horizonDays: 30,
+        locationId: 999,
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: "BAD_REQUEST" },
+    });
+    expect(getForecastMock).not.toHaveBeenCalled();
   });
 
   it("uses the stored alias from the scope, not the request's spelling", async () => {

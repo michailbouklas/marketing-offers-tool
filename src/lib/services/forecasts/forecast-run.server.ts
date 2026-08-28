@@ -33,6 +33,10 @@ export type ForecastRunInput = {
   brandName: string;
   modelId: string;
   horizonDays: number;
+  /** `tran_location` id; null/absent = all locations of the brand. */
+  locationId?: number | null;
+  /** Display name for messages/results (resolved by the caller). */
+  locationName?: string | null;
 };
 
 type CacheEntry = { at: number; result: ForecastResult };
@@ -50,7 +54,8 @@ export function __clearForecastRunCache(): void {
 }
 
 function cacheKey(input: ForecastRunInput, latestSalesDate: string): string {
-  return `${input.brandAlias.trim().toLowerCase()}|${input.modelId}|${input.horizonDays}|${latestSalesDate}`;
+  const location = input.locationId ?? "all";
+  return `${input.brandAlias.trim().toLowerCase()}|${location}|${input.modelId}|${input.horizonDays}|${latestSalesDate}`;
 }
 
 function storeResult(key: string, at: number, result: ForecastResult): void {
@@ -73,7 +78,13 @@ export async function getForecastForBrand(
 ): Promise<ForecastResult> {
   const now = options.now ?? Date.now();
   const env = getForecastEnv();
-  const brandLabel = input.brandName.trim() || input.brandAlias;
+  const locationId = input.locationId ?? null;
+  const locationName = input.locationName?.trim() || null;
+  const brandLabel =
+    (input.brandName.trim() || input.brandAlias) +
+    (locationId !== null
+      ? ` — ${locationName ?? `location ${locationId}`}`
+      : "");
 
   const models = await listForecastModels({ now });
   const model = models.find((candidate) => candidate.id === input.modelId);
@@ -86,12 +97,13 @@ export async function getForecastForBrand(
 
   const latestSalesDate = await getLatestSalesDate(input.brandAlias, {
     now: new Date(now),
+    locationId,
   });
   if (latestSalesDate === null) {
     throw new ForecastError(
       "NO_SALES_DATA",
       `No sales were found for ${brandLabel} in the last ${env.FORECAST_HISTORY_DAYS} days.`,
-      { details: { brandAlias: input.brandAlias } },
+      { details: { brandAlias: input.brandAlias, locationId } },
     );
   }
 
@@ -114,6 +126,7 @@ export async function getForecastForBrand(
     const series = await getDailySalesSeries({
       brandAlias: input.brandAlias,
       ...window,
+      locationId,
     });
 
     if (series.length < model.minHistoryDays) {
@@ -135,7 +148,10 @@ export async function getForecastForBrand(
       horizonDays: input.horizonDays,
       country: env.FORECAST_DEFAULT_COUNTRY,
       backtestFolds: 1,
-      seriesLabel: input.brandAlias,
+      seriesLabel:
+        locationId === null
+          ? input.brandAlias
+          : `${input.brandAlias}@${locationId}`,
       series: series.map((point) => ({
         ds: point.ds,
         y: point.revenue,
@@ -149,6 +165,8 @@ export async function getForecastForBrand(
       brandName: input.brandName,
       cached: false,
       missingDays: countMissingDays(series, window),
+      locationId,
+      locationName,
     };
 
     storeResult(key, now, result);

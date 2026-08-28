@@ -48,6 +48,7 @@ describe("parseForecastFilters", () => {
       brand: null,
       models: ["seasonal_trend", "statistical_baseline"],
       horizon: 30,
+      location: null,
     });
     expect(defaultForecastModelIds(catalog)).toEqual([
       "seasonal_trend",
@@ -84,6 +85,31 @@ describe("parseForecastFilters", () => {
     expect(filters.models).toEqual([]);
   });
 
+  it("reads a positive integer location and ignores anything else", () => {
+    expect(
+      parseForecastFilters(new URLSearchParams("location=12"), catalog)
+        .location,
+    ).toBe(12);
+    expect(
+      parseForecastFilters(new URLSearchParams("location=0"), catalog).location,
+    ).toBeNull();
+    expect(
+      parseForecastFilters(new URLSearchParams("location=-3"), catalog)
+        .location,
+    ).toBeNull();
+    expect(
+      parseForecastFilters(new URLSearchParams("location=abc"), catalog)
+        .location,
+    ).toBeNull();
+    expect(
+      parseForecastFilters(new URLSearchParams("location=1.5"), catalog)
+        .location,
+    ).toBeNull();
+    expect(parseForecastFilters(new URLSearchParams(), catalog).location).toBe(
+      null,
+    );
+  });
+
   it("falls back to the default horizon for unsupported values", () => {
     expect(
       parseForecastFilters(new URLSearchParams("horizon=45"), catalog).horizon,
@@ -105,6 +131,7 @@ describe("buildForecastHref", () => {
         brand: "bk",
         models: ["seasonal_trend", "statistical_baseline"],
         horizon: 30,
+        location: null,
       },
       catalog,
     );
@@ -112,11 +139,31 @@ describe("buildForecastHref", () => {
     expect(href).toBe("/forecasts?brand=bk");
   });
 
+  it("adds the location only when one is selected", () => {
+    const base = {
+      brand: "bk",
+      models: ["seasonal_trend", "statistical_baseline"],
+      horizon: 30 as const,
+    };
+
+    expect(
+      buildForecastHref("/forecasts", { ...base, location: 7 }, catalog),
+    ).toBe("/forecasts?brand=bk&location=7");
+    expect(
+      buildForecastHref("/forecasts", { ...base, location: null }, catalog),
+    ).toBe("/forecasts?brand=bk");
+  });
+
   it("returns the bare path when nothing is set", () => {
     expect(
       buildForecastHref(
         "/forecasts/compare",
-        { brand: null, models: defaultForecastModelIds(catalog), horizon: 30 },
+        {
+          brand: null,
+          models: defaultForecastModelIds(catalog),
+          horizon: 30,
+          location: null,
+        },
         catalog,
       ),
     ).toBe("/forecasts/compare");
@@ -127,12 +174,13 @@ describe("buildForecastHref", () => {
       brand: "kfc",
       models: ["statistical_baseline", "seasonal_naive"],
       horizon: 90 as const,
+      location: 42,
     };
     const href = buildForecastHref("/forecasts", filters, catalog);
     const url = new URL(href, "http://test.local");
 
     expect(href).toBe(
-      "/forecasts?brand=kfc&models=statistical_baseline%2Cseasonal_naive&horizon=90",
+      "/forecasts?brand=kfc&models=statistical_baseline%2Cseasonal_naive&horizon=90&location=42",
     );
     expect(parseForecastFilters(url.searchParams, catalog)).toEqual(filters);
   });
@@ -140,7 +188,7 @@ describe("buildForecastHref", () => {
   it("encodes an explicit empty model selection", () => {
     const href = buildForecastHref(
       "/forecasts",
-      { brand: "bk", models: [], horizon: 30 },
+      { brand: "bk", models: [], horizon: 30, location: null },
       catalog,
     );
     const url = new URL(href, "http://test.local");

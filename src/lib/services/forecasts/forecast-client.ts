@@ -2,11 +2,13 @@ import type { ZodType } from "zod";
 import {
   forecastErrorResponseSchema,
   forecastHistoryResponseSchema,
+  forecastLocationsResponseSchema,
   forecastModelsResponseSchema,
   forecastResultSchema,
   retryableForecastErrorCodes,
   type ForecastHistoryResponse,
   type ForecastHorizonDays,
+  type ForecastLocation,
   type ForecastModel,
   type ForecastResult,
 } from "./forecast-types";
@@ -19,6 +21,7 @@ import {
 export const FORECAST_MODELS_ENDPOINT = "/api/forecasts/models";
 export const FORECAST_HISTORY_ENDPOINT = "/api/forecasts/history";
 export const FORECAST_RUN_ENDPOINT = "/api/forecasts/run";
+export const FORECAST_LOCATIONS_ENDPOINT = "/api/forecasts/locations";
 
 export type ForecastRequestOptions = {
   fetchFn?: typeof fetch;
@@ -133,14 +136,31 @@ export async function fetchForecastModels(
   return data.models;
 }
 
+export async function fetchForecastLocations(
+  params: { brand: string },
+  options: ForecastRequestOptions = {},
+): Promise<ForecastLocation[]> {
+  const fetchFn = options.fetchFn ?? fetch;
+  const search = new URLSearchParams({ brand: params.brand });
+  const response = await fetchFn(
+    `${FORECAST_LOCATIONS_ENDPOINT}?${search.toString()}`,
+    { signal: options.signal },
+  );
+  const data = await parseResponse(response, forecastLocationsResponseSchema);
+  return data.locations;
+}
+
 export async function fetchForecastHistory(
-  params: { brand: string; days?: number },
+  params: { brand: string; days?: number; locationId?: number | null },
   options: ForecastRequestOptions = {},
 ): Promise<ForecastHistoryResponse> {
   const fetchFn = options.fetchFn ?? fetch;
   const search = new URLSearchParams({ brand: params.brand });
   if (params.days !== undefined) {
     search.set("days", String(params.days));
+  }
+  if (params.locationId !== undefined && params.locationId !== null) {
+    search.set("location", String(params.locationId));
   }
   const response = await fetchFn(
     `${FORECAST_HISTORY_ENDPOINT}?${search.toString()}`,
@@ -156,6 +176,8 @@ export async function fetchForecast(
     brandAlias: string;
     modelId: string;
     horizonDays: ForecastHorizonDays;
+    /** `tran_location` id; omit/null for all locations. */
+    locationId?: number | null;
   },
   options: ForecastRequestOptions = {},
 ): Promise<ForecastResult> {

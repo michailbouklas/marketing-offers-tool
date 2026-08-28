@@ -18,6 +18,7 @@
     type ModelStroke,
   } from "$lib/services/forecasts/forecast-types";
   import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
+  import MapPinIcon from "@lucide/svelte/icons/map-pin";
   import RefreshCwIcon from "@lucide/svelte/icons/refresh-cw";
   import TriangleAlertIcon from "@lucide/svelte/icons/triangle-alert";
   import AnalystDetails from "./analyst-details.svelte";
@@ -66,6 +67,12 @@
           <ModelSwatch {stroke} />
           <Card.Title>{result.modelName}</Card.Title>
           <Badge variant="outline">{horizonLabel}</Badge>
+          {#if result.locationName}
+            <Badge variant="secondary">
+              <MapPinIcon class="size-3" />
+              {result.locationName}
+            </Badge>
+          {/if}
           <ConfidenceBadge accuracy={result.accuracy} />
         </div>
         {#if model?.description}
