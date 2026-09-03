@@ -25,6 +25,8 @@ class ModelInfo:
     """Internal models are runnable but hidden from ``GET /models``."""
     sort_order: int = 100
     """Catalog position (ascending) in ``GET /models``; the UI defaults to the first two."""
+    heavy: bool = False
+    """Runs in the dedicated single heavy worker (large in-memory model) instead of the pool."""
 
 
 @dataclass
@@ -33,6 +35,9 @@ class RunContext:
     uncertainty_samples: int = 300
     seed: int = 42
     warnings: list[ForecastWarning] = field(default_factory=list)
+    fitted_required: bool = True
+    """False while the backtest scores a fold: only ``yhat``/``bands`` are read, so a model
+    whose in-sample values cost extra work (e.g. a replay) may return ``fitted=None``."""
 
     def warn(self, code: str, message: str, **details: object) -> None:
         if any(w.code == code for w in self.warnings):

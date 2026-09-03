@@ -207,7 +207,9 @@ describe("model visual identity", () => {
   it("cycles colours from --chart-2 and always pairs a dash pattern", () => {
     expect(modelStroke(0)).toEqual({ color: "var(--chart-2)", dash: "" });
     expect(modelStroke(1)).toEqual({ color: "var(--chart-3)", dash: "6 3" });
-    expect(modelStroke(4)).toEqual({ color: "var(--chart-2)", dash: "" });
+    // colours repeat after four, dashes after five: the 5th model shares a colour, never a dash
+    expect(modelStroke(4)).toEqual({ color: "var(--chart-2)", dash: "12 4" });
+    expect(modelStroke(5)).toEqual({ color: "var(--chart-3)", dash: "" });
     expect(modelStroke(-3).color).toBe("var(--chart-2)");
   });
 });

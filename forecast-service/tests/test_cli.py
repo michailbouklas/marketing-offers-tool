@@ -11,7 +11,7 @@ from pathlib import Path
 import httpx
 from forecast_service.api import create_app
 
-from tests.conftest import TEST_ENV, make_request
+from tests.conftest import PUBLIC_MODEL_IDS, TEST_ENV, make_request
 
 ROOT = Path(__file__).resolve().parents[1]
 VOLATILE = {"runtimeMs", "generatedAt"}
@@ -33,7 +33,7 @@ def test_list_models_matches_registry() -> None:
     proc = run_cli("--list-models")
     assert proc.returncode == 0, proc.stderr
     ids = [m["id"] for m in json.loads(proc.stdout)]
-    assert ids == ["seasonal_trend", "statistical_baseline", "calendar_boost", "blend"]
+    assert ids == PUBLIC_MODEL_IDS
     with_internal = json.loads(run_cli("--list-models", "--include-internal").stdout)
     assert "seasonal_naive" in {m["id"] for m in with_internal}
 

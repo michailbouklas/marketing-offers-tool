@@ -18,6 +18,15 @@ dependencies = [
   "scikit-learn>=1.9.0",
 ]
 
+[project.optional-dependencies]
+# TimesFM 2.5 foundation model (CPU-only torch). Opt-in: `uv sync --extra foundation`.
+# The Docker image installs it; local dev does not unless `bun run forecast:setup:foundation`.
+foundation = [
+  "timesfm>=2.0.2",
+  # Declared directly so [tool.uv.sources] can pin it to the CPU index (sources bind direct deps only).
+  "torch>=2.4",
+]
+
 [dependency-groups]
 dev = [
   "pytest>=8.2",
@@ -29,6 +38,15 @@ dev = [
 [tool.uv]
 # The service is run from its source tree (`uv run ...` / WORKDIR /app), never installed as a wheel.
 package = false
+
+# torch must come from the CPU wheel index: the default PyPI wheel on Linux pulls ~3 GB of CUDA libs.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.ruff]
 line-length = 100

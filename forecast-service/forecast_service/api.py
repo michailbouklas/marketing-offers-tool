@@ -10,6 +10,7 @@ from concurrent.futures import Executor, ProcessPoolExecutor, ThreadPoolExecutor
 from concurrent.futures.process import BrokenProcessPool
 from contextlib import asynccontextmanager
 from dataclasses import asdict
+from functools import partial
 from typing import Any
 
 from fastapi import Depends, FastAPI, Header, Request
@@ -20,7 +21,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from forecast_service import ENGINE_VERSION
 from forecast_service.core import run_forecast_json
 from forecast_service.errors import ForecastError
-from forecast_service.models.registry import list_models
+from forecast_service.models.registry import get_model, list_models
 from forecast_service.schemas import (
     ErrorResponse,
     ForecastRequest,
@@ -38,15 +39,30 @@ def _noop() -> None:
     return None
 
 
-def _build_executor(settings: Settings) -> Executor:
+def _has_heavy_models() -> bool:
+    return any(m.heavy for m in list_models(include_internal=True))
+
+
+def _build_executors(settings: Settings) -> tuple[Executor, Executor | None]:
+    """(default pool, heavy pool). Heavy models (``ModelInfo.heavy``) run in one dedicated
+    process that loads its weights once; the pool workers never import them."""
     if settings.inline_executor:
-        return ThreadPoolExecutor(max_workers=settings.workers, thread_name_prefix="forecast")
-    return ProcessPoolExecutor(
+        return ThreadPoolExecutor(max_workers=settings.workers, thread_name_prefix="forecast"), None
+    default = ProcessPoolExecutor(
         max_workers=settings.workers,
         mp_context=multiprocessing.get_context("spawn"),
-        initializer=warmup,
+        initializer=partial(warmup, heavy=False),
         max_tasks_per_child=200,
     )
+    heavy: Executor | None = None
+    if _has_heavy_models():
+        # No max_tasks_per_child: recycling the process would reload the weights.
+        heavy = ProcessPoolExecutor(
+            max_workers=1,
+            mp_context=multiprocessing.get_context("spawn"),
+            initializer=partial(warmup, heavy=True),
+        )
+    return default, heavy
 
 
 async def _warm_pool(app: FastAPI) -> None:
@@ -54,11 +70,16 @@ async def _warm_pool(app: FastAPI) -> None:
     settings: Settings = app.state.settings
     loop = asyncio.get_running_loop()
     try:
-        await asyncio.gather(
-            *(loop.run_in_executor(app.state.executor, _noop) for _ in range(settings.workers))
-        )
+        futures = [loop.run_in_executor(app.state.executor, _noop) for _ in range(settings.workers)]
+        if app.state.heavy_executor is not None:
+            futures.append(loop.run_in_executor(app.state.heavy_executor, _noop))
+        await asyncio.gather(*futures)
         app.state.warm = True
-        log.info("forecast workers warm (%d)", settings.workers)
+        log.info(
+            "forecast workers warm (%d%s)",
+            settings.workers,
+            " + 1 heavy" if app.state.heavy_executor is not None else "",
+        )
     except Exception as exc:
         app.state.warm_error = f"{type(exc).__name__}: {exc}"
         log.exception("forecast worker warm-up failed")
@@ -76,7 +97,7 @@ async def lifespan(app: FastAPI):
     app.state.semaphore = asyncio.Semaphore(settings.max_inflight)
     app.state.warm = False
     app.state.warm_error = None
-    app.state.executor = _build_executor(settings)
+    app.state.executor, app.state.heavy_executor = _build_executors(settings)
     app.state.warm_task = None
     if settings.inline_executor:
         app.state.warm = True
@@ -88,6 +109,8 @@ async def lifespan(app: FastAPI):
         if app.state.warm_task is not None:
             app.state.warm_task.cancel()
         app.state.executor.shutdown(wait=False, cancel_futures=True)
+        if app.state.heavy_executor is not None:
+            app.state.heavy_executor.shutdown(wait=False, cancel_futures=True)
 
 
 async def require_token(
@@ -166,10 +189,14 @@ def create_app() -> FastAPI:
                 "The forecast service is at capacity; retry shortly.",
                 {"maxInflight": settings.max_inflight},
             )
+        model = get_model(req.model_id)  # UNKNOWN_MODEL -> 404 before a worker is occupied
+        executor: Executor = state.executor
+        if model.info.heavy and state.heavy_executor is not None:
+            executor = state.heavy_executor
         async with semaphore:
             loop = asyncio.get_running_loop()
             future = loop.run_in_executor(
-                state.executor, run_forecast_json, req.model_dump(by_alias=True, mode="json")
+                executor, run_forecast_json, req.model_dump(by_alias=True, mode="json")
             )
             try:
                 return await asyncio.wait_for(future, timeout=settings.timeout_s)

@@ -15,8 +15,17 @@ os.environ.setdefault("FORECAST_INLINE_EXECUTOR", "1")
 os.environ.setdefault("FORECAST_WORKERS", "2")
 os.environ.setdefault("FORECAST_SERVICE_TOKEN", "")
 
+from forecast_service.models.foundation_timesfm import is_available as foundation_available
 from forecast_service.schemas import SeriesPoint
 from forecast_service.warmup import synthetic_series
+
+FOUNDATION_ENABLED = foundation_available()
+"""True when FORECAST_FOUNDATION_ENABLED=1 and the ``foundation`` extra is installed; the
+TimesFM tests and the extra catalog entry are gated on it so a plain checkout stays fast."""
+
+PUBLIC_MODEL_IDS = ["seasonal_trend", "statistical_baseline", "calendar_boost", "blend"] + (
+    ["foundation"] if FOUNDATION_ENABLED else []
+)
 
 TEST_ENV = {
     k: os.environ[k]

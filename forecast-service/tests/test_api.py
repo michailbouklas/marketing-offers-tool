@@ -7,7 +7,7 @@ import httpx
 import pytest
 from forecast_service.api import create_app
 
-from tests.conftest import make_request
+from tests.conftest import PUBLIC_MODEL_IDS, make_request
 
 
 @asynccontextmanager
@@ -37,12 +37,7 @@ async def test_models_lists_public_catalog(monkeypatch) -> None:
         assert r.status_code == 200
         body = r.json()
         assert isinstance(body, list)
-        assert [m["id"] for m in body] == [
-            "seasonal_trend",
-            "statistical_baseline",
-            "calendar_boost",
-            "blend",
-        ]
+        assert [m["id"] for m in body] == PUBLIC_MODEL_IDS
         assert set(body[0]) == {
             "id", "name", "description", "version", "minHistoryDays", "recommendedHorizons",
             "supportsHolidays",

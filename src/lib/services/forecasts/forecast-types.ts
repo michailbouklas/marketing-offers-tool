@@ -397,7 +397,8 @@ export function buildForecastHref(
 
 export type ModelStroke = { color: string; dash: string };
 
-const MODEL_DASHES = ["", "6 3", "2 3", "8 3 2 3"] as const;
+// Five patterns: the catalog can hold five public models, and colours repeat after four.
+const MODEL_DASHES = ["", "6 3", "2 3", "8 3 2 3", "12 4"] as const;
 
 /** Index of the model in the server catalog, or 0 when unknown. */
 export function modelColorIndex(

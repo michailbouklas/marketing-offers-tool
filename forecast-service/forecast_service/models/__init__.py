@@ -7,6 +7,7 @@ and add one import line below. Nothing else changes (API, CLI, UI read the regis
 from forecast_service.models import (  # noqa: F401
     blend,
     calendar_boost,
+    foundation_timesfm,
     prophet_seasonal_trend,
     seasonal_naive,
     stats_baseline,

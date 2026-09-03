@@ -39,6 +39,11 @@ bun run dev
 
 Other scripts: `bun run forecast:test` (pytest), `bun run forecast:dev` (service only).
 
+The TimesFM model (`foundation`) is off locally by default. To get it:
+`bun run forecast:setup:foundation` (adds the `foundation` extra: CPU-only torch + `timesfm`,
+~750 MB) and `FORECAST_FOUNDATION_ENABLED=1` in `.env`; the 925 MB checkpoint downloads to the
+Hugging Face cache on the first run.
+
 ### Production
 
 `docker compose up --build` builds both images. `app` waits for `forecast` to report
@@ -49,22 +54,28 @@ the shared `.env` so `FORECAST_SERVICE_TOKEN` matches on both sides.
 The image (`forecast-service/Dockerfile`) is `python:3.12-slim` + uv, non-root user
 `app`, dependencies installed from `uv.lock` (`--frozen --no-dev`), and runs
 `python -m forecast_service --warmup` at build time so Prophet's Stan binary and the
-statsforecast numba kernels are exercised once and cached in the layer.
+statsforecast numba kernels are exercised once and cached in the layer. The image also
+installs the `foundation` extra and, during that same warm-up, downloads the TimesFM 2.5
+checkpoint into `HF_HOME=/app/hf-cache` (`HF_HUB_OFFLINE=1` afterwards, so the running
+container never reaches the network); compose enables the model and caps the service at 3 GB.
 
 ## Environment variables
 
 Read by the Python service (prefix `FORECAST_`):
 
-| Variable                       | Default | Meaning                                                         |
-| ------------------------------ | ------- | --------------------------------------------------------------- |
-| `FORECAST_SERVICE_TOKEN`       | `""`    | Shared secret; requests send `Authorization: Bearer <token>`    |
-| `FORECAST_ALLOW_NO_AUTH`       | `0`     | `1` lets the service start with an empty token (local dev only) |
-| `FORECAST_WORKERS`             | `3`     | Process-pool size (one model fit per worker at a time)          |
-| `FORECAST_TIMEOUT_S`           | `60`    | Per-request budget; exceeded -> `504 TIMEOUT`                   |
-| `FORECAST_MAX_INFLIGHT`        | `6`     | Concurrent requests admitted; more -> `429 BUSY`                |
-| `FORECAST_DEFAULT_COUNTRY`     | `CY`    | Holiday calendar when the request omits `country`               |
-| `FORECAST_UNCERTAINTY_SAMPLES` | `300`   | Prophet Monte-Carlo samples for the bands (tests use 60)        |
-| `FORECAST_INLINE_EXECUTOR`     | `0`     | Thread pool instead of process pool (tests/debugging only)      |
+| Variable                          | Default | Meaning                                                                             |
+| --------------------------------- | ------- | ----------------------------------------------------------------------------------- |
+| `FORECAST_SERVICE_TOKEN`          | `""`    | Shared secret; requests send `Authorization: Bearer <token>`                        |
+| `FORECAST_ALLOW_NO_AUTH`          | `0`     | `1` lets the service start with an empty token (local dev only)                     |
+| `FORECAST_WORKERS`                | `3`     | Process-pool size (one model fit per worker at a time)                              |
+| `FORECAST_TIMEOUT_S`              | `60`    | Per-request budget; exceeded -> `504 TIMEOUT`                                       |
+| `FORECAST_MAX_INFLIGHT`           | `6`     | Concurrent requests admitted; more -> `429 BUSY`                                    |
+| `FORECAST_DEFAULT_COUNTRY`        | `CY`    | Holiday calendar when the request omits `country`                                   |
+| `FORECAST_UNCERTAINTY_SAMPLES`    | `300`   | Prophet Monte-Carlo samples for the bands (tests use 60)                            |
+| `FORECAST_INLINE_EXECUTOR`        | `0`     | Thread pool instead of process pool (tests/debugging only)                          |
+| `FORECAST_FOUNDATION_ENABLED`     | `0`     | Register `foundation` (TimesFM 2.5); needs the `foundation` extra. Compose sets `1` |
+| `FORECAST_FOUNDATION_THREADS`     | `4`     | torch threads inside the dedicated heavy worker                                     |
+| `FORECAST_FOUNDATION_MAX_CONTEXT` | `1024`  | Days of history TimesFM attends to (512 ≈ 1–2 years, 1024 ≈ 2–3)                    |
 
 Read by SvelteKit (see `.env.example`): `FORECAST_SERVICE_URL`, `FORECAST_SERVICE_TOKEN`,
 `FORECAST_TIMEOUT_MS` (keep it above `FORECAST_TIMEOUT_S * 1000`), `FORECAST_HISTORY_DAYS`,
@@ -175,18 +186,23 @@ Exit codes: `0` ok, `1` engine failure, `2` bad input (404/422 class), `3` timeo
 
 ## Models
 
-| id                     | Name                 | Library                                                                                                                                                                                                                                                                                  | Needs    | Holidays                               |
-| ---------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
-| `seasonal_trend`       | Seasonal Trend       | Prophet, weekly + yearly (>= 400 days), multiplicative, `changepoint_prior_scale=0.05`; both bands from `predictive_samples` percentiles                                                                                                                                                 | 60 days  | yes (`make_holidays_df`, default `CY`) |
-| `statistical_baseline` | Statistical Baseline | statsforecast `MSTL(season_length=[7,365] if >= 730 days else [7], trend_forecaster=AutoETS("ZZN"))`, `fallback_model=SeasonalNaive(7)`                                                                                                                                                  | 60 days  | no                                     |
-| `calendar_boost`       | Calendar Boost       | mlforecast + sklearn `HistGradientBoostingRegressor`; lags 7/14/21/28 (+364 at >= 730 days), rolling means, calendar features (weekday, day of month, payday window 25th–3rd, yearly Fourier) and holiday distance features (eve, day after, bridge day, ±7 days); conformal 80/95 bands | 120 days | yes (`holidays_for`, default `CY`)     |
-| `blend`                | Blend                | Equal-weight mean of `seasonal_trend`, `statistical_baseline`, `calendar_boost` (point forecast, band bounds and fitted values); a member that cannot run is skipped with `FALLBACK_MODEL_USED`, fewer than 2 → `MODEL_FAILED`                                                           | 120 days | inherited                              |
-| `seasonal_naive`       | (internal)           | Same-weekday average of the last 4 weeks; reference / template                                                                                                                                                                                                                           | 56 days  | no                                     |
+| id                     | Name                 | Library                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Needs    | Holidays                               |
+| ---------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------- |
+| `seasonal_trend`       | Seasonal Trend       | Prophet, weekly + yearly (>= 400 days), multiplicative, `changepoint_prior_scale=0.05`; both bands from `predictive_samples` percentiles                                                                                                                                                                                                                                                                                                                               | 60 days  | yes (`make_holidays_df`, default `CY`) |
+| `statistical_baseline` | Statistical Baseline | statsforecast `MSTL(season_length=[7,365] if >= 730 days else [7], trend_forecaster=AutoETS("ZZN"))`, `fallback_model=SeasonalNaive(7)`                                                                                                                                                                                                                                                                                                                                | 60 days  | no                                     |
+| `calendar_boost`       | Calendar Boost       | mlforecast + sklearn `HistGradientBoostingRegressor`; lags 7/14/21/28 (+364 at >= 730 days), rolling means, calendar features (weekday, day of month, payday window 25th–3rd, yearly Fourier) and holiday distance features (eve, day after, bridge day, ±7 days); conformal 80/95 bands                                                                                                                                                                               | 120 days | yes (`holidays_for`, default `CY`)     |
+| `blend`                | Blend                | Equal-weight mean of `seasonal_trend`, `statistical_baseline`, `calendar_boost` (point forecast, band bounds and fitted values); a member that cannot run is skipped with `FALLBACK_MODEL_USED`, fewer than 2 → `MODEL_FAILED`                                                                                                                                                                                                                                         | 120 days | inherited                              |
+| `foundation`           | Foundation (TimesFM) | Google TimesFM 2.5 (200M params, checkpoint `google/timesfm-2.5-200m-pytorch`, **Apache-2.0**) zero-shot on CPU: `forecast()` median + q10/q90 as the 80 % band, 95 % band extrapolated by the normal z-ratio; in-sample line = rolling two-week-ahead replay in one batched call. Optional: `FORECAST_FOUNDATION_ENABLED=1` + `uv sync --extra foundation`; runs in the heavy worker. **Do not upgrade to a 3.0 checkpoint — those weights are non-commercial only.** | 90 days  | no                                     |
+| `seasonal_naive`       | (internal)           | Same-weekday average of the last 4 weeks; reference / template                                                                                                                                                                                                                                                                                                                                                                                                         | 56 days  | no                                     |
 
 Why these models for QSR: sales are driven by _known calendar events_ — holiday eves and bridge
 days, Easter week, month-end paydays — that pure curve-fitters (Prophet, MSTL) only see as noise.
 `calendar_boost` learns them as features; `blend` averages the approaches so no single one's
-blind spot drives the headline number. Catalog order (`ModelInfo.sort_order`) keeps
+blind spot drives the headline number. `foundation` is a third _kind_ of forecaster — a
+pretrained pattern-matcher rather than a curve-fitter or a feature model — useful on short or
+irregular series and as an uncorrelated second opinion; it is deliberately **not** a `blend`
+member until its accuracy on real brands has been compared (and because it runs in a separate
+worker, see "Concurrency and limits"). Catalog order (`ModelInfo.sort_order`) keeps
 `seasonal_trend` + `statistical_baseline` as the two UI defaults.
 
 Data hygiene before any model runs (`preprocess.py`): validate -> trim leading zero
@@ -207,6 +223,7 @@ flagged -> minimum 56 days.
        info = ModelInfo(id="my_model", name="My Model", description="One line for the card.",
                         version="1.0.0", min_history_days=60, recommended_horizons=[7, 14, 30],
                         supports_holidays=False, sort_order=50)  # catalog position; default 100
+       # heavy=True -> runs in the single dedicated worker (models that hold GBs in memory)
 
        def fit_predict(self, series: CleanSeries, horizon: int, level: list[int],
                        ctx: RunContext) -> ModelOutput:
@@ -221,7 +238,9 @@ flagged -> minimum 56 days.
 
    Optional `components`: `weekday_uplift_pct` (7 values Mon..Sun) and
    `holiday_effect_pct` (per horizon day) feed the seasonality notes; otherwise they are
-   derived from history. Call `ctx.warn(code, message, **details)` for warnings.
+   derived from history. Call `ctx.warn(code, message, **details)` for warnings. If the
+   in-sample `fitted` values cost extra work, skip them when `ctx.fitted_required` is
+   `False` (the backtest only scores `yhat` and the 80 % band).
 
 2. Add one import line in `forecast_service/models/__init__.py`.
 3. Run `uv run pytest -q` — `test_models_recover_signal.py` automatically covers every
@@ -269,14 +288,23 @@ forecast's own actuals are not enough.
 
 uvicorn runs one process. `POST /forecast` runs `run_forecast_json` in a
 `ProcessPoolExecutor(max_workers=FORECAST_WORKERS, initializer=warmup, max_tasks_per_child=200)`
-(spawn context). An `asyncio.Semaphore(FORECAST_MAX_INFLIGHT)` rejects excess requests with
-`429 BUSY` instead of queueing; `asyncio.wait_for(FORECAST_TIMEOUT_S)` maps to `504 TIMEOUT`
-(the worker finishes its fit in the background). `/health` stays `503` until every worker
-has completed its warm-up fit; compose only starts `app` after that.
+(spawn context). Models flagged `ModelInfo.heavy` (today: `foundation`) are routed instead to a
+second `ProcessPoolExecutor(max_workers=1)` whose single process loads the TimesFM weights once
+at warm-up and is never recycled; the pool workers never import torch. An
+`asyncio.Semaphore(FORECAST_MAX_INFLIGHT)` rejects excess requests with `429 BUSY` instead of
+queueing; `asyncio.wait_for(FORECAST_TIMEOUT_S)` maps to `504 TIMEOUT` (the worker finishes
+its fit in the background). `/health` stays `503` until every worker — heavy one included — has
+completed its warm-up fit; compose only starts `app` after that.
 
 Typical cost per request with a 3-year daily series: Prophet ≈ 1–3 s (2 fits: backtest +
 final), MSTL ≈ 0.3–1 s, Calendar Boost ≈ 1–2 s (conformal windows + final fit), Blend ≈ the
-sum of its members (it re-runs them; results are not shared with the page's separate runs). Memory: ~300–500 MB per warm worker (`mem_limit: 2g` for 3 workers).
+sum of its members (it re-runs them; results are not shared with the page's separate runs),
+Foundation (TimesFM) ≈ 2–4 s on 4 CPU threads (three forward passes: backtest fold, final
+forecast, rolling replay for the in-sample line; the padded batch size and the disabled
+flip-invariance pass are what keep it there). Memory: ~300–500 MB per warm pool worker plus ~1.3 GB for the heavy worker
+(`mem_limit: 3g`). The image carries the CPU-only torch wheel and the 925 MB checkpoint
+(`HF_HOME=/app/hf-cache`, downloaded during the build-time `--warmup`, `HF_HUB_OFFLINE=1` at
+runtime), roughly +1.7 GB.
 
 ## Testing
 
@@ -287,6 +315,10 @@ cd forecast-service && uv run ruff check .
 
 Tests use short synthetic series (`forecast_service.warmup.synthetic_series`),
 `FORECAST_UNCERTAINTY_SAMPLES=60` and `FORECAST_INLINE_EXECUTOR=1` (set in `tests/conftest.py`).
+The TimesFM tests (`tests/test_foundation.py` and the `foundation` case of the parametrised
+signal-recovery suite) are skipped unless the extra is installed **and**
+`FORECAST_FOUNDATION_ENABLED=1`; run them with
+`FORECAST_FOUNDATION_ENABLED=1 uv run pytest -q` after `uv sync --extra foundation`.
 
 ## Troubleshooting
 

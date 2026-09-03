@@ -17,6 +17,7 @@
     "test": "vitest run",
     "digest": "vite-node --config vite.config.script.ts scripts/run-digest.ts --",
     "forecast:setup": "bun scripts/forecast-setup.ts",
+    "forecast:setup:foundation": "bun scripts/forecast-setup.ts --foundation",
     "forecast:dev": "cd forecast-service && uv run uvicorn forecast_service.api:app --reload --port 8000",
     "dev:all": "concurrently -n web,forecast -c blue,green \"bun run dev\" \"bun run forecast:dev\"",
     "forecast:test": "cd forecast-service && uv run pytest -q"

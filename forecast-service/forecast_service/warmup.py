@@ -45,14 +45,21 @@ def synthetic_series(
     return points
 
 
-def warmup(model_ids: list[str] | None = None) -> list[str]:
-    """Fit each public model on a short synthetic series. Returns the warmed model ids."""
+def warmup(model_ids: list[str] | None = None, *, heavy: bool | None = None) -> list[str]:
+    """Fit each public model on a short synthetic series. Returns the warmed model ids.
+
+    ``heavy`` filters the default selection: ``False`` for the pool workers (skip the large
+    in-memory models), ``True`` for the dedicated heavy worker, ``None`` for everything (CLI
+    ``--warmup`` at image build).
+    """
     global _WARM  # noqa: PLW0603
     apply_thread_env_defaults()
     from forecast_service.core import run_forecast
     from forecast_service.models.registry import list_models
 
-    ids = model_ids or [m.id for m in list_models()]
+    ids = model_ids or [
+        m.id for m in list_models() if heavy is None or m.heavy == heavy
+    ]
     series = synthetic_series(days=430)
     for model_id in ids:
         run_forecast(

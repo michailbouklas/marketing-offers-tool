@@ -31,8 +31,12 @@ services:
       FORECAST_WORKERS: ${FORECAST_WORKERS:-3}
       FORECAST_TIMEOUT_S: ${FORECAST_TIMEOUT_S:-60}
       FORECAST_MAX_INFLIGHT: ${FORECAST_MAX_INFLIGHT:-6}
+      # TimesFM foundation model: one dedicated worker holding ~1.3 GB of weights.
+      FORECAST_FOUNDATION_ENABLED: ${FORECAST_FOUNDATION_ENABLED:-1}
+      FORECAST_FOUNDATION_THREADS: ${FORECAST_FOUNDATION_THREADS:-4}
     # Internal only; never `ports:` in prod. docker-compose.dev.yml publishes it for local dev.
     expose:
       - "8000"
-    mem_limit: 2g
+    # 3 pool workers (~0.3-0.5 GB each) + the heavy TimesFM worker (~1.3 GB).
+    mem_limit: 3g
     restart: unless-stopped

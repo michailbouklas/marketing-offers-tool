@@ -1,6 +1,6 @@
 ---
 name: forecast-models
-description: How the Sales Forecasts engine works — the four models (Seasonal Trend, Statistical Baseline, Calendar Boost, Blend), how accuracy is measured and graded (holdout, WAPE, MAPE, MAE, bias, 80 % coverage, high/medium/low confidence), what every warning and error code means, and the system's limitations. Load it to explain models, metrics, grades or warnings in plain language.
+description: How the Sales Forecasts engine works — the five models (Seasonal Trend, Statistical Baseline, Calendar Boost, Blend, Foundation (TimesFM)), how accuracy is measured and graded (holdout, WAPE, MAPE, MAE, bias, 80 % coverage, high/medium/low confidence), what every warning and error code means, and the system's limitations. Load it to explain models, metrics, grades or warnings in plain language.
 ---
 
 # Sales Forecasts — models, metrics and warnings
@@ -41,6 +41,7 @@ is no archive to look back at.
 | `statistical_baseline` | Statistical Baseline | MSTL decomposition (weekly, plus yearly with ≥ 730 days) + AutoETS for the trend — fast and robust                                                                                                                                    | 60 days  | no        |
 | `calendar_boost`       | Calendar Boost       | Gradient-boosted trees on calendar features (weekday, day of month, payday window 25th–3rd, yearly cycle), holiday-distance features (eve, day after, bridge day, ±7 days) and recent lags (7/14/21/28 days, plus 364 with ≥ 2 years) | 120 days | yes       |
 | `blend`                | Blend                | Equal-weight average of the three models above — point forecast and range                                                                                                                                                             | 120 days | inherited |
+| `foundation`           | Foundation (TimesFM) | Google's pretrained TimesFM 2.5 model: reads the last ~3 years of daily sales and forecasts zero-shot (no fitting). Only the numbers — no holiday, payday or offer knowledge. Present only where the deployment enables it            | 90 days  | no        |
 
 **Plain-language strengths and blind spots**
 
@@ -56,7 +57,14 @@ is no archive to look back at.
   headline number; usually the most reliable pick. If one member cannot run
   (too little history, or it failed) the blend proceeds with the rest and
   reports `FALLBACK_MODEL_USED`; fewer than two members → the run fails. It
-  costs the sum of its members' time.
+  costs the sum of its members' time. Foundation (TimesFM) is not a member.
+- _Foundation (TimesFM)_ — a pretrained "pattern library" of millions of
+  series; strongest on short history (works from 90 days), regime changes and
+  irregular spikes, and its ranges are well calibrated. Blind to holidays,
+  paydays and offers, so around Easter or a promotion prefer Calendar Boost.
+  Its in-sample line is a rolling two-week-ahead replay, not a fit. Treat it as
+  an independent second opinion: when it agrees with Calendar Boost, trust the
+  number more; when they disagree, the calendar usually explains why.
 
 QSR demand is driven by _known calendar events_ (holiday eves and bridge
 days, Easter week, month-end paydays) that pure curve-fitters only see as

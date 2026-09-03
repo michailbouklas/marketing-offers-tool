@@ -63,6 +63,14 @@ class Settings(BaseSettings):
     # Run forecasts on a thread pool inside the API process instead of a process pool
     # (tests / single-shot debugging only).
     inline_executor: bool = False
+    # TimesFM 2.5 foundation model (``models/foundation_timesfm.py``). Needs the ``foundation``
+    # extra (`uv sync --extra foundation`); registered only when enabled. Loads ~1.3 GB into one
+    # dedicated worker process.
+    foundation_enabled: bool = False
+    # torch intra-op threads inside that worker (the pool workers stay single-threaded).
+    foundation_threads: int = Field(default=4, ge=1, le=16)
+    # Days of history the model attends to (docs: 512 for 1-2 years of daily data, 1024 for 2-3).
+    foundation_max_context: int = Field(default=1024, ge=128, le=4096)
 
 
 def get_settings() -> Settings:

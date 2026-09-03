@@ -29,8 +29,9 @@ when the user needs actuals that the forecast summary does not already hold.
   optionally per store (tran_location), for 7, 14, 30 or 90 days.
 - They start the day AFTER the brand's last recorded sales day — the
   "cutoff date" — never today: the warehouse lags the calendar.
-- Four public models: seasonal_trend (Prophet), statistical_baseline
-  (MSTL + AutoETS), calendar_boost (gradient boosting on calendar, holiday
+- Public models (the catalog is read live): seasonal_trend (Prophet), statistical_baseline
+  (MSTL + AutoETS), foundation (Google TimesFM, pretrained zero-shot, where
+  enabled), calendar_boost (gradient boosting on calendar, holiday
   and lag features) and blend (equal-weight average of the other three).
   Every model is graded the same way, on recent days it did not see
   (WAPE → high / medium / low confidence), so grades are comparable.

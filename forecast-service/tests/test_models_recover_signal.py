@@ -7,6 +7,8 @@ from forecast_service.core import run_forecast
 from forecast_service.models.registry import get_model, list_models
 from forecast_service.schemas import WARNING_CODES, ForecastRequest
 
+from tests.conftest import PUBLIC_MODEL_IDS
+
 MODEL_IDS = [m.id for m in list_models(include_internal=True)]
 HORIZON = 14
 
@@ -25,13 +27,8 @@ def result(request, series_430):
 
 def test_public_catalog_hides_internal_models() -> None:
     public = {m.id for m in list_models()}
-    assert [m.id for m in list_models()] == [
-        "seasonal_trend",
-        "statistical_baseline",
-        "calendar_boost",
-        "blend",
-    ]
-    assert public == {"seasonal_trend", "statistical_baseline", "calendar_boost", "blend"}
+    assert [m.id for m in list_models()] == PUBLIC_MODEL_IDS
+    assert public == set(PUBLIC_MODEL_IDS)
     assert "seasonal_naive" in {m.id for m in list_models(include_internal=True)}
     assert get_model("seasonal_naive").info.internal
 

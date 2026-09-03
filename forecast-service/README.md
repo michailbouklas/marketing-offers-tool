@@ -11,6 +11,7 @@ Full documentation (wire contract, env vars, ops, adding a model): `../docs/fore
 ```bash
 # from the repo root
 bun run forecast:setup        # installs uv if needed, then `uv sync` here
+bun run forecast:setup:foundation  # same + the optional TimesFM extra (CPU torch, ~750 MB)
 bun run dev:all               # SvelteKit + this service (http://localhost:8000)
 
 # or directly, from this directory
@@ -46,5 +47,6 @@ forecast_service/
   backtest.py     shared holdout scoring (WAPE grade) for every model
   summarize.py    totals, comparisons, trend, weekday/holiday sentences
   models/         one file per model; registry.py; base.py (plugin contract)
+                  foundation_timesfm.py registers only with FORECAST_FOUNDATION_ENABLED=1
 tests/            pytest (fast synthetic series)
 ```

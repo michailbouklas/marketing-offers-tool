@@ -109,7 +109,11 @@ def run_backtest(
         if train_end < min_train:
             break
         train = series.head(train_end)
-        out = model.fit_predict(train, holdout, LEVELS, ctx)
+        ctx.fitted_required = False  # only yhat/bands are scored
+        try:
+            out = model.fit_predict(train, holdout, LEVELS, ctx)
+        finally:
+            ctx.fitted_required = True
         keep = ~series.closure_mask[train_end:end]
         if not keep.any():
             completed += 1

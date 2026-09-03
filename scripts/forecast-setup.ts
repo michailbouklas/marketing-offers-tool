@@ -8,11 +8,15 @@ import { fileURLToPath } from "node:url";
 // 1. Makes sure `uv` (https://docs.astral.sh/uv/) is available; installs it with
 //    pip when missing.
 // 2. Runs `uv sync` inside forecast-service/ (creates .venv from uv.lock).
+//    `--foundation` (or `bun run forecast:setup:foundation`) adds the optional TimesFM
+//    extra: CPU-only torch + the timesfm package (~750 MB; the 925 MB checkpoint downloads
+//    on first use). Pair it with FORECAST_FOUNDATION_ENABLED=1 in .env.
 //
 // It sets nothing else. For local dev put FORECAST_ALLOW_NO_AUTH=1 in .env
 // (see .env.example), then `bun run dev:all`. Docs: docs/forecast-service.md
 
 const isWindows = process.platform === "win32";
+const withFoundation = process.argv.includes("--foundation");
 const serviceDir = fileURLToPath(
   new URL("../forecast-service/", import.meta.url),
 );
@@ -81,8 +85,14 @@ if (!works("uv", ["--version"])) {
   }
 }
 
-console.log(`uv ready. Syncing Python dependencies in ${serviceDir} ...`);
-const sync = run("uv", ["sync"], serviceDir);
+console.log(
+  `uv ready. Syncing Python dependencies in ${serviceDir}${withFoundation ? " (+ foundation extra)" : ""} ...`,
+);
+const sync = run(
+  "uv",
+  withFoundation ? ["sync", "--extra", "foundation"] : ["sync"],
+  serviceDir,
+);
 if (sync !== 0) {
   console.error(
     "`uv sync` failed. See the error above; docs/forecast-service.md has troubleshooting notes.",
@@ -94,4 +104,8 @@ console.log(`
 Forecast service is ready.
   bun run dev:all          start SvelteKit + forecast service together
   bun run forecast:test    run the Python test-suite
-Local dev without a token: set FORECAST_ALLOW_NO_AUTH=1 in .env (see .env.example).`);
+Local dev without a token: set FORECAST_ALLOW_NO_AUTH=1 in .env (see .env.example).${
+  withFoundation
+    ? "\nTimesFM installed: set FORECAST_FOUNDATION_ENABLED=1 in .env to register the model."
+    : ""
+}`);
