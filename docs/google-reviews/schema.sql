@@ -404,6 +404,8 @@ create table google_maps_scraper_replica.reviews
     category_confidence      Nullable(Decimal(9, 2)),
     review_text_hash         Nullable(String),
     sentiment_language       Nullable(String),
+    import_batch_id          Nullable(UUID),
+    google_review_id         Nullable(String),
     _sign                    Int8 materialized 1,
     _version                 UInt64 materialized 1
 )

@@ -24,9 +24,14 @@ database.
   status, description, price_range, latitude, longitude.
 - reviews — one row per review: id, business_cid (→ businesses.cid),
   reviewer_name, rating (1–5), review_text, review_date (DateTime64(6),
-  nullable AND sparse), sentiment (label whose casing varies — always compare
-  lowercased: lower(sentiment) = 'negative'), sentiment_certainty,
-  category_id (nullable, → review_categories.id, AI-derived review category).
+  nullable AND sparse; approximate for rows imported on 2026-09-15, exact
+  from 2026-09-16 on),
+  sentiment (label whose casing varies — always compare lowercased:
+  lower(sentiment) = 'negative'; NULL means not analysed yet, never neutral),
+  sentiment_certainty, category_id (nullable, → review_categories.id,
+  AI-derived review category), import_batch_id (nullable UUID of the pipeline
+  run that inserted the row; NULL for everything imported before 2026-09-15),
+  google_review_id (Google's own id, nullable on legacy rows until re-scraped).
 - review_summaries — per-business rollup keyed by business_cid: review_count,
   average_rating, rating_1_count … rating_5_count, positive_count,
   neutral_count, negative_count. Prefer this over scanning reviews for
@@ -55,6 +60,16 @@ notes and proven query patterns.
   at "zero": report the zero together with the latest available review_date
   so the user knows whether it is a real zero or missing data.
 - Always exclude NULL review_date rows from date bucketing.
+- Reviews imported on 2026-09-15 had review_date resolved from phrases like
+  "2 months ago", so those day-level dates are approximate and per-day buckets
+  spike on that day; imports from 2026-09-16 on carry Google's exact date and
+  re-scrapes backfill exact dates onto older rows, so existing dates can
+  change between runs. Prefer monthly buckets (toStartOfMonth) for trends.
+- Never treat sentiment IS NULL as neutral: it means the review has no text
+  or has not been analysed yet.
+- A reviewer may legitimately have several reviews for one business; never
+  dedupe by reviewer_name. Per-business counts from reviews differ from
+  review_summaries.review_count (Google's total) — say which one you used.
 
 ## Excel export
 

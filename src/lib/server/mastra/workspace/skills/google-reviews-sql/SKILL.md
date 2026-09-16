@@ -35,17 +35,19 @@ before `AS`) or results include duplicate row versions and counts inflate.
 
 ### reviews — one row per scraped review
 
-| Column              | Type                    | Notes                                                                    |
-| ------------------- | ----------------------- | ------------------------------------------------------------------------ |
-| id                  | Int                     | Review id                                                                |
-| business_cid        | String                  | → businesses.cid                                                         |
-| reviewer_name       | String                  |                                                                          |
-| rating              | UInt8                   | Stars 1–5                                                                |
-| review_text         | Nullable(String)        | May be empty (rating-only reviews)                                       |
-| review_date         | Nullable(DateTime64(6)) | Sparse AND lags real time — see Semantics                                |
-| sentiment           | Nullable(String)        | positive / neutral / negative — casing varies, always compare lowercased |
-| sentiment_certainty | Nullable(Float)         | Confidence of the sentiment label                                        |
-| category_id         | Nullable(Int32)         | → review_categories.id (AI-derived review category)                      |
+| Column              | Type                    | Notes                                                                                                                                       |
+| ------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| id                  | Int                     | Review id                                                                                                                                   |
+| business_cid        | String                  | → businesses.cid                                                                                                                            |
+| reviewer_name       | String                  |                                                                                                                                             |
+| rating              | UInt8                   | Stars 1–5                                                                                                                                   |
+| review_text         | Nullable(String)        | May be empty (rating-only reviews)                                                                                                          |
+| review_date         | Nullable(DateTime64(6)) | NULL for most historic rows; approximate for rows imported on 2026-09-15; exact from 2026-09-16 — see Semantics                             |
+| sentiment           | Nullable(String)        | positive / neutral / negative — casing varies, always compare lowercased. NULL = not analysed yet, never neutral                            |
+| sentiment_certainty | Nullable(Float)         | Confidence of the sentiment label                                                                                                           |
+| category_id         | Nullable(Int32)         | → review_categories.id (AI-derived review category)                                                                                         |
+| import_batch_id     | Nullable(UUID)          | Pipeline run that inserted the row; NULL for rows imported before 2026-09-15 or outside the pipeline                                        |
+| google_review_id    | Nullable(String)        | Google's own review id (since 2026-09-16, unique when set). NULL on legacy rows until re-scraped — NULL does not mean "not a Google review" |
 
 ### review_summaries — per-business rollup
 
@@ -86,10 +88,38 @@ review_category_metrics_timeseries FINAL WHERE business_cid = ...)`.
   quoting is mandatory; numeric comparison silently matches nothing.
 - Sentiment casing is not guaranteed: always `lower(r.sentiment) = 'negative'`
   (labels: positive, neutral, negative).
-- `review_date` is nullable, sparse, and the scraper lags real time. Anchor
-  relative windows to `(SELECT max(review_date) FROM reviews FINAL WHERE
-review_date IS NOT NULL)` instead of `now()`, and always add
-  `review_date IS NOT NULL` when bucketing by date.
+- `review_date` is nullable (NULL for roughly 90% of historic rows), and the
+  scraper lags real time. Anchor relative windows to `(SELECT max(review_date)
+FROM reviews FINAL WHERE review_date IS NOT NULL)` instead of `now()`, and
+  always add `review_date IS NOT NULL` when bucketing by date. A handful of
+  freshly imported rows can be dated far ahead of the bulk; if the anchored
+  window comes back nearly empty, anchor instead to the latest day whose
+  trailing 45 days hold at least 30 dated reviews (the dashboard does this).
+- Rows imported on 2026-09-15 had relative phrases ("2 months ago") resolved
+  against the import time, so their `review_date` is APPROXIMATE (exactly N
+  days/weeks/months before the import) and per-day buckets spike on that day.
+  From 2026-09-16 the importer stores Google's exact `published_at`, and
+  re-scrapes overwrite legacy rows (NULL or approximate) with the exact date,
+  so `review_date` on existing rows can change between runs and the dated
+  share of `reviews` grows. Prefer `toStartOfMonth` for trends and call
+  day-level dates of the 2026-09-15 import "approximate".
+- `sentiment IS NULL` means _not analysed yet_ — rating-only reviews with no
+  text, or a failed model call that the next pipeline run retries. Never count
+  NULL as neutral. On 2026-09-16 roughly 4,900 historic fallback labels (fake
+  neutrals and keyword guesses) were reset to NULL for re-analysis, so NULL
+  counts rise briefly and `review_summaries` sentiment counts shift until the
+  next pipeline run refreshes them.
+- A reviewer can have several reviews for the same business. Never dedupe or
+  count by `(business_cid, reviewer_name)`. Row counts in `reviews` per
+  business rise towards `review_summaries.review_count` (Google's own total)
+  as older reviews get back-filled; the two were never equal.
+- Duplicate review rows were deleted on 2026-09-15, and roughly 1,200
+  translated copies (the same review scraped in two languages) are merged from
+  2026-09-16; `FINAL` hides deleted rows and gaps in `id` are expected. A
+  translated copy is a duplicate, not a second review — reviews are keyed by
+  `google_review_id` where it is set.
+- `import_batch_id` identifies the pipeline run that inserted a review. It is
+  NULL for every row imported before 2026-09-15.
 - Category questions need `r.category_id IS NOT NULL` and `rc.category != ''`
   (uncategorized reviews and blank categories are common).
 - For per-business totals/averages use `review_summaries`; scan `reviews`
@@ -187,6 +217,19 @@ name):
 
 ```sql
 formatDateTime(r.review_date, '%Y-%m-%dT%H:%i:%SZ')
+```
+
+Reviews inserted by the latest pipeline import (rows imported before
+2026-09-15 have no `import_batch_id`):
+
+```sql
+SELECT count() AS reviews, count(DISTINCT r.business_cid) AS businesses
+FROM reviews AS r FINAL
+WHERE r.import_batch_id = (
+  SELECT argMax(import_batch_id, created_at)
+  FROM reviews FINAL
+  WHERE import_batch_id IS NOT NULL
+)
 ```
 
 ## Gotchas
