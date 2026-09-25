@@ -1,5 +1,8 @@
-import { requirePermission } from "$lib/server/auth-guards";
-import { getEntityIdsForBrand } from "$lib/services/brand-entities.server";
+import { hasPermission, requirePermission } from "$lib/server/auth-guards";
+import {
+  countEntitiesByBrand,
+  getEntityIdsForBrand,
+} from "$lib/services/brand-entities.server";
 import { listBrands } from "$lib/services/brands.server";
 import { listReviewCategories } from "$lib/services/google-reviews/categories.server";
 import {
@@ -127,10 +130,23 @@ export const load: PageServerLoad = async (event) => {
     ];
   }
 
-  const [reviewCategories, brands] = await Promise.all([
+  const [
+    reviewCategories,
+    activeBrands,
+    googleBusinessCounts,
+    canManageBrands,
+  ] = await Promise.all([
     listReviewCategories(),
     listBrands({ active: true }),
+    countEntitiesByBrand("googleReviewsBusiness"),
+    hasPermission(event, { brand: ["manage"] }),
   ]);
+  // Most brands have no Google businesses assigned yet; surface that in the
+  // dropdown so a brand that can never match is not mistaken for a broken filter.
+  const brands = activeBrands.map((brand) => ({
+    ...brand,
+    googleBusinessCount: googleBusinessCounts.get(brand.id) ?? 0,
+  }));
   const categoryName =
     categoryId != null
       ? (reviewCategories.find((category) => category.id === categoryId)
@@ -147,6 +163,8 @@ export const load: PageServerLoad = async (event) => {
     brandId != null
       ? (brands.find((brand) => brand.id === brandId)?.name ?? null)
       : null;
+  const brandHasNoBusinesses =
+    brandId != null && (brandBusinessCids?.length ?? 0) === 0;
 
   return {
     businessQuery,
@@ -158,6 +176,8 @@ export const load: PageServerLoad = async (event) => {
     reviewCategories,
     brandId,
     brandName,
+    brandHasNoBusinesses,
+    canManageBrands,
     brands,
     from,
     to,

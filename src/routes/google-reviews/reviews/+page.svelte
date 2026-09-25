@@ -379,7 +379,9 @@
                 <NativeSelect.Option value="">All brands</NativeSelect.Option>
                 {#each data.brands as brand (brand.id)}
                   <NativeSelect.Option value={brand.id.toString()}>
-                    {brand.name}
+                    {brand.name}{brand.googleBusinessCount === 0
+                      ? " — no businesses assigned"
+                      : ""}
                   </NativeSelect.Option>
                 {/each}
               </NativeSelect.Root>
@@ -524,7 +526,26 @@
                     colspan={sortableColumns.length + 1}
                     class="text-muted-foreground py-8 text-center"
                   >
-                    No reviews match the current filters.
+                    {#if data.brandHasNoBusinesses}
+                      <p>
+                        {data.brandName ?? `Brand #${data.brandId}`} has no Google
+                        reviews businesses assigned, so no reviews can match.
+                      </p>
+                      <p class="mt-1">
+                        {#if data.canManageBrands}
+                          <a
+                            href={`/admin/brands/${data.brandId}`}
+                            class="text-foreground underline underline-offset-4"
+                          >
+                            Assign businesses in Admin → Brands
+                          </a>
+                        {:else}
+                          Ask a brand manager to assign them.
+                        {/if}
+                      </p>
+                    {:else}
+                      No reviews match the current filters.
+                    {/if}
                   </Table.Cell>
                 </Table.Row>
               {:else}

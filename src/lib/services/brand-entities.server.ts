@@ -228,6 +228,23 @@ export async function getEntityIdsForBrand(
   return rows.map((row) => row.entityId);
 }
 
+/**
+ * Number of entities of `entityType` assigned to each brand, keyed by
+ * `brandId`. Brands with nothing assigned are absent. Lets filter dropdowns
+ * flag brands that cannot match anything before the user selects them.
+ */
+export async function countEntitiesByBrand(
+  entityType: BrandEntityType,
+): Promise<Map<number, number>> {
+  const rows = await prisma.brand_entity.groupBy({
+    by: ["brandId"],
+    where: { entityType },
+    _count: { _all: true },
+  });
+
+  return new Map(rows.map((row) => [row.brandId, row._count._all]));
+}
+
 type ResolvedName = { displayName: string | null; subLabel: string | null };
 
 type CompetitionNameRow = {
