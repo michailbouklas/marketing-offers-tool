@@ -153,3 +153,60 @@ ORDER BY c.name, s.name
   zero matters.
 - Current, live pricing (ideal/selling price actually in effect) is NOT here —
   it is in ClickHouse `dim_offers`. Use the `query-dim-offers-sql` tool for it.
+
+### dq_gap_queue_snapshot — the queue as shown on /offers-data-quality
+
+App-maintained "materialized view": one row per item currently `open` or
+`submitted`. Rebuilt nightly at 04:00 (Europe/Nicosia) from ClickHouse and
+`dq_missing_offers_pricing`, and patched immediately on every status change
+(`resolved` rows are deleted). Use it for "what is in the queue right now";
+use `dq_missing_offers_pricing` for history.
+
+| Column                   | Type      | Notes                                                      |
+| ------------------------ | --------- | ---------------------------------------------------------- |
+| trde_item                | varchar   | Primary key — item code                                    |
+| dq_id                    | int       | FK → dq_missing_offers_pricing.dq_id (unique)              |
+| item_name                | varchar   | Current item description from ClickHouse                   |
+| brand                    | varchar   | Brand of the most recent sale (display)                    |
+| brand_aliases            | text[]    | Every lower-cased brand the item sold under (filtering)    |
+| item_category            | varchar   | Current item category                                      |
+| missing_fields           | varchar   | Same csv encoding as the main table                        |
+| status                   | enum      | `open` or `submitted`                                      |
+| detected_at              | timestamp | Copied from the gap record                                 |
+| ideal_price … mktg_spend | numeric   | ClickHouse `dim_offers` values at rebuild time (nullable)  |
+| source                   | varchar   | `transactions`, `tracked` (no recent sales) or `on_demand` |
+| refreshed_at             | timestamp | When the row was last (re)built                            |
+
+### dq_gap_queue_refresh — rebuild run log
+
+| Column         | Type      | Notes                                         |
+| -------------- | --------- | --------------------------------------------- |
+| id             | int       | Primary key                                   |
+| trigger        | varchar   | `cron`, `manual`, `cli` or `cold_start`       |
+| status         | enum      | `running`, `succeeded`, `failed`              |
+| started_at     | timestamp |                                               |
+| finished_at    | timestamp | nullable while running                        |
+| duration_ms    | int       |                                               |
+| detected_items | int       | Items in the queue after the run              |
+| created_gaps   | int       | New gap records created                       |
+| resolved_gaps  | int       | Open gaps auto-resolved (priced / ineligible) |
+| snapshot_rows  | int       |                                               |
+| error          | text      | Set when `failed`                             |
+
+Queue size per brand right now:
+
+```sql
+SELECT brand, count(*) AS queued
+FROM dq_gap_queue_snapshot
+GROUP BY brand
+ORDER BY queued DESC
+```
+
+When was the queue last rebuilt:
+
+```sql
+SELECT trigger, status, finished_at, snapshot_rows, created_gaps, resolved_gaps
+FROM dq_gap_queue_refresh
+ORDER BY started_at DESC
+LIMIT 5
+```

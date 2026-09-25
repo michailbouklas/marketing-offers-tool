@@ -389,3 +389,56 @@ export function getOpenWebUiEnv(): OpenWebUiEnv {
     PUBLIC_BASE_URL: baseUrl ? baseUrl.replace(/\/+$/, "") : undefined,
   };
 }
+
+/**
+ * Configuration for the offers data-quality gap-queue snapshot: the nightly
+ * rebuild schedule (croner pattern + IANA timezone), the resolved-gap grace
+ * window and the per-process page cache TTL. See
+ * `src/lib/services/gap-queue-snapshot.server.ts`.
+ */
+export type DataQualityEnv = {
+  /** Start the in-process nightly rebuild cron. */
+  DQ_SNAPSHOT_ENABLED: boolean;
+  /** croner pattern; default 04:00 every day. */
+  DQ_SNAPSHOT_CRON: string;
+  /** IANA timezone the cron pattern is evaluated in. */
+  DQ_SNAPSHOT_TIMEZONE: string;
+  /**
+   * Items whose latest gap was resolved less than this many hours ago are not
+   * re-detected (the ClickHouse dim_offers mutation is asynchronous).
+   */
+  DQ_SNAPSHOT_RESOLVED_GRACE_HOURS: number;
+  /** TTL of the per-process gap-queue page cache; 0 disables it. */
+  DQ_QUEUE_CACHE_TTL_MS: number;
+};
+
+function readBooleanFlag(name: string, fallback: boolean): boolean {
+  const raw = readEnv(name);
+
+  if (raw === undefined) {
+    return fallback;
+  }
+
+  return ["1", "true", "yes", "on"].includes(raw.trim().toLowerCase());
+}
+
+function readNonNegativeInt(name: string, fallback: number): number {
+  const raw = readEnv(name);
+  const parsed = raw === undefined ? Number.NaN : Number.parseInt(raw, 10);
+
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+export function getDataQualityEnv(): DataQualityEnv {
+  return {
+    DQ_SNAPSHOT_ENABLED: readBooleanFlag("DQ_SNAPSHOT_ENABLED", true),
+    DQ_SNAPSHOT_CRON: readEnv("DQ_SNAPSHOT_CRON")?.trim() || "0 4 * * *",
+    DQ_SNAPSHOT_TIMEZONE:
+      readEnv("DQ_SNAPSHOT_TIMEZONE")?.trim() || "Europe/Nicosia",
+    DQ_SNAPSHOT_RESOLVED_GRACE_HOURS: readPositiveInt(
+      "DQ_SNAPSHOT_RESOLVED_GRACE_HOURS",
+      24,
+    ),
+    DQ_QUEUE_CACHE_TTL_MS: readNonNegativeInt("DQ_QUEUE_CACHE_TTL_MS", 60_000),
+  };
+}

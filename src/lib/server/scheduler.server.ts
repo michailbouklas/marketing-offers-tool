@@ -1,23 +1,32 @@
 import { building } from "$app/environment";
 import { Cron } from "croner";
+import { getDataQualityEnv } from "$lib/server/env";
 import {
   getNotificationsEnv,
   hasNotificationsTransport,
 } from "$lib/server/notifications/notifications-env";
+import { tryRebuildGapQueueSnapshotExclusively } from "$lib/services/gap-queue-snapshot.server";
 import { runOfferDigest } from "$lib/services/notifications/offer-digest.server";
 import type { DigestRunSummary } from "$lib/services/notifications/types";
 
 /**
- * In-process scheduler for the offer-notification digest. Bootstrapped once from
- * `src/hooks.server.ts` at server start. Assumes a single app instance: each
- * instance runs its own cron, so multiple replicas would each fire (the
- * advisory lock in `runOfferDigest` still prevents overlap, but only one
- * instance should schedule — add a leader env flag if this goes multi-replica).
+ * In-process schedulers (croner), bootstrapped once from `src/hooks.server.ts`
+ * at server start:
+ *
+ * - the offer-notification digest (`NOTIFICATIONS_CRON`), and
+ * - the offers data-quality gap-queue snapshot rebuild (`DQ_SNAPSHOT_CRON`,
+ *   default 04:00 `DQ_SNAPSHOT_TIMEZONE`).
+ *
+ * Assumes a single app instance: each instance runs its own cron, so multiple
+ * replicas would each fire (the advisory locks still prevent overlapping work,
+ * but only one instance should schedule — add a leader env flag if this goes
+ * multi-replica).
  */
 
 const globalForScheduler = globalThis as typeof globalThis & {
   offerDigestCron?: Cron;
   offerDigestRunning?: boolean;
+  gapQueueSnapshotCron?: Cron;
 };
 
 export type DigestTriggerResult =
@@ -46,15 +55,11 @@ export async function tryRunDigestExclusively(): Promise<DigestTriggerResult> {
 }
 
 /**
- * Start the daily digest cron exactly once. No-op during build, when already
- * started (HMR-safe via the global flag), or when the digest transport is not
+ * Start the daily digest cron exactly once. No-op when already started
+ * (HMR-safe via the global flag) or when the digest transport is not
  * configured.
  */
-export function startScheduler(): void {
-  if (building) {
-    return;
-  }
-
+function startDigestScheduler(): void {
   if (globalForScheduler.offerDigestCron) {
     return;
   }
@@ -92,4 +97,62 @@ export function startScheduler(): void {
   );
 
   console.info(`[notifications] digest scheduler started (cron "${pattern}").`);
+}
+
+/**
+ * Start the nightly gap-queue snapshot rebuild exactly once. Independent of
+ * the notifications config; disabled with `DQ_SNAPSHOT_ENABLED=false` (e.g.
+ * when an external scheduler runs `bun run dq:rebuild` instead).
+ */
+function startGapQueueSnapshotScheduler(): void {
+  if (globalForScheduler.gapQueueSnapshotCron) {
+    return;
+  }
+
+  const dataQualityEnv = getDataQualityEnv();
+
+  if (!dataQualityEnv.DQ_SNAPSHOT_ENABLED) {
+    console.info("[data-quality] snapshot scheduler disabled by env.");
+    return;
+  }
+
+  const pattern = dataQualityEnv.DQ_SNAPSHOT_CRON;
+  const timezone = dataQualityEnv.DQ_SNAPSHOT_TIMEZONE;
+
+  globalForScheduler.gapQueueSnapshotCron = new Cron(
+    pattern,
+    { protect: true, name: "dq-snapshot-rebuild", timezone },
+    async () => {
+      try {
+        const result = await tryRebuildGapQueueSnapshotExclusively("cron");
+
+        if (result.status === "ran") {
+          console.info(
+            "[data-quality] snapshot rebuild complete:",
+            result.summary,
+          );
+        } else {
+          console.warn(
+            `[data-quality] snapshot rebuild skipped: ${result.reason}`,
+          );
+        }
+      } catch (error) {
+        console.error("[data-quality] snapshot rebuild failed:", error);
+      }
+    },
+  );
+
+  console.info(
+    `[data-quality] snapshot scheduler started (cron "${pattern}", ${timezone}).`,
+  );
+}
+
+/** Start every in-process cron. No-op during build. */
+export function startScheduler(): void {
+  if (building) {
+    return;
+  }
+
+  startDigestScheduler();
+  startGapQueueSnapshotScheduler();
 }

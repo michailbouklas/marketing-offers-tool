@@ -23,6 +23,8 @@ export type * from "./models/UserToken";
 export type * from "./models/categories";
 export type * from "./models/channels";
 export type * from "./models/dq_missing_offers_pricing";
+export type * from "./models/dq_gap_queue_snapshot";
+export type * from "./models/dq_gap_queue_refresh";
 export type * from "./models/dim_offers_staging";
 export type * from "./models/dim_offers_audit";
 export type * from "./models/subcategories";

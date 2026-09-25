@@ -3,11 +3,36 @@ import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 vi.mock("./offers-data-quality-clickhouse.server", () => ({
   getCurrentDimOfferValues: vi.fn(),
   getDimOfferAuditSnapshot: vi.fn(),
+  getDimOffersByItemCodes: vi.fn(async () => new Map()),
   getOfferEligibleItemCodes: vi.fn(),
   getTransactionItemContext: vi.fn(),
+  getTransactionItemContexts: vi.fn(async () => new Map()),
   insertDimOffer: vi.fn(),
-  listMissingOfferQueueRows: vi.fn(),
+  listOfferEligibleItems: vi.fn(),
+  listTransactedOfferItems: vi.fn(),
   updateDimOffer: vi.fn(),
+}));
+
+vi.mock("./offers-data-quality-snapshot.server", () => ({
+  getLatestSuccessfulSnapshotRefresh: vi.fn(),
+  getSnapshotRowByGapId: vi.fn(),
+  getSnapshotRowByItemCode: vi.fn(),
+  queryGapQueuePage: vi.fn(),
+  upsertSnapshotRow: vi.fn(),
+}));
+
+vi.mock("./gap-queue-snapshot.server", () => ({
+  tryRebuildGapQueueSnapshotExclusively: vi.fn(),
+}));
+
+vi.mock("$lib/server/env", () => ({
+  getDataQualityEnv: () => ({
+    DQ_SNAPSHOT_ENABLED: true,
+    DQ_SNAPSHOT_CRON: "0 4 * * *",
+    DQ_SNAPSHOT_TIMEZONE: "Europe/Nicosia",
+    DQ_SNAPSHOT_RESOLVED_GRACE_HOURS: 24,
+    DQ_QUEUE_CACHE_TTL_MS: 60_000,
+  }),
 }));
 
 vi.mock("./dim-offers-audit.server", () => ({
@@ -18,10 +43,12 @@ vi.mock("./offers-data-quality-postgres.server", () => ({
   createGapRecord: vi.fn(),
   getGapRecordById: vi.fn(),
   getGapRecordByItemCode: vi.fn(),
+  getGapRecordsByIds: vi.fn(),
   getPendingStagingRecordByItemCode: vi.fn(),
   getStagingRecordById: vi.fn(),
   listPendingStagingRecords: vi.fn(),
   listGapRecords: vi.fn(),
+  listRecentlyResolvedItemCodes: vi.fn(),
   updateDimOffersStagingStatus: vi.fn(),
   updateGapRecordStatus: vi.fn(),
 }));
@@ -29,6 +56,9 @@ vi.mock("./offers-data-quality-postgres.server", () => ({
 const clickhouseDeps = await import("./offers-data-quality-clickhouse.server");
 const auditDeps = await import("./dim-offers-audit.server");
 const postgresDeps = await import("./offers-data-quality-postgres.server");
+const snapshotDeps = await import("./offers-data-quality-snapshot.server");
+const rebuildDeps = await import("./gap-queue-snapshot.server");
+const cache = await import("$lib/server/gap-queue-cache.server");
 const helpers = await import("./offers-data-quality");
 const orchestration = await import("./offers-data-quality.server");
 
@@ -38,10 +68,23 @@ const serviceDeps = {
   getOfferEligibleItemCodes: clickhouseDeps.getOfferEligibleItemCodes as Mock,
   getTransactionItemContext: clickhouseDeps.getTransactionItemContext as Mock,
   insertDimOffer: clickhouseDeps.insertDimOffer as Mock,
-  listMissingOfferQueueRows: clickhouseDeps.listMissingOfferQueueRows as Mock,
+  getDimOffersByItemCodes: clickhouseDeps.getDimOffersByItemCodes as Mock,
+  getTransactionItemContexts: clickhouseDeps.getTransactionItemContexts as Mock,
   updateDimOffer: clickhouseDeps.updateDimOffer as Mock,
   createDimOffersAuditRecord: auditDeps.createDimOffersAuditRecord as Mock,
   getGapRecordById: postgresDeps.getGapRecordById as Mock,
+  getGapRecordByItemCode: postgresDeps.getGapRecordByItemCode as Mock,
+  getGapRecordsByIds: postgresDeps.getGapRecordsByIds as Mock,
+  createGapRecord: postgresDeps.createGapRecord as Mock,
+  listPendingStagingRecords: postgresDeps.listPendingStagingRecords as Mock,
+  getLatestSuccessfulSnapshotRefresh:
+    snapshotDeps.getLatestSuccessfulSnapshotRefresh as Mock,
+  getSnapshotRowByGapId: snapshotDeps.getSnapshotRowByGapId as Mock,
+  getSnapshotRowByItemCode: snapshotDeps.getSnapshotRowByItemCode as Mock,
+  queryGapQueuePage: snapshotDeps.queryGapQueuePage as Mock,
+  upsertSnapshotRow: snapshotDeps.upsertSnapshotRow as Mock,
+  tryRebuildGapQueueSnapshotExclusively:
+    rebuildDeps.tryRebuildGapQueueSnapshotExclusively as Mock,
   getPendingStagingRecordByItemCode:
     postgresDeps.getPendingStagingRecordByItemCode as Mock,
   getStagingRecordById: postgresDeps.getStagingRecordById as Mock,
@@ -175,12 +218,36 @@ describe("offers-data-quality helpers", () => {
   });
 });
 
+const globalForGapQueue = globalThis as typeof globalThis & {
+  gapQueueSnapshotReady?: boolean;
+};
+
+function buildPage(items: unknown[] = []) {
+  return {
+    items,
+    totalItems: items.length,
+    submittedCount: 0,
+    page: 1,
+    pageSize: 50,
+    totalPages: 1,
+  };
+}
+
 describe("offers-data-quality orchestration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    cache.invalidateGapQueueCache();
+    globalForGapQueue.gapQueueSnapshotReady = undefined;
     serviceDeps.getOfferEligibleItemCodes.mockImplementation(
       async (itemCodes: string[]) => new Set(itemCodes),
     );
+    serviceDeps.getLatestSuccessfulSnapshotRefresh.mockResolvedValue({
+      id: 1,
+      status: "succeeded",
+      finished_at: new Date("2026-09-25T01:00:00.000Z"),
+    });
+    serviceDeps.getDimOffersByItemCodes.mockResolvedValue(new Map());
+    serviceDeps.getTransactionItemContexts.mockResolvedValue(new Map());
   });
 
   it("approves a pending submission by updating an existing dim_offers row", async () => {
@@ -320,71 +387,6 @@ describe("offers-data-quality orchestration", () => {
     expect(serviceDeps.updateGapRecordStatus).toHaveBeenCalledWith(14, "open");
   });
 
-  it("builds the queue from ClickHouse rows and PostgreSQL statuses", async () => {
-    serviceDeps.listGapRecords.mockResolvedValue([
-      {
-        dq_id: 7,
-        trde_item: "ITM-7",
-        item_name: "Tracked item",
-        brand: "kfc",
-        item_category: "Offers KFC",
-        missing_fields: "ideal_price,fc_perc",
-        detected_at: new Date("2026-03-26T10:00:00.000Z"),
-        status: "submitted",
-      },
-    ]);
-    serviceDeps.listMissingOfferQueueRows.mockResolvedValue([
-      {
-        trde_item: "ITM-7",
-        item_name: "Tracked item",
-        brand: "kfc",
-        item_category: "Offers KFC",
-        current_dim_offers: {
-          channel: null,
-          category: null,
-          subcategory: null,
-          ideal_price: 0,
-          selling_price: 5.99,
-          fc_perc: 0,
-          mktg_spend: null,
-        },
-      },
-      {
-        trde_item: "ITM-8",
-        item_name: "Fresh item",
-        brand: "bk",
-        item_category: "Offers BK",
-        current_dim_offers: {
-          channel: null,
-          category: null,
-          subcategory: null,
-          ideal_price: null,
-          selling_price: null,
-          fc_perc: null,
-          mktg_spend: null,
-        },
-      },
-    ]);
-
-    const queue = await orchestration.getOpenGapList();
-
-    expect(queue.items).toHaveLength(2);
-    expect(
-      queue.items.find((item) => item.trde_item === "ITM-7"),
-    ).toMatchObject({
-      dq_id: 7,
-      status: "submitted",
-      missing_fields: ["ideal_price", "fc_perc"],
-    });
-    expect(
-      queue.items.find((item) => item.trde_item === "ITM-8"),
-    ).toMatchObject({
-      dq_id: 0,
-      status: "open",
-      missing_fields: ["ideal_price", "selling_price", "fc_perc"],
-    });
-  });
-
   it("falls back to the stored gap record when transaction context is missing", async () => {
     serviceDeps.getGapRecordById.mockResolvedValue({
       dq_id: 4,
@@ -419,259 +421,247 @@ describe("offers-data-quality orchestration", () => {
     });
   });
 
-  it("filters the queue by assigned brand aliases when provided", async () => {
-    serviceDeps.listGapRecords.mockResolvedValue([
+  it("reads the gap queue from the snapshot with normalised options", async () => {
+    const page = buildPage([
       {
-        dq_id: 7,
-        trde_item: "ITM-7",
-        item_name: "Tracked item",
-        brand: "kfc",
-        item_category: "Offers KFC",
-        missing_fields: "ideal_price,fc_perc",
-        detected_at: new Date("2026-03-26T10:00:00.000Z"),
-        status: "submitted",
-      },
-    ]);
-    const allClickhouseRows = [
-      {
-        trde_item: "ITM-7",
-        item_name: "Tracked item",
-        brand: "kfc",
-        item_category: "Offers KFC",
-        current_dim_offers: {
-          channel: null,
-          category: null,
-          subcategory: null,
-          ideal_price: 0,
-          selling_price: 5.99,
-          fc_perc: 0,
-          mktg_spend: null,
-        },
-      },
-      {
+        dq_id: 8,
         trde_item: "ITM-8",
         item_name: "Fresh item",
-        brand: "bk",
+        brand: "BK",
         item_category: "Offers BK",
-        current_dim_offers: {
-          channel: null,
-          category: null,
-          subcategory: null,
-          ideal_price: null,
-          selling_price: null,
-          fc_perc: null,
-          mktg_spend: null,
-        },
-      },
-    ];
-    serviceDeps.listMissingOfferQueueRows.mockImplementation(
-      async (callOptions?: { brandAliases?: string[] }) => {
-        if (!callOptions?.brandAliases) return allClickhouseRows;
-        const allowed = new Set(
-          callOptions.brandAliases.map((value) => value.trim().toLowerCase()),
-        );
-
-        return allClickhouseRows.filter((row) =>
-          allowed.has(row.brand.trim().toLowerCase()),
-        );
-      },
-    );
-
-    const queue = await orchestration.getOpenGapList(1, 50, {
-      brandAliases: ["bk"],
-    });
-
-    expect(queue.items).toHaveLength(1);
-    expect(queue.items[0]).toMatchObject({
-      trde_item: "ITM-8",
-      brand: "BK",
-      status: "open",
-    });
-  });
-
-  it("sorts the queue by brand before applying secondary ordering", async () => {
-    serviceDeps.listGapRecords.mockResolvedValue([
-      {
-        dq_id: 7,
-        trde_item: "ITM-7",
-        item_name: "Tracked item",
-        brand: "kfc",
-        item_category: "Offers KFC",
-        missing_fields: "ideal_price,fc_perc",
-        detected_at: new Date("2026-03-26T10:00:00.000Z"),
-        status: "submitted",
-      },
-      {
-        dq_id: 8,
-        trde_item: "ITM-8",
-        item_name: "Later BK item",
-        brand: "bk",
-        item_category: "Offers BK",
-        missing_fields: "ideal_price,fc_perc",
-        detected_at: new Date("2026-03-27T10:00:00.000Z"),
-        status: "submitted",
+        detected_at: "2026-09-24T00:00:00.000Z",
+        status: "open",
+        missing_fields: ["ideal_price"],
       },
     ]);
-    serviceDeps.listMissingOfferQueueRows.mockResolvedValue([
-      {
-        trde_item: "ITM-7",
-        item_name: "Tracked item",
-        brand: "kfc",
-        item_category: "Offers KFC",
-        current_dim_offers: {
-          channel: null,
-          category: null,
-          subcategory: null,
-          ideal_price: 0,
-          selling_price: 5.99,
-          fc_perc: 0,
-          mktg_spend: null,
-        },
-      },
-      {
-        trde_item: "ITM-8",
-        item_name: "Later BK item",
-        brand: "bk",
-        item_category: "Offers BK",
-        current_dim_offers: {
-          channel: null,
-          category: null,
-          subcategory: null,
-          ideal_price: 0,
-          selling_price: 6.99,
-          fc_perc: 0,
-          mktg_spend: null,
-        },
-      },
-    ]);
+    serviceDeps.queryGapQueuePage.mockResolvedValue(page);
 
-    const queue = await orchestration.getOpenGapList();
-
-    expect(queue.items.map((item) => item.brand)).toEqual(["BK", "KFC"]);
-    expect(queue.items.map((item) => item.trde_item)).toEqual([
-      "ITM-8",
-      "ITM-7",
-    ]);
-  });
-
-  it("sorts the queue by detected timestamp when requested from the header state", async () => {
-    serviceDeps.listGapRecords.mockResolvedValue([
-      {
-        dq_id: 7,
-        trde_item: "ITM-7",
-        item_name: "Tracked item",
-        brand: "kfc",
-        item_category: "Offers KFC",
-        missing_fields: "ideal_price,fc_perc",
-        detected_at: new Date("2026-03-26T10:00:00.000Z"),
-        status: "submitted",
-      },
-      {
-        dq_id: 8,
-        trde_item: "ITM-8",
-        item_name: "Later BK item",
-        brand: "bk",
-        item_category: "Offers BK",
-        missing_fields: "ideal_price,fc_perc",
-        detected_at: new Date("2026-03-27T10:00:00.000Z"),
-        status: "submitted",
-      },
-    ]);
-    serviceDeps.listMissingOfferQueueRows.mockResolvedValue([
-      {
-        trde_item: "ITM-7",
-        item_name: "Tracked item",
-        brand: "kfc",
-        item_category: "Offers KFC",
-        current_dim_offers: {
-          channel: null,
-          category: null,
-          subcategory: null,
-          ideal_price: 0,
-          selling_price: 5.99,
-          fc_perc: 0,
-          mktg_spend: null,
-        },
-      },
-      {
-        trde_item: "ITM-8",
-        item_name: "Later BK item",
-        brand: "bk",
-        item_category: "Offers BK",
-        current_dim_offers: {
-          channel: null,
-          category: null,
-          subcategory: null,
-          ideal_price: 0,
-          selling_price: 6.99,
-          fc_perc: 0,
-          mktg_spend: null,
-        },
-      },
-    ]);
-
-    const queue = await orchestration.getOpenGapList(1, 50, {
+    const queue = await orchestration.getOpenGapList(2, 25, {
+      brandAliases: [" BK ", "kfc"],
       sortBy: "detected_at",
       sortDir: "desc",
+      statuses: ["submitted"],
     });
 
-    expect(queue.items.map((item) => item.trde_item)).toEqual([
-      "ITM-8",
-      "ITM-7",
-    ]);
+    expect(queue).toBe(page);
+    expect(serviceDeps.queryGapQueuePage).toHaveBeenCalledWith({
+      brandAliases: ["bk", "kfc"],
+      statuses: ["submitted"],
+      sortBy: "detected_at",
+      sortDir: "desc",
+      page: 2,
+      pageSize: 25,
+    });
+    expect(
+      serviceDeps.tryRebuildGapQueueSnapshotExclusively,
+    ).not.toHaveBeenCalled();
   });
 
-  it("hides a tracked-only gap when its item no longer qualifies as an offer in dim_items", async () => {
-    serviceDeps.listGapRecords.mockResolvedValue([
-      {
-        dq_id: 21,
-        trde_item: "ITM-RECATEGORIZED",
-        item_name: "Item moved out of offer category",
-        brand: "kfc",
-        item_category: "Offers KFC",
-        missing_fields: "ideal_price,fc_perc",
-        detected_at: new Date("2026-03-26T10:00:00.000Z"),
+  it("falls back to the default sort when the requested field is unknown", async () => {
+    serviceDeps.queryGapQueuePage.mockResolvedValue(buildPage());
+
+    await orchestration.getOpenGapList(1, 50, {
+      sortBy: "nope" as never,
+      sortDir: "sideways" as never,
+    });
+
+    expect(serviceDeps.queryGapQueuePage).toHaveBeenCalledWith(
+      expect.objectContaining({ sortBy: "brand", sortDir: "asc" }),
+    );
+  });
+
+  it("serves repeated identical requests from the cache until it is invalidated", async () => {
+    serviceDeps.queryGapQueuePage.mockResolvedValue(buildPage());
+
+    await orchestration.getOpenGapList(1, 50, { brandAliases: ["bk"] });
+    await orchestration.getOpenGapList(1, 50, { brandAliases: ["bk"] });
+
+    expect(serviceDeps.queryGapQueuePage).toHaveBeenCalledTimes(1);
+
+    await orchestration.getOpenGapList(1, 50, { brandAliases: ["kfc"] });
+
+    expect(serviceDeps.queryGapQueuePage).toHaveBeenCalledTimes(2);
+
+    cache.invalidateGapQueueCache();
+    await orchestration.getOpenGapList(1, 50, { brandAliases: ["bk"] });
+
+    expect(serviceDeps.queryGapQueuePage).toHaveBeenCalledTimes(3);
+  });
+
+  it("builds the snapshot on first use when it has never been rebuilt", async () => {
+    serviceDeps.getLatestSuccessfulSnapshotRefresh.mockResolvedValue(null);
+    serviceDeps.tryRebuildGapQueueSnapshotExclusively.mockResolvedValue({
+      status: "ran",
+      summary: {},
+    });
+    serviceDeps.queryGapQueuePage.mockResolvedValue(buildPage());
+
+    await orchestration.getOpenGapList();
+    await orchestration.getOpenGapList(2);
+
+    expect(
+      serviceDeps.tryRebuildGapQueueSnapshotExclusively,
+    ).toHaveBeenCalledTimes(1);
+    expect(
+      serviceDeps.tryRebuildGapQueueSnapshotExclusively,
+    ).toHaveBeenCalledWith("cold_start");
+  });
+
+  it("resolves an item link through the snapshot without touching ClickHouse", async () => {
+    serviceDeps.getSnapshotRowByItemCode.mockResolvedValue({
+      trde_item: "ITM-7",
+      dq_id: 7,
+    });
+    serviceDeps.getGapRecordById.mockResolvedValue({
+      dq_id: 7,
+      status: "open",
+    });
+
+    const gap = await orchestration.ensureGapRecordForItemCode("ITM-7");
+
+    expect(gap).toMatchObject({ dq_id: 7 });
+    expect(serviceDeps.getOfferEligibleItemCodes).not.toHaveBeenCalled();
+    expect(serviceDeps.getTransactionItemContext).not.toHaveBeenCalled();
+  });
+
+  it("creates a gap on demand for an eligible unpriced item missing from the snapshot", async () => {
+    serviceDeps.getSnapshotRowByItemCode.mockResolvedValue(null);
+    serviceDeps.getGapRecordByItemCode.mockResolvedValue(null);
+    serviceDeps.getTransactionItemContext.mockResolvedValue({
+      trde_item: "ITM-NEW",
+      item_name: "Brand new offer",
+      brand: "kfc",
+      item_category: "Offers KFC",
+    });
+    serviceDeps.getCurrentDimOfferValues.mockResolvedValue({
+      channel: null,
+      category: null,
+      subcategory: null,
+      ideal_price: null,
+      selling_price: null,
+      fc_perc: null,
+      mktg_spend: null,
+    });
+    serviceDeps.createGapRecord.mockImplementation(async (data: object) => ({
+      dq_id: 99,
+      detected_at: new Date("2026-09-25T00:00:00.000Z"),
+      status: "open",
+      ...data,
+    }));
+
+    const gap = await orchestration.ensureGapRecordForItemCode("ITM-NEW");
+
+    expect(gap).toMatchObject({ dq_id: 99, trde_item: "ITM-NEW" });
+    expect(serviceDeps.createGapRecord).toHaveBeenCalledWith({
+      trde_item: "ITM-NEW",
+      item_name: "Brand new offer",
+      brand: "kfc",
+      item_category: "Offers KFC",
+      missing_fields: "ideal_price,selling_price,fc_perc",
+    });
+    expect(serviceDeps.upsertSnapshotRow).toHaveBeenCalledWith(
+      expect.objectContaining({
+        trde_item: "ITM-NEW",
+        dq_id: 99,
         status: "open",
+        source: "on_demand",
+      }),
+    );
+  });
+
+  it("returns null for an item that is priced or not an offer", async () => {
+    serviceDeps.getSnapshotRowByItemCode.mockResolvedValue(null);
+    serviceDeps.getGapRecordByItemCode.mockResolvedValue(null);
+    serviceDeps.getTransactionItemContext.mockResolvedValue(null);
+    serviceDeps.getCurrentDimOfferValues.mockResolvedValue({
+      channel: "Wolt",
+      category: "Meals",
+      subcategory: "Combo",
+      ideal_price: 9.9,
+      selling_price: 8.5,
+      fc_perc: 0.3,
+      mktg_spend: null,
+    });
+
+    expect(
+      await orchestration.ensureGapRecordForItemCode("ITM-PRICED"),
+    ).toBeNull();
+    expect(serviceDeps.createGapRecord).not.toHaveBeenCalled();
+  });
+
+  it("builds the pending submission queue with batched lookups", async () => {
+    serviceDeps.listPendingStagingRecords.mockResolvedValue([
+      {
+        id: 1,
+        dq_id: 7,
+        item_code: "ITM-7",
+        channel: "Wolt",
+        category: "Meals",
+        subcategory: "Combo",
+        ideal_price: { toFixed: () => "9.90" },
+        selling_price: { toFixed: () => "8.50" },
+        fc_perc: { toFixed: () => "0.3000" },
+        mktg_spend: null,
+        notes: null,
+        submitted_by: "user-1",
+        submitted_at: new Date("2026-09-24T10:00:00.000Z"),
+      },
+      {
+        id: 2,
+        dq_id: 404,
+        item_code: "ITM-ORPHAN",
+        channel: "Wolt",
+        category: "Meals",
+        subcategory: "Combo",
+        ideal_price: { toFixed: () => "1.00" },
+        selling_price: { toFixed: () => "1.00" },
+        fc_perc: { toFixed: () => "0.1000" },
+        mktg_spend: null,
+        notes: null,
+        submitted_by: "user-1",
+        submitted_at: new Date("2026-09-24T10:00:00.000Z"),
       },
     ]);
-    serviceDeps.listMissingOfferQueueRows.mockResolvedValue([]);
-    serviceDeps.getOfferEligibleItemCodes.mockResolvedValue(new Set());
-
-    const queue = await orchestration.getOpenGapList();
-
-    expect(queue.items).toEqual([]);
-    expect(queue.totalItems).toBe(0);
-    expect(serviceDeps.getOfferEligibleItemCodes).toHaveBeenCalledWith([
-      "ITM-RECATEGORIZED",
-    ]);
-  });
-
-  it("keeps a tracked-only gap visible when its item is still an active offer in dim_items", async () => {
-    serviceDeps.listGapRecords.mockResolvedValue([
+    serviceDeps.getGapRecordsByIds.mockResolvedValue([
       {
-        dq_id: 31,
-        trde_item: "ITM-ACTIVE",
-        item_name: "Quiet active item",
+        dq_id: 7,
+        trde_item: "ITM-7",
+        item_name: "Stored name",
         brand: "kfc",
         item_category: "Offers KFC",
-        missing_fields: "ideal_price,selling_price",
+        missing_fields: "ideal_price",
         detected_at: new Date("2026-03-26T10:00:00.000Z"),
         status: "submitted",
       },
     ]);
-    serviceDeps.listMissingOfferQueueRows.mockResolvedValue([]);
-    serviceDeps.getOfferEligibleItemCodes.mockResolvedValue(
-      new Set(["ITM-ACTIVE"]),
+    serviceDeps.getTransactionItemContexts.mockResolvedValue(
+      new Map([
+        [
+          "ITM-7",
+          {
+            trde_item: "ITM-7",
+            item_name: "Live name",
+            brand: "kfc",
+            item_category: "Offers KFC",
+          },
+        ],
+      ]),
     );
 
-    const queue = await orchestration.getOpenGapList();
+    const queue = await orchestration.getPendingGapSubmissionQueue();
 
-    expect(queue.items).toHaveLength(1);
-    expect(queue.items[0]).toMatchObject({
-      dq_id: 31,
-      trde_item: "ITM-ACTIVE",
-      status: "submitted",
-      missing_fields: ["ideal_price", "selling_price"],
+    expect(queue).toHaveLength(1);
+    expect(queue[0]).toMatchObject({
+      id: 1,
+      item_name: "Live name",
+      brand: "KFC",
+      missing_fields: ["ideal_price"],
     });
+    expect(serviceDeps.getGapRecordsByIds).toHaveBeenCalledWith([7, 404]);
+    expect(serviceDeps.getTransactionItemContexts).toHaveBeenCalledWith([
+      "ITM-7",
+      "ITM-ORPHAN",
+    ]);
+    expect(serviceDeps.getTransactionItemContext).not.toHaveBeenCalled();
   });
 });

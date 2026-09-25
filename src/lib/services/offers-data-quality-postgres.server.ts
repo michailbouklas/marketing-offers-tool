@@ -1,3 +1,4 @@
+import { invalidateGapQueueCache } from "$lib/server/gap-queue-cache.server";
 import { prisma } from "$lib/server/prisma";
 import {
   type DimOffersStagingStatus,
@@ -207,14 +208,111 @@ export async function updateDimOffersStagingStatus(
   });
 }
 
-export async function updateGapRecordStatus(id: number, status: DqGapStatus) {
-  return prisma.dq_missing_offers_pricing.update({
+export async function getGapRecordsByIds(ids: number[]): Promise<GapRecord[]> {
+  if (ids.length === 0) {
+    return [];
+  }
+
+  return prisma.dq_missing_offers_pricing.findMany({
     where: {
-      dq_id: id,
-    },
-    data: {
-      status,
-      resolved_at: status === "resolved" ? new Date() : null,
+      dq_id: {
+        in: ids,
+      },
     },
   });
+}
+
+/**
+ * Item codes whose latest gap was resolved inside the grace window. The
+ * snapshot rebuild skips these so an item just approved does not re-enter the
+ * queue while its asynchronous ClickHouse `dim_offers` mutation is pending.
+ */
+export async function listRecentlyResolvedItemCodes(
+  graceHours: number,
+): Promise<Set<string>> {
+  const since = new Date(Date.now() - graceHours * 60 * 60 * 1000);
+  const rows = await prisma.dq_missing_offers_pricing.findMany({
+    where: {
+      status: "resolved",
+      resolved_at: {
+        gte: since,
+      },
+    },
+    select: {
+      trde_item: true,
+    },
+    distinct: ["trde_item"],
+  });
+
+  return new Set(rows.map((row) => row.trde_item));
+}
+
+/**
+ * Single choke point for every gap status transition (submit, approve, reject,
+ * bulk). Updates the main table and the queue snapshot in one transaction —
+ * `resolved` removes the snapshot row, any other status patches it (or inserts
+ * it when the gap was opened on demand and has no row yet) — then busts the
+ * page cache.
+ */
+export async function updateGapRecordStatus(id: number, status: DqGapStatus) {
+  const gapRecord = await prisma.$transaction(async (tx) => {
+    const updated = await tx.dq_missing_offers_pricing.update({
+      where: {
+        dq_id: id,
+      },
+      data: {
+        status,
+        resolved_at: status === "resolved" ? new Date() : null,
+      },
+    });
+
+    if (status === "resolved") {
+      await tx.dq_gap_queue_snapshot.deleteMany({
+        where: {
+          dq_id: id,
+        },
+      });
+
+      return updated;
+    }
+
+    const patched = await tx.dq_gap_queue_snapshot.updateMany({
+      where: {
+        dq_id: id,
+      },
+      data: {
+        status,
+      },
+    });
+
+    if (patched.count === 0) {
+      await tx.dq_gap_queue_snapshot.upsert({
+        where: {
+          trde_item: updated.trde_item,
+        },
+        create: {
+          trde_item: updated.trde_item,
+          dq_id: updated.dq_id,
+          item_name: updated.item_name,
+          brand: updated.brand,
+          brand_aliases: [updated.brand.trim().toLowerCase()],
+          item_category: updated.item_category,
+          missing_fields: updated.missing_fields,
+          status,
+          detected_at: updated.detected_at,
+          source: "on_demand",
+        },
+        update: {
+          dq_id: updated.dq_id,
+          status,
+        },
+      });
+    }
+
+    return updated;
+  });
+
+  invalidateGapQueueCache();
+
+  return gapRecord;
 }

@@ -284,6 +284,10 @@ export type dq_missing_offers_pricingWhereInput = {
     | null;
   audit_records?: Prisma.Dim_offers_auditListRelationFilter;
   staging_records?: Prisma.Dim_offers_stagingListRelationFilter;
+  snapshot_row?: Prisma.XOR<
+    Prisma.Dq_gap_queue_snapshotNullableScalarRelationFilter,
+    Prisma.dq_gap_queue_snapshotWhereInput
+  > | null;
 };
 
 export type dq_missing_offers_pricingOrderByWithRelationInput = {
@@ -298,6 +302,7 @@ export type dq_missing_offers_pricingOrderByWithRelationInput = {
   resolved_at?: Prisma.SortOrderInput | Prisma.SortOrder;
   audit_records?: Prisma.dim_offers_auditOrderByRelationAggregateInput;
   staging_records?: Prisma.dim_offers_stagingOrderByRelationAggregateInput;
+  snapshot_row?: Prisma.dq_gap_queue_snapshotOrderByWithRelationInput;
 };
 
 export type dq_missing_offers_pricingWhereUniqueInput = Prisma.AtLeast<
@@ -329,6 +334,10 @@ export type dq_missing_offers_pricingWhereUniqueInput = Prisma.AtLeast<
       | null;
     audit_records?: Prisma.Dim_offers_auditListRelationFilter;
     staging_records?: Prisma.Dim_offers_stagingListRelationFilter;
+    snapshot_row?: Prisma.XOR<
+      Prisma.Dq_gap_queue_snapshotNullableScalarRelationFilter,
+      Prisma.dq_gap_queue_snapshotWhereInput
+    > | null;
   },
   "dq_id"
 >;
@@ -399,6 +408,7 @@ export type dq_missing_offers_pricingCreateInput = {
   resolved_at?: Date | string | null;
   audit_records?: Prisma.dim_offers_auditCreateNestedManyWithoutGap_recordInput;
   staging_records?: Prisma.dim_offers_stagingCreateNestedManyWithoutGap_recordInput;
+  snapshot_row?: Prisma.dq_gap_queue_snapshotCreateNestedOneWithoutGap_recordInput;
 };
 
 export type dq_missing_offers_pricingUncheckedCreateInput = {
@@ -413,6 +423,7 @@ export type dq_missing_offers_pricingUncheckedCreateInput = {
   resolved_at?: Date | string | null;
   audit_records?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutGap_recordInput;
   staging_records?: Prisma.dim_offers_stagingUncheckedCreateNestedManyWithoutGap_recordInput;
+  snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedCreateNestedOneWithoutGap_recordInput;
 };
 
 export type dq_missing_offers_pricingUpdateInput = {
@@ -432,6 +443,7 @@ export type dq_missing_offers_pricingUpdateInput = {
     | null;
   audit_records?: Prisma.dim_offers_auditUpdateManyWithoutGap_recordNestedInput;
   staging_records?: Prisma.dim_offers_stagingUpdateManyWithoutGap_recordNestedInput;
+  snapshot_row?: Prisma.dq_gap_queue_snapshotUpdateOneWithoutGap_recordNestedInput;
 };
 
 export type dq_missing_offers_pricingUncheckedUpdateInput = {
@@ -452,6 +464,7 @@ export type dq_missing_offers_pricingUncheckedUpdateInput = {
     | null;
   audit_records?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutGap_recordNestedInput;
   staging_records?: Prisma.dim_offers_stagingUncheckedUpdateManyWithoutGap_recordNestedInput;
+  snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedUpdateOneWithoutGap_recordNestedInput;
 };
 
 export type dq_missing_offers_pricingCreateManyInput = {
@@ -559,6 +572,33 @@ export type EnumDqGapStatusFieldUpdateOperationsInput = {
   set?: $Enums.DqGapStatus;
 };
 
+export type dq_missing_offers_pricingCreateNestedOneWithoutSnapshot_rowInput = {
+  create?: Prisma.XOR<
+    Prisma.dq_missing_offers_pricingCreateWithoutSnapshot_rowInput,
+    Prisma.dq_missing_offers_pricingUncheckedCreateWithoutSnapshot_rowInput
+  >;
+  connectOrCreate?: Prisma.dq_missing_offers_pricingCreateOrConnectWithoutSnapshot_rowInput;
+  connect?: Prisma.dq_missing_offers_pricingWhereUniqueInput;
+};
+
+export type dq_missing_offers_pricingUpdateOneRequiredWithoutSnapshot_rowNestedInput =
+  {
+    create?: Prisma.XOR<
+      Prisma.dq_missing_offers_pricingCreateWithoutSnapshot_rowInput,
+      Prisma.dq_missing_offers_pricingUncheckedCreateWithoutSnapshot_rowInput
+    >;
+    connectOrCreate?: Prisma.dq_missing_offers_pricingCreateOrConnectWithoutSnapshot_rowInput;
+    upsert?: Prisma.dq_missing_offers_pricingUpsertWithoutSnapshot_rowInput;
+    connect?: Prisma.dq_missing_offers_pricingWhereUniqueInput;
+    update?: Prisma.XOR<
+      Prisma.XOR<
+        Prisma.dq_missing_offers_pricingUpdateToOneWithWhereWithoutSnapshot_rowInput,
+        Prisma.dq_missing_offers_pricingUpdateWithoutSnapshot_rowInput
+      >,
+      Prisma.dq_missing_offers_pricingUncheckedUpdateWithoutSnapshot_rowInput
+    >;
+  };
+
 export type dq_missing_offers_pricingCreateNestedOneWithoutStaging_recordsInput =
   {
     create?: Prisma.XOR<
@@ -617,6 +657,101 @@ export type dq_missing_offers_pricingUpdateOneWithoutAudit_recordsNestedInput =
     >;
   };
 
+export type dq_missing_offers_pricingCreateWithoutSnapshot_rowInput = {
+  trde_item: string;
+  item_name: string;
+  brand: string;
+  item_category: string;
+  missing_fields: string;
+  detected_at?: Date | string;
+  status?: $Enums.DqGapStatus;
+  resolved_at?: Date | string | null;
+  audit_records?: Prisma.dim_offers_auditCreateNestedManyWithoutGap_recordInput;
+  staging_records?: Prisma.dim_offers_stagingCreateNestedManyWithoutGap_recordInput;
+};
+
+export type dq_missing_offers_pricingUncheckedCreateWithoutSnapshot_rowInput = {
+  dq_id?: number;
+  trde_item: string;
+  item_name: string;
+  brand: string;
+  item_category: string;
+  missing_fields: string;
+  detected_at?: Date | string;
+  status?: $Enums.DqGapStatus;
+  resolved_at?: Date | string | null;
+  audit_records?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutGap_recordInput;
+  staging_records?: Prisma.dim_offers_stagingUncheckedCreateNestedManyWithoutGap_recordInput;
+};
+
+export type dq_missing_offers_pricingCreateOrConnectWithoutSnapshot_rowInput = {
+  where: Prisma.dq_missing_offers_pricingWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.dq_missing_offers_pricingCreateWithoutSnapshot_rowInput,
+    Prisma.dq_missing_offers_pricingUncheckedCreateWithoutSnapshot_rowInput
+  >;
+};
+
+export type dq_missing_offers_pricingUpsertWithoutSnapshot_rowInput = {
+  update: Prisma.XOR<
+    Prisma.dq_missing_offers_pricingUpdateWithoutSnapshot_rowInput,
+    Prisma.dq_missing_offers_pricingUncheckedUpdateWithoutSnapshot_rowInput
+  >;
+  create: Prisma.XOR<
+    Prisma.dq_missing_offers_pricingCreateWithoutSnapshot_rowInput,
+    Prisma.dq_missing_offers_pricingUncheckedCreateWithoutSnapshot_rowInput
+  >;
+  where?: Prisma.dq_missing_offers_pricingWhereInput;
+};
+
+export type dq_missing_offers_pricingUpdateToOneWithWhereWithoutSnapshot_rowInput =
+  {
+    where?: Prisma.dq_missing_offers_pricingWhereInput;
+    data: Prisma.XOR<
+      Prisma.dq_missing_offers_pricingUpdateWithoutSnapshot_rowInput,
+      Prisma.dq_missing_offers_pricingUncheckedUpdateWithoutSnapshot_rowInput
+    >;
+  };
+
+export type dq_missing_offers_pricingUpdateWithoutSnapshot_rowInput = {
+  trde_item?: Prisma.StringFieldUpdateOperationsInput | string;
+  item_name?: Prisma.StringFieldUpdateOperationsInput | string;
+  brand?: Prisma.StringFieldUpdateOperationsInput | string;
+  item_category?: Prisma.StringFieldUpdateOperationsInput | string;
+  missing_fields?: Prisma.StringFieldUpdateOperationsInput | string;
+  detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  status?:
+    | Prisma.EnumDqGapStatusFieldUpdateOperationsInput
+    | $Enums.DqGapStatus;
+  resolved_at?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
+  audit_records?: Prisma.dim_offers_auditUpdateManyWithoutGap_recordNestedInput;
+  staging_records?: Prisma.dim_offers_stagingUpdateManyWithoutGap_recordNestedInput;
+};
+
+export type dq_missing_offers_pricingUncheckedUpdateWithoutSnapshot_rowInput = {
+  dq_id?: Prisma.IntFieldUpdateOperationsInput | number;
+  trde_item?: Prisma.StringFieldUpdateOperationsInput | string;
+  item_name?: Prisma.StringFieldUpdateOperationsInput | string;
+  brand?: Prisma.StringFieldUpdateOperationsInput | string;
+  item_category?: Prisma.StringFieldUpdateOperationsInput | string;
+  missing_fields?: Prisma.StringFieldUpdateOperationsInput | string;
+  detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  status?:
+    | Prisma.EnumDqGapStatusFieldUpdateOperationsInput
+    | $Enums.DqGapStatus;
+  resolved_at?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null;
+  audit_records?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutGap_recordNestedInput;
+  staging_records?: Prisma.dim_offers_stagingUncheckedUpdateManyWithoutGap_recordNestedInput;
+};
+
 export type dq_missing_offers_pricingCreateWithoutStaging_recordsInput = {
   trde_item: string;
   item_name: string;
@@ -627,6 +762,7 @@ export type dq_missing_offers_pricingCreateWithoutStaging_recordsInput = {
   status?: $Enums.DqGapStatus;
   resolved_at?: Date | string | null;
   audit_records?: Prisma.dim_offers_auditCreateNestedManyWithoutGap_recordInput;
+  snapshot_row?: Prisma.dq_gap_queue_snapshotCreateNestedOneWithoutGap_recordInput;
 };
 
 export type dq_missing_offers_pricingUncheckedCreateWithoutStaging_recordsInput =
@@ -641,6 +777,7 @@ export type dq_missing_offers_pricingUncheckedCreateWithoutStaging_recordsInput 
     status?: $Enums.DqGapStatus;
     resolved_at?: Date | string | null;
     audit_records?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutGap_recordInput;
+    snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedCreateNestedOneWithoutGap_recordInput;
   };
 
 export type dq_missing_offers_pricingCreateOrConnectWithoutStaging_recordsInput =
@@ -689,6 +826,7 @@ export type dq_missing_offers_pricingUpdateWithoutStaging_recordsInput = {
     | string
     | null;
   audit_records?: Prisma.dim_offers_auditUpdateManyWithoutGap_recordNestedInput;
+  snapshot_row?: Prisma.dq_gap_queue_snapshotUpdateOneWithoutGap_recordNestedInput;
 };
 
 export type dq_missing_offers_pricingUncheckedUpdateWithoutStaging_recordsInput =
@@ -709,6 +847,7 @@ export type dq_missing_offers_pricingUncheckedUpdateWithoutStaging_recordsInput 
       | string
       | null;
     audit_records?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutGap_recordNestedInput;
+    snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedUpdateOneWithoutGap_recordNestedInput;
   };
 
 export type dq_missing_offers_pricingCreateWithoutAudit_recordsInput = {
@@ -721,6 +860,7 @@ export type dq_missing_offers_pricingCreateWithoutAudit_recordsInput = {
   status?: $Enums.DqGapStatus;
   resolved_at?: Date | string | null;
   staging_records?: Prisma.dim_offers_stagingCreateNestedManyWithoutGap_recordInput;
+  snapshot_row?: Prisma.dq_gap_queue_snapshotCreateNestedOneWithoutGap_recordInput;
 };
 
 export type dq_missing_offers_pricingUncheckedCreateWithoutAudit_recordsInput =
@@ -735,6 +875,7 @@ export type dq_missing_offers_pricingUncheckedCreateWithoutAudit_recordsInput =
     status?: $Enums.DqGapStatus;
     resolved_at?: Date | string | null;
     staging_records?: Prisma.dim_offers_stagingUncheckedCreateNestedManyWithoutGap_recordInput;
+    snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedCreateNestedOneWithoutGap_recordInput;
   };
 
 export type dq_missing_offers_pricingCreateOrConnectWithoutAudit_recordsInput =
@@ -783,6 +924,7 @@ export type dq_missing_offers_pricingUpdateWithoutAudit_recordsInput = {
     | string
     | null;
   staging_records?: Prisma.dim_offers_stagingUpdateManyWithoutGap_recordNestedInput;
+  snapshot_row?: Prisma.dq_gap_queue_snapshotUpdateOneWithoutGap_recordNestedInput;
 };
 
 export type dq_missing_offers_pricingUncheckedUpdateWithoutAudit_recordsInput =
@@ -803,6 +945,7 @@ export type dq_missing_offers_pricingUncheckedUpdateWithoutAudit_recordsInput =
       | string
       | null;
     staging_records?: Prisma.dim_offers_stagingUncheckedUpdateManyWithoutGap_recordNestedInput;
+    snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedUpdateOneWithoutGap_recordNestedInput;
   };
 
 /**
@@ -879,6 +1022,9 @@ export type dq_missing_offers_pricingSelect<
     staging_records?:
       | boolean
       | Prisma.dq_missing_offers_pricing$staging_recordsArgs<ExtArgs>;
+    snapshot_row?:
+      | boolean
+      | Prisma.dq_missing_offers_pricing$snapshot_rowArgs<ExtArgs>;
     _count?:
       | boolean
       | Prisma.Dq_missing_offers_pricingCountOutputTypeDefaultArgs<ExtArgs>;
@@ -959,6 +1105,9 @@ export type dq_missing_offers_pricingInclude<
   staging_records?:
     | boolean
     | Prisma.dq_missing_offers_pricing$staging_recordsArgs<ExtArgs>;
+  snapshot_row?:
+    | boolean
+    | Prisma.dq_missing_offers_pricing$snapshot_rowArgs<ExtArgs>;
   _count?:
     | boolean
     | Prisma.Dq_missing_offers_pricingCountOutputTypeDefaultArgs<ExtArgs>;
@@ -980,6 +1129,7 @@ export type $dq_missing_offers_pricingPayload<
   objects: {
     audit_records: Prisma.$dim_offers_auditPayload<ExtArgs>[];
     staging_records: Prisma.$dim_offers_stagingPayload<ExtArgs>[];
+    snapshot_row: Prisma.$dq_gap_queue_snapshotPayload<ExtArgs> | null;
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1619,6 +1769,24 @@ export interface Prisma__dq_missing_offers_pricingClient<
       >
     | Null
   >;
+  snapshot_row<
+    T extends Prisma.dq_missing_offers_pricing$snapshot_rowArgs<ExtArgs> = {},
+  >(
+    args?: Prisma.Subset<
+      T,
+      Prisma.dq_missing_offers_pricing$snapshot_rowArgs<ExtArgs>
+    >,
+  ): Prisma.Prisma__dq_gap_queue_snapshotClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$dq_gap_queue_snapshotPayload<ExtArgs>,
+      T,
+      "findUniqueOrThrow",
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2209,6 +2377,28 @@ export type dq_missing_offers_pricing$staging_recordsArgs<
   distinct?:
     | Prisma.Dim_offers_stagingScalarFieldEnum
     | Prisma.Dim_offers_stagingScalarFieldEnum[];
+};
+
+/**
+ * dq_missing_offers_pricing.snapshot_row
+ */
+export type dq_missing_offers_pricing$snapshot_rowArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the dq_gap_queue_snapshot
+   */
+  select?: Prisma.dq_gap_queue_snapshotSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the dq_gap_queue_snapshot
+   */
+  omit?: Prisma.dq_gap_queue_snapshotOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.dq_gap_queue_snapshotInclude<ExtArgs> | null;
+  where?: Prisma.dq_gap_queue_snapshotWhereInput;
 };
 
 /**

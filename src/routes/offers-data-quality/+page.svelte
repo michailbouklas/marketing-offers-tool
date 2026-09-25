@@ -298,6 +298,18 @@
             Refreshing...
           {/if}
         </Card.Description>
+        <p class="text-muted-foreground text-xs">
+          {#if data.snapshotRefreshedAt}
+            Gap detection last refreshed {new Date(
+              data.snapshotRefreshedAt,
+            ).toLocaleString()}. New gaps and externally fixed pricing show up
+            after the nightly refresh; submissions, approvals and rejections
+            update immediately.
+          {:else}
+            Gap detection has not run yet. The queue index is being built;
+            refresh the page in a moment.
+          {/if}
+        </p>
       </Card.Header>
       <Card.Content>
         <div

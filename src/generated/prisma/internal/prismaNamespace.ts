@@ -428,6 +428,8 @@ export const ModelName = {
   categories: "categories",
   channels: "channels",
   dq_missing_offers_pricing: "dq_missing_offers_pricing",
+  dq_gap_queue_snapshot: "dq_gap_queue_snapshot",
+  dq_gap_queue_refresh: "dq_gap_queue_refresh",
   dim_offers_staging: "dim_offers_staging",
   dim_offers_audit: "dim_offers_audit",
   subcategories: "subcategories",
@@ -492,6 +494,8 @@ export type TypeMap<
       | "categories"
       | "channels"
       | "dq_missing_offers_pricing"
+      | "dq_gap_queue_snapshot"
+      | "dq_gap_queue_refresh"
       | "dim_offers_staging"
       | "dim_offers_audit"
       | "subcategories"
@@ -1733,6 +1737,158 @@ export type TypeMap<
           args: Prisma.dq_missing_offers_pricingCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.Dq_missing_offers_pricingCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    dq_gap_queue_snapshot: {
+      payload: Prisma.$dq_gap_queue_snapshotPayload<ExtArgs>;
+      fields: Prisma.dq_gap_queue_snapshotFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.dq_gap_queue_snapshotFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_snapshotPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.dq_gap_queue_snapshotFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_snapshotPayload>;
+        };
+        findFirst: {
+          args: Prisma.dq_gap_queue_snapshotFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_snapshotPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.dq_gap_queue_snapshotFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_snapshotPayload>;
+        };
+        findMany: {
+          args: Prisma.dq_gap_queue_snapshotFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_snapshotPayload>[];
+        };
+        create: {
+          args: Prisma.dq_gap_queue_snapshotCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_snapshotPayload>;
+        };
+        createMany: {
+          args: Prisma.dq_gap_queue_snapshotCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.dq_gap_queue_snapshotCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_snapshotPayload>[];
+        };
+        delete: {
+          args: Prisma.dq_gap_queue_snapshotDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_snapshotPayload>;
+        };
+        update: {
+          args: Prisma.dq_gap_queue_snapshotUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_snapshotPayload>;
+        };
+        deleteMany: {
+          args: Prisma.dq_gap_queue_snapshotDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.dq_gap_queue_snapshotUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.dq_gap_queue_snapshotUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_snapshotPayload>[];
+        };
+        upsert: {
+          args: Prisma.dq_gap_queue_snapshotUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_snapshotPayload>;
+        };
+        aggregate: {
+          args: Prisma.Dq_gap_queue_snapshotAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDq_gap_queue_snapshot>;
+        };
+        groupBy: {
+          args: Prisma.dq_gap_queue_snapshotGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Dq_gap_queue_snapshotGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.dq_gap_queue_snapshotCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Dq_gap_queue_snapshotCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    dq_gap_queue_refresh: {
+      payload: Prisma.$dq_gap_queue_refreshPayload<ExtArgs>;
+      fields: Prisma.dq_gap_queue_refreshFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.dq_gap_queue_refreshFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_refreshPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.dq_gap_queue_refreshFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_refreshPayload>;
+        };
+        findFirst: {
+          args: Prisma.dq_gap_queue_refreshFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_refreshPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.dq_gap_queue_refreshFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_refreshPayload>;
+        };
+        findMany: {
+          args: Prisma.dq_gap_queue_refreshFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_refreshPayload>[];
+        };
+        create: {
+          args: Prisma.dq_gap_queue_refreshCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_refreshPayload>;
+        };
+        createMany: {
+          args: Prisma.dq_gap_queue_refreshCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.dq_gap_queue_refreshCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_refreshPayload>[];
+        };
+        delete: {
+          args: Prisma.dq_gap_queue_refreshDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_refreshPayload>;
+        };
+        update: {
+          args: Prisma.dq_gap_queue_refreshUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_refreshPayload>;
+        };
+        deleteMany: {
+          args: Prisma.dq_gap_queue_refreshDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.dq_gap_queue_refreshUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.dq_gap_queue_refreshUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_refreshPayload>[];
+        };
+        upsert: {
+          args: Prisma.dq_gap_queue_refreshUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$dq_gap_queue_refreshPayload>;
+        };
+        aggregate: {
+          args: Prisma.Dq_gap_queue_refreshAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDq_gap_queue_refresh>;
+        };
+        groupBy: {
+          args: Prisma.dq_gap_queue_refreshGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Dq_gap_queue_refreshGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.dq_gap_queue_refreshCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Dq_gap_queue_refreshCountAggregateOutputType>
             | number;
         };
       };
@@ -3894,6 +4050,47 @@ export const Dq_missing_offers_pricingScalarFieldEnum = {
 export type Dq_missing_offers_pricingScalarFieldEnum =
   (typeof Dq_missing_offers_pricingScalarFieldEnum)[keyof typeof Dq_missing_offers_pricingScalarFieldEnum];
 
+export const Dq_gap_queue_snapshotScalarFieldEnum = {
+  trde_item: "trde_item",
+  dq_id: "dq_id",
+  item_name: "item_name",
+  brand: "brand",
+  brand_aliases: "brand_aliases",
+  item_category: "item_category",
+  missing_fields: "missing_fields",
+  status: "status",
+  detected_at: "detected_at",
+  channel: "channel",
+  category: "category",
+  subcategory: "subcategory",
+  ideal_price: "ideal_price",
+  selling_price: "selling_price",
+  fc_perc: "fc_perc",
+  mktg_spend: "mktg_spend",
+  source: "source",
+  refreshed_at: "refreshed_at",
+} as const;
+
+export type Dq_gap_queue_snapshotScalarFieldEnum =
+  (typeof Dq_gap_queue_snapshotScalarFieldEnum)[keyof typeof Dq_gap_queue_snapshotScalarFieldEnum];
+
+export const Dq_gap_queue_refreshScalarFieldEnum = {
+  id: "id",
+  trigger: "trigger",
+  status: "status",
+  started_at: "started_at",
+  finished_at: "finished_at",
+  duration_ms: "duration_ms",
+  detected_items: "detected_items",
+  created_gaps: "created_gaps",
+  resolved_gaps: "resolved_gaps",
+  snapshot_rows: "snapshot_rows",
+  error: "error",
+} as const;
+
+export type Dq_gap_queue_refreshScalarFieldEnum =
+  (typeof Dq_gap_queue_refreshScalarFieldEnum)[keyof typeof Dq_gap_queue_refreshScalarFieldEnum];
+
 export const Dim_offers_stagingScalarFieldEnum = {
   id: "id",
   dq_id: "dq_id",
@@ -4450,6 +4647,34 @@ export type ListEnumDqGapStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 >;
 
 /**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  "Float"
+>;
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  "Float[]"
+>;
+
+/**
+ * Reference to a field of type 'DqSnapshotRefreshStatus'
+ */
+export type EnumDqSnapshotRefreshStatusFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "DqSnapshotRefreshStatus">;
+
+/**
+ * Reference to a field of type 'DqSnapshotRefreshStatus[]'
+ */
+export type ListEnumDqSnapshotRefreshStatusFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "DqSnapshotRefreshStatus[]">;
+
+/**
  * Reference to a field of type 'DimOffersStagingStatus'
  */
 export type EnumDimOffersStagingStatusFieldRefInput<$PrismaModel> =
@@ -4623,22 +4848,6 @@ export type ListEnumBrandEntityTypeFieldRefInput<$PrismaModel> =
   FieldRefInputType<$PrismaModel, "BrandEntityType[]">;
 
 /**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  "Float"
->;
-
-/**
- * Reference to a field of type 'Float[]'
- */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  "Float[]"
->;
-
-/**
  * Batch Payload for updateMany & deleteMany & createMany
  */
 export type BatchPayload = {
@@ -4772,6 +4981,8 @@ export type GlobalOmitConfig = {
   categories?: Prisma.categoriesOmit;
   channels?: Prisma.channelsOmit;
   dq_missing_offers_pricing?: Prisma.dq_missing_offers_pricingOmit;
+  dq_gap_queue_snapshot?: Prisma.dq_gap_queue_snapshotOmit;
+  dq_gap_queue_refresh?: Prisma.dq_gap_queue_refreshOmit;
   dim_offers_staging?: Prisma.dim_offers_stagingOmit;
   dim_offers_audit?: Prisma.dim_offers_auditOmit;
   subcategories?: Prisma.subcategoriesOmit;

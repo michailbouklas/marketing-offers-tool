@@ -1,6 +1,5 @@
-import { env } from "$env/dynamic/private";
-import { Client } from "pg";
 import { prisma } from "$lib/server/prisma";
+import { tryAcquireAdvisoryLock } from "$lib/server/pg-advisory-lock";
 import {
   getNotificationsEnv,
   hasNotificationsTransport,
@@ -25,58 +24,16 @@ import type { DigestRunSummary, QueueRow } from "./types";
  */
 
 // Two arbitrary int4 constants identifying the session advisory lock that
-// serialises digest runs across processes/connections (the two-arg form avoids
-// overload ambiguity with the single-bigint variant).
+// serialises digest runs across processes/connections.
 const LOCK_KEY_1 = 0x4f66_4e74 | 0; // "OfNt"
 const LOCK_KEY_2 = 0x44_69_67_73 | 0; // "Digs"
 
-interface DigestLock {
-  release(): Promise<void>;
-}
-
 /**
- * Try to take the cross-process digest lock on a dedicated app-DB connection
- * held for the whole run (a pooled connection could not safely hold a session
- * lock). Returns null when another run already holds it. If the process dies,
- * Postgres releases the lock automatically when the connection drops.
+ * Try to take the cross-process digest lock (see `pg-advisory-lock.ts`).
+ * Returns null when another run already holds it.
  */
-async function tryAcquireDigestLock(): Promise<DigestLock | null> {
-  const connectionString = env.DATABASE_URL;
-
-  if (!connectionString) {
-    throw new Error("Missing required environment variable: DATABASE_URL");
-  }
-
-  const client = new Client({ connectionString });
-  await client.connect();
-
-  try {
-    const result = await client.query<{ locked: boolean }>(
-      "SELECT pg_try_advisory_lock($1, $2) AS locked",
-      [LOCK_KEY_1, LOCK_KEY_2],
-    );
-
-    if (!result.rows[0]?.locked) {
-      await client.end();
-      return null;
-    }
-
-    return {
-      async release() {
-        try {
-          await client.query("SELECT pg_advisory_unlock($1, $2)", [
-            LOCK_KEY_1,
-            LOCK_KEY_2,
-          ]);
-        } finally {
-          await client.end();
-        }
-      },
-    };
-  } catch (error) {
-    await client.end();
-    throw error;
-  }
+function tryAcquireDigestLock() {
+  return tryAcquireAdvisoryLock(LOCK_KEY_1, LOCK_KEY_2);
 }
 
 function emptySummary(

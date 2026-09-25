@@ -58,12 +58,16 @@ export type TransactionItemContext = {
   brand: string;
 };
 
-export type MissingOfferQueueRow = {
-  trde_item: string;
+export type OfferEligibleItem = {
+  item_code: string;
   item_name: string;
-  brand: string;
   item_category: string;
-  current_dim_offers: CurrentDimOffersValues;
+};
+
+export type TransactedOfferItem = {
+  trde_item: string;
+  brand: string;
+  brand_aliases: string[];
 };
 
 const DEFAULT_LOOKBACK_DAYS = 90;
@@ -230,15 +234,7 @@ export async function getCurrentDimOfferValues(
     };
   }
 
-  return {
-    channel: row.channel ?? null,
-    category: row.category ?? null,
-    subcategory: row.subcategory ?? null,
-    ideal_price: parseNullableNumber(row.ideal_price),
-    selling_price: parseNullableNumber(row.selling_price),
-    fc_perc: parseNullableNumber(row.fc_perc),
-    mktg_spend: parseNullableNumber(row.mktg_spend),
-  };
+  return mapDimOffersRow(row);
 }
 
 export async function getDimOfferAuditSnapshot(
@@ -313,98 +309,221 @@ export async function dimOfferExists(itemCode: string) {
   return rows.length > 0;
 }
 
-export async function listMissingOfferQueueRows(options?: {
-  brandAliases?: string[];
-}): Promise<MissingOfferQueueRow[]> {
-  const hasBrandFilter = options?.brandAliases !== undefined;
-  const normalizedBrandAliases =
-    options?.brandAliases?.map((value) => value.trim().toLowerCase()) ?? [];
+/**
+ * Batched variant of `getTransactionItemContext` for the admin pending queue:
+ * one ClickHouse round-trip for every item code instead of one per record.
+ */
+export async function getTransactionItemContexts(
+  trdeItems: string[],
+): Promise<Map<string, TransactionItemContext>> {
+  const contexts = new Map<string, TransactionItemContext>();
 
-  const brandFilterClause = hasBrandFilter
-    ? "AND lower(td.brand) IN ({brand_aliases:Array(String)})"
-    : "";
+  if (trdeItems.length === 0) {
+    return contexts;
+  }
 
-  const query = `
-      SELECT DISTINCT
-        td.trde_item,
-        td.item_name,
-        td.brand,
-        td.item_category,
-        do.channel,
-        do.category,
-        do.subcategory,
-        do.fc_perc,
-        do.mktg_spend,
-        do.ideal_price,
-        do.selling_price
-      FROM (
-        SELECT DISTINCT
-          td.trde_item,
-          di.item_description AS item_name,
-          td.brand,
-          di.item_category AS item_category
+  const lookbackDate = formatDate(
+    subtractDays(
+      new Date(),
+      parseLookbackDays(env.CLICKHOUSE_TRANSACTION_LOOKBACK_DAYS),
+    ),
+  );
+
+  for (const chunk of chunkList(trdeItems)) {
+    const result = await clickhouse.query({
+      query: `
+        SELECT
+          td.trde_item AS trde_item,
+          any(di.item_description) AS item_name,
+          any(di.item_category) AS item_category,
+          argMax(td.brand, td.trde_date) AS brand
         FROM transaction_details td
         INNER JOIN apidata_replica.dim_items di
           ON di.item_code = td.trde_item
-        WHERE td.trde_date >= {since_date:Date}
-          AND di.item_category IN ({offer_categories:Array(String)})
+        WHERE td.trde_item IN ({trde_items:Array(String)})
+          AND td.trde_item != '-1'
+          AND td.trde_date >= {lookback_date:Date}
           AND di.item_active = 1
-          ${brandFilterClause}
-      ) td
-      LEFT JOIN dim_offers do ON td.trde_item = do.item_code
-      WHERE do.item_code IS NULL
-        OR (do.item_code IS NOT NULL AND (do.ideal_price IS NULL OR do.ideal_price = 0))
-    `;
-  const queryParams: Record<string, unknown> = {
-    since_date: getMissingOffersSinceDate(),
-    offer_categories: [...OFFER_ITEM_CATEGORIES],
-  };
+        GROUP BY td.trde_item
+      `,
+      query_params: {
+        trde_items: chunk,
+        lookback_date: lookbackDate,
+      },
+      format: "JSONEachRow",
+    });
 
-  if (hasBrandFilter) {
-    queryParams.brand_aliases = normalizedBrandAliases;
+    for (const row of await result.json<TransactionContextRow>()) {
+      contexts.set(row.trde_item, row);
+    }
   }
 
-  console.log("[listMissingOfferQueueRows] query:", query);
-  console.log(
-    "[listMissingOfferQueueRows] params:",
-    JSON.stringify(queryParams),
-  );
+  return contexts;
+}
 
+const IN_LIST_CHUNK_SIZE = 5000;
+
+function chunkList<T>(values: T[], size = IN_LIST_CHUNK_SIZE): T[][] {
+  const chunks: T[][] = [];
+
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+
+  return chunks;
+}
+
+function mapDimOffersRow(row: DimOffersRow): CurrentDimOffersValues {
+  return {
+    channel: row.channel ?? null,
+    category: row.category ?? null,
+    subcategory: row.subcategory ?? null,
+    ideal_price: parseNullableNumber(row.ideal_price),
+    selling_price: parseNullableNumber(row.selling_price),
+    fc_perc: parseNullableNumber(row.fc_perc),
+    mktg_spend: parseNullableNumber(row.mktg_spend),
+  };
+}
+
+/**
+ * Snapshot rebuild, query 1 of 3: every active item in the offer categories
+ * (the small `dim_items` dimension). Doubles as the eligibility set for
+ * tracked gaps that have not transacted recently.
+ */
+export async function listOfferEligibleItems(): Promise<
+  Map<string, OfferEligibleItem>
+> {
   const result = await clickhouse.query({
-    query,
-    query_params: queryParams,
+    query: `
+      SELECT
+        item_code,
+        any(item_description) AS eligible_item_name,
+        any(item_category) AS eligible_item_category
+      FROM apidata_replica.dim_items
+      WHERE item_active = 1
+        AND item_category IN ({offer_categories:Array(String)})
+      GROUP BY item_code
+    `,
+    query_params: {
+      offer_categories: [...OFFER_ITEM_CATEGORIES],
+    },
     format: "JSONEachRow",
   });
 
-  const rows = await result.json<
-    TransactionContextRow &
-      Pick<
-        DimOffersRow,
-        | "channel"
-        | "category"
-        | "subcategory"
-        | "ideal_price"
-        | "selling_price"
-        | "fc_perc"
-        | "mktg_spend"
-      >
-  >();
+  // Aliases deliberately differ from the column names: ClickHouse substitutes
+  // aliases everywhere in the query, so "any(item_category) AS item_category"
+  // would turn the WHERE filter into an aggregate.
+  const rows = await result.json<{
+    item_code: string;
+    eligible_item_name: string;
+    eligible_item_category: string;
+  }>();
+
+  return new Map(
+    rows.map((row) => [
+      row.item_code,
+      {
+        item_code: row.item_code,
+        item_name: row.eligible_item_name,
+        item_category: row.eligible_item_category,
+      },
+    ]),
+  );
+}
+
+/**
+ * Snapshot rebuild, query 2 of 3 — the only heavy scan. Distinct offer items
+ * sold since `CLICKHOUSE_MISSING_OFFERS_SINCE`, pre-filtered by the offer
+ * item set so the fact table is never joined, with the latest brand for
+ * display and every brand for filtering.
+ */
+export async function listTransactedOfferItems(): Promise<
+  TransactedOfferItem[]
+> {
+  const result = await clickhouse.query({
+    query: `
+      SELECT
+        trde_item,
+        argMax(brand, trde_date) AS latest_brand,
+        groupUniqArray(lower(brand)) AS brand_aliases
+      FROM transaction_details
+      WHERE trde_date >= {since_date:Date}
+        AND trde_item != '-1'
+        AND trde_item IN (
+          SELECT item_code
+          FROM apidata_replica.dim_items
+          WHERE item_active = 1
+            AND item_category IN ({offer_categories:Array(String)})
+        )
+      GROUP BY trde_item
+    `,
+    query_params: {
+      since_date: getMissingOffersSinceDate(),
+      offer_categories: [...OFFER_ITEM_CATEGORIES],
+    },
+    format: "JSONEachRow",
+  });
+
+  // "AS latest_brand" rather than "AS brand": ClickHouse would otherwise
+  // substitute the alias into groupUniqArray(lower(brand)) and nest aggregates.
+  const rows = await result.json<{
+    trde_item: string;
+    latest_brand: string;
+    brand_aliases: string[];
+  }>();
 
   return rows.map((row) => ({
     trde_item: row.trde_item,
-    item_name: row.item_name,
-    brand: row.brand,
-    item_category: row.item_category,
-    current_dim_offers: {
-      channel: row.channel ?? null,
-      category: row.category ?? null,
-      subcategory: row.subcategory ?? null,
-      ideal_price: parseNullableNumber(row.ideal_price),
-      selling_price: parseNullableNumber(row.selling_price),
-      fc_perc: parseNullableNumber(row.fc_perc),
-      mktg_spend: parseNullableNumber(row.mktg_spend),
-    },
+    brand: row.latest_brand,
+    brand_aliases: row.brand_aliases,
   }));
+}
+
+/**
+ * Snapshot rebuild, query 3 of 3 (also used by the admin pending queue):
+ * current `dim_offers` values for a list of item codes. Items without a row
+ * are simply absent from the map.
+ */
+export async function getDimOffersByItemCodes(
+  itemCodes: string[],
+): Promise<Map<string, CurrentDimOffersValues>> {
+  const values = new Map<string, CurrentDimOffersValues>();
+
+  if (itemCodes.length === 0) {
+    return values;
+  }
+
+  for (const chunk of chunkList(itemCodes)) {
+    const result = await clickhouse.query({
+      query: `
+        SELECT
+          item_code,
+          channel,
+          category,
+          subcategory,
+          ideal_price,
+          selling_price,
+          fc_perc,
+          mktg_spend
+        FROM dim_offers
+        WHERE item_code IN ({item_codes:Array(String)})
+        ORDER BY item_code
+        LIMIT 1 BY item_code
+      `,
+      query_params: {
+        item_codes: chunk,
+      },
+      format: "JSONEachRow",
+    });
+
+    for (const row of await result.json<DimOffersRow>()) {
+      if (row.item_code) {
+        values.set(row.item_code, mapDimOffersRow(row));
+      }
+    }
+  }
+
+  return values;
 }
 
 export async function getOfferEligibleItemCodes(

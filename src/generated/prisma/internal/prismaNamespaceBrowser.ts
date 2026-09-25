@@ -70,6 +70,8 @@ export const ModelName = {
   categories: "categories",
   channels: "channels",
   dq_missing_offers_pricing: "dq_missing_offers_pricing",
+  dq_gap_queue_snapshot: "dq_gap_queue_snapshot",
+  dq_gap_queue_refresh: "dq_gap_queue_refresh",
   dim_offers_staging: "dim_offers_staging",
   dim_offers_audit: "dim_offers_audit",
   subcategories: "subcategories",
@@ -327,6 +329,47 @@ export const Dq_missing_offers_pricingScalarFieldEnum = {
 
 export type Dq_missing_offers_pricingScalarFieldEnum =
   (typeof Dq_missing_offers_pricingScalarFieldEnum)[keyof typeof Dq_missing_offers_pricingScalarFieldEnum];
+
+export const Dq_gap_queue_snapshotScalarFieldEnum = {
+  trde_item: "trde_item",
+  dq_id: "dq_id",
+  item_name: "item_name",
+  brand: "brand",
+  brand_aliases: "brand_aliases",
+  item_category: "item_category",
+  missing_fields: "missing_fields",
+  status: "status",
+  detected_at: "detected_at",
+  channel: "channel",
+  category: "category",
+  subcategory: "subcategory",
+  ideal_price: "ideal_price",
+  selling_price: "selling_price",
+  fc_perc: "fc_perc",
+  mktg_spend: "mktg_spend",
+  source: "source",
+  refreshed_at: "refreshed_at",
+} as const;
+
+export type Dq_gap_queue_snapshotScalarFieldEnum =
+  (typeof Dq_gap_queue_snapshotScalarFieldEnum)[keyof typeof Dq_gap_queue_snapshotScalarFieldEnum];
+
+export const Dq_gap_queue_refreshScalarFieldEnum = {
+  id: "id",
+  trigger: "trigger",
+  status: "status",
+  started_at: "started_at",
+  finished_at: "finished_at",
+  duration_ms: "duration_ms",
+  detected_items: "detected_items",
+  created_gaps: "created_gaps",
+  resolved_gaps: "resolved_gaps",
+  snapshot_rows: "snapshot_rows",
+  error: "error",
+} as const;
+
+export type Dq_gap_queue_refreshScalarFieldEnum =
+  (typeof Dq_gap_queue_refreshScalarFieldEnum)[keyof typeof Dq_gap_queue_refreshScalarFieldEnum];
 
 export const Dim_offers_stagingScalarFieldEnum = {
   id: "id",

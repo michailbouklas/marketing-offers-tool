@@ -3,6 +3,7 @@
   import CheckCheckIcon from "@lucide/svelte/icons/check-check";
   import ListTodoIcon from "@lucide/svelte/icons/list-todo";
   import XIcon from "@lucide/svelte/icons/x";
+  import GapQueueSnapshotCard from "$lib/components/admin/gap-queue-snapshot-card.svelte";
   import PendingSubmissionDialog from "$lib/components/admin/pending-submission-dialog.svelte";
   import PendingSubmissionsTable from "$lib/components/admin/pending-submissions-table.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
@@ -212,6 +213,8 @@
         </Card.Content>
       </Card.Root>
     </section>
+
+    <GapQueueSnapshotCard lastRefresh={data.lastSnapshotRefresh} />
 
     <Card.Root
       class="border-border/70 bg-background/90 overflow-hidden shadow-sm backdrop-blur"

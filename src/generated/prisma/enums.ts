@@ -34,6 +34,15 @@ export const DimOffersStagingStatus = {
 export type DimOffersStagingStatus =
   (typeof DimOffersStagingStatus)[keyof typeof DimOffersStagingStatus];
 
+export const DqSnapshotRefreshStatus = {
+  running: "running",
+  succeeded: "succeeded",
+  failed: "failed",
+} as const;
+
+export type DqSnapshotRefreshStatus =
+  (typeof DqSnapshotRefreshStatus)[keyof typeof DqSnapshotRefreshStatus];
+
 export const DimOffersAuditAction = {
   insert: "insert",
   update: "update",

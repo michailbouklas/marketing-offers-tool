@@ -215,9 +215,60 @@ model dq_missing_offers_pricing {
   resolved_at     DateTime?
   audit_records   dim_offers_audit[]
   staging_records dim_offers_staging[]
+  snapshot_row    dq_gap_queue_snapshot?
 
   @@index([status])
   @@index([trde_item])
+}
+
+/// App-maintained "materialized view" of the offers data-quality gap queue:
+/// one row per item currently open or submitted. Rebuilt nightly from
+/// ClickHouse + dq_missing_offers_pricing and patched on every gap status
+/// change so /offers-data-quality never has to touch ClickHouse.
+model dq_gap_queue_snapshot {
+  trde_item      String                    @id @db.VarChar
+  dq_id          Int                       @unique
+  item_name      String                    @db.VarChar
+  brand          String                    @db.VarChar
+  brand_aliases  String[]
+  item_category  String                    @db.VarChar
+  missing_fields String                    @db.VarChar
+  status         DqGapStatus               @default(open)
+  detected_at    DateTime
+  channel        String?                   @db.VarChar
+  category       String?                   @db.VarChar
+  subcategory    String?                   @db.VarChar
+  ideal_price    Float?
+  selling_price  Float?
+  fc_perc        Float?
+  mktg_spend     Float?
+  source         String                    @db.VarChar
+  refreshed_at   DateTime                  @default(now())
+  gap_record     dq_missing_offers_pricing @relation(fields: [dq_id], references: [dq_id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([brand])
+  @@index([item_name])
+  @@index([detected_at])
+  @@index([brand_aliases], type: Gin)
+}
+
+/// One row per snapshot rebuild run (cron, manual, CLI or cold start) so the
+/// UI can show "data as of" and admins can see failures.
+model dq_gap_queue_refresh {
+  id             Int                     @id @default(autoincrement())
+  trigger        String                  @db.VarChar
+  status         DqSnapshotRefreshStatus @default(running)
+  started_at     DateTime                @default(now())
+  finished_at    DateTime?
+  duration_ms    Int?
+  detected_items Int?
+  created_gaps   Int?
+  resolved_gaps  Int?
+  snapshot_rows  Int?
+  error          String?
+
+  @@index([status, finished_at])
 }
 
 model dim_offers_staging {
@@ -306,6 +357,12 @@ enum DimOffersStagingStatus {
   pending
   approved
   rejected
+}
+
+enum DqSnapshotRefreshStatus {
+  running
+  succeeded
+  failed
 }
 
 enum DimOffersAuditAction {

@@ -1,10 +1,18 @@
+import { getDataQualityEnv } from "$lib/server/env";
+import {
+  buildGapQueueCacheKey,
+  invalidateGapQueueCache,
+  withGapQueueCache,
+} from "$lib/server/gap-queue-cache.server";
+import { tryRebuildGapQueueSnapshotExclusively } from "$lib/services/gap-queue-snapshot.server";
 import {
   getCurrentDimOfferValues,
   getDimOfferAuditSnapshot,
+  getDimOffersByItemCodes,
   getOfferEligibleItemCodes,
   getTransactionItemContext,
+  getTransactionItemContexts,
   insertDimOffer,
-  listMissingOfferQueueRows,
   updateDimOffer,
 } from "$lib/services/offers-data-quality-clickhouse.server";
 import { createDimOffersAuditRecord } from "$lib/services/dim-offers-audit.server";
@@ -12,14 +20,27 @@ import {
   createGapRecord,
   getGapRecordById,
   getGapRecordByItemCode,
+  getGapRecordsByIds,
   getPendingStagingRecordByItemCode,
   getStagingRecordById,
   listPendingStagingRecords,
   countPendingStagingRecords,
-  listGapRecords,
   updateDimOffersStagingStatus,
   updateGapRecordStatus,
+  type GapRecord,
 } from "$lib/services/offers-data-quality-postgres.server";
+import {
+  getLatestSuccessfulSnapshotRefresh,
+  getSnapshotRowByGapId,
+  getSnapshotRowByItemCode,
+  queryGapQueuePage,
+  upsertSnapshotRow,
+} from "$lib/services/offers-data-quality-snapshot.server";
+import {
+  emptyDimOfferValues,
+  isMissingOfferPricing,
+  normalizeBrandAlias,
+} from "$lib/services/offers-data-quality-snapshot";
 import {
   gapListSortDirections,
   gapListSortFields,
@@ -41,80 +62,14 @@ type GetOpenGapListOptions = {
   statuses?: Array<GapListItem["status"]>;
 };
 
-const statusSortOrder = new Map<GapListItem["status"], number>([
-  ["open", 0],
-  ["submitted", 1],
-  ["resolved", 2],
-]);
+export type GapQueueStatus = {
+  /** When the snapshot was last rebuilt successfully; null before the first run. */
+  refreshedAt: string | null;
+};
 
-function compareText(left: string, right: string) {
-  return left.localeCompare(right, undefined, { sensitivity: "base" });
-}
-
-function compareGapItems(
-  left: GapListItem,
-  right: GapListItem,
-  sortBy: GapListSortField,
-  sortDir: GapListSortDirection,
-) {
-  let comparison = 0;
-
-  switch (sortBy) {
-    case "item_name":
-      comparison = compareText(left.item_name, right.item_name);
-      break;
-    case "brand":
-      comparison = compareText(left.brand, right.brand);
-      break;
-    case "item_category":
-      comparison = compareText(left.item_category, right.item_category);
-      break;
-    case "missing_fields":
-      comparison = compareText(
-        left.missing_fields.join(","),
-        right.missing_fields.join(","),
-      );
-      break;
-    case "status":
-      comparison =
-        (statusSortOrder.get(left.status) ?? Number.MAX_SAFE_INTEGER) -
-        (statusSortOrder.get(right.status) ?? Number.MAX_SAFE_INTEGER);
-      break;
-    case "detected_at":
-      comparison = compareText(left.detected_at, right.detected_at);
-      break;
-  }
-
-  if (comparison !== 0) {
-    return sortDir === "desc" ? -comparison : comparison;
-  }
-
-  const brandComparison = compareText(left.brand, right.brand);
-
-  if (brandComparison !== 0) {
-    return brandComparison;
-  }
-
-  const detectedAtComparison = right.detected_at.localeCompare(
-    left.detected_at,
-  );
-
-  if (detectedAtComparison !== 0) {
-    return detectedAtComparison;
-  }
-
-  const itemNameComparison = compareText(left.item_name, right.item_name);
-
-  if (itemNameComparison !== 0) {
-    return itemNameComparison;
-  }
-
-  return compareText(left.trde_item, right.trde_item);
-}
-
-function normalizeBrandAlias(value: string) {
-  return value.trim().toLowerCase();
-}
+const globalForGapQueue = globalThis as typeof globalThis & {
+  gapQueueSnapshotReady?: boolean;
+};
 
 function mapPendingSubmission(stagingRecord: {
   id: number;
@@ -158,8 +113,17 @@ export async function getGapFormData(
     return null;
   }
 
+  // Item context comes from the snapshot when the gap is in the queue; only
+  // gaps outside it (e.g. resolved ones) fall back to a ClickHouse lookup.
+  const snapshotRow = await getSnapshotRowByGapId(gapRecord.dq_id);
   const [itemContext, currentDimOffers] = await Promise.all([
-    getTransactionItemContext(gapRecord.trde_item),
+    snapshotRow
+      ? Promise.resolve({
+          item_name: snapshotRow.item_name,
+          brand: snapshotRow.brand,
+          item_category: snapshotRow.item_category,
+        })
+      : getTransactionItemContext(gapRecord.trde_item),
     getCurrentDimOfferValues(gapRecord.trde_item),
   ]);
 
@@ -189,8 +153,7 @@ export async function getPendingGapSubmission(
 
 /**
  * Cheap count of pending gap submissions for dashboard widgets. Counts pending
- * staging records directly rather than building the full queue (which fetches
- * gap/item/dim context per record via `getPendingGapSubmissionQueue`).
+ * staging records directly rather than building the full queue.
  */
 export async function getPendingGapSubmissionCount(): Promise<number> {
   return countPendingStagingRecords();
@@ -200,59 +163,162 @@ export async function getPendingGapSubmissionQueue(): Promise<
   PendingSubmissionQueueItem[]
 > {
   const stagingRecords = await listPendingStagingRecords();
-  const queueItems = await Promise.all(
-    stagingRecords.map(async (stagingRecord) => {
-      const [gapRecord, itemContext, currentDimOffers] = await Promise.all([
-        getGapRecordById(stagingRecord.dq_id),
-        getTransactionItemContext(stagingRecord.item_code),
-        getCurrentDimOfferValues(stagingRecord.item_code),
-      ]);
 
-      if (!gapRecord) {
-        return null;
-      }
-
-      return {
-        ...mapPendingSubmission(stagingRecord),
-        item_name: itemContext?.item_name ?? gapRecord.item_name,
-        brand: (itemContext?.brand ?? gapRecord.brand).toUpperCase(),
-        item_category: itemContext?.item_category ?? gapRecord.item_category,
-        detected_at: gapRecord.detected_at.toISOString(),
-        missing_fields: parseMissingFields(gapRecord.missing_fields),
-        current_dim_offers: currentDimOffers,
-      } satisfies PendingSubmissionQueueItem;
-    }),
-  );
-
-  return queueItems.filter(
-    (queueItem): queueItem is PendingSubmissionQueueItem => queueItem !== null,
-  );
-}
-
-export async function ensureGapRecordForItemCode(itemCode: string) {
-  const existingGapRecord = await getGapRecordByItemCode(itemCode);
-
-  if (existingGapRecord) {
-    return existingGapRecord;
+  if (stagingRecords.length === 0) {
+    return [];
   }
 
-  const clickhouseRow = (await listMissingOfferQueueRows()).find(
-    (row) => row.trde_item === itemCode,
-  );
+  const itemCodes = [
+    ...new Set(stagingRecords.map((record) => record.item_code)),
+  ];
+  const [gapRecords, itemContexts, dimOffers] = await Promise.all([
+    getGapRecordsByIds([...new Set(stagingRecords.map((r) => r.dq_id))]),
+    getTransactionItemContexts(itemCodes),
+    getDimOffersByItemCodes(itemCodes),
+  ]);
+  const gapById = new Map(gapRecords.map((gap) => [gap.dq_id, gap]));
+  const queueItems: PendingSubmissionQueueItem[] = [];
 
-  if (!clickhouseRow) {
+  for (const stagingRecord of stagingRecords) {
+    const gapRecord = gapById.get(stagingRecord.dq_id);
+
+    if (!gapRecord) {
+      continue;
+    }
+
+    const itemContext = itemContexts.get(stagingRecord.item_code);
+
+    queueItems.push({
+      ...mapPendingSubmission(stagingRecord),
+      item_name: itemContext?.item_name ?? gapRecord.item_name,
+      brand: (itemContext?.brand ?? gapRecord.brand).toUpperCase(),
+      item_category: itemContext?.item_category ?? gapRecord.item_category,
+      detected_at: gapRecord.detected_at.toISOString(),
+      missing_fields: parseMissingFields(gapRecord.missing_fields),
+      current_dim_offers:
+        dimOffers.get(stagingRecord.item_code) ?? emptyDimOfferValues,
+    });
+  }
+
+  return queueItems;
+}
+
+/**
+ * Resolve (or create) the gap record behind `/offers-data-quality/open/[itemCode]`.
+ * After a rebuild every queue row has a gap record, so this is normally a
+ * snapshot lookup; the on-demand detection below only runs for items that are
+ * not in the snapshot yet (e.g. a link shared before the nightly rebuild).
+ */
+export async function ensureGapRecordForItemCode(
+  itemCode: string,
+): Promise<GapRecord | null> {
+  const snapshotRow = await getSnapshotRowByItemCode(itemCode);
+
+  if (snapshotRow) {
+    const linkedGap = await getGapRecordById(snapshotRow.dq_id);
+
+    if (linkedGap) {
+      return linkedGap;
+    }
+  }
+
+  const latestGap = await getGapRecordByItemCode(itemCode);
+
+  if (latestGap && latestGap.status !== "resolved") {
+    if (!snapshotRow) {
+      await upsertSnapshotRow({
+        trde_item: latestGap.trde_item,
+        dq_id: latestGap.dq_id,
+        item_name: latestGap.item_name,
+        brand: latestGap.brand,
+        brand_aliases: [normalizeBrandAlias(latestGap.brand)],
+        item_category: latestGap.item_category,
+        missing_fields: latestGap.missing_fields,
+        status: latestGap.status,
+        detected_at: latestGap.detected_at,
+        current_dim_offers: emptyDimOfferValues,
+        source: "on_demand",
+      });
+      invalidateGapQueueCache();
+    }
+
+    return latestGap;
+  }
+
+  const [eligibleItemCodes, itemContext, currentDimOffers] = await Promise.all([
+    getOfferEligibleItemCodes([itemCode]),
+    getTransactionItemContext(itemCode),
+    getCurrentDimOfferValues(itemCode),
+  ]);
+
+  if (
+    !eligibleItemCodes.has(itemCode) ||
+    !isMissingOfferPricing(currentDimOffers)
+  ) {
     return null;
   }
 
-  return createGapRecord({
-    trde_item: clickhouseRow.trde_item,
-    item_name: clickhouseRow.item_name,
-    brand: clickhouseRow.brand,
-    item_category: clickhouseRow.item_category,
-    missing_fields: getMissingFieldsFromCurrentValues(
-      clickhouseRow.current_dim_offers,
-    ).join(","),
+  const context = itemContext ?? latestGap;
+
+  if (!context) {
+    return null;
+  }
+
+  const createdGap = await createGapRecord({
+    trde_item: itemCode,
+    item_name: context.item_name,
+    brand: context.brand,
+    item_category: context.item_category,
+    missing_fields:
+      getMissingFieldsFromCurrentValues(currentDimOffers).join(","),
   });
+
+  await upsertSnapshotRow({
+    trde_item: createdGap.trde_item,
+    dq_id: createdGap.dq_id,
+    item_name: createdGap.item_name,
+    brand: createdGap.brand,
+    brand_aliases: [normalizeBrandAlias(createdGap.brand)],
+    item_category: createdGap.item_category,
+    missing_fields: createdGap.missing_fields,
+    status: "open",
+    detected_at: createdGap.detected_at,
+    current_dim_offers: currentDimOffers,
+    source: "on_demand",
+  });
+  invalidateGapQueueCache();
+
+  return createdGap;
+}
+
+/**
+ * Make sure the snapshot has been built at least once (first request after
+ * the migration). Concurrent requests share the in-flight rebuild; if another
+ * process holds the rebuild lock the caller just reads whatever exists.
+ */
+async function ensureGapQueueSnapshotBuilt(): Promise<void> {
+  if (globalForGapQueue.gapQueueSnapshotReady) {
+    return;
+  }
+
+  if (await getLatestSuccessfulSnapshotRefresh()) {
+    globalForGapQueue.gapQueueSnapshotReady = true;
+    return;
+  }
+
+  const result = await tryRebuildGapQueueSnapshotExclusively("cold_start");
+
+  if (result.status === "ran") {
+    globalForGapQueue.gapQueueSnapshotReady = true;
+  }
+}
+
+export async function getGapQueueStatus(): Promise<GapQueueStatus> {
+  const lastRefresh = await getLatestSuccessfulSnapshotRefresh();
+
+  return {
+    refreshedAt: lastRefresh?.finished_at?.toISOString() ?? null,
+  };
 }
 
 export async function getOpenGapList(
@@ -260,146 +326,41 @@ export async function getOpenGapList(
   pageSize = 50,
   options: GetOpenGapListOptions = {},
 ): Promise<GapListPage> {
-  const sortBy = gapListSortFields.includes(options.sortBy ?? "item_name")
-    ? (options.sortBy ?? "brand")
-    : "brand";
-  const sortDir = gapListSortDirections.includes(options.sortDir ?? "asc")
-    ? (options.sortDir ?? "asc")
-    : "asc";
-  const hasBrandFilter = options.brandAliases !== undefined;
-  const allowedBrandAliases = new Set(
-    (options.brandAliases ?? []).map(normalizeBrandAlias).filter(Boolean),
+  const sortBy =
+    options.sortBy && gapListSortFields.includes(options.sortBy)
+      ? options.sortBy
+      : "brand";
+  const sortDir =
+    options.sortDir && gapListSortDirections.includes(options.sortDir)
+      ? options.sortDir
+      : "asc";
+  const brandAliases = options.brandAliases?.map(normalizeBrandAlias);
+  const statuses = options.statuses?.length ? options.statuses : undefined;
+
+  await ensureGapQueueSnapshotBuilt();
+
+  const cacheKey = buildGapQueueCacheKey({
+    brandAliases: brandAliases ?? null,
+    statuses: statuses ?? null,
+    sortBy,
+    sortDir,
+    page,
+    pageSize,
+  });
+
+  return withGapQueueCache(
+    cacheKey,
+    getDataQualityEnv().DQ_QUEUE_CACHE_TTL_MS,
+    () =>
+      queryGapQueuePage({
+        brandAliases,
+        statuses,
+        sortBy,
+        sortDir,
+        page,
+        pageSize,
+      }),
   );
-  const [trackedGaps, clickhouseRows] = await Promise.all([
-    listGapRecords({ statuses: ["open", "submitted"] }),
-    listMissingOfferQueueRows(
-      hasBrandFilter ? { brandAliases: [...allowedBrandAliases] } : undefined,
-    ),
-  ]);
-
-  const visibleTrackedGaps = trackedGaps.filter(
-    (gap) =>
-      !hasBrandFilter ||
-      allowedBrandAliases.has(normalizeBrandAlias(gap.brand)),
-  );
-
-  const trackedGapByItemCode = new Map(
-    visibleTrackedGaps.map((gap) => [gap.trde_item, gap]),
-  );
-  const queueItems: GapListItem[] = [];
-  const fromClickhouse: string[] = [];
-  const fromPgLeftover: string[] = [];
-
-  for (const row of clickhouseRows) {
-    const trackedGap = trackedGapByItemCode.get(row.trde_item);
-
-    queueItems.push({
-      dq_id: trackedGap?.dq_id ?? 0,
-      trde_item: row.trde_item,
-      item_name: row.item_name,
-      brand: row.brand.toUpperCase(),
-      item_category: row.item_category,
-      detected_at:
-        trackedGap?.detected_at.toISOString() ?? new Date().toISOString(),
-      status: trackedGap?.status ?? "open",
-      missing_fields: trackedGap
-        ? parseMissingFields(trackedGap.missing_fields)
-        : getMissingFieldsFromCurrentValues(row.current_dim_offers),
-    });
-    fromClickhouse.push(row.trde_item);
-
-    trackedGapByItemCode.delete(row.trde_item);
-  }
-
-  const leftoverGaps = Array.from(trackedGapByItemCode.values());
-
-  if (leftoverGaps.length > 0) {
-    const offerEligibleItemCodes = await getOfferEligibleItemCodes(
-      leftoverGaps.map((gap) => gap.trde_item),
-    );
-
-    for (const gap of leftoverGaps) {
-      if (!offerEligibleItemCodes.has(gap.trde_item)) {
-        continue;
-      }
-
-      queueItems.push({
-        dq_id: gap.dq_id,
-        trde_item: gap.trde_item,
-        item_name: gap.item_name,
-        brand: gap.brand.toUpperCase(),
-        item_category: gap.item_category,
-        detected_at: gap.detected_at.toISOString(),
-        status: gap.status,
-        missing_fields: parseMissingFields(gap.missing_fields),
-      });
-      fromPgLeftover.push(gap.trde_item);
-    }
-  }
-
-  console.log(
-    `[getOpenGapList] sources: clickhouse=${fromClickhouse.length} pgLeftover=${fromPgLeftover.length}`,
-  );
-  console.log(
-    "[getOpenGapList] from clickhouse query:",
-    JSON.stringify(fromClickhouse),
-  );
-  console.log(
-    "[getOpenGapList] from pg-leftover (active in dim_items but not in CH result):",
-    JSON.stringify(fromPgLeftover),
-  );
-
-  const sortedItems = queueItems.sort((left, right) =>
-    compareGapItems(left, right, sortBy, sortDir),
-  );
-
-  console.log(
-    `[getOpenGapList] brandFilter=${
-      hasBrandFilter ? JSON.stringify([...allowedBrandAliases]) : "none"
-    } (pushed to SQL) sortBy=${sortBy} sortDir=${sortDir} (applied JS-side over merged CH+PG set) totalItems=${sortedItems.length}`,
-  );
-  console.log(
-    "[getOpenGapList] items:",
-    JSON.stringify(
-      sortedItems.map((item) => ({
-        dq_id: item.dq_id,
-        trde_item: item.trde_item,
-        item_name: item.item_name,
-        brand: item.brand,
-        item_category: item.item_category,
-        status: item.status,
-      })),
-      null,
-      2,
-    ),
-  );
-
-  // Count before the status filter so the "awaiting approval" badge reflects
-  // the current brand filter even when the status filter is not applied.
-  const submittedCount = sortedItems.filter(
-    (item) => item.status === "submitted",
-  ).length;
-  const statusFilter = options.statuses?.length
-    ? new Set(options.statuses)
-    : null;
-  const visibleItems = statusFilter
-    ? sortedItems.filter((item) => statusFilter.has(item.status))
-    : sortedItems;
-
-  const totalItems = visibleItems.length;
-  const normalizedPageSize = Math.max(1, pageSize);
-  const totalPages = Math.max(1, Math.ceil(totalItems / normalizedPageSize));
-  const normalizedPage = Math.min(Math.max(1, page), totalPages);
-  const startIndex = (normalizedPage - 1) * normalizedPageSize;
-
-  return {
-    items: visibleItems.slice(startIndex, startIndex + normalizedPageSize),
-    totalItems,
-    submittedCount,
-    page: normalizedPage,
-    pageSize: normalizedPageSize,
-    totalPages,
-  };
 }
 
 export async function approveGapSubmission(

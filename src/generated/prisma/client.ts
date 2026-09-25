@@ -127,6 +127,20 @@ export type channels = Prisma.channelsModel;
  */
 export type dq_missing_offers_pricing = Prisma.dq_missing_offers_pricingModel;
 /**
+ * Model dq_gap_queue_snapshot
+ * App-maintained "materialized view" of the offers data-quality gap queue:
+ * one row per item currently open or submitted. Rebuilt nightly from
+ * ClickHouse + dq_missing_offers_pricing and patched on every gap status
+ * change so /offers-data-quality never has to touch ClickHouse.
+ */
+export type dq_gap_queue_snapshot = Prisma.dq_gap_queue_snapshotModel;
+/**
+ * Model dq_gap_queue_refresh
+ * One row per snapshot rebuild run (cron, manual, CLI or cold start) so the
+ * UI can show "data as of" and admins can see failures.
+ */
+export type dq_gap_queue_refresh = Prisma.dq_gap_queue_refreshModel;
+/**
  * Model dim_offers_staging
  *
  */

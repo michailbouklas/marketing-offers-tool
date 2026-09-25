@@ -1,6 +1,9 @@
 import { listBrandsForUser } from "$lib/services/brands.server";
 import { requireAuthenticatedUser } from "$lib/server/auth-guards";
-import { getOpenGapList } from "$lib/services/offers-data-quality.server";
+import {
+  getGapQueueStatus,
+  getOpenGapList,
+} from "$lib/services/offers-data-quality.server";
 import {
   gapListSortDirections,
   gapListSortFields,
@@ -49,6 +52,7 @@ export const load: PageServerLoad = async (event) => {
     sortDir,
     statuses: statusFilter ? [statusFilter] : undefined,
   });
+  const queueStatus = await getGapQueueStatus();
 
   return {
     gapsPage,
@@ -57,5 +61,6 @@ export const load: PageServerLoad = async (event) => {
     sortBy,
     sortDir,
     statusFilter,
+    snapshotRefreshedAt: queueStatus.refreshedAt,
   };
 };
