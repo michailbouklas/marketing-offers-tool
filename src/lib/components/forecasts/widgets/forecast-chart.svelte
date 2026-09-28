@@ -27,7 +27,6 @@
     Spline,
     Tooltip,
   } from "layerchart";
-  import { prefersReducedMotion } from "svelte/motion";
   import ForecastTooltipRow from "./forecast-tooltip-row.svelte";
   import ModelSwatch from "./model-swatch.svelte";
 
@@ -61,9 +60,6 @@
     yMax(rows, { wide: showWideBand }),
   ]);
   const cutoff = $derived(cutoffAsDate(result));
-  const motion = $derived<"tween" | "none">(
-    prefersReducedMotion.current ? "none" : "tween",
-  );
 
   const chartConfig = $derived({
     actual: { label: "Actual sales", color: ACTUAL_COLOR },
@@ -80,7 +76,6 @@
         class: "stroke-[1.5]",
         opacity: 0.7,
         defined: (d: ChartRow) => d.actual !== null,
-        motion,
       },
     },
     {
@@ -92,7 +87,6 @@
         class: "stroke-2",
         "stroke-dasharray": stroke.dash || undefined,
         defined: (d: ChartRow) => d.forecast !== null,
-        motion,
       },
     },
   ]);
@@ -143,7 +137,6 @@
                 defined={(d: ChartRow) => d.lo95 !== null}
                 fill={stroke.color}
                 fillOpacity={0.08}
-                {motion}
               />
             {/if}
             <Area
@@ -153,7 +146,6 @@
               defined={(d: ChartRow) => d.lo80 !== null}
               fill={pattern}
               fillOpacity={0.9}
-              {motion}
             />
           {/snippet}
         </Pattern>

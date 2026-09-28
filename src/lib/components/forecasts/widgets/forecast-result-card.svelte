@@ -24,6 +24,7 @@
   import AnalystDetails from "./analyst-details.svelte";
   import ConfidenceBadge from "./confidence-badge.svelte";
   import ConfidenceRow from "./confidence-row.svelte";
+  import ForecastChartBoundary from "./forecast-chart-boundary.svelte";
   import ForecastChart from "./forecast-chart.svelte";
   import ForecastHeadline from "./forecast-headline.svelte";
   import ModelSwatch from "./model-swatch.svelte";
@@ -102,12 +103,14 @@
       <KpiStatCards data={tiles} />
     </div>
 
-    <ForecastChart
-      {result}
-      {stroke}
-      {showWideBand}
-      class={variant === "full" ? "h-80" : "h-64"}
-    />
+    <ForecastChartBoundary>
+      <ForecastChart
+        {result}
+        {stroke}
+        {showWideBand}
+        class={variant === "full" ? "h-80" : "h-64"}
+      />
+    </ForecastChartBoundary>
 
     <ConfidenceRow accuracy={result.accuracy} />
 

@@ -24,7 +24,6 @@
   } from "$lib/services/forecasts/forecast-types";
   import { scaleUtc } from "d3-scale";
   import { AnnotationLine, Area, LineChart, Spline, Tooltip } from "layerchart";
-  import { prefersReducedMotion } from "svelte/motion";
   import ForecastTooltipRow from "./forecast-tooltip-row.svelte";
   import ModelSwatch from "./model-swatch.svelte";
 
@@ -50,9 +49,6 @@
   const rows = $derived(buildCompareRows(results, { contextDays }));
   const ticks = $derived(axisTicks(rows));
   const cutoff = $derived(results[0] ? cutoffAsDate(results[0]) : null);
-  const motion = $derived<"tween" | "none">(
-    prefersReducedMotion.current ? "none" : "tween",
-  );
 
   const strokes = $derived(
     new Map(
@@ -104,7 +100,6 @@
         class: "stroke-[1.5]",
         opacity: 0.7,
         defined: (d: CompareRow) => d.actual !== null,
-        motion,
       },
     },
     ...results.map((result) => {
@@ -118,7 +113,6 @@
           class: "stroke-2",
           "stroke-dasharray": stroke.dash || undefined,
           defined: (d: CompareRow) => d.models[result.modelId] != null,
-          motion,
         },
       };
     }),
@@ -181,7 +175,6 @@
                 y1={(d: CompareBandRow) => d.hi}
                 fill={strokeFor(band.modelId).color}
                 fillOpacity={0.08}
-                {motion}
               />
             {/each}
             {#each context.series.visibleSeries as s (s.key)}

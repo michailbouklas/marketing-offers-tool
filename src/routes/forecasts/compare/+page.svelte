@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ForecastChartBoundary from "$lib/components/forecasts/widgets/forecast-chart-boundary.svelte";
   import ForecastCompareChart from "$lib/components/forecasts/widgets/forecast-compare-chart.svelte";
   import ForecastCompareTable from "$lib/components/forecasts/widgets/forecast-compare-table.svelte";
   import ForecastEmptyState from "$lib/components/forecasts/widgets/forecast-empty-state.svelte";
@@ -71,7 +72,9 @@
         message="Comparing needs at least two forecasting methods. Tick another one above — the table below still shows the one you picked."
       />
     {:else}
-      <ForecastCompareChart results={readyResults} catalog={data.models} />
+      <ForecastChartBoundary>
+        <ForecastCompareChart results={readyResults} catalog={data.models} />
+      </ForecastChartBoundary>
     {/if}
 
     <ForecastCompareTable
