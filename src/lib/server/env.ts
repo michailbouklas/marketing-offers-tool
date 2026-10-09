@@ -442,3 +442,53 @@ export function getDataQualityEnv(): DataQualityEnv {
     DQ_QUEUE_CACHE_TTL_MS: readNonNegativeInt("DQ_QUEUE_CACHE_TTL_MS", 60_000),
   };
 }
+
+/**
+ * Configuration for forecast validation runs: the daily croner sweep that
+ * compares recorded forecasts with the sales that actually happened, the
+ * default window of `bun run forecast:validate`, how long to wait for lagging
+ * warehouse data, and how many engine calls to keep in flight when recording.
+ * See `src/lib/services/forecasts/forecast-validation.server.ts`.
+ */
+export type ForecastValidationEnv = {
+  /** Start the in-process daily evaluation cron. */
+  FORECAST_VALIDATION_ENABLED: boolean;
+  /** croner pattern; default 06:00 every day. */
+  FORECAST_VALIDATION_CRON: string;
+  /** IANA timezone the cron pattern is evaluated in. */
+  FORECAST_VALIDATION_TIMEZONE: string;
+  /** Horizon used by `bun run forecast:validate` when `--days` is omitted. */
+  FORECAST_VALIDATION_DEFAULT_DAYS: number;
+  /**
+   * A pending run whose window ended more than this many days ago and still
+   * has no complete actuals is marked failed instead of waiting forever.
+   */
+  FORECAST_VALIDATION_MAX_LAG_DAYS: number;
+  /** Engine calls kept in flight while recording (stay below FORECAST_MAX_INFLIGHT). */
+  FORECAST_VALIDATION_CONCURRENCY: number;
+};
+
+export function getForecastValidationEnv(): ForecastValidationEnv {
+  return {
+    FORECAST_VALIDATION_ENABLED: readBooleanFlag(
+      "FORECAST_VALIDATION_ENABLED",
+      true,
+    ),
+    FORECAST_VALIDATION_CRON:
+      readEnv("FORECAST_VALIDATION_CRON")?.trim() || "0 6 * * *",
+    FORECAST_VALIDATION_TIMEZONE:
+      readEnv("FORECAST_VALIDATION_TIMEZONE")?.trim() || "Europe/Nicosia",
+    FORECAST_VALIDATION_DEFAULT_DAYS: readPositiveInt(
+      "FORECAST_VALIDATION_DEFAULT_DAYS",
+      7,
+    ),
+    FORECAST_VALIDATION_MAX_LAG_DAYS: readPositiveInt(
+      "FORECAST_VALIDATION_MAX_LAG_DAYS",
+      14,
+    ),
+    FORECAST_VALIDATION_CONCURRENCY: readPositiveInt(
+      "FORECAST_VALIDATION_CONCURRENCY",
+      2,
+    ),
+  };
+}

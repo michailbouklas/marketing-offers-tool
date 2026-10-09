@@ -11,6 +11,7 @@
     type ForecastFilters,
     type ForecastLocation,
   } from "$lib/services/forecasts/forecast-types";
+  import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
   import TriangleAlertIcon from "@lucide/svelte/icons/triangle-alert";
   import type { Snippet } from "svelte";
   import type { LayoutData } from "./$types";
@@ -144,6 +145,15 @@
           {tab.label}
         </Button>
       {/each}
+      <Button
+        variant="link"
+        size="sm"
+        href="/forecasts/validation"
+        class="text-muted-foreground ml-auto"
+      >
+        Validation results
+        <ArrowRightIcon />
+      </Button>
     </nav>
 
     {@render children()}

@@ -454,6 +454,8 @@ export const ModelName = {
   user_monitor: "user_monitor",
   notification_cursor: "notification_cursor",
   brand_entity: "brand_entity",
+  forecast_validation_run: "forecast_validation_run",
+  forecast_validation_point: "forecast_validation_point",
   ai_chat_threads: "ai_chat_threads",
   ai_chat_messages: "ai_chat_messages",
 } as const;
@@ -520,6 +522,8 @@ export type TypeMap<
       | "user_monitor"
       | "notification_cursor"
       | "brand_entity"
+      | "forecast_validation_run"
+      | "forecast_validation_point"
       | "ai_chat_threads"
       | "ai_chat_messages";
     txIsolationLevel: TransactionIsolationLevel;
@@ -3717,6 +3721,158 @@ export type TypeMap<
         };
       };
     };
+    forecast_validation_run: {
+      payload: Prisma.$forecast_validation_runPayload<ExtArgs>;
+      fields: Prisma.forecast_validation_runFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.forecast_validation_runFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_runPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.forecast_validation_runFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_runPayload>;
+        };
+        findFirst: {
+          args: Prisma.forecast_validation_runFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_runPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.forecast_validation_runFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_runPayload>;
+        };
+        findMany: {
+          args: Prisma.forecast_validation_runFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_runPayload>[];
+        };
+        create: {
+          args: Prisma.forecast_validation_runCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_runPayload>;
+        };
+        createMany: {
+          args: Prisma.forecast_validation_runCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.forecast_validation_runCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_runPayload>[];
+        };
+        delete: {
+          args: Prisma.forecast_validation_runDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_runPayload>;
+        };
+        update: {
+          args: Prisma.forecast_validation_runUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_runPayload>;
+        };
+        deleteMany: {
+          args: Prisma.forecast_validation_runDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.forecast_validation_runUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.forecast_validation_runUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_runPayload>[];
+        };
+        upsert: {
+          args: Prisma.forecast_validation_runUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_runPayload>;
+        };
+        aggregate: {
+          args: Prisma.Forecast_validation_runAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateForecast_validation_run>;
+        };
+        groupBy: {
+          args: Prisma.forecast_validation_runGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Forecast_validation_runGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.forecast_validation_runCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Forecast_validation_runCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    forecast_validation_point: {
+      payload: Prisma.$forecast_validation_pointPayload<ExtArgs>;
+      fields: Prisma.forecast_validation_pointFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.forecast_validation_pointFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_pointPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.forecast_validation_pointFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_pointPayload>;
+        };
+        findFirst: {
+          args: Prisma.forecast_validation_pointFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_pointPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.forecast_validation_pointFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_pointPayload>;
+        };
+        findMany: {
+          args: Prisma.forecast_validation_pointFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_pointPayload>[];
+        };
+        create: {
+          args: Prisma.forecast_validation_pointCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_pointPayload>;
+        };
+        createMany: {
+          args: Prisma.forecast_validation_pointCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.forecast_validation_pointCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_pointPayload>[];
+        };
+        delete: {
+          args: Prisma.forecast_validation_pointDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_pointPayload>;
+        };
+        update: {
+          args: Prisma.forecast_validation_pointUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_pointPayload>;
+        };
+        deleteMany: {
+          args: Prisma.forecast_validation_pointDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.forecast_validation_pointUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.forecast_validation_pointUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_pointPayload>[];
+        };
+        upsert: {
+          args: Prisma.forecast_validation_pointUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$forecast_validation_pointPayload>;
+        };
+        aggregate: {
+          args: Prisma.Forecast_validation_pointAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateForecast_validation_point>;
+        };
+        groupBy: {
+          args: Prisma.forecast_validation_pointGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Forecast_validation_pointGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.forecast_validation_pointCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Forecast_validation_pointCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     ai_chat_threads: {
       payload: Prisma.$ai_chat_threadsPayload<ExtArgs>;
       fields: Prisma.ai_chat_threadsFieldRefs;
@@ -4454,6 +4610,56 @@ export const Brand_entityScalarFieldEnum = {
 export type Brand_entityScalarFieldEnum =
   (typeof Brand_entityScalarFieldEnum)[keyof typeof Brand_entityScalarFieldEnum];
 
+export const Forecast_validation_runScalarFieldEnum = {
+  id: "id",
+  batch_id: "batch_id",
+  trigger: "trigger",
+  brand_alias: "brand_alias",
+  brand_name: "brand_name",
+  model_id: "model_id",
+  model_version: "model_version",
+  engine_version: "engine_version",
+  horizon_days: "horizon_days",
+  cutoff_date: "cutoff_date",
+  forecast_from: "forecast_from",
+  forecast_to: "forecast_to",
+  evaluate_after: "evaluate_after",
+  status: "status",
+  forecast_total: "forecast_total",
+  forecast_lower80: "forecast_lower80",
+  forecast_upper80: "forecast_upper80",
+  backtest_wape_pct: "backtest_wape_pct",
+  backtest_grade: "backtest_grade",
+  warnings: "warnings",
+  actual_total: "actual_total",
+  actual_days: "actual_days",
+  deviation: "deviation",
+  deviation_pct: "deviation_pct",
+  wape_pct: "wape_pct",
+  bias_pct: "bias_pct",
+  coverage80_pct: "coverage80_pct",
+  quality: "quality",
+  evaluated_at: "evaluated_at",
+  error: "error",
+  created_at: "created_at",
+} as const;
+
+export type Forecast_validation_runScalarFieldEnum =
+  (typeof Forecast_validation_runScalarFieldEnum)[keyof typeof Forecast_validation_runScalarFieldEnum];
+
+export const Forecast_validation_pointScalarFieldEnum = {
+  id: "id",
+  run_id: "run_id",
+  ds: "ds",
+  yhat: "yhat",
+  lo80: "lo80",
+  hi80: "hi80",
+  actual: "actual",
+} as const;
+
+export type Forecast_validation_pointScalarFieldEnum =
+  (typeof Forecast_validation_pointScalarFieldEnum)[keyof typeof Forecast_validation_pointScalarFieldEnum];
+
 export const Ai_chat_threadsScalarFieldEnum = {
   id: "id",
   resourceId: "resourceId",
@@ -4848,6 +5054,18 @@ export type ListEnumBrandEntityTypeFieldRefInput<$PrismaModel> =
   FieldRefInputType<$PrismaModel, "BrandEntityType[]">;
 
 /**
+ * Reference to a field of type 'ForecastValidationStatus'
+ */
+export type EnumForecastValidationStatusFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "ForecastValidationStatus">;
+
+/**
+ * Reference to a field of type 'ForecastValidationStatus[]'
+ */
+export type ListEnumForecastValidationStatusFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, "ForecastValidationStatus[]">;
+
+/**
  * Batch Payload for updateMany & deleteMany & createMany
  */
 export type BatchPayload = {
@@ -5007,6 +5225,8 @@ export type GlobalOmitConfig = {
   user_monitor?: Prisma.user_monitorOmit;
   notification_cursor?: Prisma.notification_cursorOmit;
   brand_entity?: Prisma.brand_entityOmit;
+  forecast_validation_run?: Prisma.forecast_validation_runOmit;
+  forecast_validation_point?: Prisma.forecast_validation_pointOmit;
   ai_chat_threads?: Prisma.ai_chat_threadsOmit;
   ai_chat_messages?: Prisma.ai_chat_messagesOmit;
 };

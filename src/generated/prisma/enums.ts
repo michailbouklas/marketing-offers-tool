@@ -131,3 +131,13 @@ export const EnumTokenType = {
 } as const;
 
 export type EnumTokenType = (typeof EnumTokenType)[keyof typeof EnumTokenType];
+
+export const ForecastValidationStatus = {
+  pending: "pending",
+  evaluated: "evaluated",
+  skipped: "skipped",
+  failed: "failed",
+} as const;
+
+export type ForecastValidationStatus =
+  (typeof ForecastValidationStatus)[keyof typeof ForecastValidationStatus];

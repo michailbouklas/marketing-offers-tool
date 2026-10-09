@@ -236,6 +236,16 @@ export type notification_cursor = Prisma.notification_cursorModel;
  */
 export type brand_entity = Prisma.brand_entityModel;
 /**
+ * Model forecast_validation_run
+ * One recorded forecast awaiting (or holding) its comparison with actual sales.
+ */
+export type forecast_validation_run = Prisma.forecast_validation_runModel;
+/**
+ * Model forecast_validation_point
+ * Daily forecast points of a run; `actual` is filled at evaluation.
+ */
+export type forecast_validation_point = Prisma.forecast_validation_pointModel;
+/**
  * Model ai_chat_threads
  * One per-user conversation session. `id` is "<agentId>:<userId>:<sessionKey>",
  * `resourceId` is the user id, `title` is AI-generated after the first exchange.

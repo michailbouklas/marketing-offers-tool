@@ -1202,6 +1202,68 @@ export type EnumBrandEntityTypeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumBrandEntityTypeFilter<$PrismaModel>;
 };
 
+export type EnumForecastValidationStatusFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ForecastValidationStatus
+    | Prisma.EnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ForecastValidationStatus[]
+    | Prisma.ListEnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ForecastValidationStatus[]
+    | Prisma.ListEnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumForecastValidationStatusFilter<$PrismaModel>
+    | $Enums.ForecastValidationStatus;
+};
+
+export type FloatFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>;
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>;
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedFloatFilter<$PrismaModel> | number;
+};
+
+export type EnumForecastValidationStatusWithAggregatesFilter<
+  $PrismaModel = never,
+> = {
+  equals?:
+    | $Enums.ForecastValidationStatus
+    | Prisma.EnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ForecastValidationStatus[]
+    | Prisma.ListEnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ForecastValidationStatus[]
+    | Prisma.ListEnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumForecastValidationStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.ForecastValidationStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumForecastValidationStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumForecastValidationStatusFilter<$PrismaModel>;
+};
+
+export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>;
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>;
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedFloatWithAggregatesFilter<$PrismaModel> | number;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _avg?: Prisma.NestedFloatFilter<$PrismaModel>;
+  _sum?: Prisma.NestedFloatFilter<$PrismaModel>;
+  _min?: Prisma.NestedFloatFilter<$PrismaModel>;
+  _max?: Prisma.NestedFloatFilter<$PrismaModel>;
+};
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>;
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>;
@@ -2307,4 +2369,55 @@ export type NestedEnumBrandEntityTypeWithAggregatesFilter<
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumBrandEntityTypeFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumBrandEntityTypeFilter<$PrismaModel>;
+};
+
+export type NestedEnumForecastValidationStatusFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ForecastValidationStatus
+    | Prisma.EnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ForecastValidationStatus[]
+    | Prisma.ListEnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ForecastValidationStatus[]
+    | Prisma.ListEnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumForecastValidationStatusFilter<$PrismaModel>
+    | $Enums.ForecastValidationStatus;
+};
+
+export type NestedEnumForecastValidationStatusWithAggregatesFilter<
+  $PrismaModel = never,
+> = {
+  equals?:
+    | $Enums.ForecastValidationStatus
+    | Prisma.EnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ForecastValidationStatus[]
+    | Prisma.ListEnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ForecastValidationStatus[]
+    | Prisma.ListEnumForecastValidationStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumForecastValidationStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.ForecastValidationStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumForecastValidationStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumForecastValidationStatusFilter<$PrismaModel>;
+};
+
+export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>;
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>;
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedFloatWithAggregatesFilter<$PrismaModel> | number;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _avg?: Prisma.NestedFloatFilter<$PrismaModel>;
+  _sum?: Prisma.NestedFloatFilter<$PrismaModel>;
+  _min?: Prisma.NestedFloatFilter<$PrismaModel>;
+  _max?: Prisma.NestedFloatFilter<$PrismaModel>;
 };

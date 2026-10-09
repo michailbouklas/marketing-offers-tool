@@ -182,6 +182,7 @@
       children: [
         { href: "/forecasts", label: "Overview" },
         { href: "/forecasts/compare", label: "Compare models" },
+        { href: "/forecasts/validation", label: "Validation" },
       ],
     },
   ];

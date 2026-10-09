@@ -96,6 +96,8 @@ export const ModelName = {
   user_monitor: "user_monitor",
   notification_cursor: "notification_cursor",
   brand_entity: "brand_entity",
+  forecast_validation_run: "forecast_validation_run",
+  forecast_validation_point: "forecast_validation_point",
   ai_chat_threads: "ai_chat_threads",
   ai_chat_messages: "ai_chat_messages",
 } as const;
@@ -733,6 +735,56 @@ export const Brand_entityScalarFieldEnum = {
 
 export type Brand_entityScalarFieldEnum =
   (typeof Brand_entityScalarFieldEnum)[keyof typeof Brand_entityScalarFieldEnum];
+
+export const Forecast_validation_runScalarFieldEnum = {
+  id: "id",
+  batch_id: "batch_id",
+  trigger: "trigger",
+  brand_alias: "brand_alias",
+  brand_name: "brand_name",
+  model_id: "model_id",
+  model_version: "model_version",
+  engine_version: "engine_version",
+  horizon_days: "horizon_days",
+  cutoff_date: "cutoff_date",
+  forecast_from: "forecast_from",
+  forecast_to: "forecast_to",
+  evaluate_after: "evaluate_after",
+  status: "status",
+  forecast_total: "forecast_total",
+  forecast_lower80: "forecast_lower80",
+  forecast_upper80: "forecast_upper80",
+  backtest_wape_pct: "backtest_wape_pct",
+  backtest_grade: "backtest_grade",
+  warnings: "warnings",
+  actual_total: "actual_total",
+  actual_days: "actual_days",
+  deviation: "deviation",
+  deviation_pct: "deviation_pct",
+  wape_pct: "wape_pct",
+  bias_pct: "bias_pct",
+  coverage80_pct: "coverage80_pct",
+  quality: "quality",
+  evaluated_at: "evaluated_at",
+  error: "error",
+  created_at: "created_at",
+} as const;
+
+export type Forecast_validation_runScalarFieldEnum =
+  (typeof Forecast_validation_runScalarFieldEnum)[keyof typeof Forecast_validation_runScalarFieldEnum];
+
+export const Forecast_validation_pointScalarFieldEnum = {
+  id: "id",
+  run_id: "run_id",
+  ds: "ds",
+  yhat: "yhat",
+  lo80: "lo80",
+  hi80: "hi80",
+  actual: "actual",
+} as const;
+
+export type Forecast_validation_pointScalarFieldEnum =
+  (typeof Forecast_validation_pointScalarFieldEnum)[keyof typeof Forecast_validation_pointScalarFieldEnum];
 
 export const Ai_chat_threadsScalarFieldEnum = {
   id: "id",

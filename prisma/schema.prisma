@@ -803,6 +803,73 @@ model brand_entity {
   @@index([brandId])
 }
 
+// --- Forecast validation ------------------------------------------------------
+// `bun run forecast:validate` records one forecast per brand × model × horizon
+// (at the brand's latest sales date = cutoff); the daily evaluation sweep fills
+// the actual_* / quality columns once the window has passed and the warehouse
+// has every day of it. See docs/forecast-service.md "Validation runs".
+
+enum ForecastValidationStatus {
+  pending
+  evaluated
+  skipped
+  failed
+}
+
+/// One recorded forecast awaiting (or holding) its comparison with actual sales.
+model forecast_validation_run {
+  id                Int                        @id @default(autoincrement())
+  batch_id          String                     @db.VarChar
+  trigger           String                     @db.VarChar
+  brand_alias       String                     @db.VarChar
+  brand_name        String                     @db.VarChar
+  model_id          String                     @db.VarChar
+  model_version     String                     @db.VarChar
+  engine_version    String                     @db.VarChar
+  horizon_days      Int
+  cutoff_date       DateTime                   @db.Date
+  forecast_from     DateTime                   @db.Date
+  forecast_to       DateTime                   @db.Date
+  evaluate_after    DateTime                   @db.Date
+  status            ForecastValidationStatus   @default(pending)
+  forecast_total    Float
+  forecast_lower80  Float
+  forecast_upper80  Float
+  backtest_wape_pct Float?
+  backtest_grade    String?                    @db.VarChar
+  warnings          Json
+  actual_total      Float?
+  actual_days       Int?
+  deviation         Float?
+  deviation_pct     Float?
+  wape_pct          Float?
+  bias_pct          Float?
+  coverage80_pct    Float?
+  quality           String?                    @db.VarChar
+  evaluated_at      DateTime?
+  error             String?
+  created_at        DateTime                   @default(now())
+  points            forecast_validation_point[]
+
+  @@unique([brand_alias, model_id, horizon_days, cutoff_date])
+  @@index([status, evaluate_after])
+  @@index([batch_id])
+}
+
+/// Daily forecast points of a run; `actual` is filled at evaluation.
+model forecast_validation_point {
+  id     Int                     @id @default(autoincrement())
+  run_id Int
+  ds     DateTime                @db.Date
+  yhat   Float
+  lo80   Float
+  hi80   Float
+  actual Float?
+  run    forecast_validation_run @relation(fields: [run_id], references: [id], onDelete: Cascade)
+
+  @@unique([run_id, ds])
+}
+
 // --- AI chat history (read-only views) ---------------------------------------
 // Chat threads/messages are stored by Mastra's PostgresStore in the "mastra"
 // schema, which Mastra owns and migrates itself. These views (created in

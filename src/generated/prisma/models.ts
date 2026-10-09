@@ -49,6 +49,8 @@ export type * from "./models/google_reviews_dashboard_widget";
 export type * from "./models/user_monitor";
 export type * from "./models/notification_cursor";
 export type * from "./models/brand_entity";
+export type * from "./models/forecast_validation_run";
+export type * from "./models/forecast_validation_point";
 export type * from "./models/ai_chat_threads";
 export type * from "./models/ai_chat_messages";
 export type * from "./commonInputTypes";

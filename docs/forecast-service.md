@@ -281,8 +281,76 @@ forecast's own actuals are not enough.
 - **Knowledge**: `src/lib/server/mastra/workspace/skills/forecast-models/SKILL.md` explains
   the models, metrics, grades, warning codes and limitations in plain language — keep it in
   step with the Models table above and `forecastWarningCopy` in `forecast-narrative.ts`.
-- Nothing is persisted, so the assistant cannot report on past forecasts' accuracy; it
-  says so.
+- The assistant has no tool over the validation tables (see "Validation runs" below), so
+  it cannot report on past forecasts' accuracy and says so.
+
+## Validation runs
+
+Forecasts are not persisted by the pages, so the only way to know how a model actually did
+is to record a forecast and come back when its window has passed. `bun run forecast:validate`
+does the recording, a daily croner sweep does the comparison, and both write to Postgres:
+
+- `forecast_validation_run` — one row per brand × model × horizon at the brand's latest sales
+  date (the cutoff): the horizon total and 80 % band, the engine's backtest grade, the window
+  (`forecast_from` = cutoff + 1, `forecast_to` = cutoff + N), `evaluate_after` (= `forecast_to`)
+  and, once evaluated, `actual_total`, `actual_days`, `deviation` (actual − forecast),
+  `deviation_pct`, `wape_pct`, `bias_pct`, `coverage80_pct` and `quality`.
+- `forecast_validation_point` — the daily `yhat` / `lo80` / `hi80` of each run, with `actual`
+  filled at evaluation.
+
+```
+bun run forecast:validate                       # every active brand × every catalog model, N = FORECAST_VALIDATION_DEFAULT_DAYS (7)
+bun run forecast:validate -- --days 14          # 1..90
+bun run forecast:validate -- --brand bk,kfc --models seasonal_trend,calendar_boost
+bun run forecast:validate -- --dry-run          # call the engine, print what would be stored, write nothing
+bun run forecast:validate -- evaluate           # score every due run now (what the cron does)
+```
+
+Recording runs brands one after another and the models of a brand with
+`FORECAST_VALIDATION_CONCURRENCY` (default 2) engine calls in flight. Brands the engine cannot
+forecast (`NO_SALES_DATA`, `INSUFFICIENT_HISTORY`) are stored as `skipped`, engine failures
+as `failed`, so the gap is visible in the table; a re-run on the same day finds the same cutoff
+and reports `duplicate` instead of writing again.
+
+The sweep (`FORECAST_VALIDATION_CRON`, default 06:00 `FORECAST_VALIDATION_TIMEZONE`
+Europe/Nicosia; started from `src/lib/server/scheduler.server.ts`, off with
+`FORECAST_VALIDATION_ENABLED=false`) takes every pending run whose `evaluate_after` has arrived
+and compares it as soon as the brand's latest sales date reaches `forecast_to` — a 7-day run
+recorded on day 0 is therefore scored on day 7, once the warehouse has that day. Runs still
+waiting after `FORECAST_VALIDATION_MAX_LAG_DAYS` (default 14) are marked `failed`
+(`ACTUALS_UNAVAILABLE`). Days the warehouse has no row for count as zero sales and are visible
+through `actual_days`.
+
+Quality uses the backtest formulas and thresholds (`forecast-validation.ts`): WAPE
+= Σ|yhat − y| / Σ|y| × 100 over the window, `high` when ≤ 12, `medium` when ≤ 25, else `low`;
+bias and 80 % band coverage are stored alongside. `quality` is null when the window had no
+sales at all.
+
+### UI: `/forecasts/validation`
+
+Standalone page (own header, breaks out of the `/forecasts` layout) linked from the sidebar
+and from the forecasts tab bar. Everything is scoped to the caller's brands
+(`resolveForecastBrand`). Filters live in the URL (`brand`, `model`, `horizon`, `status`,
+`quality`, `batch`, `group`, `sort`, `dir`, `page`; parsed by
+`parseForecastValidationFilters` in `forecast-validation.ts`) and drive:
+
+- summary tiles (recorded / evaluated + next due / mean WAPE / mean |deviation| and bias /
+  quality split),
+- a breakdown table grouped by model, brand, horizon or batch (mean WAPE, |deviation|, bias,
+  80 % coverage, quality counts, best model per group) whose rows filter the runs table,
+- a brand × model matrix of mean WAPE (shown once two brands have evaluated runs),
+- the paginated runs table (sortable by cutoff, brand, model, deviation, WAPE), each row
+  linking to `/forecasts/validation/[id]`: totals, daily chart (forecast + 80 % band vs
+  actual), daily figures, engine notes and the other models of the same batch.
+
+Admins also get a card with "Record forecasts now" (days input) and "Evaluate due runs now":
+
+- `POST /api/forecasts/validation/record` `{ days? }` — admin + `forecasts: view`; starts the
+  recording detached and answers 202 (409 while one is running). The card polls
+  `GET /api/forecasts/validation/status` (`recordInFlight`, `evaluateInFlight`, `lastRecord`,
+  `latestBatch`) until it finishes, then reloads the page data.
+- `POST /api/forecasts/validation/evaluate` — admin; runs the sweep synchronously and returns
+  its summary (409 while one is running).
 
 ## Concurrency and limits
 

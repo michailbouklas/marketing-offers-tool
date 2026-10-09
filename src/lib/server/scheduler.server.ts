@@ -1,10 +1,15 @@
 import { building } from "$app/environment";
 import { Cron } from "croner";
-import { getDataQualityEnv } from "$lib/server/env";
+import {
+  getDataQualityEnv,
+  getForecastEnv,
+  getForecastValidationEnv,
+} from "$lib/server/env";
 import {
   getNotificationsEnv,
   hasNotificationsTransport,
 } from "$lib/server/notifications/notifications-env";
+import { tryEvaluateForecastValidationExclusively } from "$lib/services/forecasts/forecast-validation.server";
 import { tryRebuildGapQueueSnapshotExclusively } from "$lib/services/gap-queue-snapshot.server";
 import { runOfferDigest } from "$lib/services/notifications/offer-digest.server";
 import type { DigestRunSummary } from "$lib/services/notifications/types";
@@ -15,7 +20,10 @@ import type { DigestRunSummary } from "$lib/services/notifications/types";
  *
  * - the offer-notification digest (`NOTIFICATIONS_CRON`), and
  * - the offers data-quality gap-queue snapshot rebuild (`DQ_SNAPSHOT_CRON`,
- *   default 04:00 `DQ_SNAPSHOT_TIMEZONE`).
+ *   default 04:00 `DQ_SNAPSHOT_TIMEZONE`), and
+ * - the forecast validation sweep that scores recorded forecasts against
+ *   actual sales once their window has passed (`FORECAST_VALIDATION_CRON`,
+ *   default 06:00 `FORECAST_VALIDATION_TIMEZONE`).
  *
  * Assumes a single app instance: each instance runs its own cron, so multiple
  * replicas would each fire (the advisory locks still prevent overlapping work,
@@ -27,6 +35,7 @@ const globalForScheduler = globalThis as typeof globalThis & {
   offerDigestCron?: Cron;
   offerDigestRunning?: boolean;
   gapQueueSnapshotCron?: Cron;
+  forecastValidationCron?: Cron;
 };
 
 export type DigestTriggerResult =
@@ -147,6 +156,61 @@ function startGapQueueSnapshotScheduler(): void {
   );
 }
 
+/**
+ * Start the daily forecast-validation sweep exactly once. Skipped when the
+ * forecast engine is not configured or with `FORECAST_VALIDATION_ENABLED=false`
+ * (e.g. when an external scheduler runs `bun run forecast:validate evaluate`).
+ */
+function startForecastValidationScheduler(): void {
+  if (globalForScheduler.forecastValidationCron) {
+    return;
+  }
+
+  if (!getForecastEnv().FORECAST_SERVICE_URL) {
+    console.info(
+      "[forecast-validation] scheduler not started: FORECAST_SERVICE_URL is not set.",
+    );
+    return;
+  }
+
+  const validationEnv = getForecastValidationEnv();
+
+  if (!validationEnv.FORECAST_VALIDATION_ENABLED) {
+    console.info("[forecast-validation] scheduler disabled by env.");
+    return;
+  }
+
+  const pattern = validationEnv.FORECAST_VALIDATION_CRON;
+  const timezone = validationEnv.FORECAST_VALIDATION_TIMEZONE;
+
+  globalForScheduler.forecastValidationCron = new Cron(
+    pattern,
+    { protect: true, name: "forecast-validation", timezone },
+    async () => {
+      try {
+        const result = await tryEvaluateForecastValidationExclusively("cron");
+
+        if (result.status === "ran") {
+          console.info(
+            "[forecast-validation] evaluation sweep complete:",
+            result.summary,
+          );
+        } else {
+          console.warn(
+            `[forecast-validation] evaluation sweep skipped: ${result.reason}`,
+          );
+        }
+      } catch (error) {
+        console.error("[forecast-validation] evaluation sweep failed:", error);
+      }
+    },
+  );
+
+  console.info(
+    `[forecast-validation] scheduler started (cron "${pattern}", ${timezone}).`,
+  );
+}
+
 /** Start every in-process cron. No-op during build. */
 export function startScheduler(): void {
   if (building) {
@@ -155,4 +219,5 @@ export function startScheduler(): void {
 
   startDigestScheduler();
   startGapQueueSnapshotScheduler();
+  startForecastValidationScheduler();
 }
