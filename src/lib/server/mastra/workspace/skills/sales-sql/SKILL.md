@@ -127,10 +127,13 @@ Push date filters on BOTH sides for partition pruning.
 
 ## SQL Rules (ClickHouse)
 
-- **Brand scope**: every query MUST include the allowed-brands filter from the
-  agent's Brand scope section — `lower(brand) IN (...)` with ONLY the user's
-  assigned brand codes. Never run a query that names any other brand (the
-  query tool rejects it); reply "You're not assigned to this brand" instead.
+- **Brand scope**: every query MUST include a brand filter that uses ONLY the
+  user's assigned brand codes from the agent's Brand scope section. If the
+  question names brands, filter to just those (`lower(brand) = 'bk'`); only
+  when no brand is named use the full `lower(brand) IN (...)` list. Use one
+  brand filter, never the full list on top of a narrower one. Never run a
+  query that names any other brand (the query tool rejects it); reply
+  "You're not assigned to this brand" instead.
   The brand-specific examples below (`brand = 'bk'` etc.) must be adapted to
   the allowed set.
 - GROUP BY: include all non-aggregated SELECT columns; `anyLast(column)` picks

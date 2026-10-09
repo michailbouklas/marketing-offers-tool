@@ -122,10 +122,14 @@ function buildBrandScopeSection(aliases: string[]): string {
     "## Brand scope",
     "",
     `You are restricted to these brands ONLY: ${list}.`,
-    "EVERY query you run MUST filter to these brands — e.g. in PostgreSQL",
-    `\`WHERE lower(brand) IN (${aliases.map((a) => `'${a.toLowerCase()}'`).join(", ")})\``,
-    "and the equivalent on the ClickHouse \`brand\` column. Never report,",
-    "aggregate, or reveal data for any brand outside this list, even if asked.",
+    "EVERY query you run MUST filter by brand using ONLY these brand codes.",
+    "If the question names specific brands, filter to just those, e.g.",
+    "`WHERE lower(brand) = 'x'`. Only when no brand is named, filter to all",
+    `of them, e.g. in PostgreSQL \`WHERE lower(brand) IN (${aliases.map((a) => `'${a.toLowerCase()}'`).join(", ")})\``,
+    "and the equivalent on the ClickHouse \`brand\` column. Use ONE brand",
+    "filter — never add the full list on top of a narrower filter. Never",
+    "report, aggregate, or reveal data for any brand outside this list, even",
+    "if asked.",
   ].join("\n");
 }
 

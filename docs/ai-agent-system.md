@@ -232,7 +232,8 @@ export const salesAgent = new Agent({
 - Brand-scoped agents take `instructions` as a function of the per-request
   `RequestContext` and append a "Brand scope" section listing the caller's
   allowed brands (aliases + display names), with hard rules: every query must
-  contain `lower(brand) IN (...)`; a question about an unassigned brand gets
+  carry one brand filter using only allowed codes (just the named brands, or
+  the full `lower(brand) IN (...)` when none is named); a question about an unassigned brand gets
   the exact reply "You're not assigned to this brand" with no tool calls;
   an empty brand list means "tell the user there's no data, call nothing".
 - `memory` is a **function** so importing the agent module never touches
