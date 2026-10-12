@@ -1,0 +1,33 @@
+// Hand-written, generate-only schema for the Google Reviews scraper Postgres
+// (`GOOGLE_REVIEWS_DB`). The database is owned by the scraper project, which
+// runs its own Prisma migrations there — NEVER run `prisma migrate` or
+// `prisma db push` with this schema. Only the tables the admin UI touches are
+// modelled; do not `prisma db pull`, it would import every scraper table.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/generated/google-reviews-prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Review categories produced by the scraper's clustering pipeline. Editable
+/// from `/admin/google-reviews/categories` (category, summary, is_active).
+/// Postgres also has a unique partial index on `lower(trim(category))`
+/// `WHERE is_active = true` that Prisma cannot express — activating a row
+/// whose name matches an active one fails with P2002.
+model review_categories {
+  id                   Int                          @id @default(autoincrement())
+  category             String?                      @db.VarChar(255)
+  summary              String?
+  metadata             Json?
+  created_at           DateTime?                    @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime?                    @default(now()) @db.Timestamptz(6)
+  embedding            Unsupported("vector(1536)")?
+  review_count         Int?                         @default(0)
+  confidence_threshold Decimal?                     @default(0.75) @db.Decimal(3, 2)
+  version              Int?                         @default(1)
+  is_active            Boolean?                     @default(true)
+}

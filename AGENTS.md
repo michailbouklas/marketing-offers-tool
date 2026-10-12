@@ -212,6 +212,7 @@ Before every new task, use the SymDex MCP server to reindex the project so the s
 - `src/lib/server/auth.ts`: Better Auth server instance. Configured with Prisma adapter (PostgreSQL), email/password auth, sign-up disabled, and the Better Auth `admin` plugin for role-aware sessions and admin APIs.
 - `src/lib/server/clickhouse.ts`: Server-only ClickHouse client singleton and ping helper for new analytics/data-quality features that read or write ClickHouse.
 - `src/lib/server/merchant-scrapes-prisma.ts`: Server-only Prisma client singleton for the isolated merchant scrapes database configured by `MERCHANT_SCRAPES_DATABASE_URL` and generated from `prisma/merchant-scrapes/schema.prisma`.
+- `src/lib/server/google-reviews-prisma.ts`: Server-only Prisma client singleton for the external Google Reviews scraper database configured by `GOOGLE_REVIEWS_DB` and generated from `prisma/google-reviews/schema.prisma`. Generate-only: that database is owned by the scraper project, never run migrations against it.
 - `src/lib/auth-client.ts`: Better Auth browser client. Exports `authClient`, `signIn`, `signOut`, `useSession`, and wires the Better Auth `adminClient` plugin.
 - `src/hooks.server.ts`: SvelteKit server hook. Resolves the session on every request via `auth.api.getSession` and sets `event.locals.session` / `event.locals.user`. Redirects unauthenticated users to `/login`.
 - `src/lib/server/auth-guards.ts`: Shared auth guard helpers for authenticated/admin-only route checks and route classification.

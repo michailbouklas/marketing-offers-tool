@@ -10,6 +10,7 @@
   import LinkIcon from "@lucide/svelte/icons/link";
   import MessageSquareIcon from "@lucide/svelte/icons/message-square";
   import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
+  import StarIcon from "@lucide/svelte/icons/star";
   import type { Component } from "svelte";
   import type { PageData } from "./$types";
 
@@ -103,6 +104,14 @@
         "Register aggregator URLs that the scraper should pick up, tagged by aggregator.",
       icon: LinkIcon,
       accessKey: "urlsToScrape",
+    },
+    {
+      href: "/admin/google-reviews",
+      title: "Google Reviews",
+      description:
+        "Curate the review categories at the source: rename them, rewrite summaries, and activate or deactivate categories in bulk.",
+      icon: StarIcon,
+      accessKey: "googleReviews",
     },
   ];
 

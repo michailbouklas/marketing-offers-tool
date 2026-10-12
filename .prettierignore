@@ -4,3 +4,4 @@ build
 .vercel
 dist
 bun.lock
+src/generated

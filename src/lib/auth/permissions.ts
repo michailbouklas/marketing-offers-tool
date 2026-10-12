@@ -20,7 +20,7 @@ export const statement = {
   metrics: ["view"],
   promptGallery: ["manage"],
   competition: ["view"],
-  googleReviews: ["view"],
+  googleReviews: ["view", "manage"],
   aggregatorKpis: ["view"],
   aggregatorInvoices: ["view"],
   sales: ["view"],
@@ -39,7 +39,9 @@ export const ac = createAccessControl(statement);
  *   the coarse `/admin` gate). It grants no resource permissions EXCEPT
  *   `brand: ["manage"]`, so that admins can reach the brand-assignment tool
  *   (and the rest of the brand-management section, which shares this
- *   permission). For every other gated capability an admin must still hold the
+ *   permission), `urlsToScrape: ["manage"]`, and `googleReviews: ["manage"]`
+ *   (the `/admin/google-reviews` tools that edit the scraper's source
+ *   database). For every other gated capability an admin must still hold the
  *   matching capability role.
  * - `approver` — act on gap submissions.
  * - `usageViewer` — view cross-user image-generation usage analytics.
@@ -73,6 +75,7 @@ export const roles = {
     submission: [],
     brand: ["manage"],
     urlsToScrape: ["manage"],
+    googleReviews: ["manage"],
     aggregatorKpis: ["view"],
     aggregatorInvoices: ["view"],
     sales: ["view"],
@@ -119,7 +122,7 @@ export const roles = {
     metrics: ["view"],
     promptGallery: ["manage"],
     competition: ["view"],
-    googleReviews: ["view"],
+    googleReviews: ["view", "manage"],
     aggregatorKpis: ["view"],
     aggregatorInvoices: ["view"],
     sales: ["view"],
