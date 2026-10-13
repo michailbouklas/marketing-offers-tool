@@ -43,7 +43,15 @@
   let serverError = $state<string | null>(null);
   let approvalSubmitting = $state<"approve" | "reject" | null>(null);
 
-  const missingFields = $derived.by(() => new Set(data.gap.missing_fields));
+  // Server-detected gaps that the form has not filled yet. Each field clears
+  // its "Missing" badge as soon as it has a value; ideal_price follows the
+  // fc_eur + brand target formula so it clears once both are present.
+  const missingFields = $derived.by(
+    () =>
+      new Set(
+        data.gap.missing_fields.filter((field) => $form[field].trim() === ""),
+      ),
+  );
   const detectedAt = $derived.by(() =>
     new Date(data.gap.detected_at).toLocaleDateString(),
   );
