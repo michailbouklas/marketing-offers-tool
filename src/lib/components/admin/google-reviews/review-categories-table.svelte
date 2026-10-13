@@ -33,6 +33,12 @@
   );
 
   const numberFormatter = new Intl.NumberFormat("en-GB");
+
+  /** Drill down to every review tagged with this category. */
+  function getCategoryReviewsHref(categoryId: number) {
+    const params = new URLSearchParams({ categoryId: categoryId.toString() });
+    return `/google-reviews/reviews?${params.toString()}`;
+  }
 </script>
 
 <Tooltip.Provider delayDuration={150}>
@@ -120,7 +126,17 @@
               {/if}
             </Table.Cell>
             <Table.Cell class="text-right tabular-nums">
-              {numberFormatter.format(row.reviewCount)}
+              {#if row.reviewCount > 0}
+                <a
+                  href={getCategoryReviewsHref(row.id)}
+                  class="text-primary hover:underline focus-visible:underline focus-visible:outline-none"
+                  aria-label={`View reviews for ${row.category?.trim() || `category #${row.id}`}`}
+                >
+                  {numberFormatter.format(row.reviewCount)}
+                </a>
+              {:else}
+                {numberFormatter.format(row.reviewCount)}
+              {/if}
             </Table.Cell>
             <Table.Cell class="text-right tabular-nums">
               {row.version}
