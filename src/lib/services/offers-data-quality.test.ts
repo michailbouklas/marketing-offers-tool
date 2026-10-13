@@ -53,7 +53,12 @@ vi.mock("./offers-data-quality-postgres.server", () => ({
   updateGapRecordStatus: vi.fn(),
 }));
 
+vi.mock("$lib/services/brands.server", () => ({
+  getBrandPricingTargetByAlias: vi.fn(async () => null),
+}));
+
 const clickhouseDeps = await import("./offers-data-quality-clickhouse.server");
+const brandDeps = await import("$lib/services/brands.server");
 const auditDeps = await import("./dim-offers-audit.server");
 const postgresDeps = await import("./offers-data-quality-postgres.server");
 const snapshotDeps = await import("./offers-data-quality-snapshot.server");
@@ -92,6 +97,7 @@ const serviceDeps = {
   updateDimOffersStagingStatus:
     postgresDeps.updateDimOffersStagingStatus as Mock,
   updateGapRecordStatus: postgresDeps.updateGapRecordStatus as Mock,
+  getBrandPricingTargetByAlias: brandDeps.getBrandPricingTargetByAlias as Mock,
 };
 
 describe("offers-data-quality helpers", () => {
@@ -121,20 +127,71 @@ describe("offers-data-quality helpers", () => {
         ideal_price: 0,
         selling_price: 5.99,
         fc_perc: 0,
+        fc_eur: 3,
         mktg_spend: null,
       },
+      brand_target: { brand_id: 1, brand_name: "KFC", ideal_fc_perc: 0.3 },
     });
 
     expect(form).toEqual({
       channel: "Wolt Only",
       category: "ONEPLUSX",
       subcategory: "% Disc",
-      ideal_price: "",
+      // (3 / 0.30) x 1.05 x 1.07 = 11.235 -> 11.24, regardless of the stored 0
+      ideal_price: "11.24",
       selling_price: "5.99",
       fc_perc: "",
+      fc_eur: "3",
+      brand_ideal_fc_perc: "30",
       mktg_spend: "",
       notes: "",
     });
+  });
+
+  it("leaves fc_eur and ideal price blank when the brand has no target", () => {
+    const form = helpers.mapGapLoadResponseToGapPricingFormData({
+      dq_id: 1,
+      trde_item: "ITM-1",
+      item_name: "Item",
+      brand: "KFC",
+      item_category: "Offers",
+      detected_at: new Date().toISOString(),
+      missing_fields: ["ideal_price", "fc_eur"],
+      current_dim_offers: {
+        channel: null,
+        category: null,
+        subcategory: null,
+        ideal_price: 9.5,
+        selling_price: 5.99,
+        fc_perc: 0.3,
+        fc_eur: null,
+        mktg_spend: null,
+      },
+      brand_target: null,
+    });
+
+    expect(form).toMatchObject({
+      ideal_price: "",
+      fc_eur: "",
+      brand_ideal_fc_perc: "",
+      fc_perc: "30",
+    });
+  });
+
+  it("calculates ideal price as (fc_eur / brand fc) x 1.05 x 1.07 in cents", () => {
+    expect(helpers.IDEAL_PRICE_MARKUP_FACTORS).toEqual([1.05, 1.07]);
+    expect(helpers.calculateIdealPrice(3, 0.3)).toBe(11.24);
+    expect(helpers.calculateIdealPrice(15, 0.3)).toBe(56.18);
+    expect(helpers.calculateIdealPrice(2.5, 0.25)).toBe(11.24);
+    expect(helpers.calculateIdealPrice(0, 0.3)).toBeNull();
+    expect(helpers.calculateIdealPrice(3, 0)).toBeNull();
+    expect(helpers.calculateIdealPrice(null, 0.3)).toBeNull();
+    expect(helpers.calculateIdealPrice(3, null)).toBeNull();
+    expect(helpers.calculateIdealPrice(-3, 0.3)).toBeNull();
+    expect(helpers.calculateIdealPriceFromFormValues("3", "30")).toBe(11.24);
+    expect(helpers.calculateIdealPriceFromFormValues("", "30")).toBeNull();
+    expect(helpers.formatIdealPriceInput("3", "30")).toBe("11.24");
+    expect(helpers.formatIdealPriceInput("3", "")).toBe("");
   });
 
   it("maps form data to submit payload and converts fc_perc", () => {
@@ -146,15 +203,19 @@ describe("offers-data-quality helpers", () => {
       ideal_price: "8.50",
       selling_price: "0",
       fc_perc: "32",
+      fc_eur: "2.40",
+      brand_ideal_fc_perc: "30",
       mktg_spend: "1.25",
       notes: "hello",
     });
 
+    // ideal_price and the brand target never travel to the API: the server
+    // derives the price from fc_eur and the brand's stored target.
     expect(payload).toEqual({
       channel: "Wolt Only",
       category: "ONEPLUSX",
       subcategory: "% Disc",
-      ideal_price: 8.5,
+      fc_eur: 2.4,
       selling_price: 0,
       fc_perc: 0.32,
       mktg_spend: 1.25,
@@ -167,7 +228,9 @@ describe("offers-data-quality helpers", () => {
       channel: "Wolt Only",
       category: "ONEPLUSX",
       subcategory: "% Disc",
-      ideal_price: 50,
+      ideal_price: "",
+      fc_eur: 15,
+      brand_ideal_fc_perc: 30,
       selling_price: 45,
       fc_perc: 20,
       mktg_spend: 30,
@@ -181,11 +244,83 @@ describe("offers-data-quality helpers", () => {
     }
 
     expect(result.data).toMatchObject({
-      ideal_price: "50",
+      fc_eur: "15",
+      brand_ideal_fc_perc: "30",
       selling_price: "45",
       fc_perc: "20",
       mktg_spend: "30",
     });
+  });
+
+  it("rejects a selling price above the calculated ideal price", () => {
+    const result = helpers.gapPricingFormSchema.safeParse({
+      channel: "Wolt Only",
+      category: "ONEPLUSX",
+      subcategory: "% Disc",
+      fc_eur: "3",
+      brand_ideal_fc_perc: "30",
+      selling_price: "11.25",
+      fc_perc: "20",
+      mktg_spend: "",
+      notes: "",
+    });
+
+    expect(result.success).toBe(false);
+
+    if (result.success) {
+      return;
+    }
+
+    expect(helpers.getZodFieldErrors(result.error)).toMatchObject({
+      selling_price: "Selling price cannot exceed ideal price",
+    });
+  });
+
+  it("flags a missing brand target on the client", () => {
+    const result = helpers.gapPricingFormSchema.safeParse({
+      channel: "Wolt Only",
+      category: "ONEPLUSX",
+      subcategory: "% Disc",
+      fc_eur: "3",
+      brand_ideal_fc_perc: "",
+      selling_price: "5",
+      fc_perc: "20",
+      mktg_spend: "",
+      notes: "",
+    });
+
+    expect(result.success).toBe(false);
+
+    if (result.success) {
+      return;
+    }
+
+    expect(helpers.getZodFieldErrors(result.error)).toHaveProperty(
+      "brand_ideal_fc_perc",
+    );
+  });
+
+  it("flags fc_eur as missing when null, undefined or zero", () => {
+    const base = {
+      channel: null,
+      category: null,
+      subcategory: null,
+      ideal_price: 9.9,
+      selling_price: 8.5,
+      fc_perc: 0.3,
+      fc_eur: 2.4,
+      mktg_spend: null,
+    };
+
+    expect(
+      helpers.getMissingFieldsFromCurrentValues({ ...base, fc_eur: null }),
+    ).toEqual(["fc_eur"]);
+    expect(
+      helpers.getMissingFieldsFromCurrentValues({ ...base, fc_eur: 0 }),
+    ).toEqual(["fc_eur"]);
+    expect(
+      helpers.getMissingFieldsFromCurrentValues({ ...base, fc_eur: 2.4 }),
+    ).toEqual([]);
   });
 
   it("applies lookup defaults so selects are never empty when options exist", () => {
@@ -261,6 +396,8 @@ describe("offers-data-quality orchestration", () => {
       ideal_price: { toString: () => "8.5", toFixed: () => "8.50" },
       selling_price: { toString: () => "5.99", toFixed: () => "5.99" },
       fc_perc: { toFixed: () => "0.3200", valueOf: () => 0.32 },
+      fc_eur: { toFixed: () => "2.40" },
+      brand_ideal_fc_perc: { toFixed: () => "0.3000" },
       mktg_spend: { toFixed: () => "1.25" },
       status: "pending",
     });
@@ -290,6 +427,7 @@ describe("offers-data-quality orchestration", () => {
       expect.objectContaining({
         item_code: "ITM-42",
         brand: "kfc",
+        fc_eur: "2.40",
       }),
     );
     expect(serviceDeps.insertDimOffer).not.toHaveBeenCalled();
@@ -308,6 +446,7 @@ describe("offers-data-quality orchestration", () => {
           brand_alias: "kfc",
           ideal_price: "8.50",
           selling_price: "5.99",
+          fc_eur: "2.40",
           discount_amount: "2.51",
         }),
       }),
@@ -406,7 +545,14 @@ describe("offers-data-quality orchestration", () => {
       ideal_price: null,
       selling_price: null,
       fc_perc: null,
+      fc_eur: null,
       mktg_spend: null,
+    });
+
+    serviceDeps.getBrandPricingTargetByAlias.mockResolvedValueOnce({
+      brand_id: 3,
+      brand_name: "Jimmy's",
+      ideal_fc_perc: 0.28,
     });
 
     const gap = await orchestration.getGapFormData(4);
@@ -418,7 +564,11 @@ describe("offers-data-quality orchestration", () => {
       brand: "JMO",
       item_category: "Offers JMO",
       missing_fields: ["ideal_price", "fc_perc"],
+      brand_target: { brand_id: 3, brand_name: "Jimmy's", ideal_fc_perc: 0.28 },
     });
+    expect(serviceDeps.getBrandPricingTargetByAlias).toHaveBeenCalledWith(
+      "jmo",
+    );
   });
 
   it("reads the gap queue from the snapshot with normalised options", async () => {
@@ -540,6 +690,7 @@ describe("offers-data-quality orchestration", () => {
       ideal_price: null,
       selling_price: null,
       fc_perc: null,
+      fc_eur: null,
       mktg_spend: null,
     });
     serviceDeps.createGapRecord.mockImplementation(async (data: object) => ({
@@ -557,7 +708,7 @@ describe("offers-data-quality orchestration", () => {
       item_name: "Brand new offer",
       brand: "kfc",
       item_category: "Offers KFC",
-      missing_fields: "ideal_price,selling_price,fc_perc",
+      missing_fields: "ideal_price,selling_price,fc_perc,fc_eur",
     });
     expect(serviceDeps.upsertSnapshotRow).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -580,6 +731,7 @@ describe("offers-data-quality orchestration", () => {
       ideal_price: 9.9,
       selling_price: 8.5,
       fc_perc: 0.3,
+      fc_eur: 2.4,
       mktg_spend: null,
     });
 

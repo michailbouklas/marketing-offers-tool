@@ -19,6 +19,7 @@ type DimOffersRow = {
   ideal_price?: string | number | null;
   selling_price?: string | number | null;
   fc_perc?: string | number | null;
+  fc_eur?: string | number | null;
   mktg_spend?: string | number | null;
 };
 
@@ -32,6 +33,8 @@ export type UpsertDimOfferInput = {
   ideal_price: string;
   selling_price: string;
   fc_perc: string;
+  /** Null only for legacy staging rows submitted before FC EUR existed. */
+  fc_eur: string | null;
   mktg_spend: string | null;
   discount_amount: string;
   notes: string | null;
@@ -47,6 +50,7 @@ export type DimOfferAuditSnapshot = {
   ideal_price: string | null;
   selling_price: string | null;
   fc_perc: string | null;
+  fc_eur: string | null;
   mktg_spend: string | null;
   discount_amount: string | null;
 };
@@ -208,6 +212,7 @@ export async function getCurrentDimOfferValues(
         ideal_price,
         selling_price,
         fc_perc,
+        fc_eur,
         mktg_spend
       FROM dim_offers
       WHERE item_code = {item_code:String}
@@ -230,6 +235,7 @@ export async function getCurrentDimOfferValues(
       ideal_price: null,
       selling_price: null,
       fc_perc: null,
+      fc_eur: null,
       mktg_spend: null,
     };
   }
@@ -252,6 +258,7 @@ export async function getDimOfferAuditSnapshot(
         ideal_price,
         selling_price,
         fc_perc,
+        fc_eur,
         mktg_spend,
         discount_amount
       FROM dim_offers
@@ -285,6 +292,7 @@ export async function getDimOfferAuditSnapshot(
     ideal_price: formatNullableFixedNumber(row.ideal_price, 2),
     selling_price: formatNullableFixedNumber(row.selling_price, 2),
     fc_perc: formatNullableFixedNumber(row.fc_perc, 4),
+    fc_eur: formatNullableFixedNumber(row.fc_eur, 2),
     mktg_spend: formatNullableFixedNumber(row.mktg_spend, 2),
     discount_amount: formatNullableFixedNumber(row.discount_amount, 2),
   };
@@ -381,6 +389,7 @@ function mapDimOffersRow(row: DimOffersRow): CurrentDimOffersValues {
     ideal_price: parseNullableNumber(row.ideal_price),
     selling_price: parseNullableNumber(row.selling_price),
     fc_perc: parseNullableNumber(row.fc_perc),
+    fc_eur: parseNullableNumber(row.fc_eur),
     mktg_spend: parseNullableNumber(row.mktg_spend),
   };
 }
@@ -504,6 +513,7 @@ export async function getDimOffersByItemCodes(
           ideal_price,
           selling_price,
           fc_perc,
+          fc_eur,
           mktg_spend
         FROM dim_offers
         WHERE item_code IN ({item_codes:Array(String)})
@@ -565,6 +575,7 @@ export async function insertDimOffer(data: UpsertDimOfferInput) {
         category: data.category,
         subcategory: data.subcategory,
         fc_perc: data.fc_perc,
+        fc_eur: data.fc_eur,
         mktg_spend: data.mktg_spend,
         ideal_price: data.ideal_price,
         selling_price: data.selling_price,
@@ -578,6 +589,7 @@ export async function insertDimOffer(data: UpsertDimOfferInput) {
 
 export async function updateDimOffer(data: UpsertDimOfferInput) {
   const marketingSpendValue = data.mktg_spend ?? "";
+  const foodCostEurValue = data.fc_eur ?? "";
   const notesValue = data.notes ?? "";
 
   return clickhouse.command({
@@ -592,6 +604,7 @@ export async function updateDimOffer(data: UpsertDimOfferInput) {
         ideal_price = toFloat32({ideal_price:String}),
         selling_price = toFloat32({selling_price:String}),
         fc_perc = toFloat32({fc_perc:String}),
+        fc_eur = toFloat32OrNull(nullIf({fc_eur:String}, '')),
         mktg_spend = {mktg_spend:String},
         discount_amount = toFloat32({discount_amount:String}),
         notes = nullIf({notes:String}, '')
@@ -607,6 +620,7 @@ export async function updateDimOffer(data: UpsertDimOfferInput) {
       ideal_price: data.ideal_price,
       selling_price: data.selling_price,
       fc_perc: data.fc_perc,
+      fc_eur: foodCostEurValue,
       mktg_spend: marketingSpendValue,
       discount_amount: data.discount_amount,
       notes: notesValue,

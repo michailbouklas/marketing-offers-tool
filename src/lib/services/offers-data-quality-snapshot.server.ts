@@ -38,6 +38,7 @@ export type GapQueueSnapshotRow = {
   ideal_price: number | null;
   selling_price: number | null;
   fc_perc: number | null;
+  fc_eur: number | null;
   mktg_spend: number | null;
   source: string;
   refreshed_at: Date;
@@ -192,6 +193,7 @@ export async function upsertSnapshotRow(
     ideal_price: row.current_dim_offers.ideal_price,
     selling_price: row.current_dim_offers.selling_price,
     fc_perc: row.current_dim_offers.fc_perc,
+    fc_eur: row.current_dim_offers.fc_eur,
     mktg_spend: row.current_dim_offers.mktg_spend,
     source: row.source,
     refreshed_at: new Date(),

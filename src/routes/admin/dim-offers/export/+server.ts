@@ -95,6 +95,7 @@ export const GET: RequestHandler = async (event) => {
       "ideal_price",
       "selling_price",
       "fc_perc",
+      "fc_eur",
       "mktg_spend",
       "discount_amount",
     ].join(","),
@@ -109,6 +110,7 @@ export const GET: RequestHandler = async (event) => {
         formatNumber(row.ideal_price),
         formatNumber(row.selling_price),
         formatNumber(row.fc_perc),
+        formatNumber(row.fc_eur),
         formatNumber(row.mktg_spend),
         formatNumber(row.discount_amount),
       ]

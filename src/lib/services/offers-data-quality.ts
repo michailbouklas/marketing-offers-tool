@@ -4,7 +4,15 @@ export const missingOfferPricingFields = [
   "ideal_price",
   "selling_price",
   "fc_perc",
+  "fc_eur",
 ] as const;
+
+/**
+ * Ideal price = (FC EUR / brand ideal FC %) x 1.05 x 1.07, as specified by
+ * marketing. Both factors are applied in order; keep them here so the client
+ * preview and the server write use the same numbers.
+ */
+export const IDEAL_PRICE_MARKUP_FACTORS = [1.05, 1.07] as const;
 
 export type MissingOfferPricingField =
   (typeof missingOfferPricingFields)[number];
@@ -21,7 +29,16 @@ export type CurrentDimOffersValues = {
   ideal_price: number | null;
   selling_price: number | null;
   fc_perc: number | null;
+  fc_eur: number | null;
   mktg_spend: number | null;
+};
+
+/** The Postgres brand matched to the gap's ClickHouse brand alias. */
+export type GapBrandPricingTarget = {
+  brand_id: number;
+  brand_name: string;
+  /** Fraction (0.30 = 30%); null until an admin sets it on the brand page. */
+  ideal_fc_perc: number | null;
 };
 
 export type GapFormLoadResponse = {
@@ -33,15 +50,21 @@ export type GapFormLoadResponse = {
   detected_at: string;
   missing_fields: MissingOfferPricingField[];
   current_dim_offers: CurrentDimOffersValues;
+  /** null when no Postgres brand matches the gap's brand alias. */
+  brand_target: GapBrandPricingTarget | null;
 };
 
 export type GapPricingFormData = {
   channel: string;
   category: string;
   subcategory: string;
+  /** Derived from fc_eur and brand_ideal_fc_perc; display only. */
   ideal_price: string;
   selling_price: string;
   fc_perc: string;
+  fc_eur: string;
+  /** Percent text (30 = 30%), prefilled from the brand and read-only. */
+  brand_ideal_fc_perc: string;
   mktg_spend: string;
   notes: string;
 };
@@ -56,6 +79,10 @@ export type PendingGapSubmission = {
   ideal_price: string;
   selling_price: string;
   fc_perc: string;
+  /** Null on submissions made before FC EUR existed. */
+  fc_eur: string | null;
+  /** Percent text (30.00); null on legacy submissions. */
+  brand_ideal_fc_perc: string | null;
   mktg_spend: string | null;
   notes: string | null;
   submitted_by: string;
@@ -164,7 +191,7 @@ export type SubmitGapPricingPayload = {
   channel: string;
   category: string;
   subcategory: string;
-  ideal_price: number;
+  fc_eur: number;
   selling_price: number;
   fc_perc: number;
   mktg_spend: number | null;
@@ -188,11 +215,24 @@ export const gapPricingFormSchema = z
     category: z.string().trim().min(1, "Category is required"),
     subcategory: z.string().trim().min(1, "Subcategory is required"),
     ideal_price: z
+      .union([z.string(), z.number(), z.undefined()])
+      .transform((value) =>
+        value === undefined ? "" : normalizeNumericTextInput(value),
+      ),
+    fc_eur: z
       .union([z.string(), z.number()])
       .transform(normalizeNumericTextInput)
       .refine((value) => (parseOptionalNumberString(value) ?? 0) > 0, {
-        message: "Ideal price must be greater than 0",
+        message: "FC EUR must be greater than 0",
       }),
+    brand_ideal_fc_perc: z
+      .union([z.string(), z.number()])
+      .transform(normalizeNumericTextInput)
+      .refine((value) => {
+        const parsed = parseOptionalNumberString(value);
+
+        return parsed !== null && parsed > 0 && parsed <= 100;
+      }, "No Brand Ideal FC % is set for this brand. Ask an admin to set it on the brand page."),
     selling_price: z
       .union([z.string(), z.number()])
       .transform(normalizeNumericTextInput)
@@ -221,7 +261,10 @@ export const gapPricingFormSchema = z
   })
   .refine(
     (data) => {
-      const idealPrice = parseOptionalNumberString(data.ideal_price);
+      const idealPrice = calculateIdealPriceFromFormValues(
+        data.fc_eur,
+        data.brand_ideal_fc_perc,
+      );
       const sellingPrice = parseOptionalNumberString(data.selling_price);
 
       if (idealPrice === null || sellingPrice === null) {
@@ -236,42 +279,104 @@ export const gapPricingFormSchema = z
     },
   );
 
-export const submitGapPricingSchema = z
-  .object({
-    channel: z.string().trim().min(1, "Channel is required"),
-    category: z.string().trim().min(1, "Category is required"),
-    subcategory: z.string().trim().min(1, "Subcategory is required"),
-    ideal_price: numericInput.gt(0, "Ideal price must be greater than 0"),
-    selling_price: numericInput.gte(
-      0,
-      "Selling price must be greater than or equal to 0",
-    ),
-    fc_perc: numericInput
-      .gte(0, "Food cost % must be between 0 and 100")
-      .lte(1, "Food cost % must be between 0 and 100"),
-    mktg_spend: z.preprocess((value) => {
-      if (value === null || value === undefined) {
-        return null;
-      }
+/**
+ * Server payload. `ideal_price` is deliberately absent: the API derives it
+ * from `fc_eur` and the brand's target so the stored value always follows the
+ * formula. The selling <= ideal check happens in the route once the brand
+ * target is known.
+ */
+export const submitGapPricingSchema = z.object({
+  channel: z.string().trim().min(1, "Channel is required"),
+  category: z.string().trim().min(1, "Category is required"),
+  subcategory: z.string().trim().min(1, "Subcategory is required"),
+  fc_eur: numericInput.gt(0, "FC EUR must be greater than 0"),
+  selling_price: numericInput.gte(
+    0,
+    "Selling price must be greater than or equal to 0",
+  ),
+  fc_perc: numericInput
+    .gte(0, "Food cost % must be between 0 and 100")
+    .lte(1, "Food cost % must be between 0 and 100"),
+  mktg_spend: z.preprocess((value) => {
+    if (value === null || value === undefined) {
+      return null;
+    }
 
-      if (typeof value === "string" && value.trim() === "") {
-        return null;
-      }
+    if (typeof value === "string" && value.trim() === "") {
+      return null;
+    }
 
-      return value;
-    }, numericInput.gte(0, "Marketing spend cannot be negative").nullable()),
-    notes: z
-      .string()
-      .trim()
-      .max(500, "Notes cannot exceed 500 characters")
-      .default(""),
-  })
-  .refine((data) => data.selling_price <= data.ideal_price, {
-    message: "Selling price cannot exceed ideal price",
-    path: ["selling_price"],
-  });
+    return value;
+  }, numericInput.gte(0, "Marketing spend cannot be negative").nullable()),
+  notes: z
+    .string()
+    .trim()
+    .max(500, "Notes cannot exceed 500 characters")
+    .default(""),
+});
 
 export type SubmitGapPricingFormData = z.infer<typeof submitGapPricingSchema>;
+
+/**
+ * Ideal price = (FC EUR / brand ideal FC fraction) x 1.05 x 1.07, rounded to
+ * cents. Returns null when either input is missing or not positive.
+ */
+export function calculateIdealPrice(
+  fcEur: number | null | undefined,
+  brandIdealFcFraction: number | null | undefined,
+): number | null {
+  if (
+    fcEur === null ||
+    fcEur === undefined ||
+    brandIdealFcFraction === null ||
+    brandIdealFcFraction === undefined ||
+    !Number.isFinite(fcEur) ||
+    !Number.isFinite(brandIdealFcFraction) ||
+    fcEur <= 0 ||
+    brandIdealFcFraction <= 0
+  ) {
+    return null;
+  }
+
+  const rawPrice = IDEAL_PRICE_MARKUP_FACTORS.reduce(
+    (price, factor) => price * factor,
+    fcEur / brandIdealFcFraction,
+  );
+
+  // Round to cents after squashing binary noise (11.235 is stored as
+  // 11.234999...), so x.xx5 rounds up like a spreadsheet would.
+  return Math.round(Math.round(rawPrice * 1e8) / 1e6) / 100;
+}
+
+/** Form-text variant: FC EUR text + brand FC as a percent string (30 = 30%). */
+export function calculateIdealPriceFromFormValues(
+  fcEurText: string,
+  brandIdealFcPercentText: string,
+): number | null {
+  const fcEur = parseOptionalNumberString(fcEurText);
+  const brandIdealFcPercent = parseOptionalNumberString(
+    brandIdealFcPercentText,
+  );
+
+  if (fcEur === null || brandIdealFcPercent === null) {
+    return null;
+  }
+
+  return calculateIdealPrice(fcEur, brandIdealFcPercent / 100);
+}
+
+/** "" when the formula cannot be evaluated, otherwise "12.34". */
+export function formatIdealPriceInput(
+  fcEurText: string,
+  brandIdealFcPercentText: string,
+): string {
+  const idealPrice = calculateIdealPriceFromFormValues(
+    fcEurText,
+    brandIdealFcPercentText,
+  );
+
+  return idealPrice === null ? "" : idealPrice.toFixed(2);
+}
 
 export function getDefaultGapPricingFormData(): GapPricingFormData {
   return {
@@ -281,6 +386,8 @@ export function getDefaultGapPricingFormData(): GapPricingFormData {
     ideal_price: "",
     selling_price: "",
     fc_perc: "",
+    fc_eur: "",
+    brand_ideal_fc_perc: "",
     mktg_spend: "",
     notes: "",
   };
@@ -314,20 +421,29 @@ export function mapGapLoadResponseToGapPricingFormData(
   response: GapFormLoadResponse,
 ): GapPricingFormData {
   const missingFields = new Set(response.missing_fields);
+  const fcEur = missingFields.has("fc_eur")
+    ? ""
+    : formatInputNumber(response.current_dim_offers.fc_eur);
+  const brandIdealFcPerc = formatInputNumber(
+    response.brand_target?.ideal_fc_perc ?? null,
+    100,
+  );
 
   return {
     channel: response.current_dim_offers.channel ?? "",
     category: response.current_dim_offers.category ?? "",
     subcategory: response.current_dim_offers.subcategory ?? "",
-    ideal_price: missingFields.has("ideal_price")
-      ? ""
-      : formatInputNumber(response.current_dim_offers.ideal_price),
+    // Always derived: a stored ideal_price that disagrees with the formula is
+    // replaced on the next submission anyway.
+    ideal_price: formatIdealPriceInput(fcEur, brandIdealFcPerc),
     selling_price: missingFields.has("selling_price")
       ? ""
       : formatInputNumber(response.current_dim_offers.selling_price),
     fc_perc: missingFields.has("fc_perc")
       ? ""
       : formatInputNumber(response.current_dim_offers.fc_perc, 100),
+    fc_eur: fcEur,
+    brand_ideal_fc_perc: brandIdealFcPerc,
     mktg_spend: formatInputNumber(response.current_dim_offers.mktg_spend),
     notes: "",
   };
@@ -340,7 +456,7 @@ export function mapGapPricingFormToPayload(
     channel: formData.channel,
     category: formData.category,
     subcategory: formData.subcategory,
-    ideal_price: Number.parseFloat(formData.ideal_price),
+    fc_eur: Number.parseFloat(formData.fc_eur),
     selling_price: Number.parseFloat(formData.selling_price),
     fc_perc: Number.parseFloat(formData.fc_perc) / 100,
     mktg_spend:
@@ -377,6 +493,11 @@ export function getMissingFieldsFromCurrentValues(
 
   if (values.fc_perc === null || values.fc_perc === 0) {
     missingFields.push("fc_perc");
+  }
+
+  // Rows written before the fc_eur column existed come back without it.
+  if (!values.fc_eur) {
+    missingFields.push("fc_eur");
   }
 
   return missingFields;

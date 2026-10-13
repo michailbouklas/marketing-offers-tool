@@ -85,6 +85,7 @@ export const emptyDimOfferValues: CurrentDimOffersValues = {
   ideal_price: null,
   selling_price: null,
   fc_perc: null,
+  fc_eur: null,
   mktg_spend: null,
 };
 

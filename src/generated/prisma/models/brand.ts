@@ -28,10 +28,12 @@ export type AggregateBrand = {
 
 export type BrandAvgAggregateOutputType = {
   id: number | null;
+  ideal_fc_perc: runtime.Decimal | null;
 };
 
 export type BrandSumAggregateOutputType = {
   id: number | null;
+  ideal_fc_perc: runtime.Decimal | null;
 };
 
 export type BrandMinAggregateOutputType = {
@@ -46,6 +48,7 @@ export type BrandMinAggregateOutputType = {
   active: boolean | null;
   sap_brand_alias: string | null;
   sap_company_name: string | null;
+  ideal_fc_perc: runtime.Decimal | null;
 };
 
 export type BrandMaxAggregateOutputType = {
@@ -60,6 +63,7 @@ export type BrandMaxAggregateOutputType = {
   active: boolean | null;
   sap_brand_alias: string | null;
   sap_company_name: string | null;
+  ideal_fc_perc: runtime.Decimal | null;
 };
 
 export type BrandCountAggregateOutputType = {
@@ -74,15 +78,18 @@ export type BrandCountAggregateOutputType = {
   active: number;
   sap_brand_alias: number;
   sap_company_name: number;
+  ideal_fc_perc: number;
   _all: number;
 };
 
 export type BrandAvgAggregateInputType = {
   id?: true;
+  ideal_fc_perc?: true;
 };
 
 export type BrandSumAggregateInputType = {
   id?: true;
+  ideal_fc_perc?: true;
 };
 
 export type BrandMinAggregateInputType = {
@@ -97,6 +104,7 @@ export type BrandMinAggregateInputType = {
   active?: true;
   sap_brand_alias?: true;
   sap_company_name?: true;
+  ideal_fc_perc?: true;
 };
 
 export type BrandMaxAggregateInputType = {
@@ -111,6 +119,7 @@ export type BrandMaxAggregateInputType = {
   active?: true;
   sap_brand_alias?: true;
   sap_company_name?: true;
+  ideal_fc_perc?: true;
 };
 
 export type BrandCountAggregateInputType = {
@@ -125,6 +134,7 @@ export type BrandCountAggregateInputType = {
   active?: true;
   sap_brand_alias?: true;
   sap_company_name?: true;
+  ideal_fc_perc?: true;
   _all?: true;
 };
 
@@ -233,6 +243,7 @@ export type BrandGroupByOutputType = {
   active: boolean;
   sap_brand_alias: string | null;
   sap_company_name: string | null;
+  ideal_fc_perc: runtime.Decimal | null;
   _count: BrandCountAggregateOutputType | null;
   _avg: BrandAvgAggregateOutputType | null;
   _sum: BrandSumAggregateOutputType | null;
@@ -268,6 +279,13 @@ export type brandWhereInput = {
   active?: Prisma.BoolFilter<"brand"> | boolean;
   sap_brand_alias?: Prisma.StringNullableFilter<"brand"> | string | null;
   sap_company_name?: Prisma.StringNullableFilter<"brand"> | string | null;
+  ideal_fc_perc?:
+    | Prisma.DecimalNullableFilter<"brand">
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.Aggregator_offersListRelationFilter;
   user_assignments?: Prisma.User_brandListRelationFilter;
   brand_assets?: Prisma.BrandAssetListRelationFilter;
@@ -289,6 +307,7 @@ export type brandOrderByWithRelationInput = {
   active?: Prisma.SortOrder;
   sap_brand_alias?: Prisma.SortOrderInput | Prisma.SortOrder;
   sap_company_name?: Prisma.SortOrderInput | Prisma.SortOrder;
+  ideal_fc_perc?: Prisma.SortOrderInput | Prisma.SortOrder;
   aggregator_offers?: Prisma.aggregator_offersOrderByRelationAggregateInput;
   user_assignments?: Prisma.user_brandOrderByRelationAggregateInput;
   brand_assets?: Prisma.BrandAssetOrderByRelationAggregateInput;
@@ -314,6 +333,13 @@ export type brandWhereUniqueInput = Prisma.AtLeast<
     active?: Prisma.BoolFilter<"brand"> | boolean;
     sap_brand_alias?: Prisma.StringNullableFilter<"brand"> | string | null;
     sap_company_name?: Prisma.StringNullableFilter<"brand"> | string | null;
+    ideal_fc_perc?:
+      | Prisma.DecimalNullableFilter<"brand">
+      | runtime.Decimal
+      | runtime.DecimalJsLike
+      | number
+      | string
+      | null;
     aggregator_offers?: Prisma.Aggregator_offersListRelationFilter;
     user_assignments?: Prisma.User_brandListRelationFilter;
     brand_assets?: Prisma.BrandAssetListRelationFilter;
@@ -337,6 +363,7 @@ export type brandOrderByWithAggregationInput = {
   active?: Prisma.SortOrder;
   sap_brand_alias?: Prisma.SortOrderInput | Prisma.SortOrder;
   sap_company_name?: Prisma.SortOrderInput | Prisma.SortOrder;
+  ideal_fc_perc?: Prisma.SortOrderInput | Prisma.SortOrder;
   _count?: Prisma.brandCountOrderByAggregateInput;
   _avg?: Prisma.brandAvgOrderByAggregateInput;
   _max?: Prisma.brandMaxOrderByAggregateInput;
@@ -372,6 +399,13 @@ export type brandScalarWhereWithAggregatesInput = {
     | Prisma.StringNullableWithAggregatesFilter<"brand">
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.DecimalNullableWithAggregatesFilter<"brand">
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
 };
 
 export type brandCreateInput = {
@@ -385,6 +419,12 @@ export type brandCreateInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -406,6 +446,12 @@ export type brandUncheckedCreateInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -430,6 +476,13 @@ export type brandUpdateInput = {
     | null;
   sap_company_name?:
     | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
     | string
     | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
@@ -459,6 +512,13 @@ export type brandUncheckedUpdateInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -480,6 +540,12 @@ export type brandCreateManyInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
 };
 
 export type brandUpdateManyMutationInput = {
@@ -497,6 +563,13 @@ export type brandUpdateManyMutationInput = {
     | null;
   sap_company_name?:
     | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
     | string
     | null;
 };
@@ -519,6 +592,13 @@ export type brandUncheckedUpdateManyInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
 };
 
 export type brandCountOrderByAggregateInput = {
@@ -533,10 +613,12 @@ export type brandCountOrderByAggregateInput = {
   active?: Prisma.SortOrder;
   sap_brand_alias?: Prisma.SortOrder;
   sap_company_name?: Prisma.SortOrder;
+  ideal_fc_perc?: Prisma.SortOrder;
 };
 
 export type brandAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder;
+  ideal_fc_perc?: Prisma.SortOrder;
 };
 
 export type brandMaxOrderByAggregateInput = {
@@ -551,6 +633,7 @@ export type brandMaxOrderByAggregateInput = {
   active?: Prisma.SortOrder;
   sap_brand_alias?: Prisma.SortOrder;
   sap_company_name?: Prisma.SortOrder;
+  ideal_fc_perc?: Prisma.SortOrder;
 };
 
 export type brandMinOrderByAggregateInput = {
@@ -565,10 +648,12 @@ export type brandMinOrderByAggregateInput = {
   active?: Prisma.SortOrder;
   sap_brand_alias?: Prisma.SortOrder;
   sap_company_name?: Prisma.SortOrder;
+  ideal_fc_perc?: Prisma.SortOrder;
 };
 
 export type brandSumOrderByAggregateInput = {
   id?: Prisma.SortOrder;
+  ideal_fc_perc?: Prisma.SortOrder;
 };
 
 export type BrandScalarRelationFilter = {
@@ -782,6 +867,12 @@ export type brandCreateWithoutUser_assignmentsInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
@@ -802,6 +893,12 @@ export type brandUncheckedCreateWithoutUser_assignmentsInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
@@ -855,6 +952,13 @@ export type brandUpdateWithoutUser_assignmentsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
@@ -881,6 +985,13 @@ export type brandUncheckedUpdateWithoutUser_assignmentsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
@@ -900,6 +1011,12 @@ export type brandCreateWithoutAggregator_offersInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
@@ -920,6 +1037,12 @@ export type brandUncheckedCreateWithoutAggregator_offersInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
@@ -973,6 +1096,13 @@ export type brandUpdateWithoutAggregator_offersInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
@@ -999,6 +1129,13 @@ export type brandUncheckedUpdateWithoutAggregator_offersInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1018,6 +1155,12 @@ export type brandCreateWithoutGenerated_imagesInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -1038,6 +1181,12 @@ export type brandUncheckedCreateWithoutGenerated_imagesInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -1091,6 +1240,13 @@ export type brandUpdateWithoutGenerated_imagesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -1117,6 +1273,13 @@ export type brandUncheckedUpdateWithoutGenerated_imagesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1136,6 +1299,12 @@ export type brandCreateWithoutBrand_assetsInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
@@ -1156,6 +1325,12 @@ export type brandUncheckedCreateWithoutBrand_assetsInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
@@ -1209,6 +1384,13 @@ export type brandUpdateWithoutBrand_assetsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
@@ -1235,6 +1417,13 @@ export type brandUncheckedUpdateWithoutBrand_assetsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1254,6 +1443,12 @@ export type brandCreateWithoutImage_templatesInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -1274,6 +1469,12 @@ export type brandUncheckedCreateWithoutImage_templatesInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -1327,6 +1528,13 @@ export type brandUpdateWithoutImage_templatesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -1353,6 +1561,13 @@ export type brandUncheckedUpdateWithoutImage_templatesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1372,6 +1587,12 @@ export type brandCreateWithoutGenerated_copiesInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -1392,6 +1613,12 @@ export type brandUncheckedCreateWithoutGenerated_copiesInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -1445,6 +1672,13 @@ export type brandUpdateWithoutGenerated_copiesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -1471,6 +1705,13 @@ export type brandUncheckedUpdateWithoutGenerated_copiesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1490,6 +1731,12 @@ export type brandCreateWithoutBrand_entitiesInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -1510,6 +1757,12 @@ export type brandUncheckedCreateWithoutBrand_entitiesInput = {
   active?: boolean;
   sap_brand_alias?: string | null;
   sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -1563,6 +1816,13 @@ export type brandUpdateWithoutBrand_entitiesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -1587,6 +1847,13 @@ export type brandUncheckedUpdateWithoutBrand_entitiesInput = {
     | null;
   sap_company_name?:
     | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
     | string
     | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1723,6 +1990,7 @@ export type brandSelect<
     active?: boolean;
     sap_brand_alias?: boolean;
     sap_company_name?: boolean;
+    ideal_fc_perc?: boolean;
     aggregator_offers?: boolean | Prisma.brand$aggregator_offersArgs<ExtArgs>;
     user_assignments?: boolean | Prisma.brand$user_assignmentsArgs<ExtArgs>;
     brand_assets?: boolean | Prisma.brand$brand_assetsArgs<ExtArgs>;
@@ -1751,6 +2019,7 @@ export type brandSelectCreateManyAndReturn<
     active?: boolean;
     sap_brand_alias?: boolean;
     sap_company_name?: boolean;
+    ideal_fc_perc?: boolean;
   },
   ExtArgs["result"]["brand"]
 >;
@@ -1771,6 +2040,7 @@ export type brandSelectUpdateManyAndReturn<
     active?: boolean;
     sap_brand_alias?: boolean;
     sap_company_name?: boolean;
+    ideal_fc_perc?: boolean;
   },
   ExtArgs["result"]["brand"]
 >;
@@ -1787,6 +2057,7 @@ export type brandSelectScalar = {
   active?: boolean;
   sap_brand_alias?: boolean;
   sap_company_name?: boolean;
+  ideal_fc_perc?: boolean;
 };
 
 export type brandOmit<
@@ -1803,7 +2074,8 @@ export type brandOmit<
   | "description"
   | "active"
   | "sap_brand_alias"
-  | "sap_company_name",
+  | "sap_company_name"
+  | "ideal_fc_perc",
   ExtArgs["result"]["brand"]
 >;
 export type brandInclude<
@@ -1855,6 +2127,11 @@ export type $brandPayload<
       active: boolean;
       sap_brand_alias: string | null;
       sap_company_name: string | null;
+      /**
+       * Yearly food-cost target as a fraction (0.30 = 30%). Used by the
+       * offers-data-quality form to calculate ideal_price from fc_eur.
+       */
+      ideal_fc_perc: runtime.Decimal | null;
     },
     ExtArgs["result"]["brand"]
   >;
@@ -2535,6 +2812,7 @@ export interface brandFieldRefs {
   readonly active: Prisma.FieldRef<"brand", "Boolean">;
   readonly sap_brand_alias: Prisma.FieldRef<"brand", "String">;
   readonly sap_company_name: Prisma.FieldRef<"brand", "String">;
+  readonly ideal_fc_perc: Prisma.FieldRef<"brand", "Decimal">;
 }
 
 // Custom InputTypes

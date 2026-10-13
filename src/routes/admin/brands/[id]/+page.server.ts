@@ -17,13 +17,27 @@ export const load: PageServerLoad = async (event) => {
     error(400, "Invalid brand id");
   }
 
-  const brand = await prisma.brand.findUnique({
+  const brandRecord = await prisma.brand.findUnique({
     where: { id: brandId },
-    select: { id: true, name: true, slug: true, active: true, alias: true },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      active: true,
+      alias: true,
+      ideal_fc_perc: true,
+    },
   });
-  if (!brand) {
+  if (!brandRecord) {
     error(404, "Brand not found");
   }
+
+  const { ideal_fc_perc, ...brand } = brandRecord;
+  // Stored as a fraction (0.3000); the page edits it as a percent (30).
+  const idealFcPercent =
+    ideal_fc_perc === null
+      ? null
+      : Math.round(Number(ideal_fc_perc.toString()) * 100 * 100) / 100;
 
   const [assets, guidelines, assignments] = await Promise.all([
     listBrandAssets(brand.id),
@@ -38,6 +52,7 @@ export const load: PageServerLoad = async (event) => {
 
   return {
     brand,
+    idealFcPercent,
     assignments,
     assets: assets.map((asset) => ({
       id: asset.id,

@@ -64,6 +64,9 @@ model brand {
   active            Boolean                       @default(true)
   sap_brand_alias   String?                       @db.Text
   sap_company_name  String?                       @db.Text
+  /// Yearly food-cost target as a fraction (0.30 = 30%). Used by the
+  /// offers-data-quality form to calculate ideal_price from fc_eur.
+  ideal_fc_perc     Decimal?                      @db.Decimal(5, 4)
   aggregator_offers aggregator_offers[]
   user_assignments  user_brand[]
   brand_assets      BrandAsset[]
@@ -204,14 +207,14 @@ model channels {
 }
 
 model dq_missing_offers_pricing {
-  dq_id           Int                  @id @default(autoincrement())
-  trde_item       String               @db.VarChar
-  item_name       String               @db.VarChar
-  brand           String               @db.VarChar
-  item_category   String               @db.VarChar
-  missing_fields  String               @db.VarChar
-  detected_at     DateTime             @default(now())
-  status          DqGapStatus          @default(open)
+  dq_id           Int                    @id @default(autoincrement())
+  trde_item       String                 @db.VarChar
+  item_name       String                 @db.VarChar
+  brand           String                 @db.VarChar
+  item_category   String                 @db.VarChar
+  missing_fields  String                 @db.VarChar
+  detected_at     DateTime               @default(now())
+  status          DqGapStatus            @default(open)
   resolved_at     DateTime?
   audit_records   dim_offers_audit[]
   staging_records dim_offers_staging[]
@@ -241,6 +244,7 @@ model dq_gap_queue_snapshot {
   ideal_price    Float?
   selling_price  Float?
   fc_perc        Float?
+  fc_eur         Float?
   mktg_spend     Float?
   source         String                    @db.VarChar
   refreshed_at   DateTime                  @default(now())
@@ -272,24 +276,28 @@ model dq_gap_queue_refresh {
 }
 
 model dim_offers_staging {
-  id            Int                       @id @default(autoincrement())
-  dq_id         Int
-  item_code     String                    @db.VarChar
-  channel       String                    @db.VarChar
-  category      String                    @db.VarChar
-  subcategory   String                    @db.VarChar
-  ideal_price   Decimal                   @db.Decimal(10, 2)
-  selling_price Decimal                   @db.Decimal(10, 2)
-  fc_perc       Decimal                   @db.Decimal(5, 4)
-  mktg_spend    Decimal?                  @db.Decimal(10, 2)
-  notes         String?                   @db.VarChar(500)
-  submitted_by  String                    @db.VarChar
-  submitted_at  DateTime                  @default(now())
-  approved_by   String?                   @db.VarChar
-  approved_at   DateTime?
-  status        DimOffersStagingStatus    @default(pending)
-  audit_records dim_offers_audit[]
-  gap_record    dq_missing_offers_pricing @relation(fields: [dq_id], references: [dq_id], onDelete: Restrict)
+  id                  Int                       @id @default(autoincrement())
+  dq_id               Int
+  item_code           String                    @db.VarChar
+  channel             String                    @db.VarChar
+  category            String                    @db.VarChar
+  subcategory         String                    @db.VarChar
+  ideal_price         Decimal                   @db.Decimal(10, 2)
+  selling_price       Decimal                   @db.Decimal(10, 2)
+  fc_perc             Decimal                   @db.Decimal(5, 4)
+  /// Food cost of the offer in EUR; ideal_price is derived from it.
+  fc_eur              Decimal?                  @db.Decimal(10, 2)
+  /// brand.ideal_fc_perc captured at submit time (fraction).
+  brand_ideal_fc_perc Decimal?                  @db.Decimal(5, 4)
+  mktg_spend          Decimal?                  @db.Decimal(10, 2)
+  notes               String?                   @db.VarChar(500)
+  submitted_by        String                    @db.VarChar
+  submitted_at        DateTime                  @default(now())
+  approved_by         String?                   @db.VarChar
+  approved_at         DateTime?
+  status              DimOffersStagingStatus    @default(pending)
+  audit_records       dim_offers_audit[]
+  gap_record          dq_missing_offers_pricing @relation(fields: [dq_id], references: [dq_id], onDelete: Restrict)
 
   @@index([dq_id])
   @@index([item_code])
@@ -818,25 +826,25 @@ enum ForecastValidationStatus {
 
 /// One recorded forecast awaiting (or holding) its comparison with actual sales.
 model forecast_validation_run {
-  id                Int                        @id @default(autoincrement())
-  batch_id          String                     @db.VarChar
-  trigger           String                     @db.VarChar
-  brand_alias       String                     @db.VarChar
-  brand_name        String                     @db.VarChar
-  model_id          String                     @db.VarChar
-  model_version     String                     @db.VarChar
-  engine_version    String                     @db.VarChar
+  id                Int                         @id @default(autoincrement())
+  batch_id          String                      @db.VarChar
+  trigger           String                      @db.VarChar
+  brand_alias       String                      @db.VarChar
+  brand_name        String                      @db.VarChar
+  model_id          String                      @db.VarChar
+  model_version     String                      @db.VarChar
+  engine_version    String                      @db.VarChar
   horizon_days      Int
-  cutoff_date       DateTime                   @db.Date
-  forecast_from     DateTime                   @db.Date
-  forecast_to       DateTime                   @db.Date
-  evaluate_after    DateTime                   @db.Date
-  status            ForecastValidationStatus   @default(pending)
+  cutoff_date       DateTime                    @db.Date
+  forecast_from     DateTime                    @db.Date
+  forecast_to       DateTime                    @db.Date
+  evaluate_after    DateTime                    @db.Date
+  status            ForecastValidationStatus    @default(pending)
   forecast_total    Float
   forecast_lower80  Float
   forecast_upper80  Float
   backtest_wape_pct Float?
-  backtest_grade    String?                    @db.VarChar
+  backtest_grade    String?                     @db.VarChar
   warnings          Json
   actual_total      Float?
   actual_days       Int?
@@ -845,10 +853,10 @@ model forecast_validation_run {
   wape_pct          Float?
   bias_pct          Float?
   coverage80_pct    Float?
-  quality           String?                    @db.VarChar
+  quality           String?                     @db.VarChar
   evaluated_at      DateTime?
   error             String?
-  created_at        DateTime                   @default(now())
+  created_at        DateTime                    @default(now())
   points            forecast_validation_point[]
 
   @@unique([brand_alias, model_id, horizon_days, cutoff_date])

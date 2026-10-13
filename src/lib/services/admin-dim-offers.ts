@@ -8,6 +8,7 @@ export type AdminDimOfferRow = {
   ideal_price: number | null;
   selling_price: number | null;
   fc_perc: number | null;
+  fc_eur: number | null;
   mktg_spend: number | null;
   discount_amount: number | null;
   last_changed_at: string | null;
@@ -26,6 +27,7 @@ export const adminDimOffersSortFields = [
   "ideal_price",
   "selling_price",
   "fc_perc",
+  "fc_eur",
   "mktg_spend",
   "discount_amount",
 ] as const;

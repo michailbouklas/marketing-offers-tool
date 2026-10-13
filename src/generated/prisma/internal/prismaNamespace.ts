@@ -4053,6 +4053,7 @@ export const BrandScalarFieldEnum = {
   active: "active",
   sap_brand_alias: "sap_brand_alias",
   sap_company_name: "sap_company_name",
+  ideal_fc_perc: "ideal_fc_perc",
 } as const;
 
 export type BrandScalarFieldEnum =
@@ -4222,6 +4223,7 @@ export const Dq_gap_queue_snapshotScalarFieldEnum = {
   ideal_price: "ideal_price",
   selling_price: "selling_price",
   fc_perc: "fc_perc",
+  fc_eur: "fc_eur",
   mktg_spend: "mktg_spend",
   source: "source",
   refreshed_at: "refreshed_at",
@@ -4257,6 +4259,8 @@ export const Dim_offers_stagingScalarFieldEnum = {
   ideal_price: "ideal_price",
   selling_price: "selling_price",
   fc_perc: "fc_perc",
+  fc_eur: "fc_eur",
+  brand_ideal_fc_perc: "brand_ideal_fc_perc",
   mktg_spend: "mktg_spend",
   notes: "notes",
   submitted_by: "submitted_by",

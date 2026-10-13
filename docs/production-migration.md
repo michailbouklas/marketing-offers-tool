@@ -330,6 +330,15 @@ If `migrate deploy` fails partway through, **do not** re-run it blindly. The fai
 Two things `migrate deploy` does **not** handle. Verify them separately:
 
 - **ClickHouse** is a read-only analytics source for this app. The Prisma schema does not manage it. Confirm the prod ClickHouse has the tables this app reads — at minimum `transaction_details`, `dim_offers`, and whatever brand-alias view powers transaction filtering. The data team owns those schemas.
+- **`dim_offers.fc_eur`** (added with migration `20261013082234_add_fc_eur_and_brand_ideal_fc_perc`): the offers data-quality form now stores the food cost in EUR next to `fc_perc`, and the gap form / admin dim-offers pages select it. Before deploying that migration, have the data team run on the target ClickHouse:
+
+  ```sql
+  ALTER TABLE default.dim_offers
+    ADD COLUMN IF NOT EXISTS fc_eur Nullable(Decimal(10, 2)) AFTER fc_perc;
+  ```
+
+  Without it every `dim_offers` read in the app fails with "Unknown identifier fc_eur".
+
 - **`UPLOADS_DIR`** must already be a writable persistent mount on the host. The app creates `images/` and `references/` under it lazily with mode `0700`. Reference images uploaded but never attached to a `GeneratedImage` are not garbage-collected — set up disk monitoring.
 
 ---

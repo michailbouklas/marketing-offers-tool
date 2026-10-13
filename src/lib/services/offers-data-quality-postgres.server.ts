@@ -31,6 +31,9 @@ export type CreateDimOffersStagingInput = {
   ideal_price: string;
   selling_price: string;
   fc_perc: string;
+  fc_eur: string;
+  /** Fraction captured from brand.ideal_fc_perc at submit time. */
+  brand_ideal_fc_perc: string;
   mktg_spend?: string | null;
   notes?: string | null;
   submitted_by: string;

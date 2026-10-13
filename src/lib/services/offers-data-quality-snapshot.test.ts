@@ -13,6 +13,7 @@ const unpriced = {
   ideal_price: 0,
   selling_price: 5.99,
   fc_perc: 0,
+  fc_eur: null,
   mktg_spend: null,
 };
 
@@ -23,6 +24,7 @@ const priced = {
   ideal_price: 9.9,
   selling_price: 8.5,
   fc_perc: 0.32,
+  fc_eur: 2.4,
   mktg_spend: null,
 };
 
@@ -110,7 +112,7 @@ describe("buildGapQueueSnapshotRows", () => {
       dq_id: null,
       status: "open",
       detected_at: null,
-      missing_fields: "ideal_price,selling_price,fc_perc",
+      missing_fields: "ideal_price,selling_price,fc_perc,fc_eur",
       brand: "bk",
       brand_aliases: ["bk", "bk online"],
     });

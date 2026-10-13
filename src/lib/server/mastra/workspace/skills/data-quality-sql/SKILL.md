@@ -18,38 +18,40 @@ offers. The **actual current pricing values** live in ClickHouse `dim_offers`
 
 One row per detected gap (an offer item missing pricing data).
 
-| Column         | Type      | Notes                                                                 |
-| -------------- | --------- | --------------------------------------------------------------------- |
-| dq_id          | int       | Primary key                                                           |
-| trde_item      | varchar   | Item code (joins to ClickHouse `dim_offers.item_code`)                |
-| item_name      | varchar   | Item description                                                      |
-| brand          | varchar   | Brand of the item — use for per-brand questions                       |
-| item_category  | varchar   | Transaction/item category the gap was detected under                  |
-| missing_fields | varchar   | Comma-separated list, values from {ideal_price,selling_price,fc_perc} |
-| detected_at    | timestamp | When the gap was first detected                                       |
-| status         | enum      | `open`, `submitted`, or `resolved`                                    |
-| resolved_at    | timestamp | Set when status becomes `resolved` (nullable)                         |
+| Column         | Type      | Notes                                                                        |
+| -------------- | --------- | ---------------------------------------------------------------------------- |
+| dq_id          | int       | Primary key                                                                  |
+| trde_item      | varchar   | Item code (joins to ClickHouse `dim_offers.item_code`)                       |
+| item_name      | varchar   | Item description                                                             |
+| brand          | varchar   | Brand of the item — use for per-brand questions                              |
+| item_category  | varchar   | Transaction/item category the gap was detected under                         |
+| missing_fields | varchar   | Comma-separated list, values from {ideal_price,selling_price,fc_perc,fc_eur} |
+| detected_at    | timestamp | When the gap was first detected                                              |
+| status         | enum      | `open`, `submitted`, or `resolved`                                           |
+| resolved_at    | timestamp | Set when status becomes `resolved` (nullable)                                |
 
 ### dim_offers_staging — submitted pricing values awaiting/past review
 
-| Column        | Type          | Notes                                           |
-| ------------- | ------------- | ----------------------------------------------- |
-| id            | int           | Primary key                                     |
-| dq_id         | int           | FK → dq_missing_offers_pricing.dq_id            |
-| item_code     | varchar       | Item code (same as the gap's trde_item)         |
-| channel       | varchar       | Selected sales channel                          |
-| category      | varchar       | Selected pricing category                       |
-| subcategory   | varchar       | Selected pricing subcategory                    |
-| ideal_price   | numeric(10,2) | Submitted ideal price, EUR                      |
-| selling_price | numeric(10,2) | Submitted selling price, EUR                    |
-| fc_perc       | numeric(5,4)  | Food-cost **fraction** (0–1, e.g. 0.3200 = 32%) |
-| mktg_spend    | numeric(10,2) | Marketing spend, EUR (nullable)                 |
-| notes         | varchar(500)  | Free-text notes (nullable)                      |
-| submitted_by  | varchar       | User id who submitted                           |
-| submitted_at  | timestamp     | When submitted                                  |
-| approved_by   | varchar       | User id who approved (nullable)                 |
-| approved_at   | timestamp     | When approved (nullable)                        |
-| status        | enum          | `pending`, `approved`, or `rejected`            |
+| Column              | Type          | Notes                                                                     |
+| ------------------- | ------------- | ------------------------------------------------------------------------- |
+| id                  | int           | Primary key                                                               |
+| dq_id               | int           | FK → dq_missing_offers_pricing.dq_id                                      |
+| item_code           | varchar       | Item code (same as the gap's trde_item)                                   |
+| channel             | varchar       | Selected sales channel                                                    |
+| category            | varchar       | Selected pricing category                                                 |
+| subcategory         | varchar       | Selected pricing subcategory                                              |
+| ideal_price         | numeric(10,2) | Submitted ideal price, EUR                                                |
+| selling_price       | numeric(10,2) | Submitted selling price, EUR                                              |
+| fc_perc             | numeric(5,4)  | Food-cost **fraction** (0–1, e.g. 0.3200 = 32%)                           |
+| fc_eur              | numeric(10,2) | Food cost of the offer, EUR (null on legacy rows)                         |
+| brand_ideal_fc_perc | numeric(5,4)  | Brand target FC fraction used to derive ideal_price (null on legacy rows) |
+| mktg_spend          | numeric(10,2) | Marketing spend, EUR (nullable)                                           |
+| notes               | varchar(500)  | Free-text notes (nullable)                                                |
+| submitted_by        | varchar       | User id who submitted                                                     |
+| submitted_at        | timestamp     | When submitted                                                            |
+| approved_by         | varchar       | User id who approved (nullable)                                           |
+| approved_at         | timestamp     | When approved (nullable)                                                  |
+| status              | enum          | `pending`, `approved`, or `rejected`                                      |
 
 ### dim_offers_audit — audit log of approved dim_offers writes
 

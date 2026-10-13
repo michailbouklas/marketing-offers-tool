@@ -42,6 +42,7 @@
     { key: "ideal_price", label: "Ideal price" },
     { key: "selling_price", label: "Selling price" },
     { key: "fc_perc", label: "FC %" },
+    { key: "fc_eur", label: "FC €" },
     { key: "mktg_spend", label: "Marketing spend" },
     { key: "discount_amount", label: "Discount amount" },
   ];
@@ -56,6 +57,7 @@
     if (
       key === "ideal_price" ||
       key === "selling_price" ||
+      key === "fc_eur" ||
       key === "mktg_spend" ||
       key === "discount_amount"
     ) {

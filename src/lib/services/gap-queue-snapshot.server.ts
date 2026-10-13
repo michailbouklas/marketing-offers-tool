@@ -99,6 +99,7 @@ function toSnapshotCreateInput(
     ideal_price: row.current_dim_offers.ideal_price,
     selling_price: row.current_dim_offers.selling_price,
     fc_perc: row.current_dim_offers.fc_perc,
+    fc_eur: row.current_dim_offers.fc_eur,
     mktg_spend: row.current_dim_offers.mktg_spend,
     source: row.source,
     refreshed_at: refreshedAt,

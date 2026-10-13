@@ -16,6 +16,7 @@ import {
   updateDimOffer,
 } from "$lib/services/offers-data-quality-clickhouse.server";
 import { createDimOffersAuditRecord } from "$lib/services/dim-offers-audit.server";
+import { getBrandPricingTargetByAlias } from "$lib/services/brands.server";
 import {
   createGapRecord,
   getGapRecordById,
@@ -81,6 +82,8 @@ function mapPendingSubmission(stagingRecord: {
   ideal_price: { toFixed: (digits: number) => string };
   selling_price: { toFixed: (digits: number) => string };
   fc_perc: { toFixed: (digits: number) => string };
+  fc_eur?: { toFixed: (digits: number) => string } | null;
+  brand_ideal_fc_perc?: { toFixed: (digits: number) => string } | null;
   mktg_spend: { toFixed: (digits: number) => string } | null;
   notes: string | null;
   submitted_by: string;
@@ -96,6 +99,10 @@ function mapPendingSubmission(stagingRecord: {
     ideal_price: stagingRecord.ideal_price.toFixed(2),
     selling_price: stagingRecord.selling_price.toFixed(2),
     fc_perc: (Number(stagingRecord.fc_perc.toFixed(4)) * 100).toFixed(2),
+    fc_eur: stagingRecord.fc_eur?.toFixed(2) ?? null,
+    brand_ideal_fc_perc: stagingRecord.brand_ideal_fc_perc
+      ? (Number(stagingRecord.brand_ideal_fc_perc.toFixed(4)) * 100).toFixed(2)
+      : null,
     mktg_spend: stagingRecord.mktg_spend?.toFixed(2) ?? null,
     notes: stagingRecord.notes,
     submitted_by: stagingRecord.submitted_by,
@@ -126,16 +133,19 @@ export async function getGapFormData(
       : getTransactionItemContext(gapRecord.trde_item),
     getCurrentDimOfferValues(gapRecord.trde_item),
   ]);
+  const brand = itemContext?.brand ?? gapRecord.brand;
+  const brandTarget = await getBrandPricingTargetByAlias(brand);
 
   return {
     dq_id: gapRecord.dq_id,
     trde_item: gapRecord.trde_item,
     item_name: itemContext?.item_name ?? gapRecord.item_name,
-    brand: (itemContext?.brand ?? gapRecord.brand).toUpperCase(),
+    brand: brand.toUpperCase(),
     item_category: itemContext?.item_category ?? gapRecord.item_category,
     detected_at: gapRecord.detected_at.toISOString(),
     missing_fields: parseMissingFields(gapRecord.missing_fields),
     current_dim_offers: currentDimOffers,
+    brand_target: brandTarget,
   };
 }
 
@@ -398,6 +408,7 @@ export async function approveGapSubmission(
     ideal_price: stagingRecord.ideal_price.toFixed(2),
     selling_price: stagingRecord.selling_price.toFixed(2),
     fc_perc: stagingRecord.fc_perc.toFixed(4),
+    fc_eur: stagingRecord.fc_eur?.toFixed(2) ?? null,
     mktg_spend: stagingRecord.mktg_spend?.toFixed(2) ?? null,
     discount_amount: discountAmount,
     notes: stagingRecord.notes,
@@ -417,6 +428,7 @@ export async function approveGapSubmission(
     ideal_price: upsertPayload.ideal_price,
     selling_price: upsertPayload.selling_price,
     fc_perc: upsertPayload.fc_perc,
+    fc_eur: upsertPayload.fc_eur,
     mktg_spend: upsertPayload.mktg_spend,
     discount_amount: upsertPayload.discount_amount,
   };

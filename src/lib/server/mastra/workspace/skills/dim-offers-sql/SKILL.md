@@ -21,20 +21,21 @@ referenced as `apidata_replica.dim_items`.
 
 One row per `item_code`.
 
-| Column          | Type   | Notes                                                                       |
-| --------------- | ------ | --------------------------------------------------------------------------- |
-| item_code       | String | Item code (joins to transaction_details.trde_item)                          |
-| product_desc    | String | Product description                                                         |
-| brand           | String | Brand (matches the app brand alias)                                         |
-| channel         | String | Sales channel                                                               |
-| category        | String | Pricing category                                                            |
-| subcategory     | String | Pricing subcategory                                                         |
-| ideal_price     | Float  | Ideal price, EUR. NULL/0 means "not set"                                    |
-| selling_price   | Float  | Selling price, EUR                                                          |
-| fc_perc         | Float  | Food-cost **fraction** (0–1; ×100 for a percentage). NULL/0 means "not set" |
-| mktg_spend      | Float  | Marketing spend, EUR (nullable)                                             |
-| discount_amount | Float  | Discount amount, EUR                                                        |
-| notes           | String | Free-text notes (nullable)                                                  |
+| Column          | Type   | Notes                                                                                |
+| --------------- | ------ | ------------------------------------------------------------------------------------ |
+| item_code       | String | Item code (joins to transaction_details.trde_item)                                   |
+| product_desc    | String | Product description                                                                  |
+| brand           | String | Brand (matches the app brand alias)                                                  |
+| channel         | String | Sales channel                                                                        |
+| category        | String | Pricing category                                                                     |
+| subcategory     | String | Pricing subcategory                                                                  |
+| ideal_price     | Float  | Ideal price, EUR. NULL/0 means "not set"                                             |
+| selling_price   | Float  | Selling price, EUR                                                                   |
+| fc_perc         | Float  | Food-cost **fraction** (0–1; ×100 for a percentage). NULL/0 means "not set"          |
+| fc_eur          | Float  | Food cost of the offer, EUR. ideal_price = (fc_eur / brand ideal FC %) × 1.05 × 1.07 |
+| mktg_spend      | Float  | Marketing spend, EUR (nullable)                                                      |
+| discount_amount | Float  | Discount amount, EUR                                                                 |
+| notes           | String | Free-text notes (nullable)                                                           |
 
 A "missing offer pricing" item is one where there is no `dim_offers` row for
 the `item_code`, or the row exists but `ideal_price IS NULL OR ideal_price = 0`.
@@ -85,7 +86,7 @@ Current pricing for one item:
 
 ```sql
 SELECT item_code, product_desc, brand, channel, category, subcategory,
-       ideal_price, selling_price, fc_perc, mktg_spend, discount_amount
+       ideal_price, selling_price, fc_perc, fc_eur, mktg_spend, discount_amount
 FROM dim_offers
 WHERE item_code = {code:String}
 ```

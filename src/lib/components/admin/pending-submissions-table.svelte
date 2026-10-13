@@ -132,6 +132,10 @@
                 <span>{submission.fc_perc}%</span>
               </div>
               <div class="flex items-center justify-between gap-3">
+                <span class="text-muted-foreground">FC €</span>
+                <span>{formatMoney(submission.fc_eur)}</span>
+              </div>
+              <div class="flex items-center justify-between gap-3">
                 <span class="text-muted-foreground">Spend</span>
                 <span>{formatMoney(submission.mktg_spend)}</span>
               </div>

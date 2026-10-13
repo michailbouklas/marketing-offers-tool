@@ -20,6 +20,7 @@ type AdminDimOfferQueryRow = {
   ideal_price?: string | number | null;
   selling_price?: string | number | null;
   fc_perc?: string | number | null;
+  fc_eur?: string | number | null;
   mktg_spend?: string | number | null;
   discount_amount?: string | number | null;
   last_changed_at?: string | null;
@@ -109,6 +110,8 @@ function getSortExpression(sortBy: AdminDimOffersSortBy) {
       return "ifNull(do.selling_price, -1)";
     case "fc_perc":
       return "ifNull(do.fc_perc, -1)";
+    case "fc_eur":
+      return "ifNull(do.fc_eur, -1)";
     case "mktg_spend":
       return "ifNull(do.mktg_spend, -1)";
     case "discount_amount":
@@ -173,6 +176,7 @@ function mapAdminDimOfferRow(row: AdminDimOfferQueryRow): AdminDimOfferRow {
     ideal_price: parseNullableNumber(row.ideal_price),
     selling_price: parseNullableNumber(row.selling_price),
     fc_perc: parseNullableNumber(row.fc_perc),
+    fc_eur: parseNullableNumber(row.fc_eur),
     mktg_spend: parseNullableNumber(row.mktg_spend),
     discount_amount: parseNullableNumber(row.discount_amount),
     last_changed_at: null,
@@ -319,6 +323,7 @@ export async function listAdminDimOffersRows({
         do.ideal_price,
         do.selling_price,
         do.fc_perc,
+        do.fc_eur,
         do.mktg_spend,
         do.discount_amount
       FROM dim_offers do

@@ -34,6 +34,7 @@ export type Dq_gap_queue_snapshotAvgAggregateOutputType = {
   ideal_price: number | null;
   selling_price: number | null;
   fc_perc: number | null;
+  fc_eur: number | null;
   mktg_spend: number | null;
 };
 
@@ -42,6 +43,7 @@ export type Dq_gap_queue_snapshotSumAggregateOutputType = {
   ideal_price: number | null;
   selling_price: number | null;
   fc_perc: number | null;
+  fc_eur: number | null;
   mktg_spend: number | null;
 };
 
@@ -60,6 +62,7 @@ export type Dq_gap_queue_snapshotMinAggregateOutputType = {
   ideal_price: number | null;
   selling_price: number | null;
   fc_perc: number | null;
+  fc_eur: number | null;
   mktg_spend: number | null;
   source: string | null;
   refreshed_at: Date | null;
@@ -80,6 +83,7 @@ export type Dq_gap_queue_snapshotMaxAggregateOutputType = {
   ideal_price: number | null;
   selling_price: number | null;
   fc_perc: number | null;
+  fc_eur: number | null;
   mktg_spend: number | null;
   source: string | null;
   refreshed_at: Date | null;
@@ -101,6 +105,7 @@ export type Dq_gap_queue_snapshotCountAggregateOutputType = {
   ideal_price: number;
   selling_price: number;
   fc_perc: number;
+  fc_eur: number;
   mktg_spend: number;
   source: number;
   refreshed_at: number;
@@ -112,6 +117,7 @@ export type Dq_gap_queue_snapshotAvgAggregateInputType = {
   ideal_price?: true;
   selling_price?: true;
   fc_perc?: true;
+  fc_eur?: true;
   mktg_spend?: true;
 };
 
@@ -120,6 +126,7 @@ export type Dq_gap_queue_snapshotSumAggregateInputType = {
   ideal_price?: true;
   selling_price?: true;
   fc_perc?: true;
+  fc_eur?: true;
   mktg_spend?: true;
 };
 
@@ -138,6 +145,7 @@ export type Dq_gap_queue_snapshotMinAggregateInputType = {
   ideal_price?: true;
   selling_price?: true;
   fc_perc?: true;
+  fc_eur?: true;
   mktg_spend?: true;
   source?: true;
   refreshed_at?: true;
@@ -158,6 +166,7 @@ export type Dq_gap_queue_snapshotMaxAggregateInputType = {
   ideal_price?: true;
   selling_price?: true;
   fc_perc?: true;
+  fc_eur?: true;
   mktg_spend?: true;
   source?: true;
   refreshed_at?: true;
@@ -179,6 +188,7 @@ export type Dq_gap_queue_snapshotCountAggregateInputType = {
   ideal_price?: true;
   selling_price?: true;
   fc_perc?: true;
+  fc_eur?: true;
   mktg_spend?: true;
   source?: true;
   refreshed_at?: true;
@@ -300,6 +310,7 @@ export type Dq_gap_queue_snapshotGroupByOutputType = {
   ideal_price: number | null;
   selling_price: number | null;
   fc_perc: number | null;
+  fc_eur: number | null;
   mktg_spend: number | null;
   source: string;
   refreshed_at: Date;
@@ -368,6 +379,7 @@ export type dq_gap_queue_snapshotWhereInput = {
     | number
     | null;
   fc_perc?: Prisma.FloatNullableFilter<"dq_gap_queue_snapshot"> | number | null;
+  fc_eur?: Prisma.FloatNullableFilter<"dq_gap_queue_snapshot"> | number | null;
   mktg_spend?:
     | Prisma.FloatNullableFilter<"dq_gap_queue_snapshot">
     | number
@@ -396,6 +408,7 @@ export type dq_gap_queue_snapshotOrderByWithRelationInput = {
   ideal_price?: Prisma.SortOrderInput | Prisma.SortOrder;
   selling_price?: Prisma.SortOrderInput | Prisma.SortOrder;
   fc_perc?: Prisma.SortOrderInput | Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrderInput | Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrderInput | Prisma.SortOrder;
   source?: Prisma.SortOrder;
   refreshed_at?: Prisma.SortOrder;
@@ -449,6 +462,10 @@ export type dq_gap_queue_snapshotWhereUniqueInput = Prisma.AtLeast<
       | Prisma.FloatNullableFilter<"dq_gap_queue_snapshot">
       | number
       | null;
+    fc_eur?:
+      | Prisma.FloatNullableFilter<"dq_gap_queue_snapshot">
+      | number
+      | null;
     mktg_spend?:
       | Prisma.FloatNullableFilter<"dq_gap_queue_snapshot">
       | number
@@ -482,6 +499,7 @@ export type dq_gap_queue_snapshotOrderByWithAggregationInput = {
   ideal_price?: Prisma.SortOrderInput | Prisma.SortOrder;
   selling_price?: Prisma.SortOrderInput | Prisma.SortOrder;
   fc_perc?: Prisma.SortOrderInput | Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrderInput | Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrderInput | Prisma.SortOrder;
   source?: Prisma.SortOrder;
   refreshed_at?: Prisma.SortOrder;
@@ -546,6 +564,10 @@ export type dq_gap_queue_snapshotScalarWhereWithAggregatesInput = {
     | Prisma.FloatNullableWithAggregatesFilter<"dq_gap_queue_snapshot">
     | number
     | null;
+  fc_eur?:
+    | Prisma.FloatNullableWithAggregatesFilter<"dq_gap_queue_snapshot">
+    | number
+    | null;
   mktg_spend?:
     | Prisma.FloatNullableWithAggregatesFilter<"dq_gap_queue_snapshot">
     | number
@@ -574,6 +596,7 @@ export type dq_gap_queue_snapshotCreateInput = {
   ideal_price?: number | null;
   selling_price?: number | null;
   fc_perc?: number | null;
+  fc_eur?: number | null;
   mktg_spend?: number | null;
   source: string;
   refreshed_at?: Date | string;
@@ -598,6 +621,7 @@ export type dq_gap_queue_snapshotUncheckedCreateInput = {
   ideal_price?: number | null;
   selling_price?: number | null;
   fc_perc?: number | null;
+  fc_eur?: number | null;
   mktg_spend?: number | null;
   source: string;
   refreshed_at?: Date | string;
@@ -625,6 +649,7 @@ export type dq_gap_queue_snapshotUpdateInput = {
     | number
     | null;
   fc_perc?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
+  fc_eur?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   mktg_spend?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   source?: Prisma.StringFieldUpdateOperationsInput | string;
   refreshed_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -654,6 +679,7 @@ export type dq_gap_queue_snapshotUncheckedUpdateInput = {
     | number
     | null;
   fc_perc?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
+  fc_eur?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   mktg_spend?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   source?: Prisma.StringFieldUpdateOperationsInput | string;
   refreshed_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -677,6 +703,7 @@ export type dq_gap_queue_snapshotCreateManyInput = {
   ideal_price?: number | null;
   selling_price?: number | null;
   fc_perc?: number | null;
+  fc_eur?: number | null;
   mktg_spend?: number | null;
   source: string;
   refreshed_at?: Date | string;
@@ -704,6 +731,7 @@ export type dq_gap_queue_snapshotUpdateManyMutationInput = {
     | number
     | null;
   fc_perc?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
+  fc_eur?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   mktg_spend?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   source?: Prisma.StringFieldUpdateOperationsInput | string;
   refreshed_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -732,6 +760,7 @@ export type dq_gap_queue_snapshotUncheckedUpdateManyInput = {
     | number
     | null;
   fc_perc?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
+  fc_eur?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   mktg_spend?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   source?: Prisma.StringFieldUpdateOperationsInput | string;
   refreshed_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -766,6 +795,7 @@ export type dq_gap_queue_snapshotCountOrderByAggregateInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
   refreshed_at?: Prisma.SortOrder;
@@ -776,6 +806,7 @@ export type dq_gap_queue_snapshotAvgOrderByAggregateInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrder;
 };
 
@@ -794,6 +825,7 @@ export type dq_gap_queue_snapshotMaxOrderByAggregateInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
   refreshed_at?: Prisma.SortOrder;
@@ -814,6 +846,7 @@ export type dq_gap_queue_snapshotMinOrderByAggregateInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
   refreshed_at?: Prisma.SortOrder;
@@ -824,6 +857,7 @@ export type dq_gap_queue_snapshotSumOrderByAggregateInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrder;
 };
 
@@ -919,6 +953,7 @@ export type dq_gap_queue_snapshotCreateWithoutGap_recordInput = {
   ideal_price?: number | null;
   selling_price?: number | null;
   fc_perc?: number | null;
+  fc_eur?: number | null;
   mktg_spend?: number | null;
   source: string;
   refreshed_at?: Date | string;
@@ -941,6 +976,7 @@ export type dq_gap_queue_snapshotUncheckedCreateWithoutGap_recordInput = {
   ideal_price?: number | null;
   selling_price?: number | null;
   fc_perc?: number | null;
+  fc_eur?: number | null;
   mktg_spend?: number | null;
   source: string;
   refreshed_at?: Date | string;
@@ -996,6 +1032,7 @@ export type dq_gap_queue_snapshotUpdateWithoutGap_recordInput = {
     | number
     | null;
   fc_perc?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
+  fc_eur?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   mktg_spend?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   source?: Prisma.StringFieldUpdateOperationsInput | string;
   refreshed_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1023,6 +1060,7 @@ export type dq_gap_queue_snapshotUncheckedUpdateWithoutGap_recordInput = {
     | number
     | null;
   fc_perc?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
+  fc_eur?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   mktg_spend?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null;
   source?: Prisma.StringFieldUpdateOperationsInput | string;
   refreshed_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1048,6 +1086,7 @@ export type dq_gap_queue_snapshotSelect<
     ideal_price?: boolean;
     selling_price?: boolean;
     fc_perc?: boolean;
+    fc_eur?: boolean;
     mktg_spend?: boolean;
     source?: boolean;
     refreshed_at?: boolean;
@@ -1076,6 +1115,7 @@ export type dq_gap_queue_snapshotSelectCreateManyAndReturn<
     ideal_price?: boolean;
     selling_price?: boolean;
     fc_perc?: boolean;
+    fc_eur?: boolean;
     mktg_spend?: boolean;
     source?: boolean;
     refreshed_at?: boolean;
@@ -1104,6 +1144,7 @@ export type dq_gap_queue_snapshotSelectUpdateManyAndReturn<
     ideal_price?: boolean;
     selling_price?: boolean;
     fc_perc?: boolean;
+    fc_eur?: boolean;
     mktg_spend?: boolean;
     source?: boolean;
     refreshed_at?: boolean;
@@ -1128,6 +1169,7 @@ export type dq_gap_queue_snapshotSelectScalar = {
   ideal_price?: boolean;
   selling_price?: boolean;
   fc_perc?: boolean;
+  fc_eur?: boolean;
   mktg_spend?: boolean;
   source?: boolean;
   refreshed_at?: boolean;
@@ -1152,6 +1194,7 @@ export type dq_gap_queue_snapshotOmit<
   | "ideal_price"
   | "selling_price"
   | "fc_perc"
+  | "fc_eur"
   | "mktg_spend"
   | "source"
   | "refreshed_at",
@@ -1201,6 +1244,7 @@ export type $dq_gap_queue_snapshotPayload<
       ideal_price: number | null;
       selling_price: number | null;
       fc_perc: number | null;
+      fc_eur: number | null;
       mktg_spend: number | null;
       source: string;
       refreshed_at: Date;
@@ -1852,6 +1896,7 @@ export interface dq_gap_queue_snapshotFieldRefs {
   readonly ideal_price: Prisma.FieldRef<"dq_gap_queue_snapshot", "Float">;
   readonly selling_price: Prisma.FieldRef<"dq_gap_queue_snapshot", "Float">;
   readonly fc_perc: Prisma.FieldRef<"dq_gap_queue_snapshot", "Float">;
+  readonly fc_eur: Prisma.FieldRef<"dq_gap_queue_snapshot", "Float">;
   readonly mktg_spend: Prisma.FieldRef<"dq_gap_queue_snapshot", "Float">;
   readonly source: Prisma.FieldRef<"dq_gap_queue_snapshot", "String">;
   readonly refreshed_at: Prisma.FieldRef<"dq_gap_queue_snapshot", "DateTime">;

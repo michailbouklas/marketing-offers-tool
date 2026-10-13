@@ -66,6 +66,18 @@
         proposed: `${submission.fc_perc}%`,
       },
       {
+        label: "FC €",
+        current: formatCurrentMoney(submission.current_dim_offers.fc_eur),
+        proposed: formatSubmittedMoney(submission.fc_eur),
+      },
+      {
+        label: "Brand Ideal FC %",
+        current: "-",
+        proposed: submission.brand_ideal_fc_perc
+          ? `${submission.brand_ideal_fc_perc}%`
+          : "-",
+      },
+      {
         label: "Marketing spend",
         current: formatCurrentMoney(submission.current_dim_offers.mktg_spend),
         proposed: formatSubmittedMoney(submission.mktg_spend),
@@ -166,6 +178,18 @@
               <div class="flex items-center justify-between gap-3">
                 <span class="text-muted-foreground">FC %</span>
                 <span>{submission.fc_perc}%</span>
+              </div>
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-muted-foreground">FC €</span>
+                <span>{formatSubmittedMoney(submission.fc_eur)}</span>
+              </div>
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-muted-foreground">Brand Ideal FC %</span>
+                <span>
+                  {submission.brand_ideal_fc_perc
+                    ? `${submission.brand_ideal_fc_perc}%`
+                    : "-"}
+                </span>
               </div>
               <div class="flex items-center justify-between gap-3">
                 <span class="text-muted-foreground">Marketing spend</span>

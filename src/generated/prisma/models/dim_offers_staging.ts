@@ -32,6 +32,8 @@ export type Dim_offers_stagingAvgAggregateOutputType = {
   ideal_price: runtime.Decimal | null;
   selling_price: runtime.Decimal | null;
   fc_perc: runtime.Decimal | null;
+  fc_eur: runtime.Decimal | null;
+  brand_ideal_fc_perc: runtime.Decimal | null;
   mktg_spend: runtime.Decimal | null;
 };
 
@@ -41,6 +43,8 @@ export type Dim_offers_stagingSumAggregateOutputType = {
   ideal_price: runtime.Decimal | null;
   selling_price: runtime.Decimal | null;
   fc_perc: runtime.Decimal | null;
+  fc_eur: runtime.Decimal | null;
+  brand_ideal_fc_perc: runtime.Decimal | null;
   mktg_spend: runtime.Decimal | null;
 };
 
@@ -54,6 +58,8 @@ export type Dim_offers_stagingMinAggregateOutputType = {
   ideal_price: runtime.Decimal | null;
   selling_price: runtime.Decimal | null;
   fc_perc: runtime.Decimal | null;
+  fc_eur: runtime.Decimal | null;
+  brand_ideal_fc_perc: runtime.Decimal | null;
   mktg_spend: runtime.Decimal | null;
   notes: string | null;
   submitted_by: string | null;
@@ -73,6 +79,8 @@ export type Dim_offers_stagingMaxAggregateOutputType = {
   ideal_price: runtime.Decimal | null;
   selling_price: runtime.Decimal | null;
   fc_perc: runtime.Decimal | null;
+  fc_eur: runtime.Decimal | null;
+  brand_ideal_fc_perc: runtime.Decimal | null;
   mktg_spend: runtime.Decimal | null;
   notes: string | null;
   submitted_by: string | null;
@@ -92,6 +100,8 @@ export type Dim_offers_stagingCountAggregateOutputType = {
   ideal_price: number;
   selling_price: number;
   fc_perc: number;
+  fc_eur: number;
+  brand_ideal_fc_perc: number;
   mktg_spend: number;
   notes: number;
   submitted_by: number;
@@ -108,6 +118,8 @@ export type Dim_offers_stagingAvgAggregateInputType = {
   ideal_price?: true;
   selling_price?: true;
   fc_perc?: true;
+  fc_eur?: true;
+  brand_ideal_fc_perc?: true;
   mktg_spend?: true;
 };
 
@@ -117,6 +129,8 @@ export type Dim_offers_stagingSumAggregateInputType = {
   ideal_price?: true;
   selling_price?: true;
   fc_perc?: true;
+  fc_eur?: true;
+  brand_ideal_fc_perc?: true;
   mktg_spend?: true;
 };
 
@@ -130,6 +144,8 @@ export type Dim_offers_stagingMinAggregateInputType = {
   ideal_price?: true;
   selling_price?: true;
   fc_perc?: true;
+  fc_eur?: true;
+  brand_ideal_fc_perc?: true;
   mktg_spend?: true;
   notes?: true;
   submitted_by?: true;
@@ -149,6 +165,8 @@ export type Dim_offers_stagingMaxAggregateInputType = {
   ideal_price?: true;
   selling_price?: true;
   fc_perc?: true;
+  fc_eur?: true;
+  brand_ideal_fc_perc?: true;
   mktg_spend?: true;
   notes?: true;
   submitted_by?: true;
@@ -168,6 +186,8 @@ export type Dim_offers_stagingCountAggregateInputType = {
   ideal_price?: true;
   selling_price?: true;
   fc_perc?: true;
+  fc_eur?: true;
+  brand_ideal_fc_perc?: true;
   mktg_spend?: true;
   notes?: true;
   submitted_by?: true;
@@ -287,6 +307,8 @@ export type Dim_offers_stagingGroupByOutputType = {
   ideal_price: runtime.Decimal;
   selling_price: runtime.Decimal;
   fc_perc: runtime.Decimal;
+  fc_eur: runtime.Decimal | null;
+  brand_ideal_fc_perc: runtime.Decimal | null;
   mktg_spend: runtime.Decimal | null;
   notes: string | null;
   submitted_by: string;
@@ -348,6 +370,20 @@ export type dim_offers_stagingWhereInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.DecimalNullableFilter<"dim_offers_staging">
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.DecimalNullableFilter<"dim_offers_staging">
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.DecimalNullableFilter<"dim_offers_staging">
     | runtime.Decimal
@@ -387,6 +423,8 @@ export type dim_offers_stagingOrderByWithRelationInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrderInput | Prisma.SortOrder;
+  brand_ideal_fc_perc?: Prisma.SortOrderInput | Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrderInput | Prisma.SortOrder;
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
   submitted_by?: Prisma.SortOrder;
@@ -431,6 +469,20 @@ export type dim_offers_stagingWhereUniqueInput = Prisma.AtLeast<
       | runtime.DecimalJsLike
       | number
       | string;
+    fc_eur?:
+      | Prisma.DecimalNullableFilter<"dim_offers_staging">
+      | runtime.Decimal
+      | runtime.DecimalJsLike
+      | number
+      | string
+      | null;
+    brand_ideal_fc_perc?:
+      | Prisma.DecimalNullableFilter<"dim_offers_staging">
+      | runtime.Decimal
+      | runtime.DecimalJsLike
+      | number
+      | string
+      | null;
     mktg_spend?:
       | Prisma.DecimalNullableFilter<"dim_offers_staging">
       | runtime.Decimal
@@ -472,6 +524,8 @@ export type dim_offers_stagingOrderByWithAggregationInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrderInput | Prisma.SortOrder;
+  brand_ideal_fc_perc?: Prisma.SortOrderInput | Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrderInput | Prisma.SortOrder;
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
   submitted_by?: Prisma.SortOrder;
@@ -520,6 +574,20 @@ export type dim_offers_stagingScalarWhereWithAggregatesInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.DecimalNullableWithAggregatesFilter<"dim_offers_staging">
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.DecimalNullableWithAggregatesFilter<"dim_offers_staging">
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.DecimalNullableWithAggregatesFilter<"dim_offers_staging">
     | runtime.Decimal
@@ -560,6 +628,13 @@ export type dim_offers_stagingCreateInput = {
   ideal_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   selling_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   fc_perc: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  fc_eur?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  brand_ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   notes?: string | null;
   submitted_by: string;
@@ -581,6 +656,13 @@ export type dim_offers_stagingUncheckedCreateInput = {
   ideal_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   selling_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   fc_perc: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  fc_eur?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  brand_ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   notes?: string | null;
   submitted_by: string;
@@ -614,6 +696,20 @@ export type dim_offers_stagingUpdateInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -662,6 +758,20 @@ export type dim_offers_stagingUncheckedUpdateInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -694,6 +804,13 @@ export type dim_offers_stagingCreateManyInput = {
   ideal_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   selling_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   fc_perc: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  fc_eur?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  brand_ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   notes?: string | null;
   submitted_by: string;
@@ -726,6 +843,20 @@ export type dim_offers_stagingUpdateManyMutationInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -772,6 +903,20 @@ export type dim_offers_stagingUncheckedUpdateManyInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -813,6 +958,8 @@ export type dim_offers_stagingCountOrderByAggregateInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrder;
+  brand_ideal_fc_perc?: Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   submitted_by?: Prisma.SortOrder;
@@ -828,6 +975,8 @@ export type dim_offers_stagingAvgOrderByAggregateInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrder;
+  brand_ideal_fc_perc?: Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrder;
 };
 
@@ -841,6 +990,8 @@ export type dim_offers_stagingMaxOrderByAggregateInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrder;
+  brand_ideal_fc_perc?: Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   submitted_by?: Prisma.SortOrder;
@@ -860,6 +1011,8 @@ export type dim_offers_stagingMinOrderByAggregateInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrder;
+  brand_ideal_fc_perc?: Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   submitted_by?: Prisma.SortOrder;
@@ -875,6 +1028,8 @@ export type dim_offers_stagingSumOrderByAggregateInput = {
   ideal_price?: Prisma.SortOrder;
   selling_price?: Prisma.SortOrder;
   fc_perc?: Prisma.SortOrder;
+  fc_eur?: Prisma.SortOrder;
+  brand_ideal_fc_perc?: Prisma.SortOrder;
   mktg_spend?: Prisma.SortOrder;
 };
 
@@ -1043,6 +1198,13 @@ export type dim_offers_stagingCreateWithoutGap_recordInput = {
   ideal_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   selling_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   fc_perc: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  fc_eur?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  brand_ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   notes?: string | null;
   submitted_by: string;
@@ -1062,6 +1224,13 @@ export type dim_offers_stagingUncheckedCreateWithoutGap_recordInput = {
   ideal_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   selling_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   fc_perc: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  fc_eur?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  brand_ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   notes?: string | null;
   submitted_by: string;
@@ -1147,6 +1316,20 @@ export type dim_offers_stagingScalarWhereInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.DecimalNullableFilter<"dim_offers_staging">
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.DecimalNullableFilter<"dim_offers_staging">
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.DecimalNullableFilter<"dim_offers_staging">
     | runtime.Decimal
@@ -1179,6 +1362,13 @@ export type dim_offers_stagingCreateWithoutAudit_recordsInput = {
   ideal_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   selling_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   fc_perc: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  fc_eur?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  brand_ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   notes?: string | null;
   submitted_by: string;
@@ -1199,6 +1389,13 @@ export type dim_offers_stagingUncheckedCreateWithoutAudit_recordsInput = {
   ideal_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   selling_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   fc_perc: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  fc_eur?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  brand_ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   notes?: string | null;
   submitted_by: string;
@@ -1259,6 +1456,20 @@ export type dim_offers_stagingUpdateWithoutAudit_recordsInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -1306,6 +1517,20 @@ export type dim_offers_stagingUncheckedUpdateWithoutAudit_recordsInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -1336,6 +1561,13 @@ export type dim_offers_stagingCreateManyGap_recordInput = {
   ideal_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   selling_price: runtime.Decimal | runtime.DecimalJsLike | number | string;
   fc_perc: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  fc_eur?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  brand_ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   notes?: string | null;
   submitted_by: string;
@@ -1368,6 +1600,20 @@ export type dim_offers_stagingUpdateWithoutGap_recordInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -1414,6 +1660,20 @@ export type dim_offers_stagingUncheckedUpdateWithoutGap_recordInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -1460,6 +1720,20 @@ export type dim_offers_stagingUncheckedUpdateManyWithoutGap_recordInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  fc_eur?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  brand_ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   mktg_spend?:
     | Prisma.NullableDecimalFieldUpdateOperationsInput
     | runtime.Decimal
@@ -1535,6 +1809,8 @@ export type dim_offers_stagingSelect<
     ideal_price?: boolean;
     selling_price?: boolean;
     fc_perc?: boolean;
+    fc_eur?: boolean;
+    brand_ideal_fc_perc?: boolean;
     mktg_spend?: boolean;
     notes?: boolean;
     submitted_by?: boolean;
@@ -1567,6 +1843,8 @@ export type dim_offers_stagingSelectCreateManyAndReturn<
     ideal_price?: boolean;
     selling_price?: boolean;
     fc_perc?: boolean;
+    fc_eur?: boolean;
+    brand_ideal_fc_perc?: boolean;
     mktg_spend?: boolean;
     notes?: boolean;
     submitted_by?: boolean;
@@ -1593,6 +1871,8 @@ export type dim_offers_stagingSelectUpdateManyAndReturn<
     ideal_price?: boolean;
     selling_price?: boolean;
     fc_perc?: boolean;
+    fc_eur?: boolean;
+    brand_ideal_fc_perc?: boolean;
     mktg_spend?: boolean;
     notes?: boolean;
     submitted_by?: boolean;
@@ -1615,6 +1895,8 @@ export type dim_offers_stagingSelectScalar = {
   ideal_price?: boolean;
   selling_price?: boolean;
   fc_perc?: boolean;
+  fc_eur?: boolean;
+  brand_ideal_fc_perc?: boolean;
   mktg_spend?: boolean;
   notes?: boolean;
   submitted_by?: boolean;
@@ -1637,6 +1919,8 @@ export type dim_offers_stagingOmit<
   | "ideal_price"
   | "selling_price"
   | "fc_perc"
+  | "fc_eur"
+  | "brand_ideal_fc_perc"
   | "mktg_spend"
   | "notes"
   | "submitted_by"
@@ -1691,6 +1975,14 @@ export type $dim_offers_stagingPayload<
       ideal_price: runtime.Decimal;
       selling_price: runtime.Decimal;
       fc_perc: runtime.Decimal;
+      /**
+       * Food cost of the offer in EUR; ideal_price is derived from it.
+       */
+      fc_eur: runtime.Decimal | null;
+      /**
+       * brand.ideal_fc_perc captured at submit time (fraction).
+       */
+      brand_ideal_fc_perc: runtime.Decimal | null;
       mktg_spend: runtime.Decimal | null;
       notes: string | null;
       submitted_by: string;
@@ -2356,6 +2648,11 @@ export interface dim_offers_stagingFieldRefs {
   readonly ideal_price: Prisma.FieldRef<"dim_offers_staging", "Decimal">;
   readonly selling_price: Prisma.FieldRef<"dim_offers_staging", "Decimal">;
   readonly fc_perc: Prisma.FieldRef<"dim_offers_staging", "Decimal">;
+  readonly fc_eur: Prisma.FieldRef<"dim_offers_staging", "Decimal">;
+  readonly brand_ideal_fc_perc: Prisma.FieldRef<
+    "dim_offers_staging",
+    "Decimal"
+  >;
   readonly mktg_spend: Prisma.FieldRef<"dim_offers_staging", "Decimal">;
   readonly notes: Prisma.FieldRef<"dim_offers_staging", "String">;
   readonly submitted_by: Prisma.FieldRef<"dim_offers_staging", "String">;

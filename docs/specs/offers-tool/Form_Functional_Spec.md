@@ -133,17 +133,18 @@ The target table for approved pricing values. Also queried on form open to pre-p
 
 **Relevant columns:**
 
-| Column            | Type          | Notes                                                                             |
-| ----------------- | ------------- | --------------------------------------------------------------------------------- |
-| `item_code`       | String        | FK — matches `transaction_details.trde_item`                                      |
-| `channel`         | String        | Sales channel                                                                     |
-| `category`        | String        | Offer category (matches `categories.name` in PostgreSQL)                          |
-| `subcategory`     | String        | Offer subcategory (matches `subcategories.name` in PostgreSQL)                    |
-| `ideal_price`     | Decimal(10,2) | Full/reference price. **Currency: Euro (€)**                                      |
-| `selling_price`   | Decimal(10,2) | Price charged to customer. **Currency: Euro (€)**                                 |
-| `fc_perc`         | Decimal(5,4)  | Food cost — stored as fraction (0.32 = 32%)                                       |
-| `mktg_spend`      | Decimal(10,2) | Marketing spend. Optional. **Currency: Euro (€)**                                 |
-| `discount_amount` | Decimal(10,2) | Computed: `ideal_price − selling_price`. Never user input. **Currency: Euro (€)** |
+| Column            | Type          | Notes                                                                                         |
+| ----------------- | ------------- | --------------------------------------------------------------------------------------------- |
+| `item_code`       | String        | FK — matches `transaction_details.trde_item`                                                  |
+| `channel`         | String        | Sales channel                                                                                 |
+| `category`        | String        | Offer category (matches `categories.name` in PostgreSQL)                                      |
+| `subcategory`     | String        | Offer subcategory (matches `subcategories.name` in PostgreSQL)                                |
+| `ideal_price`     | Decimal(10,2) | Full/reference price. **Currency: Euro (€)**                                                  |
+| `selling_price`   | Decimal(10,2) | Price charged to customer. **Currency: Euro (€)**                                             |
+| `fc_perc`         | Decimal(5,4)  | Food cost — stored as fraction (0.32 = 32%)                                                   |
+| `fc_eur`          | Decimal(10,2) | Food cost of the offer in EUR. Added 2026-10-13; drives `ideal_price`. **Currency: Euro (€)** |
+| `mktg_spend`      | Decimal(10,2) | Marketing spend. Optional. **Currency: Euro (€)**                                             |
+| `discount_amount` | Decimal(10,2) | Computed: `ideal_price − selling_price`. Never user input. **Currency: Euro (€)**             |
 
 **Query to pre-populate existing values:**
 
@@ -178,16 +179,18 @@ Pre-populated from `transaction_details` (ClickHouse) using `trde_item` as the l
 
 All editable fields are sourced as dropdowns or number inputs. On form open, pre-populate from `dim_offers` (ClickHouse) if a record exists. If a value is NULL or 0, leave the field empty and mark it as missing.
 
-| Field label     | dim_offers column | Type          | Input type   | Required       | Rules                                                                                                                                                        |
-| --------------- | ----------------- | ------------- | ------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Channel         | `channel`         | VARCHAR       | Dropdown     | Yes            | Options from PostgreSQL `channels` table. Pre-select if exists in `dim_offers`.                                                                              |
-| Category        | `category`        | VARCHAR       | Dropdown     | Yes            | Options from PostgreSQL `categories` table. Controls subcategory list. Pre-select if exists.                                                                 |
-| Subcategory     | `subcategory`     | VARCHAR       | Dropdown     | Yes            | Options from PostgreSQL `subcategories` filtered by selected `category_id`. Disabled until category chosen. Resets on category change. Pre-select if exists. |
-| Ideal price     | `ideal_price`     | Decimal(10,2) | Number input | Yes if missing | Must be > 0. **€ prefix. 2 decimal places.** Highlighted as missing if NULL or 0 in `dim_offers`.                                                            |
-| Selling price   | `selling_price`   | Decimal(10,2) | Number input | Yes if missing | Must be ≥ 0 and ≤ `ideal_price`. **€ prefix. 2 decimal places.** Highlighted as missing if NULL or 0.                                                        |
-| FC %            | `fc_perc`         | Decimal(5,4)  | Number input | Yes if missing | User enters a percentage (0–100). Form divides by 100 before storing (e.g. user types 32 → stored as 0.32). Highlighted as missing if NULL or 0.             |
-| Marketing spend | `mktg_spend`      | Decimal(10,2) | Number input | No             | Optional. **€ prefix.** Can be 0 or left blank.                                                                                                              |
-| Notes           | _(staging only)_  | VARCHAR(500)  | Textarea     | No             | Stored in `dim_offers_staging.notes` only. Never written to `dim_offers`. Max 500 chars. Show live character counter.                                        |
+| Field label      | dim_offers column | Type          | Input type   | Required       | Rules                                                                                                                                                                                                                    |
+| ---------------- | ----------------- | ------------- | ------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Channel          | `channel`         | VARCHAR       | Dropdown     | Yes            | Options from PostgreSQL `channels` table. Pre-select if exists in `dim_offers`.                                                                                                                                          |
+| Category         | `category`        | VARCHAR       | Dropdown     | Yes            | Options from PostgreSQL `categories` table. Controls subcategory list. Pre-select if exists.                                                                                                                             |
+| Subcategory      | `subcategory`     | VARCHAR       | Dropdown     | Yes            | Options from PostgreSQL `subcategories` filtered by selected `category_id`. Disabled until category chosen. Resets on category change. Pre-select if exists.                                                             |
+| FC €             | `fc_eur`          | Decimal(10,2) | Number input | Yes            | Food cost of the offer in EUR. Must be > 0. **€ prefix. 2 decimal places.** Highlighted as missing if NULL or 0 in `dim_offers`.                                                                                         |
+| Brand Ideal FC % | _(brand setting)_ | Decimal(5,4)  | Read-only    | Yes            | Yearly food-cost target stored per brand in PostgreSQL `brand.ideal_fc_perc` (fraction), edited on `/admin/brands/[id]`. Shown as a percent. Submission is blocked when the brand has no target.                         |
+| Ideal price      | `ideal_price`     | Decimal(10,2) | Calculated   | —              | **Never typed.** `ideal_price = (fc_eur / brand ideal FC fraction) × 1.05 × 1.07`, rounded to cents. Computed live on the form and recomputed by the API on submit. Highlighted as missing if NULL or 0 in `dim_offers`. |
+| Selling price    | `selling_price`   | Decimal(10,2) | Number input | Yes if missing | Must be ≥ 0 and ≤ `ideal_price`. **€ prefix. 2 decimal places.** Highlighted as missing if NULL or 0.                                                                                                                    |
+| FC %             | `fc_perc`         | Decimal(5,4)  | Number input | Yes if missing | User enters a percentage (0–100). Form divides by 100 before storing (e.g. user types 32 → stored as 0.32). Highlighted as missing if NULL or 0.                                                                         |
+| Marketing spend  | `mktg_spend`      | Decimal(10,2) | Number input | No             | Optional. **€ prefix.** Can be 0 or left blank.                                                                                                                                                                          |
+| Notes            | _(staging only)_  | VARCHAR(500)  | Textarea     | No             | Stored in `dim_offers_staging.notes` only. Never written to `dim_offers`. Max 500 chars. Show live character counter.                                                                                                    |
 
 > **✱ Required** — `ideal_price`, `selling_price`, and `fc_perc` must be visually marked with a red outline and "missing" badge when their current value in `dim_offers` is NULL or 0. The form must block submission until all missing-flagged fields are filled with valid non-zero values.
 

@@ -10,11 +10,13 @@ import {
   validateCategorySubcategoryPair,
 } from "$lib/services/offers-data-quality-postgres.server";
 import {
+  calculateIdealPrice,
   formatFractionalDecimal,
   formatPricingDecimal,
   getZodFieldErrors,
   submitGapPricingSchema,
 } from "$lib/services/offers-data-quality";
+import { getBrandPricingTargetByAlias } from "$lib/services/brands.server";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async (event) => {
@@ -144,15 +146,51 @@ export const POST: RequestHandler = async (event) => {
     );
   }
 
+  // Ideal price is never taken from the client: it is always
+  // (FC EUR / brand ideal FC %) x 1.05 x 1.07 using the brand's current target.
+  const brandTarget = await getBrandPricingTargetByAlias(gapRecord.brand);
+  const idealPrice = calculateIdealPrice(
+    payloadResult.data.fc_eur,
+    brandTarget?.ideal_fc_perc ?? null,
+  );
+
+  if (
+    !brandTarget ||
+    brandTarget.ideal_fc_perc === null ||
+    idealPrice === null
+  ) {
+    return json(
+      {
+        errors: {
+          brand_ideal_fc_perc: `No Brand Ideal FC % is set for ${gapRecord.brand.toUpperCase()}. Ask an admin to set it on the brand page.`,
+        },
+      },
+      { status: 400 },
+    );
+  }
+
+  if (payloadResult.data.selling_price > idealPrice) {
+    return json(
+      {
+        errors: {
+          selling_price: "Selling price cannot exceed ideal price",
+        },
+      },
+      { status: 400 },
+    );
+  }
+
   const stagingRecord = await createDimOffersStagingRecord({
     dq_id: gapRecord.dq_id,
     item_code: gapRecord.trde_item,
     channel: payloadResult.data.channel,
     category: payloadResult.data.category,
     subcategory: payloadResult.data.subcategory,
-    ideal_price: formatPricingDecimal(payloadResult.data.ideal_price)!,
+    ideal_price: formatPricingDecimal(idealPrice)!,
     selling_price: formatPricingDecimal(payloadResult.data.selling_price)!,
     fc_perc: formatFractionalDecimal(payloadResult.data.fc_perc),
+    fc_eur: formatPricingDecimal(payloadResult.data.fc_eur)!,
+    brand_ideal_fc_perc: formatFractionalDecimal(brandTarget.ideal_fc_perc),
     mktg_spend: formatPricingDecimal(payloadResult.data.mktg_spend),
     notes: payloadResult.data.notes || null,
     submitted_by: user?.id ?? "",

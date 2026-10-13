@@ -31,7 +31,9 @@ The module's data is split across two databases. Pick the right tool:
 
 2. query-dim-offers-sql (ClickHouse) — the CURRENT PRICING:
    - dim_offers: the live pricing per item_code (ideal_price, selling_price,
-     fc_perc, mktg_spend, discount_amount, channel/category/subcategory).
+     fc_perc, fc_eur, mktg_spend, discount_amount, channel/category/subcategory).
+     ideal_price is derived: (fc_eur / brand ideal FC %) x 1.05 x 1.07, where
+     the brand target lives in PostgreSQL brand.ideal_fc_perc.
    - transaction_details + apidata_replica.dim_items: item/brand context and
      the offer-item universe used to detect gaps.
    Use it for "what's the current price of item X", "how many items have no

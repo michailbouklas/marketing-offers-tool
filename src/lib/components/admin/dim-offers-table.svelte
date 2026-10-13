@@ -108,6 +108,7 @@
       className: "min-w-28 text-right",
     },
     { label: "FC %", column: "fc_perc", className: "min-w-24 text-right" },
+    { label: "FC €", column: "fc_eur", className: "min-w-24 text-right" },
     {
       label: "Marketing",
       column: "mktg_spend",
@@ -197,6 +198,9 @@
             </Table.Cell>
             <Table.Cell class="text-right tabular-nums">
               {formatPercent(row.fc_perc)}
+            </Table.Cell>
+            <Table.Cell class="text-right tabular-nums">
+              {formatMoney(row.fc_eur)}
             </Table.Cell>
             <Table.Cell class="text-right tabular-nums">
               {formatMoney(row.mktg_spend)}

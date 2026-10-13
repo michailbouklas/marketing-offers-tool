@@ -18,7 +18,9 @@
   import { Textarea } from "$lib/components/ui/textarea/index.js";
   import {
     applyGapPricingLookupDefaults,
+    formatIdealPriceInput,
     gapPricingFormSchema,
+    IDEAL_PRICE_MARKUP_FACTORS,
     mapGapPricingFormToPayload,
     normalizeMoneyInput,
     normalizePercentInput,
@@ -45,6 +47,11 @@
   const detectedAt = $derived.by(() =>
     new Date(data.gap.detected_at).toLocaleDateString(),
   );
+  const brandTarget = $derived(data.gap.brand_target);
+  const brandTargetMissing = $derived(
+    !brandTarget || brandTarget.ideal_fc_perc === null,
+  );
+  const idealPriceFormula = `(FC € ÷ Brand Ideal FC %) × ${IDEAL_PRICE_MARKUP_FACTORS.join(" × ")}`;
 
   const { form, errors, constraints, validateForm, submitting } = superForm(
     untrack(() => data.form),
@@ -113,6 +120,23 @@
       proposed: reviewSubmission ? `${reviewSubmission.fc_perc}%` : "-",
     },
     {
+      label: "FC €",
+      current: moneyDisplay(data.gap.current_dim_offers.fc_eur),
+      proposed: reviewSubmission?.fc_eur
+        ? `EUR ${reviewSubmission.fc_eur}`
+        : "-",
+    },
+    {
+      label: "Brand Ideal FC %",
+      current:
+        brandTarget?.ideal_fc_perc == null
+          ? "-"
+          : `${(brandTarget.ideal_fc_perc * 100).toFixed(2)}%`,
+      proposed: reviewSubmission?.brand_ideal_fc_perc
+        ? `${reviewSubmission.brand_ideal_fc_perc}%`
+        : "-",
+    },
+    {
       label: "Marketing spend",
       current: moneyDisplay(data.gap.current_dim_offers.mktg_spend),
       proposed: reviewSubmission?.mktg_spend
@@ -125,6 +149,18 @@
 
   $effect(() => {
     subcategoryOptions = data.subcategories;
+  });
+
+  // Ideal price is never typed: it follows FC € and the brand target.
+  $effect(() => {
+    const nextIdealPrice = formatIdealPriceInput(
+      $form.fc_eur,
+      $form.brand_ideal_fc_perc,
+    );
+
+    if ($form.ideal_price !== nextIdealPrice) {
+      $form.ideal_price = nextIdealPrice;
+    }
   });
 
   $effect(() => {
@@ -318,6 +354,8 @@
       field === "ideal_price" ||
       field === "selling_price" ||
       field === "fc_perc" ||
+      field === "fc_eur" ||
+      field === "brand_ideal_fc_perc" ||
       field === "mktg_spend" ||
       field === "notes"
     ) {
@@ -350,6 +388,9 @@
     selling_price: (message) =>
       validateFormFieldStore("selling_price", message),
     fc_perc: (message) => validateFormFieldStore("fc_perc", message),
+    fc_eur: (message) => validateFormFieldStore("fc_eur", message),
+    brand_ideal_fc_perc: (message) =>
+      validateFormFieldStore("brand_ideal_fc_perc", message),
     mktg_spend: (message) => validateFormFieldStore("mktg_spend", message),
     notes: (message) => validateFormFieldStore("notes", message),
   };
@@ -363,7 +404,7 @@
   }
 
   function normalizeFieldOnBlur(
-    field: "ideal_price" | "selling_price" | "mktg_spend",
+    field: "fc_eur" | "selling_price" | "mktg_spend",
   ) {
     $form[field] = normalizeMoneyInput($form[field]);
   }
@@ -456,6 +497,25 @@
             {data.gap.missing_fields.join(", ")}
             {missingCount === 1 ? "is" : "are"} highlighted below. Discount calculation
             stays blocked until the missing values are resolved.
+          </p>
+        </div>
+      </div>
+    {/if}
+
+    {#if brandTargetMissing && !isReviewMode && !submitted}
+      <div
+        class="border-destructive/20 bg-destructive/6 text-destructive flex items-start gap-3 rounded-2xl border px-4 py-4"
+      >
+        <TriangleAlertIcon class="mt-0.5 size-4 shrink-0" />
+        <div class="space-y-1 text-sm">
+          <p class="font-medium">
+            No Brand Ideal FC % is set for {data.gap.brand}.
+          </p>
+          <p class="text-destructive/80">
+            Ideal price is calculated as {idealPriceFormula}, so this gap cannot
+            be submitted until an admin sets the target on the brand page{brandTarget
+              ? ""
+              : " (no brand with this alias exists in the tool yet)"}.
           </p>
         </div>
       </div>
@@ -605,6 +665,24 @@
               <div class="space-y-2">
                 <Label>FC %</Label>
                 <Input value={`${reviewSubmission.fc_perc}%`} disabled />
+              </div>
+              <div class="space-y-2">
+                <Label>FC €</Label>
+                <Input
+                  value={reviewSubmission.fc_eur
+                    ? `EUR ${reviewSubmission.fc_eur}`
+                    : "-"}
+                  disabled
+                />
+              </div>
+              <div class="space-y-2">
+                <Label>Brand Ideal FC %</Label>
+                <Input
+                  value={reviewSubmission.brand_ideal_fc_perc
+                    ? `${reviewSubmission.brand_ideal_fc_perc}%`
+                    : "-"}
+                  disabled
+                />
               </div>
               <div class="space-y-2">
                 <Label>Marketing spend</Label>
@@ -947,15 +1025,15 @@
                 </p>
                 <p class="text-muted-foreground text-sm">
                   Fields marked as missing must be filled before the submission
-                  can proceed.
+                  can proceed. Ideal price is calculated, not typed.
                 </p>
               </div>
 
               <div class="grid gap-4 lg:grid-cols-3">
                 <div class="space-y-2">
                   <div class="flex items-center gap-2">
-                    <Label for="gap-ideal-price">Ideal price</Label>
-                    {#if missingFields.has("ideal_price")}
+                    <Label for="gap-fc-eur">FC €</Label>
+                    {#if missingFields.has("fc_eur")}
                       <Badge variant="destructive">Missing</Badge>
                     {/if}
                   </div>
@@ -965,25 +1043,25 @@
                       >EUR</span
                     >
                     <Input
-                      id="gap-ideal-price"
-                      name="ideal_price"
+                      id="gap-fc-eur"
+                      name="fc_eur"
                       type="number"
                       step="0.01"
                       min="0.01"
-                      class={`pl-12 ${missingFields.has("ideal_price") ? "border-destructive/60 ring-destructive/8 bg-destructive/5" : ""}`}
-                      bind:value={$form.ideal_price}
-                      onblur={() => normalizeFieldOnBlur("ideal_price")}
+                      class={`pl-12 ${missingFields.has("fc_eur") ? "border-destructive/60 ring-destructive/8 bg-destructive/5" : ""}`}
+                      bind:value={$form.fc_eur}
+                      onblur={() => normalizeFieldOnBlur("fc_eur")}
                       aria-required="true"
-                      aria-invalid={!!$errors.ideal_price}
-                      {...$constraints.ideal_price}
+                      aria-invalid={!!$errors.fc_eur}
+                      {...$constraints.fc_eur}
                     />
                   </div>
                   <p class="text-muted-foreground text-xs">
-                    Full reference price. Must be greater than 0.
+                    Food cost of the offer in EUR. Drives the ideal price.
                   </p>
-                  {#if $errors.ideal_price}
+                  {#if $errors.fc_eur}
                     <p class="text-destructive text-sm">
-                      {$errors.ideal_price}
+                      {$errors.fc_eur}
                     </p>
                   {/if}
                 </div>
@@ -1060,24 +1138,95 @@
                 </div>
               </div>
 
-              <div
-                class="border-border bg-muted/35 flex flex-col justify-between gap-4 rounded-2xl border px-4 py-4 sm:flex-row sm:items-center"
-              >
-                <div>
-                  <p
-                    class="font-mono text-[0.72rem] tracking-[0.18em] text-zinc-500 uppercase"
-                  >
-                    Calculated output
+              <div class="grid gap-4 lg:grid-cols-3">
+                <div class="space-y-2">
+                  <Label for="gap-brand-ideal-fc-perc">Brand Ideal FC %</Label>
+                  <div class="relative">
+                    <Input
+                      id="gap-brand-ideal-fc-perc"
+                      name="brand_ideal_fc_perc"
+                      type="number"
+                      class={`pr-10 ${brandTargetMissing ? "border-destructive/60 ring-destructive/8 bg-destructive/5" : ""}`}
+                      value={$form.brand_ideal_fc_perc}
+                      readonly
+                      disabled
+                      aria-invalid={!!$errors.brand_ideal_fc_perc}
+                    />
+                    <span
+                      class="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm"
+                      >%</span
+                    >
+                  </div>
+                  <p class="text-muted-foreground text-xs">
+                    Yearly target for {brandTarget?.brand_name ??
+                      data.gap.brand}. Set per brand by an admin on the brand
+                    page.
                   </p>
-                  <p class="text-muted-foreground mt-1 text-sm">
-                    `discount_amount` is derived as `ideal_price -
-                    selling_price` and is never user-entered.
-                  </p>
+                  {#if $errors.brand_ideal_fc_perc}
+                    <p class="text-destructive text-sm">
+                      {$errors.brand_ideal_fc_perc}
+                    </p>
+                  {/if}
                 </div>
-                <div class="text-right">
-                  <p class="text-2xl font-semibold tracking-[-0.04em]">
-                    {discountPreview ? `EUR ${discountPreview}` : "-"}
-                  </p>
+              </div>
+
+              <div
+                class="border-border bg-muted/35 grid gap-4 rounded-2xl border px-4 py-4"
+              >
+                <div
+                  class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"
+                >
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <p
+                        class="font-mono text-[0.72rem] tracking-[0.18em] text-zinc-500 uppercase"
+                      >
+                        Ideal price
+                      </p>
+                      {#if missingFields.has("ideal_price")}
+                        <Badge variant="destructive">Missing</Badge>
+                      {/if}
+                    </div>
+                    <p class="text-muted-foreground mt-1 text-sm">
+                      Calculated as {idealPriceFormula} and never user-entered.
+                    </p>
+                    {#if $errors.ideal_price}
+                      <p class="text-destructive mt-1 text-sm">
+                        {$errors.ideal_price}
+                      </p>
+                    {/if}
+                  </div>
+                  <div class="text-right">
+                    <p
+                      class="text-2xl font-semibold tracking-[-0.04em]"
+                      data-testid="gap-ideal-price"
+                    >
+                      {$form.ideal_price ? `EUR ${$form.ideal_price}` : "-"}
+                    </p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div
+                  class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"
+                >
+                  <div>
+                    <p
+                      class="font-mono text-[0.72rem] tracking-[0.18em] text-zinc-500 uppercase"
+                    >
+                      Discount amount
+                    </p>
+                    <p class="text-muted-foreground mt-1 text-sm">
+                      `discount_amount` is derived as `ideal_price -
+                      selling_price` and is never user-entered.
+                    </p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-2xl font-semibold tracking-[-0.04em]">
+                      {discountPreview ? `EUR ${discountPreview}` : "-"}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -1152,7 +1301,12 @@
                 >
                 <Button
                   onclick={submitPricingForm}
-                  disabled={$submitting || subcategoryLoading}
+                  disabled={$submitting ||
+                    subcategoryLoading ||
+                    brandTargetMissing}
+                  title={brandTargetMissing
+                    ? "Set the Brand Ideal FC % on the brand page first"
+                    : undefined}
                 >
                   {#if $submitting}
                     <LoaderCircleIcon class="mr-2 size-4 animate-spin" />
