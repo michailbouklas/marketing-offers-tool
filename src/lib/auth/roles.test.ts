@@ -114,8 +114,9 @@ describe("competitionRoles", () => {
 });
 
 describe("googleReviewsRoles", () => {
-  it("grants the google-reviews section to analyticsViewer and superUser only", () => {
+  it("grants the google-reviews section to analyticsViewer, brandManager, and superUser", () => {
     expect(hasAnyRole("analyticsViewer", googleReviewsRoles)).toBe(true);
+    expect(hasAnyRole("brandManager", googleReviewsRoles)).toBe(true);
     expect(hasAnyRole("superUser", googleReviewsRoles)).toBe(true);
     expect(hasAnyRole("user,analyticsViewer", googleReviewsRoles)).toBe(true);
     expect(hasAnyRole("admin", googleReviewsRoles)).toBe(false);

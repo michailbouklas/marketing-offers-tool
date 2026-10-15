@@ -51,11 +51,14 @@ export const competitionRoles: UserRole[] = ["analyticsViewer", superUserRole];
 /**
  * Roles that may access the `/google-reviews` section (Google reviews
  * analytics sourced from the google-maps-scraper ClickHouse replica).
- * `superUser` is included as the admin-equivalent that holds every resource
- * permission.
+ * `brandManager` is included because the `/admin/google-reviews` tools it
+ * manages link into this section and it holds the matching
+ * `googleReviews: ["view"]` permission in `permissions.ts`. `superUser` is
+ * included as the admin-equivalent that holds every resource permission.
  */
 export const googleReviewsRoles: UserRole[] = [
   "analyticsViewer",
+  "brandManager",
   superUserRole,
 ];
 

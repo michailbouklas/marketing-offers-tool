@@ -47,8 +47,9 @@ export const ac = createAccessControl(statement);
  * - `usageViewer` — view cross-user image-generation usage analytics.
  * - `userManager` — manage users (Better Auth's full user/session statements,
  *   which its admin endpoints check internally).
- * - `brandManager` — manage brand guidelines, reference assets, and the
- *   inspiration prompt gallery.
+ * - `brandManager` — manage brand guidelines, reference assets, the
+ *   inspiration prompt gallery, and the `/admin/google-reviews` tools (and so
+ *   also view the `/google-reviews` analytics section those tools link into).
  * - `offerEditor` — create and edit aggregator offers in the registry.
  * - `imageEditor` — generate images in the image generator.
  * - `copywriter` — generate marketing copy in the copywriter studio.
@@ -94,6 +95,7 @@ export const roles = {
     brand: ["manage"],
     promptGallery: ["manage"],
     urlsToScrape: ["manage"],
+    googleReviews: ["view", "manage"],
   }),
   offerEditor: ac.newRole({
     offer: ["edit"],
