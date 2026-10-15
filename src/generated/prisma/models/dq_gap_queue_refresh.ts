@@ -633,14 +633,6 @@ export type EnumDqSnapshotRefreshStatusFieldUpdateOperationsInput = {
   set?: $Enums.DqSnapshotRefreshStatus;
 };
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null;
-  increment?: number;
-  decrement?: number;
-  multiply?: number;
-  divide?: number;
-};
-
 export type dq_gap_queue_refreshSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,

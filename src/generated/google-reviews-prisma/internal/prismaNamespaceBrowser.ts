@@ -51,7 +51,8 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  review_categories: 'review_categories'
+  review_categories: 'review_categories',
+  businesses: 'businesses'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -84,6 +85,16 @@ export const Review_categoriesScalarFieldEnum = {
 } as const
 
 export type Review_categoriesScalarFieldEnum = (typeof Review_categoriesScalarFieldEnum)[keyof typeof Review_categoriesScalarFieldEnum]
+
+
+export const BusinessesScalarFieldEnum = {
+  id: 'id',
+  input_id: 'input_id',
+  cid: 'cid',
+  title: 'title'
+} as const
+
+export type BusinessesScalarFieldEnum = (typeof BusinessesScalarFieldEnum)[keyof typeof BusinessesScalarFieldEnum]
 
 
 export const SortOrder = {

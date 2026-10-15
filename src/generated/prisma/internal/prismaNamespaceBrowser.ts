@@ -180,6 +180,7 @@ export const BrandScalarFieldEnum = {
   sap_brand_alias: "sap_brand_alias",
   sap_company_name: "sap_company_name",
   ideal_fc_perc: "ideal_fc_perc",
+  google_places_brand_id: "google_places_brand_id",
 } as const;
 
 export type BrandScalarFieldEnum =

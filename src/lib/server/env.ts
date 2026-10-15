@@ -261,6 +261,15 @@ export function getRemoteScraperUrl(): string | undefined {
 }
 
 /**
+ * Base URL of the Google Reviews scraper API (`/scrape-queries`, `/brands`)
+ * used by the `/admin/google-reviews/places` tool. Same normalisation as
+ * `getRemoteScraperUrl`; `undefined` when `GOOGLE_PLACES_API` is unset.
+ */
+export function getGooglePlacesApiUrl(): string | undefined {
+  return normaliseBaseUrl(readEnv("GOOGLE_PLACES_API"));
+}
+
+/**
  * Configuration for the Open WebUI bridge — the OpenAI-compatible endpoint
  * under `/api/openai/v1` and the OpenAPI tool server under
  * `/api/openwebui-tools`. See `docs/openwebui-integration.md`.

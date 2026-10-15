@@ -2,6 +2,7 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import TagsIcon from "@lucide/svelte/icons/tags";
+  import MapPinIcon from "@lucide/svelte/icons/map-pin";
   import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
   import type { Component } from "svelte";
 
@@ -20,6 +21,13 @@
         "Rename categories, rewrite their summaries, and activate or deactivate them in bulk. Changes are written to the scraper's source database and replicate to the analytics pages.",
       icon: TagsIcon,
     },
+    {
+      href: "/admin/google-reviews/places",
+      title: "Places manager",
+      description:
+        "Add, edit, pause or remove the Google Maps search queries the scraper runs. Changes go straight to the scraper API; only enabled places are scraped.",
+      icon: MapPinIcon,
+    },
   ];
 </script>
 
@@ -27,7 +35,7 @@
   <title>Google Reviews admin | Aggregator Offers Tool</title>
   <meta
     name="description"
-    content="Admin tools for the Google Reviews pipeline: curate review categories at the source database."
+    content="Admin tools for the Google Reviews pipeline: curate review categories and manage the places the scraper searches for."
   />
 </svelte:head>
 

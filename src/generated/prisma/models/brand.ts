@@ -29,11 +29,13 @@ export type AggregateBrand = {
 export type BrandAvgAggregateOutputType = {
   id: number | null;
   ideal_fc_perc: runtime.Decimal | null;
+  google_places_brand_id: number | null;
 };
 
 export type BrandSumAggregateOutputType = {
   id: number | null;
   ideal_fc_perc: runtime.Decimal | null;
+  google_places_brand_id: number | null;
 };
 
 export type BrandMinAggregateOutputType = {
@@ -49,6 +51,7 @@ export type BrandMinAggregateOutputType = {
   sap_brand_alias: string | null;
   sap_company_name: string | null;
   ideal_fc_perc: runtime.Decimal | null;
+  google_places_brand_id: number | null;
 };
 
 export type BrandMaxAggregateOutputType = {
@@ -64,6 +67,7 @@ export type BrandMaxAggregateOutputType = {
   sap_brand_alias: string | null;
   sap_company_name: string | null;
   ideal_fc_perc: runtime.Decimal | null;
+  google_places_brand_id: number | null;
 };
 
 export type BrandCountAggregateOutputType = {
@@ -79,17 +83,20 @@ export type BrandCountAggregateOutputType = {
   sap_brand_alias: number;
   sap_company_name: number;
   ideal_fc_perc: number;
+  google_places_brand_id: number;
   _all: number;
 };
 
 export type BrandAvgAggregateInputType = {
   id?: true;
   ideal_fc_perc?: true;
+  google_places_brand_id?: true;
 };
 
 export type BrandSumAggregateInputType = {
   id?: true;
   ideal_fc_perc?: true;
+  google_places_brand_id?: true;
 };
 
 export type BrandMinAggregateInputType = {
@@ -105,6 +112,7 @@ export type BrandMinAggregateInputType = {
   sap_brand_alias?: true;
   sap_company_name?: true;
   ideal_fc_perc?: true;
+  google_places_brand_id?: true;
 };
 
 export type BrandMaxAggregateInputType = {
@@ -120,6 +128,7 @@ export type BrandMaxAggregateInputType = {
   sap_brand_alias?: true;
   sap_company_name?: true;
   ideal_fc_perc?: true;
+  google_places_brand_id?: true;
 };
 
 export type BrandCountAggregateInputType = {
@@ -135,6 +144,7 @@ export type BrandCountAggregateInputType = {
   sap_brand_alias?: true;
   sap_company_name?: true;
   ideal_fc_perc?: true;
+  google_places_brand_id?: true;
   _all?: true;
 };
 
@@ -244,6 +254,7 @@ export type BrandGroupByOutputType = {
   sap_brand_alias: string | null;
   sap_company_name: string | null;
   ideal_fc_perc: runtime.Decimal | null;
+  google_places_brand_id: number | null;
   _count: BrandCountAggregateOutputType | null;
   _avg: BrandAvgAggregateOutputType | null;
   _sum: BrandSumAggregateOutputType | null;
@@ -286,6 +297,7 @@ export type brandWhereInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: Prisma.IntNullableFilter<"brand"> | number | null;
   aggregator_offers?: Prisma.Aggregator_offersListRelationFilter;
   user_assignments?: Prisma.User_brandListRelationFilter;
   brand_assets?: Prisma.BrandAssetListRelationFilter;
@@ -308,6 +320,7 @@ export type brandOrderByWithRelationInput = {
   sap_brand_alias?: Prisma.SortOrderInput | Prisma.SortOrder;
   sap_company_name?: Prisma.SortOrderInput | Prisma.SortOrder;
   ideal_fc_perc?: Prisma.SortOrderInput | Prisma.SortOrder;
+  google_places_brand_id?: Prisma.SortOrderInput | Prisma.SortOrder;
   aggregator_offers?: Prisma.aggregator_offersOrderByRelationAggregateInput;
   user_assignments?: Prisma.user_brandOrderByRelationAggregateInput;
   brand_assets?: Prisma.BrandAssetOrderByRelationAggregateInput;
@@ -320,6 +333,7 @@ export type brandOrderByWithRelationInput = {
 export type brandWhereUniqueInput = Prisma.AtLeast<
   {
     id?: number;
+    google_places_brand_id?: number;
     AND?: Prisma.brandWhereInput | Prisma.brandWhereInput[];
     OR?: Prisma.brandWhereInput[];
     NOT?: Prisma.brandWhereInput | Prisma.brandWhereInput[];
@@ -348,7 +362,7 @@ export type brandWhereUniqueInput = Prisma.AtLeast<
     image_templates?: Prisma.ImageGeneratorTemplateBrandListRelationFilter;
     brand_entities?: Prisma.Brand_entityListRelationFilter;
   },
-  "id"
+  "id" | "google_places_brand_id"
 >;
 
 export type brandOrderByWithAggregationInput = {
@@ -364,6 +378,7 @@ export type brandOrderByWithAggregationInput = {
   sap_brand_alias?: Prisma.SortOrderInput | Prisma.SortOrder;
   sap_company_name?: Prisma.SortOrderInput | Prisma.SortOrder;
   ideal_fc_perc?: Prisma.SortOrderInput | Prisma.SortOrder;
+  google_places_brand_id?: Prisma.SortOrderInput | Prisma.SortOrder;
   _count?: Prisma.brandCountOrderByAggregateInput;
   _avg?: Prisma.brandAvgOrderByAggregateInput;
   _max?: Prisma.brandMaxOrderByAggregateInput;
@@ -406,6 +421,10 @@ export type brandScalarWhereWithAggregatesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.IntNullableWithAggregatesFilter<"brand">
+    | number
+    | null;
 };
 
 export type brandCreateInput = {
@@ -425,6 +444,7 @@ export type brandCreateInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -452,6 +472,7 @@ export type brandUncheckedCreateInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -484,6 +505,10 @@ export type brandUpdateInput = {
     | runtime.DecimalJsLike
     | number
     | string
+    | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
     | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
@@ -519,6 +544,10 @@ export type brandUncheckedUpdateInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -546,6 +575,7 @@ export type brandCreateManyInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
 };
 
 export type brandUpdateManyMutationInput = {
@@ -571,6 +601,10 @@ export type brandUpdateManyMutationInput = {
     | runtime.DecimalJsLike
     | number
     | string
+    | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
     | null;
 };
 
@@ -599,6 +633,10 @@ export type brandUncheckedUpdateManyInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
 };
 
 export type brandCountOrderByAggregateInput = {
@@ -614,11 +652,13 @@ export type brandCountOrderByAggregateInput = {
   sap_brand_alias?: Prisma.SortOrder;
   sap_company_name?: Prisma.SortOrder;
   ideal_fc_perc?: Prisma.SortOrder;
+  google_places_brand_id?: Prisma.SortOrder;
 };
 
 export type brandAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   ideal_fc_perc?: Prisma.SortOrder;
+  google_places_brand_id?: Prisma.SortOrder;
 };
 
 export type brandMaxOrderByAggregateInput = {
@@ -634,6 +674,7 @@ export type brandMaxOrderByAggregateInput = {
   sap_brand_alias?: Prisma.SortOrder;
   sap_company_name?: Prisma.SortOrder;
   ideal_fc_perc?: Prisma.SortOrder;
+  google_places_brand_id?: Prisma.SortOrder;
 };
 
 export type brandMinOrderByAggregateInput = {
@@ -649,11 +690,13 @@ export type brandMinOrderByAggregateInput = {
   sap_brand_alias?: Prisma.SortOrder;
   sap_company_name?: Prisma.SortOrder;
   ideal_fc_perc?: Prisma.SortOrder;
+  google_places_brand_id?: Prisma.SortOrder;
 };
 
 export type brandSumOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   ideal_fc_perc?: Prisma.SortOrder;
+  google_places_brand_id?: Prisma.SortOrder;
 };
 
 export type BrandScalarRelationFilter = {
@@ -668,6 +711,14 @@ export type BrandNullableScalarRelationFilter = {
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean;
+};
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null;
+  increment?: number;
+  decrement?: number;
+  multiply?: number;
+  divide?: number;
 };
 
 export type brandCreateNestedOneWithoutUser_assignmentsInput = {
@@ -873,6 +924,7 @@ export type brandCreateWithoutUser_assignmentsInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
@@ -899,6 +951,7 @@ export type brandUncheckedCreateWithoutUser_assignmentsInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
@@ -959,6 +1012,10 @@ export type brandUpdateWithoutUser_assignmentsInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
@@ -992,6 +1049,10 @@ export type brandUncheckedUpdateWithoutUser_assignmentsInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1017,6 +1078,7 @@ export type brandCreateWithoutAggregator_offersInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
@@ -1043,6 +1105,7 @@ export type brandUncheckedCreateWithoutAggregator_offersInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
@@ -1103,6 +1166,10 @@ export type brandUpdateWithoutAggregator_offersInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
@@ -1136,6 +1203,10 @@ export type brandUncheckedUpdateWithoutAggregator_offersInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1161,6 +1232,7 @@ export type brandCreateWithoutGenerated_imagesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -1187,6 +1259,7 @@ export type brandUncheckedCreateWithoutGenerated_imagesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -1247,6 +1320,10 @@ export type brandUpdateWithoutGenerated_imagesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -1280,6 +1357,10 @@ export type brandUncheckedUpdateWithoutGenerated_imagesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1305,6 +1386,7 @@ export type brandCreateWithoutBrand_assetsInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
@@ -1331,6 +1413,7 @@ export type brandUncheckedCreateWithoutBrand_assetsInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
@@ -1391,6 +1474,10 @@ export type brandUpdateWithoutBrand_assetsInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
@@ -1424,6 +1511,10 @@ export type brandUncheckedUpdateWithoutBrand_assetsInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1449,6 +1540,7 @@ export type brandCreateWithoutImage_templatesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -1475,6 +1567,7 @@ export type brandUncheckedCreateWithoutImage_templatesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -1535,6 +1628,10 @@ export type brandUpdateWithoutImage_templatesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -1568,6 +1665,10 @@ export type brandUncheckedUpdateWithoutImage_templatesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1593,6 +1694,7 @@ export type brandCreateWithoutGenerated_copiesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -1619,6 +1721,7 @@ export type brandUncheckedCreateWithoutGenerated_copiesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -1679,6 +1782,10 @@ export type brandUpdateWithoutGenerated_copiesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -1712,6 +1819,10 @@ export type brandUncheckedUpdateWithoutGenerated_copiesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1737,6 +1848,7 @@ export type brandCreateWithoutBrand_entitiesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
@@ -1763,6 +1875,7 @@ export type brandUncheckedCreateWithoutBrand_entitiesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?: number | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
@@ -1823,6 +1936,10 @@ export type brandUpdateWithoutBrand_entitiesInput = {
     | number
     | string
     | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
@@ -1855,6 +1972,10 @@ export type brandUncheckedUpdateWithoutBrand_entitiesInput = {
     | runtime.DecimalJsLike
     | number
     | string
+    | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
     | null;
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
@@ -1991,6 +2112,7 @@ export type brandSelect<
     sap_brand_alias?: boolean;
     sap_company_name?: boolean;
     ideal_fc_perc?: boolean;
+    google_places_brand_id?: boolean;
     aggregator_offers?: boolean | Prisma.brand$aggregator_offersArgs<ExtArgs>;
     user_assignments?: boolean | Prisma.brand$user_assignmentsArgs<ExtArgs>;
     brand_assets?: boolean | Prisma.brand$brand_assetsArgs<ExtArgs>;
@@ -2020,6 +2142,7 @@ export type brandSelectCreateManyAndReturn<
     sap_brand_alias?: boolean;
     sap_company_name?: boolean;
     ideal_fc_perc?: boolean;
+    google_places_brand_id?: boolean;
   },
   ExtArgs["result"]["brand"]
 >;
@@ -2041,6 +2164,7 @@ export type brandSelectUpdateManyAndReturn<
     sap_brand_alias?: boolean;
     sap_company_name?: boolean;
     ideal_fc_perc?: boolean;
+    google_places_brand_id?: boolean;
   },
   ExtArgs["result"]["brand"]
 >;
@@ -2058,6 +2182,7 @@ export type brandSelectScalar = {
   sap_brand_alias?: boolean;
   sap_company_name?: boolean;
   ideal_fc_perc?: boolean;
+  google_places_brand_id?: boolean;
 };
 
 export type brandOmit<
@@ -2075,7 +2200,8 @@ export type brandOmit<
   | "active"
   | "sap_brand_alias"
   | "sap_company_name"
-  | "ideal_fc_perc",
+  | "ideal_fc_perc"
+  | "google_places_brand_id",
   ExtArgs["result"]["brand"]
 >;
 export type brandInclude<
@@ -2132,6 +2258,12 @@ export type $brandPayload<
        * offers-data-quality form to calculate ideal_price from fc_eur.
        */
       ideal_fc_perc: runtime.Decimal | null;
+      /**
+       * Id of this brand in the Google Reviews scraper API (`GET /brands`).
+       * Set by `scripts/sync-google-places-brands.ts`; lets a place's brand
+       * propagate to the businesses it discovers (brand_entity assignments).
+       */
+      google_places_brand_id: number | null;
     },
     ExtArgs["result"]["brand"]
   >;
@@ -2813,6 +2945,7 @@ export interface brandFieldRefs {
   readonly sap_brand_alias: Prisma.FieldRef<"brand", "String">;
   readonly sap_company_name: Prisma.FieldRef<"brand", "String">;
   readonly ideal_fc_perc: Prisma.FieldRef<"brand", "Decimal">;
+  readonly google_places_brand_id: Prisma.FieldRef<"brand", "Int">;
 }
 
 // Custom InputTypes

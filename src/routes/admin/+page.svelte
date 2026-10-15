@@ -109,7 +109,7 @@
       href: "/admin/google-reviews",
       title: "Google Reviews",
       description:
-        "Curate the review categories at the source: rename them, rewrite summaries, and activate or deactivate categories in bulk.",
+        "Curate review categories at the source and manage the places the scraper searches for on Google Maps.",
       icon: StarIcon,
       accessKey: "googleReviews",
     },

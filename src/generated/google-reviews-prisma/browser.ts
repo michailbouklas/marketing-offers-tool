@@ -26,3 +26,10 @@ export * from './enums';
  * whose name matches an active one fails with P2002.
  */
 export type review_categories = Prisma.review_categoriesModel
+/**
+ * Model businesses
+ * Businesses discovered by the scraper. Read-only from this app; only the
+ * columns the Places manager needs. `input_id` is the `scrape_queries.id`
+ * (as text) of the place whose search discovered the business.
+ */
+export type businesses = Prisma.businessesModel

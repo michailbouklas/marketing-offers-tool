@@ -31,3 +31,13 @@ model review_categories {
   version              Int?                         @default(1)
   is_active            Boolean?                     @default(true)
 }
+
+/// Businesses discovered by the scraper. Read-only from this app; only the
+/// columns the Places manager needs. `input_id` is the `scrape_queries.id`
+/// (as text) of the place whose search discovered the business.
+model businesses {
+  id       Int    @id @default(autoincrement())
+  input_id String @db.VarChar
+  cid      String @unique @db.VarChar
+  title    String @db.VarChar
+}

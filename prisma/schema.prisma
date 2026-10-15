@@ -67,6 +67,10 @@ model brand {
   /// Yearly food-cost target as a fraction (0.30 = 30%). Used by the
   /// offers-data-quality form to calculate ideal_price from fc_eur.
   ideal_fc_perc     Decimal?                      @db.Decimal(5, 4)
+  /// Id of this brand in the Google Reviews scraper API (`GET /brands`).
+  /// Set by `scripts/sync-google-places-brands.ts`; lets a place's brand
+  /// propagate to the businesses it discovers (brand_entity assignments).
+  google_places_brand_id Int?                     @unique
   aggregator_offers aggregator_offers[]
   user_assignments  user_brand[]
   brand_assets      BrandAsset[]
