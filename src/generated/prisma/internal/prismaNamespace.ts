@@ -417,6 +417,7 @@ export const ModelName = {
   error_log: "error_log",
   brand: "brand",
   user_brand: "user_brand",
+  brand_google_analytics_property: "brand_google_analytics_property",
   regex_patterns_by_category: "regex_patterns_by_category",
   store_names: "store_names",
   wolt_regex_patters: "wolt_regex_patters",
@@ -485,6 +486,7 @@ export type TypeMap<
       | "error_log"
       | "brand"
       | "user_brand"
+      | "brand_google_analytics_property"
       | "regex_patterns_by_category"
       | "store_names"
       | "wolt_regex_patters"
@@ -905,6 +907,82 @@ export type TypeMap<
           args: Prisma.user_brandCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.User_brandCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    brand_google_analytics_property: {
+      payload: Prisma.$brand_google_analytics_propertyPayload<ExtArgs>;
+      fields: Prisma.brand_google_analytics_propertyFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.brand_google_analytics_propertyFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$brand_google_analytics_propertyPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.brand_google_analytics_propertyFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$brand_google_analytics_propertyPayload>;
+        };
+        findFirst: {
+          args: Prisma.brand_google_analytics_propertyFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$brand_google_analytics_propertyPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.brand_google_analytics_propertyFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$brand_google_analytics_propertyPayload>;
+        };
+        findMany: {
+          args: Prisma.brand_google_analytics_propertyFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$brand_google_analytics_propertyPayload>[];
+        };
+        create: {
+          args: Prisma.brand_google_analytics_propertyCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$brand_google_analytics_propertyPayload>;
+        };
+        createMany: {
+          args: Prisma.brand_google_analytics_propertyCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.brand_google_analytics_propertyCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$brand_google_analytics_propertyPayload>[];
+        };
+        delete: {
+          args: Prisma.brand_google_analytics_propertyDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$brand_google_analytics_propertyPayload>;
+        };
+        update: {
+          args: Prisma.brand_google_analytics_propertyUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$brand_google_analytics_propertyPayload>;
+        };
+        deleteMany: {
+          args: Prisma.brand_google_analytics_propertyDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.brand_google_analytics_propertyUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.brand_google_analytics_propertyUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$brand_google_analytics_propertyPayload>[];
+        };
+        upsert: {
+          args: Prisma.brand_google_analytics_propertyUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$brand_google_analytics_propertyPayload>;
+        };
+        aggregate: {
+          args: Prisma.Brand_google_analytics_propertyAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBrand_google_analytics_property>;
+        };
+        groupBy: {
+          args: Prisma.brand_google_analytics_propertyGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.Brand_google_analytics_propertyGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.brand_google_analytics_propertyCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.Brand_google_analytics_propertyCountAggregateOutputType>
             | number;
         };
       };
@@ -4069,6 +4147,26 @@ export const User_brandScalarFieldEnum = {
 export type User_brandScalarFieldEnum =
   (typeof User_brandScalarFieldEnum)[keyof typeof User_brandScalarFieldEnum];
 
+export const Brand_google_analytics_propertyScalarFieldEnum = {
+  id: "id",
+  brandId: "brandId",
+  propertyId: "propertyId",
+  displayName: "displayName",
+  credentialsEncrypted: "credentialsEncrypted",
+  credentialsClientEmail: "credentialsClientEmail",
+  credentialsKeyId: "credentialsKeyId",
+  active: "active",
+  sortOrder: "sortOrder",
+  lastVerifiedAt: "lastVerifiedAt",
+  lastError: "lastError",
+  createdBy: "createdBy",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type Brand_google_analytics_propertyScalarFieldEnum =
+  (typeof Brand_google_analytics_propertyScalarFieldEnum)[keyof typeof Brand_google_analytics_propertyScalarFieldEnum];
+
 export const Regex_patterns_by_categoryScalarFieldEnum = {
   id: "id",
   regex: "regex",
@@ -5193,6 +5291,7 @@ export type GlobalOmitConfig = {
   error_log?: Prisma.error_logOmit;
   brand?: Prisma.brandOmit;
   user_brand?: Prisma.user_brandOmit;
+  brand_google_analytics_property?: Prisma.brand_google_analytics_propertyOmit;
   regex_patterns_by_category?: Prisma.regex_patterns_by_categoryOmit;
   store_names?: Prisma.store_namesOmit;
   wolt_regex_patters?: Prisma.wolt_regex_pattersOmit;

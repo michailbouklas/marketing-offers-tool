@@ -3,6 +3,7 @@
   import { SvelteSet } from "svelte/reactivity";
   import { toast } from "svelte-sonner";
   import AssignEntitiesDialog from "$lib/components/admin/assign-entities-dialog.svelte";
+  import GoogleAnalyticsPropertiesCard from "$lib/components/admin/google-analytics-properties-card.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
@@ -475,6 +476,13 @@
       </div>
     </Card.Content>
   </Card.Root>
+
+  <GoogleAnalyticsPropertiesCard
+    brandId={data.brand.id}
+    properties={data.googleAnalytics.properties}
+    canManage={data.googleAnalytics.canManage}
+    configured={data.googleAnalytics.configured}
+  />
 
   <Card.Root>
     <Card.Header>

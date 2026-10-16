@@ -59,6 +59,7 @@ export const ModelName = {
   error_log: "error_log",
   brand: "brand",
   user_brand: "user_brand",
+  brand_google_analytics_property: "brand_google_analytics_property",
   regex_patterns_by_category: "regex_patterns_by_category",
   store_names: "store_names",
   wolt_regex_patters: "wolt_regex_patters",
@@ -194,6 +195,26 @@ export const User_brandScalarFieldEnum = {
 
 export type User_brandScalarFieldEnum =
   (typeof User_brandScalarFieldEnum)[keyof typeof User_brandScalarFieldEnum];
+
+export const Brand_google_analytics_propertyScalarFieldEnum = {
+  id: "id",
+  brandId: "brandId",
+  propertyId: "propertyId",
+  displayName: "displayName",
+  credentialsEncrypted: "credentialsEncrypted",
+  credentialsClientEmail: "credentialsClientEmail",
+  credentialsKeyId: "credentialsKeyId",
+  active: "active",
+  sortOrder: "sortOrder",
+  lastVerifiedAt: "lastVerifiedAt",
+  lastError: "lastError",
+  createdBy: "createdBy",
+  createdAt: "createdAt",
+  updatedAt: "updatedAt",
+} as const;
+
+export type Brand_google_analytics_propertyScalarFieldEnum =
+  (typeof Brand_google_analytics_propertyScalarFieldEnum)[keyof typeof Brand_google_analytics_propertyScalarFieldEnum];
 
 export const Regex_patterns_by_categoryScalarFieldEnum = {
   id: "id",

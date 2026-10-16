@@ -1,6 +1,12 @@
 import { error } from "@sveltejs/kit";
-import { requirePermission } from "$lib/server/auth-guards";
+import { isAdminRole } from "$lib/auth/roles";
+import {
+  getAuthenticatedUserRole,
+  requirePermission,
+} from "$lib/server/auth-guards";
+import { isGoogleAnalyticsCryptoConfigured } from "$lib/server/google-analytics-crypto.server";
 import { prisma } from "$lib/server/prisma";
+import { listPropertiesForBrandAdmin } from "$lib/services/google-analytics/properties.server";
 import {
   getBrandGuidelines,
   listBrandAssets,
@@ -39,21 +45,31 @@ export const load: PageServerLoad = async (event) => {
       ? null
       : Math.round(Number(ideal_fc_perc.toString()) * 100 * 100) / 100;
 
-  const [assets, guidelines, assignments] = await Promise.all([
-    listBrandAssets(brand.id),
-    brand.slug ? getBrandGuidelines(brand.slug) : Promise.resolve(null),
-    // Store names live in the merchant-scrapes replica, which the assignment
-    // service deliberately doesn't reach into — inject the resolver here.
-    listBrandAssignments(
-      { brandId: brand.id },
-      { aggregatorStore: resolveAggregatorStoreNames },
-    ),
-  ]);
+  const [assets, guidelines, assignments, googleAnalyticsProperties, role] =
+    await Promise.all([
+      listBrandAssets(brand.id),
+      brand.slug ? getBrandGuidelines(brand.slug) : Promise.resolve(null),
+      // Store names live in the merchant-scrapes replica, which the assignment
+      // service deliberately doesn't reach into — inject the resolver here.
+      listBrandAssignments(
+        { brandId: brand.id },
+        { aggregatorStore: resolveAggregatorStoreNames },
+      ),
+      listPropertiesForBrandAdmin(brand.id),
+      getAuthenticatedUserRole(event),
+    ]);
 
   return {
     brand,
     idealFcPercent,
     assignments,
+    googleAnalytics: {
+      properties: googleAnalyticsProperties,
+      // Uploading Google credentials is an admin power; brand managers (who
+      // also hold `brand: ["manage"]`) see the list read-only.
+      canManage: isAdminRole(role),
+      configured: isGoogleAnalyticsCryptoConfigured(),
+    },
     assets: assets.map((asset) => ({
       id: asset.id,
       name: asset.name,

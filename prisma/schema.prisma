@@ -53,31 +53,32 @@ model error_log {
 }
 
 model brand {
-  id                Int                           @id @default(autoincrement())
-  name              String                        @db.Text
-  alias             String                        @default("") @db.Text
-  logo              String                        @default("") @db.Text
-  slug              String                        @default("") @db.Text
-  created_at        DateTime                      @default(now()) @db.Timestamp(3)
-  updated_at        DateTime                      @db.Timestamp(3)
-  description       String?                       @default("") @db.Text
-  active            Boolean                       @default(true)
-  sap_brand_alias   String?                       @db.Text
-  sap_company_name  String?                       @db.Text
+  id                          Int                               @id @default(autoincrement())
+  name                        String                            @db.Text
+  alias                       String                            @default("") @db.Text
+  logo                        String                            @default("") @db.Text
+  slug                        String                            @default("") @db.Text
+  created_at                  DateTime                          @default(now()) @db.Timestamp(3)
+  updated_at                  DateTime                          @db.Timestamp(3)
+  description                 String?                           @default("") @db.Text
+  active                      Boolean                           @default(true)
+  sap_brand_alias             String?                           @db.Text
+  sap_company_name            String?                           @db.Text
   /// Yearly food-cost target as a fraction (0.30 = 30%). Used by the
   /// offers-data-quality form to calculate ideal_price from fc_eur.
-  ideal_fc_perc     Decimal?                      @db.Decimal(5, 4)
+  ideal_fc_perc               Decimal?                          @db.Decimal(5, 4)
   /// Id of this brand in the Google Reviews scraper API (`GET /brands`).
   /// Set by `scripts/sync-google-places-brands.ts`; lets a place's brand
   /// propagate to the businesses it discovers (brand_entity assignments).
-  google_places_brand_id Int?                     @unique
-  aggregator_offers aggregator_offers[]
-  user_assignments  user_brand[]
-  brand_assets      BrandAsset[]
-  generated_images  GeneratedImage[]
-  generated_copies  GeneratedCopy[]
-  image_templates   ImageGeneratorTemplateBrand[]
-  brand_entities    brand_entity[]
+  google_places_brand_id      Int?                              @unique
+  aggregator_offers           aggregator_offers[]
+  user_assignments            user_brand[]
+  brand_assets                BrandAsset[]
+  generated_images            GeneratedImage[]
+  generated_copies            GeneratedCopy[]
+  image_templates             ImageGeneratorTemplateBrand[]
+  brand_entities              brand_entity[]
+  google_analytics_properties brand_google_analytics_property[]
 }
 
 model user_brand {
@@ -88,6 +89,35 @@ model user_brand {
   brand     brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@id([userId, brandId])
+  @@index([brandId])
+}
+
+// --- Google Analytics -------------------------------------------------------
+// One GA4 property per row; a brand may own several. The service-account JSON
+// used to query the property is stored encrypted (AES-256-GCM, key from
+// GOOGLE_ANALYTICS_CREDENTIALS_KEY — see google-analytics-crypto.server.ts) and
+// never leaves the server; only the client email / key id are shown to admins.
+model brand_google_analytics_property {
+  id                     String    @id @default(cuid())
+  brandId                Int
+  brand                  brand     @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  /// Numeric GA4 property id (digits only, without the "properties/" prefix).
+  propertyId             String
+  displayName            String
+  /// Service-account JSON, encrypted. Format: `v1:<iv>:<tag>:<ciphertext>` (base64 parts).
+  credentialsEncrypted   String    @db.Text
+  /// Display-only fields extracted from the JSON at save time.
+  credentialsClientEmail String
+  credentialsKeyId       String?
+  active                 Boolean   @default(true)
+  sortOrder              Int       @default(0)
+  lastVerifiedAt         DateTime?
+  lastError              String?   @db.Text
+  createdBy              String? // user.id of the admin who added the property (audit)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([brandId, propertyId])
   @@index([brandId])
 }
 

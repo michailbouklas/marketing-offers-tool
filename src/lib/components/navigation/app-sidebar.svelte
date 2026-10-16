@@ -6,6 +6,7 @@
     canAccessAdminSection,
     competitionRoles,
     forecastsRoles,
+    googleAnalyticsRoles,
     googleReviewsRoles,
     hasAnyRole,
     salesRoles,
@@ -25,6 +26,7 @@
   import GaugeIcon from "@lucide/svelte/icons/gauge";
   import ChartColumnIcon from "@lucide/svelte/icons/chart-column";
   import ChartSplineIcon from "@lucide/svelte/icons/chart-spline";
+  import ChartLineIcon from "@lucide/svelte/icons/chart-line";
   import type { Component } from "svelte";
 
   // `roles` lists the role(s) that may see the item. Omit it for items visible
@@ -143,6 +145,12 @@
           label: "Negative review categories",
         },
       ],
+    },
+    {
+      href: "/google-analytics",
+      label: "Google Analytics",
+      icon: ChartLineIcon,
+      roles: googleAnalyticsRoles,
     },
     {
       href: "/aggregator-kpis",

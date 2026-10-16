@@ -270,6 +270,39 @@ export function getGooglePlacesApiUrl(): string | undefined {
 }
 
 /**
+ * AES-256 key protecting the Google Analytics service-account credentials
+ * stored in `brand_google_analytics_property` (see
+ * `google-analytics-crypto.server.ts`). `undefined` when unset — the admin
+ * card then refuses to store credentials. A set-but-malformed value throws so
+ * a typo cannot silently encrypt with the wrong key.
+ */
+export function getGoogleAnalyticsCredentialsKey(): Buffer | undefined {
+  const raw = readEnv("GOOGLE_ANALYTICS_CREDENTIALS_KEY")?.trim();
+
+  if (!raw) {
+    return undefined;
+  }
+
+  const key = Buffer.from(raw, "base64");
+
+  if (key.length !== 32) {
+    throw new Error(
+      "GOOGLE_ANALYTICS_CREDENTIALS_KEY must be 32 bytes, base64-encoded (e.g. `openssl rand -base64 32`)",
+    );
+  }
+
+  return key;
+}
+
+/** How long a `/google-analytics` dashboard is served from memory. */
+export function getGoogleAnalyticsCacheTtlMs(): number {
+  const raw = readEnv("GOOGLE_ANALYTICS_CACHE_TTL_MS");
+  const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
+
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 600_000;
+}
+
+/**
  * Configuration for the Open WebUI bridge — the OpenAI-compatible endpoint
  * under `/api/openai/v1` and the OpenAPI tool server under
  * `/api/openwebui-tools`. See `docs/openwebui-integration.md`.

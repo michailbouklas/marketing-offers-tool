@@ -42,6 +42,12 @@ export type brand = Prisma.brandModel;
  */
 export type user_brand = Prisma.user_brandModel;
 /**
+ * Model brand_google_analytics_property
+ *
+ */
+export type brand_google_analytics_property =
+  Prisma.brand_google_analytics_propertyModel;
+/**
  * Model regex_patterns_by_category
  *
  */

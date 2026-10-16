@@ -53,7 +53,7 @@
       href: "/admin/brands",
       title: "Brands",
       description:
-        "Manage brand guidelines and reference assets used by the image generator.",
+        "Manage brand guidelines, reference assets for the image generator, pricing targets and Google Analytics properties.",
       icon: StoreIcon,
       accessKey: "brands",
     },

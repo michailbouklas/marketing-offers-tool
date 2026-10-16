@@ -21,6 +21,7 @@ export const statement = {
   promptGallery: ["manage"],
   competition: ["view"],
   googleReviews: ["view", "manage"],
+  googleAnalytics: ["view"],
   aggregatorKpis: ["view"],
   aggregatorInvoices: ["view"],
   sales: ["view"],
@@ -54,8 +55,8 @@ export const ac = createAccessControl(statement);
  * - `imageEditor` — generate images in the image generator.
  * - `copywriter` — generate marketing copy in the copywriter studio.
  * - `analyticsViewer` — view the `/competition`, `/google-reviews`,
- *   `/aggregator-kpis`, `/aggregator-offers/invoices`, `/sales/chat`, and
- *   `/forecasts` analytics sections.
+ *   `/google-analytics`, `/aggregator-kpis`, `/aggregator-offers/invoices`,
+ *   `/sales/chat`, and `/forecasts` analytics sections.
  * - `superUser` — admin-equivalent that holds every resource permission.
  *
  * Explicit empty action arrays (rather than `{}`) keep a role's resource keys
@@ -77,6 +78,7 @@ export const roles = {
     brand: ["manage"],
     urlsToScrape: ["manage"],
     googleReviews: ["manage"],
+    googleAnalytics: ["view"],
     aggregatorKpis: ["view"],
     aggregatorInvoices: ["view"],
     sales: ["view"],
@@ -109,6 +111,7 @@ export const roles = {
   analyticsViewer: ac.newRole({
     competition: ["view"],
     googleReviews: ["view"],
+    googleAnalytics: ["view"],
     aggregatorKpis: ["view"],
     aggregatorInvoices: ["view"],
     sales: ["view"],
@@ -125,6 +128,7 @@ export const roles = {
     promptGallery: ["manage"],
     competition: ["view"],
     googleReviews: ["view", "manage"],
+    googleAnalytics: ["view"],
     aggregatorKpis: ["view"],
     aggregatorInvoices: ["view"],
     sales: ["view"],

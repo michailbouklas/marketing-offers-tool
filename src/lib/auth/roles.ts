@@ -63,6 +63,20 @@ export const googleReviewsRoles: UserRole[] = [
 ];
 
 /**
+ * Roles that may access the `/google-analytics` section (per-brand GA4
+ * dashboards read through the Google Analytics Data API). `admin` is included
+ * explicitly — the marker admin role is granted the matching
+ * `googleAnalytics: ["view"]` permission in `permissions.ts`. `superUser` is
+ * the admin-equivalent that holds every resource permission. Brand scope is
+ * always the user's own `user_brand` assignments, for every role.
+ */
+export const googleAnalyticsRoles: UserRole[] = [
+  "analyticsViewer",
+  adminUserRole,
+  superUserRole,
+];
+
+/**
  * Roles that may access the `/aggregator-kpis` section (aggregator merchant
  * performance KPIs sourced from the merchant-scrapes Postgres database).
  * Unlike the other analytics sections, `admin` is included explicitly — the

@@ -12,6 +12,7 @@ export type * from "./models/api_WOLT_lines";
 export type * from "./models/error_log";
 export type * from "./models/brand";
 export type * from "./models/user_brand";
+export type * from "./models/brand_google_analytics_property";
 export type * from "./models/regex_patterns_by_category";
 export type * from "./models/store_names";
 export type * from "./models/wolt_regex_patters";

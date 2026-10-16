@@ -305,6 +305,7 @@ export type brandWhereInput = {
   generated_copies?: Prisma.GeneratedCopyListRelationFilter;
   image_templates?: Prisma.ImageGeneratorTemplateBrandListRelationFilter;
   brand_entities?: Prisma.Brand_entityListRelationFilter;
+  google_analytics_properties?: Prisma.Brand_google_analytics_propertyListRelationFilter;
 };
 
 export type brandOrderByWithRelationInput = {
@@ -328,6 +329,7 @@ export type brandOrderByWithRelationInput = {
   generated_copies?: Prisma.GeneratedCopyOrderByRelationAggregateInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandOrderByRelationAggregateInput;
   brand_entities?: Prisma.brand_entityOrderByRelationAggregateInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyOrderByRelationAggregateInput;
 };
 
 export type brandWhereUniqueInput = Prisma.AtLeast<
@@ -361,6 +363,7 @@ export type brandWhereUniqueInput = Prisma.AtLeast<
     generated_copies?: Prisma.GeneratedCopyListRelationFilter;
     image_templates?: Prisma.ImageGeneratorTemplateBrandListRelationFilter;
     brand_entities?: Prisma.Brand_entityListRelationFilter;
+    google_analytics_properties?: Prisma.Brand_google_analytics_propertyListRelationFilter;
   },
   "id" | "google_places_brand_id"
 >;
@@ -452,6 +455,7 @@ export type brandCreateInput = {
   generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUncheckedCreateInput = {
@@ -480,6 +484,7 @@ export type brandUncheckedCreateInput = {
   generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUpdateInput = {
@@ -517,6 +522,7 @@ export type brandUpdateInput = {
   generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandUncheckedUpdateInput = {
@@ -555,6 +561,7 @@ export type brandUncheckedUpdateInput = {
   generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandCreateManyInput = {
@@ -747,6 +754,33 @@ export type brandUpdateOneRequiredWithoutUser_assignmentsNestedInput = {
   >;
 };
 
+export type brandCreateNestedOneWithoutGoogle_analytics_propertiesInput = {
+  create?: Prisma.XOR<
+    Prisma.brandCreateWithoutGoogle_analytics_propertiesInput,
+    Prisma.brandUncheckedCreateWithoutGoogle_analytics_propertiesInput
+  >;
+  connectOrCreate?: Prisma.brandCreateOrConnectWithoutGoogle_analytics_propertiesInput;
+  connect?: Prisma.brandWhereUniqueInput;
+};
+
+export type brandUpdateOneRequiredWithoutGoogle_analytics_propertiesNestedInput =
+  {
+    create?: Prisma.XOR<
+      Prisma.brandCreateWithoutGoogle_analytics_propertiesInput,
+      Prisma.brandUncheckedCreateWithoutGoogle_analytics_propertiesInput
+    >;
+    connectOrCreate?: Prisma.brandCreateOrConnectWithoutGoogle_analytics_propertiesInput;
+    upsert?: Prisma.brandUpsertWithoutGoogle_analytics_propertiesInput;
+    connect?: Prisma.brandWhereUniqueInput;
+    update?: Prisma.XOR<
+      Prisma.XOR<
+        Prisma.brandUpdateToOneWithWhereWithoutGoogle_analytics_propertiesInput,
+        Prisma.brandUpdateWithoutGoogle_analytics_propertiesInput
+      >,
+      Prisma.brandUncheckedUpdateWithoutGoogle_analytics_propertiesInput
+    >;
+  };
+
 export type brandCreateNestedOneWithoutAggregator_offersInput = {
   create?: Prisma.XOR<
     Prisma.brandCreateWithoutAggregator_offersInput,
@@ -931,6 +965,7 @@ export type brandCreateWithoutUser_assignmentsInput = {
   generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUncheckedCreateWithoutUser_assignmentsInput = {
@@ -958,6 +993,7 @@ export type brandUncheckedCreateWithoutUser_assignmentsInput = {
   generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput;
 };
 
 export type brandCreateOrConnectWithoutUser_assignmentsInput = {
@@ -1022,6 +1058,7 @@ export type brandUpdateWithoutUser_assignmentsInput = {
   generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandUncheckedUpdateWithoutUser_assignmentsInput = {
@@ -1059,6 +1096,165 @@ export type brandUncheckedUpdateWithoutUser_assignmentsInput = {
   generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput;
+};
+
+export type brandCreateWithoutGoogle_analytics_propertiesInput = {
+  name: string;
+  alias?: string;
+  logo?: string;
+  slug?: string;
+  created_at?: Date | string;
+  updated_at: Date | string;
+  description?: string | null;
+  active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  google_places_brand_id?: number | null;
+  aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput;
+  user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput;
+  brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput;
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput;
+  image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput;
+  brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput;
+};
+
+export type brandUncheckedCreateWithoutGoogle_analytics_propertiesInput = {
+  id?: number;
+  name: string;
+  alias?: string;
+  logo?: string;
+  slug?: string;
+  created_at?: Date | string;
+  updated_at: Date | string;
+  description?: string | null;
+  active?: boolean;
+  sap_brand_alias?: string | null;
+  sap_company_name?: string | null;
+  ideal_fc_perc?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  google_places_brand_id?: number | null;
+  aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput;
+  user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput;
+  brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput;
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput;
+  image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput;
+  brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput;
+};
+
+export type brandCreateOrConnectWithoutGoogle_analytics_propertiesInput = {
+  where: Prisma.brandWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.brandCreateWithoutGoogle_analytics_propertiesInput,
+    Prisma.brandUncheckedCreateWithoutGoogle_analytics_propertiesInput
+  >;
+};
+
+export type brandUpsertWithoutGoogle_analytics_propertiesInput = {
+  update: Prisma.XOR<
+    Prisma.brandUpdateWithoutGoogle_analytics_propertiesInput,
+    Prisma.brandUncheckedUpdateWithoutGoogle_analytics_propertiesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.brandCreateWithoutGoogle_analytics_propertiesInput,
+    Prisma.brandUncheckedCreateWithoutGoogle_analytics_propertiesInput
+  >;
+  where?: Prisma.brandWhereInput;
+};
+
+export type brandUpdateToOneWithWhereWithoutGoogle_analytics_propertiesInput = {
+  where?: Prisma.brandWhereInput;
+  data: Prisma.XOR<
+    Prisma.brandUpdateWithoutGoogle_analytics_propertiesInput,
+    Prisma.brandUncheckedUpdateWithoutGoogle_analytics_propertiesInput
+  >;
+};
+
+export type brandUpdateWithoutGoogle_analytics_propertiesInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  alias?: Prisma.StringFieldUpdateOperationsInput | string;
+  logo?: Prisma.StringFieldUpdateOperationsInput | string;
+  slug?: Prisma.StringFieldUpdateOperationsInput | string;
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput;
+  user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput;
+  brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput;
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput;
+  image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput;
+  brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput;
+};
+
+export type brandUncheckedUpdateWithoutGoogle_analytics_propertiesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  alias?: Prisma.StringFieldUpdateOperationsInput | string;
+  logo?: Prisma.StringFieldUpdateOperationsInput | string;
+  slug?: Prisma.StringFieldUpdateOperationsInput | string;
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  sap_brand_alias?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  sap_company_name?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null;
+  ideal_fc_perc?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  google_places_brand_id?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null;
+  aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput;
+  user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput;
+  brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput;
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput;
+  image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput;
+  brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandCreateWithoutAggregator_offersInput = {
@@ -1085,6 +1281,7 @@ export type brandCreateWithoutAggregator_offersInput = {
   generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUncheckedCreateWithoutAggregator_offersInput = {
@@ -1112,6 +1309,7 @@ export type brandUncheckedCreateWithoutAggregator_offersInput = {
   generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput;
 };
 
 export type brandCreateOrConnectWithoutAggregator_offersInput = {
@@ -1176,6 +1374,7 @@ export type brandUpdateWithoutAggregator_offersInput = {
   generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandUncheckedUpdateWithoutAggregator_offersInput = {
@@ -1213,6 +1412,7 @@ export type brandUncheckedUpdateWithoutAggregator_offersInput = {
   generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandCreateWithoutGenerated_imagesInput = {
@@ -1239,6 +1439,7 @@ export type brandCreateWithoutGenerated_imagesInput = {
   generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUncheckedCreateWithoutGenerated_imagesInput = {
@@ -1266,6 +1467,7 @@ export type brandUncheckedCreateWithoutGenerated_imagesInput = {
   generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput;
 };
 
 export type brandCreateOrConnectWithoutGenerated_imagesInput = {
@@ -1330,6 +1532,7 @@ export type brandUpdateWithoutGenerated_imagesInput = {
   generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandUncheckedUpdateWithoutGenerated_imagesInput = {
@@ -1367,6 +1570,7 @@ export type brandUncheckedUpdateWithoutGenerated_imagesInput = {
   generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandCreateWithoutBrand_assetsInput = {
@@ -1393,6 +1597,7 @@ export type brandCreateWithoutBrand_assetsInput = {
   generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUncheckedCreateWithoutBrand_assetsInput = {
@@ -1420,6 +1625,7 @@ export type brandUncheckedCreateWithoutBrand_assetsInput = {
   generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput;
 };
 
 export type brandCreateOrConnectWithoutBrand_assetsInput = {
@@ -1484,6 +1690,7 @@ export type brandUpdateWithoutBrand_assetsInput = {
   generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandUncheckedUpdateWithoutBrand_assetsInput = {
@@ -1521,6 +1728,7 @@ export type brandUncheckedUpdateWithoutBrand_assetsInput = {
   generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandCreateWithoutImage_templatesInput = {
@@ -1547,6 +1755,7 @@ export type brandCreateWithoutImage_templatesInput = {
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
   generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUncheckedCreateWithoutImage_templatesInput = {
@@ -1574,6 +1783,7 @@ export type brandUncheckedCreateWithoutImage_templatesInput = {
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
   generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput;
 };
 
 export type brandCreateOrConnectWithoutImage_templatesInput = {
@@ -1638,6 +1848,7 @@ export type brandUpdateWithoutImage_templatesInput = {
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
   generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandUncheckedUpdateWithoutImage_templatesInput = {
@@ -1675,6 +1886,7 @@ export type brandUncheckedUpdateWithoutImage_templatesInput = {
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
   generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandCreateWithoutGenerated_copiesInput = {
@@ -1701,6 +1913,7 @@ export type brandCreateWithoutGenerated_copiesInput = {
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUncheckedCreateWithoutGenerated_copiesInput = {
@@ -1728,6 +1941,7 @@ export type brandUncheckedCreateWithoutGenerated_copiesInput = {
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput;
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput;
 };
 
 export type brandCreateOrConnectWithoutGenerated_copiesInput = {
@@ -1792,6 +2006,7 @@ export type brandUpdateWithoutGenerated_copiesInput = {
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandUncheckedUpdateWithoutGenerated_copiesInput = {
@@ -1829,6 +2044,7 @@ export type brandUncheckedUpdateWithoutGenerated_copiesInput = {
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput;
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandCreateWithoutBrand_entitiesInput = {
@@ -1855,6 +2071,7 @@ export type brandCreateWithoutBrand_entitiesInput = {
   generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput;
   generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput;
 };
 
 export type brandUncheckedCreateWithoutBrand_entitiesInput = {
@@ -1882,6 +2099,7 @@ export type brandUncheckedCreateWithoutBrand_entitiesInput = {
   generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput;
   generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput;
 };
 
 export type brandCreateOrConnectWithoutBrand_entitiesInput = {
@@ -1946,6 +2164,7 @@ export type brandUpdateWithoutBrand_entitiesInput = {
   generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput;
   generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput;
 };
 
 export type brandUncheckedUpdateWithoutBrand_entitiesInput = {
@@ -1983,6 +2202,7 @@ export type brandUncheckedUpdateWithoutBrand_entitiesInput = {
   generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput;
   generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput;
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput;
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput;
 };
 
 /**
@@ -1997,6 +2217,7 @@ export type BrandCountOutputType = {
   generated_copies: number;
   image_templates: number;
   brand_entities: number;
+  google_analytics_properties: number;
 };
 
 export type BrandCountOutputTypeSelect<
@@ -2010,6 +2231,9 @@ export type BrandCountOutputTypeSelect<
   generated_copies?: boolean | BrandCountOutputTypeCountGenerated_copiesArgs;
   image_templates?: boolean | BrandCountOutputTypeCountImage_templatesArgs;
   brand_entities?: boolean | BrandCountOutputTypeCountBrand_entitiesArgs;
+  google_analytics_properties?:
+    | boolean
+    | BrandCountOutputTypeCountGoogle_analytics_propertiesArgs;
 };
 
 /**
@@ -2095,6 +2319,16 @@ export type BrandCountOutputTypeCountBrand_entitiesArgs<
   where?: Prisma.brand_entityWhereInput;
 };
 
+/**
+ * BrandCountOutputType without action
+ */
+export type BrandCountOutputTypeCountGoogle_analytics_propertiesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.brand_google_analytics_propertyWhereInput;
+};
+
 export type brandSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
@@ -2120,6 +2354,9 @@ export type brandSelect<
     generated_copies?: boolean | Prisma.brand$generated_copiesArgs<ExtArgs>;
     image_templates?: boolean | Prisma.brand$image_templatesArgs<ExtArgs>;
     brand_entities?: boolean | Prisma.brand$brand_entitiesArgs<ExtArgs>;
+    google_analytics_properties?:
+      | boolean
+      | Prisma.brand$google_analytics_propertiesArgs<ExtArgs>;
     _count?: boolean | Prisma.BrandCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs["result"]["brand"]
@@ -2215,6 +2452,9 @@ export type brandInclude<
   generated_copies?: boolean | Prisma.brand$generated_copiesArgs<ExtArgs>;
   image_templates?: boolean | Prisma.brand$image_templatesArgs<ExtArgs>;
   brand_entities?: boolean | Prisma.brand$brand_entitiesArgs<ExtArgs>;
+  google_analytics_properties?:
+    | boolean
+    | Prisma.brand$google_analytics_propertiesArgs<ExtArgs>;
   _count?: boolean | Prisma.BrandCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type brandIncludeCreateManyAndReturn<
@@ -2239,6 +2479,7 @@ export type $brandPayload<
     generated_copies: Prisma.$GeneratedCopyPayload<ExtArgs>[];
     image_templates: Prisma.$ImageGeneratorTemplateBrandPayload<ExtArgs>[];
     brand_entities: Prisma.$brand_entityPayload<ExtArgs>[];
+    google_analytics_properties: Prisma.$brand_google_analytics_propertyPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -2885,6 +3126,22 @@ export interface Prisma__brandClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$brand_entityPayload<ExtArgs>,
+        T,
+        "findMany",
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  google_analytics_properties<
+    T extends Prisma.brand$google_analytics_propertiesArgs<ExtArgs> = {},
+  >(
+    args?: Prisma.Subset<
+      T,
+      Prisma.brand$google_analytics_propertiesArgs<ExtArgs>
+    >,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$brand_google_analytics_propertyPayload<ExtArgs>,
         T,
         "findMany",
         GlobalOmitOptions
@@ -3606,6 +3863,37 @@ export type brand$brand_entitiesArgs<
   distinct?:
     | Prisma.Brand_entityScalarFieldEnum
     | Prisma.Brand_entityScalarFieldEnum[];
+};
+
+/**
+ * brand.google_analytics_properties
+ */
+export type brand$google_analytics_propertiesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the brand_google_analytics_property
+   */
+  select?: Prisma.brand_google_analytics_propertySelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the brand_google_analytics_property
+   */
+  omit?: Prisma.brand_google_analytics_propertyOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.brand_google_analytics_propertyInclude<ExtArgs> | null;
+  where?: Prisma.brand_google_analytics_propertyWhereInput;
+  orderBy?:
+    | Prisma.brand_google_analytics_propertyOrderByWithRelationInput
+    | Prisma.brand_google_analytics_propertyOrderByWithRelationInput[];
+  cursor?: Prisma.brand_google_analytics_propertyWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.Brand_google_analytics_propertyScalarFieldEnum
+    | Prisma.Brand_google_analytics_propertyScalarFieldEnum[];
 };
 
 /**
