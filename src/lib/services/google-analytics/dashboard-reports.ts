@@ -5,12 +5,14 @@ import type {
   Ga4Row,
 } from "./ga4-client.server";
 import {
+  googleAnalyticsDashboardReportKeys,
   googleAnalyticsRangeDays,
   type GoogleAnalyticsAudienceSegment,
   type GoogleAnalyticsBreakdownRow,
   type GoogleAnalyticsCampaignRow,
   type GoogleAnalyticsDailyPoint,
   type GoogleAnalyticsDashboard,
+  type GoogleAnalyticsDashboardReportKey,
   type GoogleAnalyticsHeatmapCell,
   type GoogleAnalyticsKeyEventRow,
   type GoogleAnalyticsLandingPageRow,
@@ -51,21 +53,9 @@ const BREAKDOWN_LIMIT = 10;
 export const REPORTS_PER_BATCH = 5;
 
 /** Request order (flattened across batches); the mapper relies on it. */
-export const DASHBOARD_REPORT_ORDER = [
-  "daily",
-  "channels",
-  "pages",
-  "devices",
-  "countries",
-  "campaigns",
-  "landingPages",
-  "heatmap",
-  "newVsReturning",
-  "keyEventsByName",
-  "cities",
-] as const;
+export const DASHBOARD_REPORT_ORDER = googleAnalyticsDashboardReportKeys;
 
-export type DashboardReportKey = (typeof DASHBOARD_REPORT_ORDER)[number];
+export type DashboardReportKey = GoogleAnalyticsDashboardReportKey;
 
 /** Value GA4 puts in the auto-added `dateRange` dimension per range index. */
 const DATE_RANGE_CURRENT = "date_range_0";

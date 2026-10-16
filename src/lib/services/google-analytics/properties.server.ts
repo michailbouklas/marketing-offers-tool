@@ -22,6 +22,7 @@ import {
   type GoogleAnalyticsRange,
   type ServiceAccountCredentials,
 } from "./google-analytics";
+import { clearGoogleAnalyticsReportCache } from "./report-cache.server";
 
 /** Permission every `/google-analytics` page requires. */
 export const GOOGLE_ANALYTICS_PERMISSION = {
@@ -256,6 +257,12 @@ export async function updateProperty(
   });
 
   invalidateGoogleAnalyticsCache();
+
+  // Reports fetched with the old key stay valid data-wise, but a key swap
+  // usually means the old one stopped working — start clean for this property.
+  if (patch.credentialsJson !== undefined) {
+    await clearGoogleAnalyticsReportCache(id);
+  }
 
   return toAdminRow(row);
 }

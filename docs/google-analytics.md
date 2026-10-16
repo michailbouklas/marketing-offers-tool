@@ -60,13 +60,16 @@ read-only.
 
 `src/lib/services/google-analytics/`
 
-| File                   | Role                                                                                                                                                              |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `google-analytics.ts`  | Browser-safe types, URL filter helpers, the service-account Zod schema, formatters.                                                                               |
-| `properties.server.ts` | Prisma CRUD for properties, credential (de)encryption, the viewer scope (`listGoogleAnalyticsBrandsForUser`, `resolveGoogleAnalyticsScope` — out-of-scope ⇒ 403). |
-| `ga4-client.server.ts` | REST client: RS256 JWT assertion → OAuth token (cached per service account), `runReport`, `batchRunReports`, `verifyPropertyAccess`, error → user message.        |
-| `dashboard-reports.ts` | Pure request builders and the response → `GoogleAnalyticsDashboard` mapper (unit-tested).                                                                         |
-| `dashboard.server.ts`  | One `batchRunReports` call (5 reports) per (property, range), cached.                                                                                             |
+| File                        | Role                                                                                                                                                                                                                                                                                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `google-analytics.ts`       | Browser-safe types, URL filter helpers, the service-account Zod schema, formatters.                                                                                                                                                                                                                                                              |
+| `properties.server.ts`      | Prisma CRUD for properties, credential (de)encryption, the viewer scope (`listGoogleAnalyticsBrandsForUser`, `resolveGoogleAnalyticsScope` — out-of-scope ⇒ 403).                                                                                                                                                                                |
+| `ga4-client.server.ts`      | REST client: RS256 JWT assertion → OAuth token (cached per service account), `runReport`, `batchRunReports`, `verifyPropertyAccess`, error → user message.                                                                                                                                                                                       |
+| `dashboard-reports.ts`      | Pure request builders and the response → `GoogleAnalyticsDashboard` mapper (unit-tested).                                                                                                                                                                                                                                                        |
+| `report-cache.server.ts`    | Persistent cache: one raw GA4 report per (property row, range, report key) in `google_analytics_report_cache` (Postgres, survives restarts, shared by instances).                                                                                                                                                                                |
+| `dashboard-fetch.server.ts` | The only place dashboard reports are fetched: ≤ 5 per `batchRunReports`, batches run sequentially, each batch persisted before the next; logs `returnPropertyQuota` remaining tokens; never throws (outcome carries the error + failed keys).                                                                                                    |
+| `dashboard.server.ts`       | Assembles the dashboard widget by widget from the cache; fetches stale/missing reports; on 429/5xx serves the stale copy, marks widgets with no copy `pending` and enqueues a retry; non-retryable errors throw. One in-flight load per (property, range).                                                                                       |
+| `refresh-queue.server.ts`   | Retry queue (`google_analytics_refresh_job`, one row per property + range): enqueue merges keys; the croner sweep (`GOOGLE_ANALYTICS_REFRESH_CRON`, every minute) retries with 5→10→20→40→60 min backoff, stops after the first 429 of a tick, gives up after `GOOGLE_ANALYTICS_REFRESH_MAX_AGE_HOURS`. Postgres advisory lock across processes. |
 
 ### Widgets and the reports behind them
 
@@ -101,10 +104,27 @@ helper as the page using `{ guard: "api" }` (403 JSON instead of redirect).
   feeds the tiles so `activeUsers` is not over-counted by summing days), plus
   top-10 breakdowns by `sessionDefaultChannelGroup`, `unifiedScreenName`,
   `deviceCategory`, `country` ordered by sessions.
-- Cache: `GOOGLE_ANALYTICS_CACHE_TTL_MS` (default 10 min) per process, keyed by
-  property row + range, invalidated whenever an admin edits any property.
-  Standard GA4 properties have a daily Data API token quota; one dashboard load
-  costs one batch request.
+- Cache: every report is stored in Postgres (`google_analytics_report_cache`)
+  and served without asking Google while younger than
+  `GOOGLE_ANALYTICS_CACHE_TTL_MS` (default 6 h — dashboards end yesterday, so
+  the data barely moves within a day). Only stale or missing reports are
+  fetched, sequentially, ≤ 5 per batch. A key swap on a property purges its
+  rows; admins / superUsers get a "Clear GA caches" button on the page
+  (`?/clearCache` action: all rows, all queued retries, in-memory realtime and
+  metadata caches). Only the 30 s realtime snapshot stays in memory.
+- Quota: GA4 standard properties allow 14,000 Core tokens per project per
+  property per hour (and 40,000 / hour, 200,000 / day per property); batching
+  saves round-trips, not tokens. A full dashboard load costs ~14 tokens
+  (measured 2026-10-16 on Pizza Hut). Each batch logs the remaining tokens
+  (`[google-analytics] property row … tokens remaining: …`) so a 429 can be
+  attributed. Core and Realtime are separate buckets: the live card cannot
+  exhaust the dashboard's quota.
+- When Google answers 429 / 5xx the page still renders: widgets with an older
+  copy show it with an "updated … ago" note, widgets with no copy become a
+  "Waiting for Google Analytics" card, and a refresh job is queued. While any
+  widget is pending the page polls `GET /api/google-analytics/dashboard-status`
+  every 30 s and reloads its data once the sweep has filled the gaps. A page
+  load does not ask Google again for keys whose retry is already scheduled.
 - The page load awaits only the permission check and brand/property scope;
   the Google call is returned as a streamed promise (`streamed.dashboard`), so
   the shell and controls render at once and skeletons show until GA answers.
@@ -151,17 +171,22 @@ Behaviour worth knowing:
 
 ## Routes
 
-| Route                                                               | Guard                                     | Purpose                           |
-| ------------------------------------------------------------------- | ----------------------------------------- | --------------------------------- |
-| `GET /google-analytics?brand=&property=&range=`                     | `googleAnalytics: ["view"]` + brand scope | Dashboard page + assistant widget |
-| `POST /api/ai/chat` with `agentId: "google-analytics-agent"`        | `googleAnalytics: ["view"]` + GA scope    | Assistant conversation            |
-| `GET/POST /api/admin/brands/[brandId]/google-analytics`             | admin ∧ `brand: ["manage"]`               | List / add property               |
-| `PATCH/DELETE /api/admin/brands/[brandId]/google-analytics/[rowId]` | admin ∧ `brand: ["manage"]`               | Rename, (de)activate, replace key |
-| `POST /api/admin/brands/[brandId]/google-analytics/[rowId]/verify`  | admin ∧ `brand: ["manage"]`               | Test connection; records result   |
+| Route                                                                | Guard                                     | Purpose                                            |
+| -------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------- |
+| `GET /google-analytics?brand=&property=&range=`                      | `googleAnalytics: ["view"]` + brand scope | Dashboard page + assistant widget                  |
+| `POST /api/ai/chat` with `agentId: "google-analytics-agent"`         | `googleAnalytics: ["view"]` + GA scope    | Assistant conversation                             |
+| `GET /api/google-analytics/dashboard-status?brand=&property=&range=` | `googleAnalytics: ["view"]` + brand scope | Pending widgets + retry job state (no Google call) |
+| `POST /google-analytics?/clearCache`                                 | admin ∨ superUser                         | Drop cached reports, queued retries, memory caches |
+| `GET/POST /api/admin/brands/[brandId]/google-analytics`              | admin ∧ `brand: ["manage"]`               | List / add property                                |
+| `PATCH/DELETE /api/admin/brands/[brandId]/google-analytics/[rowId]`  | admin ∧ `brand: ["manage"]`               | Rename, (de)activate, replace key                  |
+| `POST /api/admin/brands/[brandId]/google-analytics/[rowId]/verify`   | admin ∧ `brand: ["manage"]`               | Test connection; records result                    |
 
 ## Env
 
 ```
 GOOGLE_ANALYTICS_CREDENTIALS_KEY=""      # 32 bytes base64; required to store/read keys
-GOOGLE_ANALYTICS_CACHE_TTL_MS="600000"   # dashboard cache, 0 disables
+GOOGLE_ANALYTICS_CACHE_TTL_MS="21600000"       # report freshness window (Postgres cache), 0 = always refetch
+GOOGLE_ANALYTICS_REFRESH_ENABLED="true"        # in-process retry sweep for refused reports
+GOOGLE_ANALYTICS_REFRESH_CRON="* * * * *"      # sweep schedule
+GOOGLE_ANALYTICS_REFRESH_MAX_AGE_HOURS="48"    # give up (keep serving stale) after this
 ```

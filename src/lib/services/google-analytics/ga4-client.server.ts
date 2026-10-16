@@ -514,6 +514,22 @@ export async function verifyPropertyAccess(
 }
 
 /**
+ * Google answers worth retrying later: quota exhaustion and transient server
+ * trouble. Everything else (bad key, no access, unknown property, malformed
+ * request) will fail the same way next time.
+ */
+export const RETRYABLE_GOOGLE_ANALYTICS_STATUSES: ReadonlySet<number> = new Set(
+  [429, 500, 502, 503, 504],
+);
+
+export function isRetryableGoogleAnalyticsError(err: unknown): boolean {
+  return (
+    err instanceof GoogleAnalyticsApiError &&
+    RETRYABLE_GOOGLE_ANALYTICS_STATUSES.has(err.status)
+  );
+}
+
+/**
  * User-facing explanation for a failed Google call. Keeps Google's raw message
  * (useful to admins) but leads with what to do about it.
  */

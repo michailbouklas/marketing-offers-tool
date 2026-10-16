@@ -116,9 +116,60 @@ model brand_google_analytics_property {
   createdBy              String? // user.id of the admin who added the property (audit)
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
+  report_cache           google_analytics_report_cache[]
+  refresh_jobs           google_analytics_refresh_job[]
 
   @@unique([brandId, propertyId])
   @@index([brandId])
+}
+
+/// One raw GA4 report per (property, date range, dashboard report key). The
+/// payload is the untouched Data API response so the existing mappers in
+/// dashboard-reports.ts stay unchanged. Survives restarts and deploys; served
+/// until GOOGLE_ANALYTICS_CACHE_TTL_MS old, and stale-on-error after that.
+model google_analytics_report_cache {
+  propertyRowId String
+  property      brand_google_analytics_property @relation(fields: [propertyRowId], references: [id], onDelete: Cascade)
+  /// GoogleAnalyticsRange ("7d" | "28d" | "90d").
+  range         String                          @db.VarChar(16)
+  /// DashboardReportKey ("daily", "channels", ...).
+  reportKey     String                          @db.VarChar(32)
+  payload       Json
+  fetchedAt     DateTime                        @default(now())
+
+  @@id([propertyRowId, range, reportKey])
+  @@index([fetchedAt])
+}
+
+/// Retry queue for dashboard reports Google refused (quota / 5xx): at most one
+/// job per (property, range); reportKeys is merged on re-enqueue. Swept by the
+/// in-process croner tick (GOOGLE_ANALYTICS_REFRESH_CRON) with backoff until
+/// Google answers, then the reports land in google_analytics_report_cache.
+model google_analytics_refresh_job {
+  id            Int                             @id @default(autoincrement())
+  propertyRowId String
+  property      brand_google_analytics_property @relation(fields: [propertyRowId], references: [id], onDelete: Cascade)
+  range         String                          @db.VarChar(16)
+  reportKeys    String[]
+  status        GaRefreshJobStatus              @default(pending)
+  attempts      Int                             @default(0)
+  nextRunAt     DateTime                        @default(now())
+  lastError     String?                         @db.Text
+  /// HTTP status of the last failed Google call (429, 503, ...).
+  lastStatus    Int?
+  createdAt     DateTime                        @default(now())
+  updatedAt     DateTime                        @updatedAt
+  finishedAt    DateTime?
+
+  @@unique([propertyRowId, range])
+  @@index([status, nextRunAt])
+}
+
+enum GaRefreshJobStatus {
+  pending
+  running
+  done
+  failed
 }
 
 model regex_patterns_by_category {

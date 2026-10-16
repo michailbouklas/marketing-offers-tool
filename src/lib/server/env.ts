@@ -294,12 +294,47 @@ export function getGoogleAnalyticsCredentialsKey(): Buffer | undefined {
   return key;
 }
 
-/** How long a `/google-analytics` dashboard is served from memory. */
+/**
+ * How long a cached `/google-analytics` report (one row per property, range
+ * and widget in `google_analytics_report_cache`) is served without asking
+ * Google again. Dashboards end yesterday, so the data barely moves within a
+ * day; default 6 h. `0` disables the freshness window (always re-fetch, still
+ * served stale when Google fails).
+ */
 export function getGoogleAnalyticsCacheTtlMs(): number {
   const raw = readEnv("GOOGLE_ANALYTICS_CACHE_TTL_MS");
   const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
 
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 600_000;
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 21_600_000;
+}
+
+/**
+ * Configuration for the Google Analytics refresh queue: reports Google refused
+ * (quota / 5xx) are retried by an in-process croner tick until they land. See
+ * `src/lib/services/google-analytics/refresh-queue.server.ts`.
+ */
+export type GoogleAnalyticsRefreshEnv = {
+  /** Start the in-process retry sweep. */
+  GOOGLE_ANALYTICS_REFRESH_ENABLED: boolean;
+  /** croner pattern for the sweep; default every minute. */
+  GOOGLE_ANALYTICS_REFRESH_CRON: string;
+  /** Jobs older than this are marked failed (the stale cache keeps serving). */
+  GOOGLE_ANALYTICS_REFRESH_MAX_AGE_HOURS: number;
+};
+
+export function getGoogleAnalyticsRefreshEnv(): GoogleAnalyticsRefreshEnv {
+  return {
+    GOOGLE_ANALYTICS_REFRESH_ENABLED: readBooleanFlag(
+      "GOOGLE_ANALYTICS_REFRESH_ENABLED",
+      true,
+    ),
+    GOOGLE_ANALYTICS_REFRESH_CRON:
+      readEnv("GOOGLE_ANALYTICS_REFRESH_CRON")?.trim() || "* * * * *",
+    GOOGLE_ANALYTICS_REFRESH_MAX_AGE_HOURS: readPositiveInt(
+      "GOOGLE_ANALYTICS_REFRESH_MAX_AGE_HOURS",
+      48,
+    ),
+  };
 }
 
 /**

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { enhance } from "$app/forms";
   import { page } from "$app/state";
   import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import GaControlsBar from "$lib/components/google-analytics/ga-controls-bar.svelte";
@@ -11,14 +12,19 @@
   import GaKeyEventsTable from "$lib/components/google-analytics/widgets/ga-key-events-table.svelte";
   import GaLandingPagesTable from "$lib/components/google-analytics/widgets/ga-landing-pages-table.svelte";
   import GaLiveNowCard from "$lib/components/google-analytics/widgets/ga-live-now-card.svelte";
+  import GaRefreshPoller from "$lib/components/google-analytics/widgets/ga-refresh-poller.svelte";
   import GaStatTiles from "$lib/components/google-analytics/widgets/ga-stat-tiles.svelte";
+  import GaWidgetFrame from "$lib/components/google-analytics/widgets/ga-widget-frame.svelte";
   import * as Alert from "$lib/components/ui/alert/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import {
     googleAnalyticsRangeDays,
     googleAnalyticsRangeLabels,
+    type GoogleAnalyticsDashboardStatus,
   } from "$lib/services/google-analytics/google-analytics";
+  import TrashIcon from "@lucide/svelte/icons/trash-2";
   import TriangleAlertIcon from "@lucide/svelte/icons/triangle-alert";
   import type { PageData } from "./$types";
 
@@ -30,6 +36,35 @@
   const comparisonLabel = $derived(
     `vs previous ${googleAnalyticsRangeDays[data.filters.range]} days`,
   );
+
+  /** Latest answer from the status poll while widgets are pending. */
+  let refreshStatus = $state<GoogleAnalyticsDashboardStatus | null>(null);
+
+  const retryHint = $derived.by(() => {
+    const job = refreshStatus?.job;
+    if (!job) return null;
+    if (job.status === "running") return "retrying now";
+    if (job.status === "failed") return "automatic retries stopped";
+    if (job.status !== "pending") return null;
+
+    const at = new Date(job.nextRunAt);
+    if (at.getTime() <= Date.now()) return "retrying shortly";
+
+    return `next retry ${at.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}${job.attempts > 0 ? `, attempt ${job.attempts + 1}` : ""}`;
+  });
+
+  function confirmClearCaches({ cancel }: { cancel: () => void }) {
+    if (
+      !confirm(
+        "Clear every cached Google Analytics report and queued retry? The next load of each dashboard will ask Google again.",
+      )
+    ) {
+      cancel();
+    }
+  }
 </script>
 
 {#snippet sectionHeading(label: string, hint: string)}
@@ -87,11 +122,44 @@
         </Card.Header>
       </Card.Root>
     {:else}
-      <GaControlsBar
-        brands={data.brands}
-        filters={data.filters}
-        basePath={page.url.pathname}
-      />
+      <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <GaControlsBar
+          brands={data.brands}
+          filters={data.filters}
+          basePath={page.url.pathname}
+        />
+
+        {#if data.isAdmin}
+          <!-- Admin / superUser only; the server re-checks the role. Hidden
+               inputs bring the user back to the same brand / property / range. -->
+          <form
+            method="POST"
+            action="?/clearCache"
+            use:enhance={confirmClearCaches}
+          >
+            <input
+              type="hidden"
+              name="brand"
+              value={data.filters.brandId ?? ""}
+            />
+            <input
+              type="hidden"
+              name="property"
+              value={data.filters.propertyId ?? ""}
+            />
+            <input type="hidden" name="range" value={data.filters.range} />
+            <Button
+              type="submit"
+              variant="outline"
+              size="sm"
+              title="Drop every cached Google Analytics report and queued retry (all properties)"
+            >
+              <TrashIcon aria-hidden="true" />
+              Clear GA caches
+            </Button>
+          </form>
+        {/if}
+      </div>
 
       {#if data.property && data.brand}
         <div
@@ -106,26 +174,57 @@
 
         {#await data.streamed.dashboard}
           <GaDashboardSkeleton propertyName={data.property.displayName} />
-        {:then result}
-          {#if result?.error}
+        {:then loaded}
+          {#if loaded?.error}
             <Alert.Root variant="destructive">
               <TriangleAlertIcon />
               <Alert.Title>Google Analytics could not be loaded</Alert.Title>
-              <Alert.Description>{result.error}</Alert.Description>
+              <Alert.Description>{loaded.error}</Alert.Description>
             </Alert.Root>
-          {:else if result?.dashboard}
-            {@const dashboard = result.dashboard}
+          {:else if loaded?.result}
+            {@const dashboard = loaded.result.dashboard}
+            {@const widgets = loaded.result.widgets}
+            {@const pending = loaded.result.pendingKeys.length > 0}
+
+            <GaRefreshPoller
+              brandId={data.brand.id}
+              propertyRowId={data.property.id}
+              range={data.filters.range}
+              active={pending}
+              onstatus={(status) => (refreshStatus = status)}
+            />
+
+            {#if pending}
+              <Alert.Root>
+                <TriangleAlertIcon />
+                <Alert.Title>Some widgets are waiting for Google</Alert.Title>
+                <Alert.Description>
+                  Google Analytics refused {loaded.result.pendingKeys.length} of 11
+                  reports (quota). They are queued and this page refreshes itself
+                  when they arrive{retryHint ? ` — ${retryHint}` : ""}.
+                </Alert.Description>
+              </Alert.Root>
+            {/if}
+
             <div class="space-y-6">
-              <GaStatTiles
-                totals={dashboard.totals}
-                previousTotals={dashboard.previousTotals}
-                {comparisonLabel}
-              />
+              <GaWidgetFrame state={widgets.daily} title="Overview" {retryHint}>
+                <GaStatTiles
+                  totals={dashboard.totals}
+                  previousTotals={dashboard.previousTotals}
+                  {comparisonLabel}
+                />
+              </GaWidgetFrame>
 
               <div
                 class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
               >
-                <GaDailyTrendChart data={dashboard.daily} />
+                <GaWidgetFrame
+                  state={widgets.daily}
+                  title="Daily trend"
+                  {retryHint}
+                >
+                  <GaDailyTrendChart data={dashboard.daily} />
+                </GaWidgetFrame>
                 <GaLiveNowCard
                   brandId={data.brand.id}
                   propertyRowId={data.property.id}
@@ -138,41 +237,77 @@
                 "Where sessions come from and which pages they start on.",
               )}
               <div class="grid gap-6 lg:grid-cols-2">
-                <GaBreakdownTable
+                <GaWidgetFrame
+                  state={widgets.channels}
                   title="Traffic channels"
-                  description="Sessions by default channel group."
-                  labelHeader="Channel"
-                  rows={dashboard.channels}
-                  totalSessions={dashboard.totals.sessions}
-                />
-                <GaLandingPagesTable
-                  rows={dashboard.landingPages}
-                  totalSessions={dashboard.totals.sessions}
-                />
+                  {retryHint}
+                >
+                  <GaBreakdownTable
+                    title="Traffic channels"
+                    description="Sessions by default channel group."
+                    labelHeader="Channel"
+                    rows={dashboard.channels}
+                    totalSessions={dashboard.totals.sessions}
+                  />
+                </GaWidgetFrame>
+                <GaWidgetFrame
+                  state={widgets.landingPages}
+                  title="Landing pages"
+                  {retryHint}
+                >
+                  <GaLandingPagesTable
+                    rows={dashboard.landingPages}
+                    totalSessions={dashboard.totals.sessions}
+                  />
+                </GaWidgetFrame>
               </div>
-              <GaCampaignsTable
-                rows={dashboard.campaigns}
-                totalSessions={dashboard.totals.sessions}
-              />
+              <GaWidgetFrame
+                state={widgets.campaigns}
+                title="Campaigns"
+                {retryHint}
+              >
+                <GaCampaignsTable
+                  rows={dashboard.campaigns}
+                  totalSessions={dashboard.totals.sessions}
+                />
+              </GaWidgetFrame>
 
               {@render sectionHeading(
                 "Behaviour",
                 "When people visit, what they look at, and what they do.",
               )}
-              <GaHeatmap cells={dashboard.heatmap} />
+              <GaWidgetFrame
+                state={widgets.heatmap}
+                title="Sessions by weekday and hour"
+                {retryHint}
+              >
+                <GaHeatmap cells={dashboard.heatmap} />
+              </GaWidgetFrame>
               <div class="grid gap-6 lg:grid-cols-2">
-                <GaBreakdownTable
+                <GaWidgetFrame
+                  state={widgets.pages}
                   title="Top pages & screens"
-                  description="The ten most visited page titles (web) and screen names (app)."
-                  labelHeader="Page / screen"
-                  shareHeader="% of sessions"
-                  rows={dashboard.pages}
-                  totalSessions={dashboard.totals.sessions}
-                />
-                <GaKeyEventsTable
-                  rows={dashboard.keyEventsByName}
-                  totalKeyEvents={dashboard.totals.keyEvents}
-                />
+                  {retryHint}
+                >
+                  <GaBreakdownTable
+                    title="Top pages & screens"
+                    description="The ten most visited page titles (web) and screen names (app)."
+                    labelHeader="Page / screen"
+                    shareHeader="% of sessions"
+                    rows={dashboard.pages}
+                    totalSessions={dashboard.totals.sessions}
+                  />
+                </GaWidgetFrame>
+                <GaWidgetFrame
+                  state={widgets.keyEventsByName}
+                  title="Key events"
+                  {retryHint}
+                >
+                  <GaKeyEventsTable
+                    rows={dashboard.keyEventsByName}
+                    totalKeyEvents={dashboard.totals.keyEvents}
+                  />
+                </GaWidgetFrame>
               </div>
 
               {@render sectionHeading(
@@ -180,28 +315,52 @@
                 "Who the visitors are and where they are.",
               )}
               <div class="grid gap-6 lg:grid-cols-2">
-                <GaDonut segments={dashboard.newVsReturning} />
-                <GaBreakdownTable
+                <GaWidgetFrame
+                  state={widgets.newVsReturning}
+                  title="New vs returning"
+                  {retryHint}
+                >
+                  <GaDonut segments={dashboard.newVsReturning} />
+                </GaWidgetFrame>
+                <GaWidgetFrame
+                  state={widgets.devices}
                   title="Devices"
-                  description="Sessions by device category."
-                  labelHeader="Device"
-                  rows={dashboard.devices}
-                  totalSessions={dashboard.totals.sessions}
-                />
-                <GaBreakdownTable
+                  {retryHint}
+                >
+                  <GaBreakdownTable
+                    title="Devices"
+                    description="Sessions by device category."
+                    labelHeader="Device"
+                    rows={dashboard.devices}
+                    totalSessions={dashboard.totals.sessions}
+                  />
+                </GaWidgetFrame>
+                <GaWidgetFrame
+                  state={widgets.cities}
                   title="Cities"
-                  description="The ten cities sending the most sessions."
-                  labelHeader="City"
-                  rows={dashboard.cities}
-                  totalSessions={dashboard.totals.sessions}
-                />
-                <GaBreakdownTable
+                  {retryHint}
+                >
+                  <GaBreakdownTable
+                    title="Cities"
+                    description="The ten cities sending the most sessions."
+                    labelHeader="City"
+                    rows={dashboard.cities}
+                    totalSessions={dashboard.totals.sessions}
+                  />
+                </GaWidgetFrame>
+                <GaWidgetFrame
+                  state={widgets.countries}
                   title="Countries"
-                  description="The ten countries sending the most sessions."
-                  labelHeader="Country"
-                  rows={dashboard.countries}
-                  totalSessions={dashboard.totals.sessions}
-                />
+                  {retryHint}
+                >
+                  <GaBreakdownTable
+                    title="Countries"
+                    description="The ten countries sending the most sessions."
+                    labelHeader="Country"
+                    rows={dashboard.countries}
+                    totalSessions={dashboard.totals.sessions}
+                  />
+                </GaWidgetFrame>
               </div>
 
               <p class="text-muted-foreground/80 text-xs leading-5">
@@ -209,8 +368,10 @@
                 yesterday because GA4 reports the current day only partially.
                 Period changes compare with the {googleAnalyticsRangeDays[
                   data.filters.range
-                ]} days before. Results are cached for {data.cacheTtlMinutes} minutes;
-                the live card refreshes every minute.
+                ]} days before. Reports are cached for {data.cacheTtlHours} hours
+                (and kept across restarts); when Google's quota is exhausted the last
+                copy is shown and a refresh is retried in the background. The live
+                card refreshes every minute.
               </p>
             </div>
           {/if}

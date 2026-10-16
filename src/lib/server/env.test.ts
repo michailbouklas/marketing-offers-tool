@@ -2,7 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("$env/dynamic/private", () => ({ env: {} }));
 
-const { parseEnvFileContents } = await import("./env");
+const {
+  getGoogleAnalyticsCacheTtlMs,
+  getGoogleAnalyticsRefreshEnv,
+  parseEnvFileContents,
+} = await import("./env");
 
 describe("parseEnvFileContents", () => {
   it("parses plain, quoted and single-quoted values", () => {
@@ -43,5 +47,19 @@ describe("parseEnvFileContents", () => {
         ["", "# heading", "=orphan", "KEY=", "export X=1"].join("\n"),
       ),
     ).toEqual({ KEY: "", X: "1" });
+  });
+});
+
+describe("Google Analytics cache / refresh env", () => {
+  it("defaults the report cache TTL to six hours", () => {
+    expect(getGoogleAnalyticsCacheTtlMs()).toBe(6 * 3_600_000);
+  });
+
+  it("defaults the refresh sweep to enabled, every minute, 48 h max age", () => {
+    expect(getGoogleAnalyticsRefreshEnv()).toEqual({
+      GOOGLE_ANALYTICS_REFRESH_ENABLED: true,
+      GOOGLE_ANALYTICS_REFRESH_CRON: "* * * * *",
+      GOOGLE_ANALYTICS_REFRESH_MAX_AGE_HOURS: 48,
+    });
   });
 });

@@ -259,6 +259,92 @@ export type GoogleAnalyticsDashboard = {
   keyEventsByName: GoogleAnalyticsKeyEventRow[];
 };
 
+// --- Dashboard cache / widget state --------------------------------------------------
+
+/**
+ * The reports the dashboard is built from, in request order. Each one is a
+ * row in `google_analytics_report_cache` and a widget state on the page;
+ * `totals`, `previousTotals` and `daily` all come from the `daily` report.
+ */
+export const googleAnalyticsDashboardReportKeys = [
+  "daily",
+  "channels",
+  "pages",
+  "devices",
+  "countries",
+  "campaigns",
+  "landingPages",
+  "heatmap",
+  "newVsReturning",
+  "keyEventsByName",
+  "cities",
+] as const;
+
+export type GoogleAnalyticsDashboardReportKey =
+  (typeof googleAnalyticsDashboardReportKeys)[number];
+
+export function isGoogleAnalyticsDashboardReportKey(
+  value: unknown,
+): value is GoogleAnalyticsDashboardReportKey {
+  return (googleAnalyticsDashboardReportKeys as readonly unknown[]).includes(
+    value,
+  );
+}
+
+/**
+ * Per-widget provenance: `fresh` came from Google within the TTL, `stale` is
+ * an older copy served because Google refused the refresh, `pending` means
+ * there is no copy at all and a background retry is queued.
+ */
+export type GoogleAnalyticsWidgetState =
+  | { status: "fresh" | "stale"; fetchedAt: string }
+  | { status: "pending"; reason: string };
+
+export type GoogleAnalyticsDashboardResult = {
+  dashboard: GoogleAnalyticsDashboard;
+  widgets: Record<
+    GoogleAnalyticsDashboardReportKey,
+    GoogleAnalyticsWidgetState
+  >;
+  /** Widgets with no data yet (subset of keys whose state is `pending`). */
+  pendingKeys: GoogleAnalyticsDashboardReportKey[];
+};
+
+export type GoogleAnalyticsRefreshJobStatus =
+  | "pending"
+  | "running"
+  | "done"
+  | "failed";
+
+/** `GET /api/google-analytics/dashboard-status` — polled while widgets are pending. */
+export type GoogleAnalyticsDashboardStatus = {
+  pendingKeys: GoogleAnalyticsDashboardReportKey[];
+  job: {
+    status: GoogleAnalyticsRefreshJobStatus;
+    attempts: number;
+    nextRunAt: string;
+    lastError: string | null;
+  } | null;
+};
+
+/** "just now", "12 min ago", "3 h ago", "2 days ago" — for the stale-widget note. */
+export function formatRelativeAge(
+  iso: string,
+  now: number = Date.now(),
+): string {
+  const ageMs = Math.max(0, now - new Date(iso).getTime());
+  const minutes = Math.floor(ageMs / 60_000);
+
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} h ago`;
+
+  const days = Math.floor(hours / 24);
+  return days === 1 ? "1 day ago" : `${days} days ago`;
+}
+
 // --- Realtime -----------------------------------------------------------------------
 
 export type GoogleAnalyticsRealtime = {

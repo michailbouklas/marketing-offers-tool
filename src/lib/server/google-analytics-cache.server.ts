@@ -1,21 +1,16 @@
-import type {
-  GoogleAnalyticsDashboard,
-  GoogleAnalyticsRealtime,
-} from "$lib/services/google-analytics/google-analytics";
+import type { GoogleAnalyticsRealtime } from "$lib/services/google-analytics/google-analytics";
 
 /**
- * Per-process caches for `/google-analytics`:
+ * Per-process cache of "Live now" realtime snapshots keyed by property row
+ * (30 s): many open tabs polling every minute collapse into one Google call
+ * per half minute. A snapshot is worthless a minute later, so this is the one
+ * Google Analytics cache that stays in memory — dashboard reports live in
+ * Postgres (`google_analytics_report_cache`, see
+ * `src/lib/services/google-analytics/report-cache.server.ts`).
  *
- * - dashboards keyed by property row + date range (TTL
- *   `GOOGLE_ANALYTICS_CACHE_TTL_MS`, default 10 min) — GA4 standard
- *   properties have a daily Data API token quota;
- * - realtime snapshots keyed by property row (30 s) — many open tabs polling
- *   every minute collapse into one Google call per half minute.
- *
- * Both are invalidated together (version counter) whenever an admin edits a
- * property, and bounded by their TTL as a safety net. Stored on `globalThis`
- * so Vite HMR does not create a second, stale copy. Same shape as
- * `gap-queue-cache`.
+ * Invalidated (version counter) whenever an admin edits a property or clears
+ * the GA caches, and bounded by the TTL as a safety net. Stored on
+ * `globalThis` so Vite HMR does not create a second, stale copy.
  */
 
 type CacheEntry<T> = {
@@ -25,42 +20,32 @@ type CacheEntry<T> = {
 };
 
 type CacheState = {
-  dashboards: Map<string, CacheEntry<GoogleAnalyticsDashboard>>;
   realtime: Map<string, CacheEntry<GoogleAnalyticsRealtime>>;
   version: number;
 };
 
 const MAX_ENTRIES = 200;
 
-// Versioned key: the state shape changed once already and a stale object from
-// before an HMR reload must not be reused.
+// Versioned key: the state shape changed (dashboards moved to Postgres) and a
+// stale object from before an HMR reload must not be reused.
 const globalForCache = globalThis as typeof globalThis & {
-  googleAnalyticsCacheV2?: CacheState;
+  googleAnalyticsCacheV3?: CacheState;
 };
 
 function getState(): CacheState {
-  globalForCache.googleAnalyticsCacheV2 ??= {
-    dashboards: new Map(),
+  globalForCache.googleAnalyticsCacheV3 ??= {
     realtime: new Map(),
     version: 0,
   };
 
-  return globalForCache.googleAnalyticsCacheV2;
+  return globalForCache.googleAnalyticsCacheV3;
 }
 
-export function buildGoogleAnalyticsCacheKey(input: {
-  propertyRowId: string;
-  range: string;
-}): string {
-  return `${input.propertyRowId}:${input.range}`;
-}
-
-/** Drop every cached dashboard and realtime snapshot. */
+/** Drop every cached realtime snapshot. */
 export function invalidateGoogleAnalyticsCache(): void {
   const state = getState();
 
   state.version += 1;
-  state.dashboards.clear();
   state.realtime.clear();
 }
 
@@ -100,14 +85,6 @@ async function withBucket<T>(
   }
 
   return value;
-}
-
-export function withGoogleAnalyticsCache(
-  key: string,
-  ttlMs: number,
-  load: () => Promise<GoogleAnalyticsDashboard>,
-): Promise<GoogleAnalyticsDashboard> {
-  return withBucket(getState().dashboards, key, ttlMs, load);
 }
 
 export function withGoogleAnalyticsRealtimeCache(

@@ -9,6 +9,7 @@ import {
   describeGoogleAnalyticsError,
   getMetadata,
   GoogleAnalyticsApiError,
+  isRetryableGoogleAnalyticsError,
   runRealtimeReport,
   runReport,
   type Ga4MetadataResponse,
@@ -48,8 +49,6 @@ export function clearGoogleAnalyticsMetadataCache(): void {
   metadataCache().clear();
 }
 
-const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
-
 async function attempt<T>(
   task: () => Promise<T>,
 ): Promise<GoogleAnalyticsGatewayOutcome<T>> {
@@ -73,7 +72,7 @@ async function attempt<T>(
               ? cause.message
               : describeGoogleAnalyticsError(cause),
           status: cause.status,
-          retryable: RETRYABLE_STATUSES.has(cause.status),
+          retryable: isRetryableGoogleAnalyticsError(cause),
         },
       };
     }

@@ -4,6 +4,7 @@ import {
   getDataQualityEnv,
   getForecastEnv,
   getForecastValidationEnv,
+  getGoogleAnalyticsRefreshEnv,
 } from "$lib/server/env";
 import {
   getNotificationsEnv,
@@ -11,6 +12,10 @@ import {
 } from "$lib/server/notifications/notifications-env";
 import { tryEvaluateForecastValidationExclusively } from "$lib/services/forecasts/forecast-validation.server";
 import { tryRebuildGapQueueSnapshotExclusively } from "$lib/services/gap-queue-snapshot.server";
+import {
+  resetStuckGoogleAnalyticsRefreshJobs,
+  tryRunGoogleAnalyticsRefreshExclusively,
+} from "$lib/services/google-analytics/refresh-queue.server";
 import { runOfferDigest } from "$lib/services/notifications/offer-digest.server";
 import type { DigestRunSummary } from "$lib/services/notifications/types";
 
@@ -23,7 +28,10 @@ import type { DigestRunSummary } from "$lib/services/notifications/types";
  *   default 04:00 `DQ_SNAPSHOT_TIMEZONE`), and
  * - the forecast validation sweep that scores recorded forecasts against
  *   actual sales once their window has passed (`FORECAST_VALIDATION_CRON`,
- *   default 06:00 `FORECAST_VALIDATION_TIMEZONE`).
+ *   default 06:00 `FORECAST_VALIDATION_TIMEZONE`), and
+ * - the Google Analytics refresh sweep that retries dashboard reports Google
+ *   refused (quota / 5xx) until they land (`GOOGLE_ANALYTICS_REFRESH_CRON`,
+ *   default every minute).
  *
  * Assumes a single app instance: each instance runs its own cron, so multiple
  * replicas would each fire (the advisory locks still prevent overlapping work,
@@ -36,6 +44,7 @@ const globalForScheduler = globalThis as typeof globalThis & {
   offerDigestRunning?: boolean;
   gapQueueSnapshotCron?: Cron;
   forecastValidationCron?: Cron;
+  googleAnalyticsRefreshCron?: Cron;
 };
 
 export type DigestTriggerResult =
@@ -211,6 +220,68 @@ function startForecastValidationScheduler(): void {
   );
 }
 
+/**
+ * Start the Google Analytics refresh sweep exactly once. Disabled with
+ * `GOOGLE_ANALYTICS_REFRESH_ENABLED=false`. Jobs a previous process left
+ * `running` are put back in the queue on start.
+ */
+function startGoogleAnalyticsRefreshScheduler(): void {
+  if (globalForScheduler.googleAnalyticsRefreshCron) {
+    return;
+  }
+
+  const refreshEnv = getGoogleAnalyticsRefreshEnv();
+
+  if (!refreshEnv.GOOGLE_ANALYTICS_REFRESH_ENABLED) {
+    console.info("[google-analytics] refresh scheduler disabled by env.");
+    return;
+  }
+
+  const pattern = refreshEnv.GOOGLE_ANALYTICS_REFRESH_CRON;
+
+  globalForScheduler.googleAnalyticsRefreshCron = new Cron(
+    pattern,
+    { protect: true, name: "google-analytics-refresh" },
+    async () => {
+      try {
+        const result = await tryRunGoogleAnalyticsRefreshExclusively("cron");
+
+        if (result.status === "ran" && result.summary.processed > 0) {
+          console.info(
+            "[google-analytics] refresh sweep complete:",
+            result.summary,
+          );
+        } else if (result.status === "skipped") {
+          console.warn(
+            `[google-analytics] refresh sweep skipped: ${result.reason}`,
+          );
+        }
+      } catch (error) {
+        console.error("[google-analytics] refresh sweep failed:", error);
+      }
+    },
+  );
+
+  resetStuckGoogleAnalyticsRefreshJobs()
+    .then((count) => {
+      if (count > 0) {
+        console.warn(
+          `[google-analytics] re-queued ${count} refresh job(s) left running by a previous process.`,
+        );
+      }
+    })
+    .catch((error) => {
+      console.error(
+        "[google-analytics] could not reset stuck refresh jobs:",
+        error,
+      );
+    });
+
+  console.info(
+    `[google-analytics] refresh scheduler started (cron "${pattern}").`,
+  );
+}
+
 /** Start every in-process cron. No-op during build. */
 export function startScheduler(): void {
   if (building) {
@@ -220,4 +291,5 @@ export function startScheduler(): void {
   startDigestScheduler();
   startGapQueueSnapshotScheduler();
   startForecastValidationScheduler();
+  startGoogleAnalyticsRefreshScheduler();
 }
