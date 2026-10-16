@@ -17,12 +17,21 @@ export type ChatAgentConfig = {
   brandScoped?: boolean;
   /**
    * When true, the chat endpoint accepts an optional `context` object from
-   * the widget (the page's current filters), validates it, drops any brand
-   * outside the caller's scope and publishes it under
-   * `FORECAST_PAGE_CONTEXT_RUNTIME_KEY`. A hint for defaults only — never an
-   * authorisation input.
+   * the widget (the page's current filters), validates it, drops anything
+   * outside the caller's scope and publishes it under the agent's page-context
+   * key (`FORECAST_PAGE_CONTEXT_RUNTIME_KEY` or
+   * `GOOGLE_ANALYTICS_PAGE_CONTEXT_RUNTIME_KEY`). A hint for defaults only —
+   * never an authorisation input.
    */
   pageContext?: boolean;
+  /**
+   * When true, the chat endpoint publishes the GA4 properties the caller may
+   * query under `GOOGLE_ANALYTICS_SCOPE_RUNTIME_KEY`. This is NOT the
+   * `brandScoped` list: `/google-analytics` scopes every role (admins
+   * included) to its own `user_brand` assignments that have an active GA4
+   * property, and the assistant must see exactly what the page shows.
+   */
+  googleAnalyticsScoped?: boolean;
 };
 
 /**
@@ -71,6 +80,40 @@ export type ForecastPageContext = {
 };
 
 /**
+ * RequestContext key carrying the GA4 properties the caller may query (one
+ * entry per active property of each assigned brand). Published by the chat
+ * endpoint for `googleAnalyticsScoped` agents; the Google Analytics tools
+ * authorise every `propertyRowId` against it and fail closed when absent.
+ */
+export const GOOGLE_ANALYTICS_SCOPE_RUNTIME_KEY = "googleAnalyticsScope";
+
+export type GoogleAnalyticsScopeEntry = {
+  brandId: number;
+  brandName: string;
+  /** `brand_google_analytics_property.id` (cuid) — the handle tools use. */
+  propertyRowId: string;
+  /** Numeric GA4 property id, for display only. */
+  propertyId: string;
+  displayName: string;
+};
+
+/**
+ * RequestContext key carrying the `/google-analytics` filters the user is
+ * looking at (brand, property, range) so the assistant can default to them.
+ */
+export const GOOGLE_ANALYTICS_PAGE_CONTEXT_RUNTIME_KEY =
+  "googleAnalyticsPageContext";
+
+export type GoogleAnalyticsPageContext = {
+  /** Brand id, already checked against the published scope (else null). */
+  brandId: number | null;
+  /** Property row id, already checked against the scope (else null). */
+  propertyRowId: string | null;
+  /** "7d" | "28d" | "90d", or null when the page did not say. */
+  range: string | null;
+};
+
+/**
  * Chat agents the API is allowed to route to, and the permission (if any) a
  * user must hold to talk to each one. The chat widget picks the agent for its
  * section; this map is the server-side allowlist backing that routing.
@@ -102,6 +145,14 @@ export const chatAgents: Record<string, ChatAgentConfig> = {
   "forecasts-agent": {
     permissions: { forecasts: ["view"] },
     brandScoped: true,
+    pageContext: true,
+  },
+  // Google Analytics Assistant on /google-analytics: same permission as the
+  // page, scoped to the caller's own GA4 properties (not `brandScoped`), and
+  // it receives the page's brand / property / range as hints.
+  "google-analytics-agent": {
+    permissions: { googleAnalytics: ["view"] },
+    googleAnalyticsScoped: true,
     pageContext: true,
   },
 };

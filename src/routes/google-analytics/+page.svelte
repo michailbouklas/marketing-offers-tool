@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import GaControlsBar from "$lib/components/google-analytics/ga-controls-bar.svelte";
   import GaBreakdownTable from "$lib/components/google-analytics/widgets/ga-breakdown-table.svelte";
   import GaCampaignsTable from "$lib/components/google-analytics/widgets/ga-campaigns-table.svelte";
@@ -215,6 +216,20 @@
           {/if}
         {/await}
       {/if}
+
+      <!-- The assistant receives the page's current filters as defaults; property
+           access is still enforced server-side against the user's own scope. -->
+      <ChatWidget
+        agentId="google-analytics-agent"
+        title="Google Analytics Assistant"
+        greeting="Hi! Ask me about this brand's Google Analytics — visitors, traffic sources, campaigns, pages, what's live right now…"
+        placeholder="e.g. Which channels grew the most in the last 28 days?"
+        context={{
+          brand: data.filters.brandId,
+          property: data.filters.propertyId,
+          range: data.filters.range,
+        }}
+      />
     {/if}
   </div>
 </div>

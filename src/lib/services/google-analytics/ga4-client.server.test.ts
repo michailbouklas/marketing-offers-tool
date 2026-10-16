@@ -9,6 +9,7 @@ import {
   GA4_DEFAULT_TOKEN_URI,
   GA4_READONLY_SCOPE,
   getAccessToken,
+  getMetadata,
   GoogleAnalyticsApiError,
   runReport,
 } from "./ga4-client.server";
@@ -274,5 +275,39 @@ describe("runRealtimeReport", () => {
       "Bearer tok",
     );
     expect(JSON.parse(init.body as string)).toEqual(request);
+  });
+});
+
+describe("getMetadata", () => {
+  it("GETs the property's metadata path with the bearer token and no body", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ access_token: "tok", expires_in: 3600 }),
+    );
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({
+        name: "properties/123456/metadata",
+        dimensions: [{ apiName: "country", uiName: "Country" }],
+        metrics: [
+          { apiName: "sessions", uiName: "Sessions", type: "TYPE_INTEGER" },
+        ],
+      }),
+    );
+
+    const metadata = await getMetadata("123456", credentials, fetchImpl);
+
+    expect(metadata.dimensions?.[0]?.apiName).toBe("country");
+    expect(metadata.metrics?.[0]?.apiName).toBe("sessions");
+    const [url, init] = fetchMock.mock.calls[1] as [string, RequestInit];
+    expect(url).toBe(
+      "https://analyticsdata.googleapis.com/v1beta/properties/123456/metadata",
+    );
+    expect(init.method).toBe("GET");
+    expect(init.body).toBeUndefined();
+    expect((init.headers as Record<string, string>).authorization).toBe(
+      "Bearer tok",
+    );
+    expect(
+      (init.headers as Record<string, string>)["content-type"],
+    ).toBeUndefined();
   });
 });

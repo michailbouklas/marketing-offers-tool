@@ -1,5 +1,10 @@
-import type { ForecastPageContext } from "$lib/server/mastra/chat-registry";
+import type {
+  ForecastPageContext,
+  GoogleAnalyticsPageContext,
+  GoogleAnalyticsScopeEntry,
+} from "$lib/server/mastra/chat-registry";
 import { isForecastHorizon } from "$lib/services/forecasts/forecast-types";
+import { googleAnalyticsRangeOptions } from "$lib/services/google-analytics/google-analytics";
 
 /**
  * Normalises the optional `context` object the chat widget sends (the Sales
@@ -67,4 +72,63 @@ export function resolvePageContext(
     : [];
 
   return { brand, location, horizon, models };
+}
+
+/**
+ * Normalises the `context` object the `/google-analytics` chat widget sends
+ * (brand id, property row id, range) into a {@link GoogleAnalyticsPageContext}.
+ * Hints only, so bad values are dropped, never rejected:
+ *
+ * - `brand` must be a brand id present in the published GA scope;
+ * - `property` must be a property row id in the scope AND belong to that
+ *   brand (when a brand survived) — otherwise it is nulled;
+ * - `range` must be one of the page's presets ("7d" | "28d" | "90d").
+ *
+ * Returns null when the payload is not an object at all.
+ */
+export function resolveGoogleAnalyticsPageContext(
+  raw: unknown,
+  scope: readonly GoogleAnalyticsScopeEntry[],
+): GoogleAnalyticsPageContext | null {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+    return null;
+  }
+  const input = raw as Record<string, unknown>;
+
+  const rawBrand = input.brand;
+  const brandCandidate =
+    typeof rawBrand === "number" && Number.isSafeInteger(rawBrand)
+      ? rawBrand
+      : typeof rawBrand === "string" && /^\d{1,12}$/.test(rawBrand.trim())
+        ? Number.parseInt(rawBrand.trim(), 10)
+        : null;
+  const brandId =
+    brandCandidate !== null &&
+    scope.some((entry) => entry.brandId === brandCandidate)
+      ? brandCandidate
+      : null;
+
+  const rawProperty =
+    typeof input.property === "string" ? input.property.trim() : "";
+  const propertyEntry =
+    rawProperty.length > 0 && rawProperty.length <= MAX_ALIAS_LENGTH
+      ? scope.find(
+          (entry) =>
+            entry.propertyRowId === rawProperty &&
+            (brandId === null || entry.brandId === brandId),
+        )
+      : undefined;
+
+  const rawRange = typeof input.range === "string" ? input.range.trim() : "";
+  const range = (googleAnalyticsRangeOptions as readonly string[]).includes(
+    rawRange,
+  )
+    ? rawRange
+    : null;
+
+  return {
+    brandId: propertyEntry ? propertyEntry.brandId : brandId,
+    propertyRowId: propertyEntry?.propertyRowId ?? null,
+    range,
+  };
 }

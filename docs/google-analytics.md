@@ -117,11 +117,44 @@ helper as the page using `{ guard: "api" }` (403 JSON instead of redirect).
   encryption key) are shown inline on the page via
   `describeGoogleAnalyticsError`, so the user can still switch brand / period.
 
+## Assistant
+
+The page carries a chat widget backed by the Mastra agent
+`google-analytics-agent` (`src/lib/server/mastra/agents/google-analytics-agent.ts`).
+Unlike the Invoices Assistant it has no database of its own: every number
+comes live from the GA4 Data API, so the agent composes report requests
+instead of SQL.
+
+| Piece                                                                      | Role                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `chat-registry.ts` → `googleAnalyticsScoped`                               | The chat endpoint publishes the caller's **own** brand assignments that have an active GA4 property (`listGoogleAnalyticsBrandsForUser`, every role — admins too) under `GOOGLE_ANALYTICS_SCOPE_RUNTIME_KEY`. Deliberately not `brandScoped`, which would give admins every brand. The widget's `context` (brand, property, range) is validated against that scope and published as the page context.                                                                 |
+| `tools/google-analytics-gateway.ts` + `google-analytics-gateway.server.ts` | Seam between the Mastra tools (which may not import Prisma / `$env`) and the GA4 services. Installed from `hooks.server.ts`. Decrypts the property key, calls `runReport` / `runRealtimeReport` / `getMetadata` (10-min cache) / the dashboard loader, and flattens `GoogleAnalyticsApiError` into `{ code, message, status, retryable }`. Without it (Mastra playground) the tools fail closed.                                                                      |
+| `tools/google-analytics-tools.ts`                                          | `listGoogleAnalyticsProperties` (scope only), `getGoogleAnalyticsOverview` (the cached dashboard, compacted), `runGoogleAnalyticsReport` (≤ 4 dimensions, ≤ 10 metrics, 1–2 date ranges, filters, ≤ 200 rows, TOTAL row, quota echo), `runGoogleAnalyticsRealtimeReport` (last 30 min), `searchGoogleAnalyticsFields` (metadata search, ≤ 40 hits). Every call authorises the `propertyRowId` against the published scope and fails closed when the scope is missing. |
+| `workspace/skills/ga4-reporting/SKILL.md`                                  | Long-form reference the agent loads for non-trivial reports: field names and scopes, compatibility rules, date syntax, filter/orderBy shapes, the eleven dashboard request bodies, thresholding / `(other)` / `(not set)` caveats, quota.                                                                                                                                                                                                                             |
+
+Behaviour worth knowing:
+
+- Google rejects unknown or incompatible fields with `INVALID_ARGUMENT`; the
+  tool passes Google's wording back and the agent fixes the request (three
+  attempts), mirroring how the SQL agents recover from query errors.
+- Ranges default to end **yesterday** for the same reason as the dashboard;
+  realtime answers "right now" only.
+- Each custom report costs a handful of Data API tokens (standard properties:
+  200,000/day). `getGoogleAnalyticsOverview` reuses the page cache, so
+  "summarise this page" costs nothing extra.
+- Realtime shares the property's **realtime per-project-per-hour** token
+  bucket with the "Live now" card, which polls every 60 s from every open
+  tab. On 2026-10-16 both the card and the assistant hit "Exhausted property
+  tokens for a project per hour" on the Pizza Hut property; the assistant
+  then tells the user to retry later and does not loop.
+- Open WebUI routing is not configured for this agent.
+
 ## Routes
 
 | Route                                                               | Guard                                     | Purpose                           |
 | ------------------------------------------------------------------- | ----------------------------------------- | --------------------------------- |
-| `GET /google-analytics?brand=&property=&range=`                     | `googleAnalytics: ["view"]` + brand scope | Dashboard page                    |
+| `GET /google-analytics?brand=&property=&range=`                     | `googleAnalytics: ["view"]` + brand scope | Dashboard page + assistant widget |
+| `POST /api/ai/chat` with `agentId: "google-analytics-agent"`        | `googleAnalytics: ["view"]` + GA scope    | Assistant conversation            |
 | `GET/POST /api/admin/brands/[brandId]/google-analytics`             | admin ∧ `brand: ["manage"]`               | List / add property               |
 | `PATCH/DELETE /api/admin/brands/[brandId]/google-analytics/[rowId]` | admin ∧ `brand: ["manage"]`               | Rename, (de)activate, replace key |
 | `POST /api/admin/brands/[brandId]/google-analytics/[rowId]/verify`  | admin ∧ `brand: ["manage"]`               | Test connection; records result   |

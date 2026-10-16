@@ -16,6 +16,7 @@ import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { competitionAgent } from "./agents/competition-agent";
 import { forecastsAgent } from "./agents/forecasts-agent";
+import { googleAnalyticsAgent } from "./agents/google-analytics-agent";
 import { googleReviewsAgent } from "./agents/google-reviews-agent";
 import { invoicesAgent } from "./agents/invoices-agent";
 import { offersDataQualityAgent } from "./agents/offers-data-quality-agent";
@@ -122,6 +123,7 @@ function createMastra(): Mastra {
       "offers-data-quality-agent": offersDataQualityAgent,
       "sales-agent": salesAgent,
       "forecasts-agent": forecastsAgent,
+      "google-analytics-agent": googleAnalyticsAgent,
     },
     storage: createStorage(),
     observability: new Observability({

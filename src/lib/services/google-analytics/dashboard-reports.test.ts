@@ -118,7 +118,7 @@ describe("buildDashboardRequests", () => {
     expect(requests[7].limit).toBe(168);
     expect(requests[8].dimensions?.[0].name).toBe("newVsReturning");
     expect(requests[9].dimensions?.[0].name).toBe("eventName");
-    expect(requests[9].metricFilter?.filter.fieldName).toBe("keyEvents");
+    expect(requests[9].metricFilter?.filter?.fieldName).toBe("keyEvents");
     expect(requests[10].dimensions?.[0].name).toBe("city");
   });
 

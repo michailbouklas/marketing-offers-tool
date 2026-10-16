@@ -43,29 +43,56 @@ export type Ga4DateRange = { startDate: string; endDate: string };
 
 export type Ga4OrderBy =
   | { metric: { metricName: string }; desc?: boolean }
-  | { dimension: { dimensionName: string }; desc?: boolean };
+  | {
+      dimension: {
+        dimensionName: string;
+        orderType?:
+          | "ALPHANUMERIC"
+          | "CASE_INSENSITIVE_ALPHANUMERIC"
+          | "NUMERIC";
+      };
+      desc?: boolean;
+    };
 
 export type Ga4NumericValue = { int64Value?: string; doubleValue?: number };
 
-/** Single-field filter (the only shape the dashboard needs). */
-export type Ga4FilterExpression = {
-  filter: {
-    fieldName: string;
-    numericFilter?: {
-      operation:
-        | "EQUAL"
-        | "LESS_THAN"
-        | "LESS_THAN_OR_EQUAL"
-        | "GREATER_THAN"
-        | "GREATER_THAN_OR_EQUAL";
-      value: Ga4NumericValue;
-    };
-    stringFilter?: {
-      matchType?: "EXACT" | "BEGINS_WITH" | "ENDS_WITH" | "CONTAINS";
-      value: string;
-      caseSensitive?: boolean;
-    };
+/** One field condition (`FilterExpression.filter` in the REST schema). */
+export type Ga4FieldFilter = {
+  fieldName: string;
+  numericFilter?: {
+    operation:
+      | "EQUAL"
+      | "LESS_THAN"
+      | "LESS_THAN_OR_EQUAL"
+      | "GREATER_THAN"
+      | "GREATER_THAN_OR_EQUAL";
+    value: Ga4NumericValue;
   };
+  stringFilter?: {
+    matchType?:
+      | "EXACT"
+      | "BEGINS_WITH"
+      | "ENDS_WITH"
+      | "CONTAINS"
+      | "FULL_REGEXP"
+      | "PARTIAL_REGEXP";
+    value: string;
+    caseSensitive?: boolean;
+  };
+  inListFilter?: { values: string[]; caseSensitive?: boolean };
+  betweenFilter?: { fromValue: Ga4NumericValue; toValue: Ga4NumericValue };
+};
+
+/**
+ * GA4 `FilterExpression`: exactly one of the four members is set. The
+ * dashboard only ever uses the single-field form; the assistant's report tool
+ * passes the model's (validated) expression through as a whole.
+ */
+export type Ga4FilterExpression = {
+  filter?: Ga4FieldFilter;
+  andGroup?: { expressions: Ga4FilterExpression[] };
+  orGroup?: { expressions: Ga4FilterExpression[] };
+  notExpression?: Ga4FilterExpression;
 };
 
 export type Ga4ReportRequest = {
@@ -76,8 +103,11 @@ export type Ga4ReportRequest = {
   metricFilter?: Ga4FilterExpression;
   orderBys?: Ga4OrderBy[];
   limit?: number;
+  offset?: number;
   metricAggregations?: "TOTAL"[];
   keepEmptyRows?: boolean;
+  /** When true the response carries `propertyQuota` (token usage). */
+  returnPropertyQuota?: boolean;
 };
 
 export type Ga4MinuteRange = {
@@ -101,12 +131,49 @@ export type Ga4Row = {
   metricValues?: { value?: string }[];
 };
 
+export type Ga4QuotaStatus = { consumed?: number; remaining?: number };
+
+export type Ga4PropertyQuota = {
+  tokensPerDay?: Ga4QuotaStatus;
+  tokensPerHour?: Ga4QuotaStatus;
+  concurrentRequests?: Ga4QuotaStatus;
+  serverErrorsPerProjectPerHour?: Ga4QuotaStatus;
+  potentiallyThresholdedRequestsPerHour?: Ga4QuotaStatus;
+  tokensPerProjectPerHour?: Ga4QuotaStatus;
+};
+
 export type Ga4ReportResponse = {
   dimensionHeaders?: { name: string }[];
   metricHeaders?: { name: string; type?: string }[];
   rows?: Ga4Row[];
   totals?: Ga4Row[];
   rowCount?: number;
+  /** Present only when the request set `returnPropertyQuota`. */
+  propertyQuota?: Ga4PropertyQuota;
+};
+
+// --- Metadata ---------------------------------------------------------------------------
+
+export type Ga4DimensionMetadata = {
+  apiName: string;
+  uiName?: string;
+  description?: string;
+  deprecatedApiNames?: string[];
+  customDefinition?: boolean;
+  category?: string;
+};
+
+export type Ga4MetricMetadata = Ga4DimensionMetadata & {
+  type?: string;
+  expression?: string;
+  blockedReasons?: string[];
+};
+
+/** `GET properties/{id}/metadata` — every dimension/metric the property accepts. */
+export type Ga4MetadataResponse = {
+  name?: string;
+  dimensions?: Ga4DimensionMetadata[];
+  metrics?: Ga4MetricMetadata[];
 };
 
 // --- Token handling ---------------------------------------------------------------------
@@ -296,9 +363,9 @@ export async function getAccessToken(
 
 // --- Reports ----------------------------------------------------------------------------
 
-async function postDataApi<T>(
+async function callDataApi<T>(
   path: string,
-  body: unknown,
+  init: { method: "GET" } | { method: "POST"; body: unknown },
   credentials: ServiceAccountCredentials,
   fetchImpl: typeof fetch,
 ): Promise<T> {
@@ -307,12 +374,14 @@ async function postDataApi<T>(
   let response: Response;
   try {
     response = await fetchImpl(`${GA4_DATA_API_BASE_URL}/${path}`, {
-      method: "POST",
+      method: init.method,
       headers: {
         authorization: `Bearer ${accessToken}`,
-        "content-type": "application/json",
+        ...(init.method === "POST"
+          ? { "content-type": "application/json" }
+          : {}),
       },
-      body: JSON.stringify(body),
+      ...(init.method === "POST" ? { body: JSON.stringify(init.body) } : {}),
     });
   } catch (err) {
     throw new GoogleAnalyticsApiError(
@@ -330,6 +399,32 @@ async function postDataApi<T>(
   }
 
   return (await response.json()) as T;
+}
+
+function postDataApi<T>(
+  path: string,
+  body: unknown,
+  credentials: ServiceAccountCredentials,
+  fetchImpl: typeof fetch,
+): Promise<T> {
+  return callDataApi<T>(path, { method: "POST", body }, credentials, fetchImpl);
+}
+
+/**
+ * Dimensions and metrics (standard + custom) the property accepts in reports.
+ * Several hundred entries — callers filter before showing it to anyone.
+ */
+export async function getMetadata(
+  propertyId: string,
+  credentials: ServiceAccountCredentials,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Ga4MetadataResponse> {
+  return callDataApi<Ga4MetadataResponse>(
+    `properties/${propertyId}/metadata`,
+    { method: "GET" },
+    credentials,
+    fetchImpl,
+  );
 }
 
 export async function runReport(

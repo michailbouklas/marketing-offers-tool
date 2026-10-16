@@ -7,6 +7,7 @@ import {
   isPublicPath,
 } from "$lib/server/auth-guards";
 import { installForecastGateway } from "$lib/server/forecast-gateway.server";
+import { installGoogleAnalyticsGateway } from "$lib/server/google-analytics-gateway.server";
 import { startScheduler } from "$lib/server/scheduler.server";
 import { svelteKitHandler } from "better-auth/svelte-kit";
 import { building } from "$app/environment";
@@ -20,6 +21,10 @@ startScheduler();
 // Gives the Forecasts Assistant's Mastra tools access to the Sales Forecasts
 // services (they cannot import them directly — see forecast-gateway.server.ts).
 installForecastGateway();
+
+// Same seam for the Google Analytics Assistant: its tools reach the GA4 Data
+// API (and the per-property encrypted keys) only through this gateway.
+installGoogleAnalyticsGateway();
 
 const sessionHandle: Handle = async ({ event, resolve }) => {
   let sessionData;

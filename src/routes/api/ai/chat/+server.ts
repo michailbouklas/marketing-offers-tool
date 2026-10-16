@@ -9,12 +9,19 @@ import {
   requireAuthenticatedApiUser,
 } from "$lib/server/auth-guards";
 import { buildBrandScopeRequestContext } from "$lib/server/brand-scope.server";
-import { resolvePageContext } from "$lib/server/chat-page-context";
+import {
+  resolveGoogleAnalyticsPageContext,
+  resolvePageContext,
+} from "$lib/server/chat-page-context";
 import { getMastra } from "$lib/server/mastra";
 import {
   chatAgents,
   FORECAST_PAGE_CONTEXT_RUNTIME_KEY,
+  GOOGLE_ANALYTICS_PAGE_CONTEXT_RUNTIME_KEY,
+  GOOGLE_ANALYTICS_SCOPE_RUNTIME_KEY,
+  type GoogleAnalyticsScopeEntry,
 } from "$lib/server/mastra/chat-registry";
+import { listGoogleAnalyticsBrandsForUser } from "$lib/services/google-analytics/properties.server";
 import { z } from "zod";
 import type { RequestEvent, RequestHandler } from "./$types";
 
@@ -67,11 +74,16 @@ async function authorizeAgent(event: RequestEvent, agentId: string) {
  *   names) — read by the dynamic instructions and enforced by the SQL /
  *   forecast tools as a hard guardrail. Always derived server-side from the
  *   authenticated user (see `buildBrandScopeRequestContext`).
+ * - `googleAnalyticsScoped` agents get the GA4 properties of the caller's OWN
+ *   brand assignments (every role, admins included — the `/google-analytics`
+ *   page's rule, deliberately not `listScopedBrands`), read by the agent's
+ *   instructions and enforced by the Google Analytics tools.
  * - `pageContext` agents additionally get the widget's `context` payload,
- *   validated and with any brand outside the scope dropped — a hint for
- *   defaults, never an authorisation input.
+ *   validated and with anything outside the scope dropped — a hint for
+ *   defaults, never an authorisation input. The resolver matches the scope
+ *   kind (GA properties vs warehouse brand aliases).
  *
- * Returns undefined for agents that use neither (no override).
+ * Returns undefined for agents that use none of these (no override).
  */
 async function buildAgentRequestContext(
   event: RequestEvent,
@@ -80,12 +92,17 @@ async function buildAgentRequestContext(
   rawPageContext: unknown,
 ): Promise<RequestContext | undefined> {
   const config = chatAgents[agentId];
-  if (!config?.brandScoped && !config?.pageContext) {
+  if (
+    !config?.brandScoped &&
+    !config?.pageContext &&
+    !config?.googleAnalyticsScoped
+  ) {
     return undefined;
   }
 
   const requestContext = new RequestContext();
   let scopedAliases: string[] = [];
+  let googleAnalyticsScope: GoogleAnalyticsScopeEntry[] = [];
 
   if (config.brandScoped) {
     const role = await getAuthenticatedUserRole(event);
@@ -96,10 +113,40 @@ async function buildAgentRequestContext(
     scopedAliases = scope.brands.map((brand) => brand.alias);
   }
 
+  if (config.googleAnalyticsScoped) {
+    const brands = await listGoogleAnalyticsBrandsForUser(userId);
+    googleAnalyticsScope = brands.flatMap(({ brand, properties }) =>
+      properties.map((property) => ({
+        brandId: brand.id,
+        brandName: brand.name,
+        propertyRowId: property.id,
+        propertyId: property.propertyId,
+        displayName: property.displayName,
+      })),
+    );
+    requestContext.set(
+      GOOGLE_ANALYTICS_SCOPE_RUNTIME_KEY,
+      googleAnalyticsScope,
+    );
+  }
+
   if (config.pageContext && rawPageContext !== undefined) {
-    const pageContext = resolvePageContext(rawPageContext, scopedAliases);
-    if (pageContext) {
-      requestContext.set(FORECAST_PAGE_CONTEXT_RUNTIME_KEY, pageContext);
+    if (config.googleAnalyticsScoped) {
+      const pageContext = resolveGoogleAnalyticsPageContext(
+        rawPageContext,
+        googleAnalyticsScope,
+      );
+      if (pageContext) {
+        requestContext.set(
+          GOOGLE_ANALYTICS_PAGE_CONTEXT_RUNTIME_KEY,
+          pageContext,
+        );
+      }
+    } else {
+      const pageContext = resolvePageContext(rawPageContext, scopedAliases);
+      if (pageContext) {
+        requestContext.set(FORECAST_PAGE_CONTEXT_RUNTIME_KEY, pageContext);
+      }
     }
   }
 
