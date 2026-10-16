@@ -82,6 +82,10 @@ export function fetchInvoiceMetrics(
     params.set("lineDetails", filters.lineDetails);
   }
 
+  if (filters.transactionType) {
+    params.set("transactionType", filters.transactionType);
+  }
+
   if (filters.from) {
     params.set("from", filters.from);
   }

@@ -251,3 +251,28 @@ describe("describeGoogleAnalyticsError", () => {
     expect(describeGoogleAnalyticsError(new Error("boom"))).toBe("boom");
   });
 });
+
+describe("runRealtimeReport", () => {
+  it("posts to the realtime endpoint with the bearer token", async () => {
+    const { runRealtimeReport } = await import("./ga4-client.server");
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ access_token: "tok", expires_in: 3600 }),
+    );
+    fetchMock.mockResolvedValueOnce(jsonResponse({ rows: [], rowCount: 0 }));
+
+    const request = {
+      metrics: [{ name: "activeUsers" }],
+      minuteRanges: [{ startMinutesAgo: 29 }],
+    };
+    await runRealtimeReport("123456", request, credentials, fetchImpl);
+
+    const [url, init] = fetchMock.mock.calls[1] as [string, RequestInit];
+    expect(url).toBe(
+      "https://analyticsdata.googleapis.com/v1beta/properties/123456:runRealtimeReport",
+    );
+    expect((init.headers as Record<string, string>).authorization).toBe(
+      "Bearer tok",
+    );
+    expect(JSON.parse(init.body as string)).toEqual(request);
+  });
+});

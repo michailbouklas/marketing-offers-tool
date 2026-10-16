@@ -45,6 +45,7 @@ const querySchema = z.object({
     z.coerce.number().int().positive().optional(),
   ),
   lineDetails: optionalText,
+  transactionType: optionalText,
   from: optionalDate,
   to: optionalDate,
 });
@@ -60,6 +61,7 @@ export const GET: RequestHandler = async (event) => {
     erpsent: params.get("erpsent") ?? undefined,
     brand: params.get("brand") ?? undefined,
     lineDetails: params.get("lineDetails") ?? undefined,
+    transactionType: params.get("transactionType") ?? undefined,
     from: params.get("from") ?? undefined,
     to: params.get("to") ?? undefined,
   });
@@ -82,6 +84,7 @@ export const GET: RequestHandler = async (event) => {
       from: parsed.data.from ?? null,
       to: parsed.data.to ?? null,
       lineDetails: parsed.data.lineDetails ?? null,
+      transactionType: parsed.data.transactionType ?? null,
       projectCodes,
     }),
   );

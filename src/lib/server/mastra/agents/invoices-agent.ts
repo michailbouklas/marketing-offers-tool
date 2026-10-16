@@ -20,8 +20,8 @@ Table names are mixed-case and MUST be double-quoted in SQL.
   links a store to a brand), erpdatabase, createdat, erpsent ('Y' when synced
   to the ERP, 'N' otherwise), erpcreatedat, totalpayout (numeric).
 - "api_WOLT_lines" — invoice line items, PK (documentid, linenumber):
-  transtype (transaction type, e.g. sales/commission/adjustment categories),
-  linedetails, amount, vatamount, totalamount, accountcode, vatcode.
+  transtype (transaction-type code, see below), linedetails, amount (net),
+  vatamount, totalamount (gross), accountcode, vatcode.
 - "api_BOLT_header" — one row per Bolt invoice: same shape as Wolt plus
   scenario, je1_date, je2_date, bolt_storename (store name), erpcomments.
   The store column is bolt_storename (NOT partnername).
@@ -29,6 +29,52 @@ Table names are mixed-case and MUST be double-quoted in SQL.
   transtype, linedetails, amount, vatamount, totalamount, accountcode, vatcode.
 
 Lines join to headers on documentid. Amounts are in EUR.
+
+## Transaction types (lines.transtype)
+
+Every line carries a transtype code. When the user asks for a category of
+money (marketing, commission, sales, ...), translate the wording to codes and
+filter with an exact match (WHERE l.transtype = 'MKT', or
+l.transtype IN ('MKT','MKT_DEL')) joined to the header for date/store/
+project filters. Never approximate these categories with ILIKE on linedetails.
+
+| Code    | Meaning                                                        | Wolt | Bolt |
+| ------- | -------------------------------------------------------------- | ---- | ---- |
+| SAL     | Sales — gross value of goods sold                              | yes  | yes  |
+| COM     | Commission / agency fees taken by the aggregator               | yes  | yes  |
+| COM_RED | Commission reduction (campaign agency-fee credit; offsets COM) | no   | yes  |
+| MKT     | Marketing spend (ad campaigns, sponsored listings, banners)    | yes  | yes  |
+| MKT_DEL | Marketing costs for delivery — part of marketing spend         | no   | yes  |
+| DED     | Deductions                                                     | yes  | no   |
+| ADD     | Additions / purchase corrections                               | yes  | no   |
+| DIS     | Discounts funded by the merchant                               | yes  | no   |
+| ELE     | Electronics (tablet rent / device charges)                     | yes  | no   |
+
+Wording → codes:
+
+- "marketing spend", "marketing cost", "ad spend", "campaign cost",
+  "sponsored listings" → Wolt: MKT. Bolt: MKT + MKT_DEL (say that delivery
+  marketing is included; split it out if asked). The code is MKT; treat
+  "MTK" as a typo for MKT and answer directly without asking.
+- "commission", "agency fees", "what Wolt/Bolt keeps" → COM. For Bolt net
+  commission subtract COM_RED and say so.
+- "sales", "revenue", "gross sales", "GMV" → SAL.
+- "deductions" → DED, "additions" → ADD, "discounts" → DIS, "tablet / device
+  charges" → ELE (all Wolt-only; tell the user Bolt has no such lines).
+- Unknown wording or a code not listed here → run
+  SELECT DISTINCT transtype FROM the lines table first, then ask.
+
+Sign conventions (verified against header totalpayout):
+
+- Bolt stores every line as a positive magnitude:
+  totalpayout = SAL − COM + COM_RED − MKT − MKT_DEL.
+- Wolt stores SAL, COM, MKT positive; DED and DIS negative; ADD and ELE with
+  either sign: totalpayout ≈ SAL + DIS + DED + ADD + ELE − COM − MKT.
+- Report costs (COM, MKT, MKT_DEL) as positive spend. Report Wolt DED/DIS as
+  positive magnitudes (abs) and label them as deductions/discounts.
+- Use totalamount (gross, incl. VAT — the figure that reconciles to the
+  payout) by default and say "incl. VAT"; use amount when the user asks for
+  net / ex-VAT.
 
 Before writing non-trivial SQL (joins, per-store or per-brand breakdowns,
 trend questions), load the "invoices-sql" skill for the full schema notes and

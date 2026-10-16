@@ -5,37 +5,47 @@ import {
   parseGoogleAnalyticsFilters,
   type GoogleAnalyticsDashboard,
   type GoogleAnalyticsFilters,
+  type GoogleAnalyticsPropertyRef,
+  type GoogleAnalyticsRange,
 } from "$lib/services/google-analytics/google-analytics";
 import { resolveGoogleAnalyticsScope } from "$lib/services/google-analytics/properties.server";
 import type { PageServerLoad } from "./$types";
 
+/** Streamed to the page: either the dashboard or a user-facing error. */
+export type GoogleAnalyticsDashboardResult =
+  | { dashboard: GoogleAnalyticsDashboard; error: null }
+  | { dashboard: null; error: string };
+
 /**
- * `/google-analytics`: permission gate, brand/property scope (the user's own
- * assignments only) and the overview dashboard for the selected property.
- * A Google failure is reported inline instead of failing the page, so the
- * user can still switch brand / property / range.
+ * Never rejects — a rejected streamed promise would surface as an unhandled
+ * error on the client instead of the inline alert.
+ */
+async function loadDashboardResult(
+  property: GoogleAnalyticsPropertyRef,
+  range: GoogleAnalyticsRange,
+): Promise<GoogleAnalyticsDashboardResult> {
+  try {
+    const dashboard = await getGoogleAnalyticsDashboard(property, range);
+    return { dashboard, error: null };
+  } catch (err) {
+    console.error(
+      `[google-analytics] dashboard load failed for property row ${property.id}:`,
+      err instanceof Error ? err.message : err,
+    );
+    return { dashboard: null, error: describeGoogleAnalyticsError(err) };
+  }
+}
+
+/**
+ * `/google-analytics`: permission gate and brand/property scope (the user's
+ * own assignments only) are awaited so the shell renders immediately; the
+ * Google call itself is streamed under `streamed.dashboard` and the page shows
+ * skeletons until it settles. A Google failure is reported inline so the user
+ * can still switch brand / property / range.
  */
 export const load: PageServerLoad = async (event) => {
   const requested = parseGoogleAnalyticsFilters(event.url.searchParams);
   const scope = await resolveGoogleAnalyticsScope(event, requested);
-
-  let dashboard: GoogleAnalyticsDashboard | null = null;
-  let loadError: string | null = null;
-
-  if (scope.property) {
-    try {
-      dashboard = await getGoogleAnalyticsDashboard(
-        scope.property,
-        scope.range,
-      );
-    } catch (err) {
-      console.error(
-        `[google-analytics] dashboard load failed for property row ${scope.property.id}:`,
-        err instanceof Error ? err.message : err,
-      );
-      loadError = describeGoogleAnalyticsError(err);
-    }
-  }
 
   const filters: GoogleAnalyticsFilters = {
     brandId: scope.brand?.id ?? null,
@@ -48,8 +58,11 @@ export const load: PageServerLoad = async (event) => {
     brand: scope.brand,
     property: scope.property,
     filters,
-    dashboard,
-    loadError,
     cacheTtlMinutes: Math.round(getGoogleAnalyticsCacheTtlMs() / 60_000),
+    streamed: {
+      dashboard: scope.property
+        ? loadDashboardResult(scope.property, scope.range)
+        : Promise.resolve<GoogleAnalyticsDashboardResult | null>(null),
+    },
   };
 };

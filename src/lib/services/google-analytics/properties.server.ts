@@ -1,6 +1,9 @@
 import { error, type RequestEvent } from "@sveltejs/kit";
 import type { AppPermissions } from "$lib/auth/permissions";
-import { requirePermission } from "$lib/server/auth-guards";
+import {
+  requireApiPermission,
+  requirePermission,
+} from "$lib/server/auth-guards";
 import { invalidateGoogleAnalyticsCache } from "$lib/server/google-analytics-cache.server";
 import {
   decryptSecret,
@@ -341,9 +344,15 @@ export type GoogleAnalyticsScope = {
 };
 
 /**
- * Page guard + scope resolution for `/google-analytics`.
+ * `page` guards redirect to `/` (302) like every other page load; `api`
+ * guards throw 401/403 so route handlers return JSON errors instead.
+ */
+export type GoogleAnalyticsGuard = "page" | "api";
+
+/**
+ * Guard + scope resolution for `/google-analytics` and its API routes.
  *
- * - no permission → 302 `/` (via `requirePermission`)
+ * - no permission → 302 `/` (page) or 403 (api)
  * - no brand requested → first brand in scope (null when the user has none)
  * - brand requested but not in scope → 403 (never reveals whether it exists)
  * - property requested but not on that brand → 403
@@ -351,8 +360,12 @@ export type GoogleAnalyticsScope = {
 export async function resolveGoogleAnalyticsScope(
   event: RequestEvent,
   filters: GoogleAnalyticsFilters,
+  options: { guard: GoogleAnalyticsGuard } = { guard: "page" },
 ): Promise<GoogleAnalyticsScope> {
-  const { user } = await requirePermission(event, GOOGLE_ANALYTICS_PERMISSION);
+  const { user } =
+    options.guard === "page"
+      ? await requirePermission(event, GOOGLE_ANALYTICS_PERMISSION)
+      : await requireApiPermission(event, GOOGLE_ANALYTICS_PERMISSION);
 
   if (!user) {
     error(401, "Unauthorized");

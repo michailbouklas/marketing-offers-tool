@@ -9,6 +9,7 @@ import {
 import {
   getInvoiceTrend,
   listInvoiceHeaders,
+  listInvoiceTransactionTypes,
 } from "$lib/services/aggregator-invoices/invoices.server";
 import { resolveBrandProjectCodes } from "$lib/services/brand-project-codes.server";
 import { listBrands } from "$lib/services/brands.server";
@@ -44,6 +45,9 @@ const paramsSchema = z.object({
     .preprocess(emptyToUndefined, z.coerce.number().int().positive().optional())
     .catch(undefined),
   lineDetails: z
+    .preprocess(emptyToUndefined, z.string().trim().min(1).optional())
+    .catch(undefined),
+  transactionType: z
     .preprocess(emptyToUndefined, z.string().trim().min(1).optional())
     .catch(undefined),
   from: z
@@ -85,6 +89,7 @@ export const load: PageServerLoad = async (event) => {
     erpsent: params.get("erpsent") ?? undefined,
     brand: params.get("brand") ?? undefined,
     lineDetails: params.get("lineDetails") ?? undefined,
+    transactionType: params.get("transactionType") ?? undefined,
     from: params.get("from") ?? undefined,
     to: params.get("to") ?? undefined,
     sortBy: params.get("sortBy") ?? undefined,
@@ -92,7 +97,7 @@ export const load: PageServerLoad = async (event) => {
     view: params.get("view") ?? undefined,
   });
 
-  const filters = parsed.success
+  const baseFilters = parsed.success
     ? {
         aggregator: parsed.data.aggregator,
         invoiceNumber: parsed.data.invoiceNumber ?? null,
@@ -116,7 +121,24 @@ export const load: PageServerLoad = async (event) => {
   const sortDir = parsed.success ? parsed.data.sortDir : "desc";
   const view = parsed.success ? parsed.data.view : "table";
 
-  const brands = await listBrands({ active: true });
+  const [brands, transactionTypes] = await Promise.all([
+    listBrands({ active: true }),
+    listInvoiceTransactionTypes(baseFilters.aggregator),
+  ]);
+
+  // Ignore transaction types this aggregator doesn't have (stale URLs, or a
+  // value carried over when switching aggregator).
+  const requestedTransactionType = parsed.success
+    ? (parsed.data.transactionType ?? null)
+    : null;
+  const filters = {
+    ...baseFilters,
+    transactionType:
+      requestedTransactionType !== null &&
+      transactionTypes.includes(requestedTransactionType)
+        ? requestedTransactionType
+        : null,
+  };
 
   // Ignore brand ids that are unknown or inactive (stale/hand-edited URLs).
   const requestedBrandId = parsed.success ? (parsed.data.brand ?? null) : null;
@@ -149,6 +171,7 @@ export const load: PageServerLoad = async (event) => {
     filters,
     brandId,
     brands,
+    transactionTypes,
     view,
     trend,
     sortBy,

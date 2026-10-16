@@ -4,7 +4,7 @@ import {
   withGoogleAnalyticsCache,
 } from "$lib/server/google-analytics-cache.server";
 import {
-  buildDashboardRequests,
+  buildDashboardBatches,
   mapDashboardResponse,
 } from "./dashboard-reports";
 import { batchRunReports } from "./ga4-client.server";
@@ -16,8 +16,9 @@ import type {
 import { getDecryptedCredentials } from "./properties.server";
 
 /**
- * Loads the overview dashboard for one GA4 property: one `batchRunReports`
- * round-trip (five reports), mapped to the UI model and cached per
+ * Loads the overview dashboard for one GA4 property: eleven reports sent as
+ * three parallel `batchRunReports` calls (Google caps a batch at five),
+ * flattened back into request order, mapped to the UI model and cached per
  * (property row, range) for `GOOGLE_ANALYTICS_CACHE_TTL_MS`.
  *
  * Throws `GoogleAnalyticsApiError` (Google refused / unreachable) or a crypto
@@ -40,11 +41,14 @@ export async function getGoogleAnalyticsDashboard(
       const { propertyId, credentials } = await getDecryptedCredentials(
         property.id,
       );
-      const reports = await batchRunReports(
-        propertyId,
-        buildDashboardRequests(range),
-        credentials,
-      );
+      const batches = buildDashboardBatches(range);
+      const reports = (
+        await Promise.all(
+          batches.map((requests) =>
+            batchRunReports(propertyId, requests, credentials),
+          ),
+        )
+      ).flat();
 
       return mapDashboardResponse(reports);
     },

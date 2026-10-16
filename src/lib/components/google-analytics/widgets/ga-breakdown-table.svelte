@@ -11,12 +11,19 @@
     title,
     description,
     labelHeader,
+    shareHeader = "Share",
     rows,
     totalSessions,
   }: {
     title: string;
     description: string;
     labelHeader: string;
+    /**
+     * Header of the share column. For non-additive dimensions (a session can
+     * view several pages) pass something like "% of sessions" so readers do
+     * not expect the column to sum to 100%.
+     */
+    shareHeader?: string;
     rows: GoogleAnalyticsBreakdownRow[];
     /** Denominator for the share column (period total, not the top-10 sum). */
     totalSessions: number;
@@ -43,12 +50,12 @@
           <Table.Row>
             <Table.Head>{labelHeader}</Table.Head>
             <Table.Head class="text-right">Sessions</Table.Head>
-            <Table.Head class="text-right">Share</Table.Head>
+            <Table.Head class="text-right">{shareHeader}</Table.Head>
             <Table.Head class="text-right">Active users</Table.Head>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {#each rows as row (row.label)}
+          {#each rows as row, position (position)}
             <Table.Row>
               <Table.Cell class="max-w-[18rem] truncate" title={row.label}>
                 {row.label}

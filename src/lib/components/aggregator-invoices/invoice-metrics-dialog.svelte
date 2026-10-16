@@ -56,6 +56,7 @@
         ? `ERP: ${filters.erpsent === "Y" ? "Sent" : "Not sent"}`
         : null,
       filters.lineDetails ? `Lines: ${filters.lineDetails}` : null,
+      filters.transactionType ? `Type: ${filters.transactionType}` : null,
     ].filter((label): label is string => label !== null),
   );
   const sortedTransactionTypes = $derived.by(() => {

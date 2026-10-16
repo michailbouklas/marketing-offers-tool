@@ -37,7 +37,7 @@
 {#if user}
   <Sidebar.Provider>
     <AppSidebar />
-    <Sidebar.Inset>
+    <Sidebar.Inset class="min-w-0">
       <TopNav />
       {@render children()}
     </Sidebar.Inset>

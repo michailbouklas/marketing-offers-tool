@@ -152,6 +152,11 @@ export type InvoiceFilters = {
   to: string | null;
   /** Headers with at least one line whose `linedetails` matches (ilike %x%). */
   lineDetails: string | null;
+  /**
+   * Headers with at least one line whose `transtype` equals this value
+   * (exact match). Combined with `lineDetails`, the same line must match both.
+   */
+  transactionType: string | null;
   /** Exact-match allowlist for `project`; empty array intentionally yields zero rows. */
   projectCodes?: string[] | null;
 };

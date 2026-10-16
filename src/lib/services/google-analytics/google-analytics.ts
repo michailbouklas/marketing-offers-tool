@@ -201,14 +201,117 @@ export type GoogleAnalyticsBreakdownRow = {
   activeUsers: number;
 };
 
+export type GoogleAnalyticsCampaignRow = {
+  /** `sessionSourceMedium`, e.g. "google / cpc" or "(direct) / (none)". */
+  sourceMedium: string;
+  /** `sessionCampaignName`, "(not set)" when no UTM campaign. */
+  campaign: string;
+  sessions: number;
+  engagementRate: number;
+  keyEvents: number;
+};
+
+export type GoogleAnalyticsLandingPageRow = {
+  path: string;
+  sessions: number;
+  newUsers: number;
+  /** userEngagementDuration ÷ sessions. */
+  avgEngagementSeconds: number;
+  keyEvents: number;
+};
+
+export type GoogleAnalyticsHeatmapCell = {
+  /** GA4 `dayOfWeek`: 0 = Sunday … 6 = Saturday. */
+  dayOfWeek: number;
+  /** 0–23. */
+  hour: number;
+  sessions: number;
+};
+
+export type GoogleAnalyticsAudienceSegment = {
+  /** `newVsReturning`: "new", "returning" or "(not set)". */
+  label: string;
+  activeUsers: number;
+  sessions: number;
+  engagementRate: number;
+};
+
+export type GoogleAnalyticsKeyEventRow = {
+  eventName: string;
+  keyEvents: number;
+};
+
 export type GoogleAnalyticsDashboard = {
   totals: GoogleAnalyticsTotals;
+  /** Same metrics for the preceding period of equal length; null if absent. */
+  previousTotals: GoogleAnalyticsTotals | null;
   daily: GoogleAnalyticsDailyPoint[];
   channels: GoogleAnalyticsBreakdownRow[];
   pages: GoogleAnalyticsBreakdownRow[];
   devices: GoogleAnalyticsBreakdownRow[];
   countries: GoogleAnalyticsBreakdownRow[];
+  cities: GoogleAnalyticsBreakdownRow[];
+  campaigns: GoogleAnalyticsCampaignRow[];
+  landingPages: GoogleAnalyticsLandingPageRow[];
+  /** Always 7 × 24 cells (missing combinations filled with 0). */
+  heatmap: GoogleAnalyticsHeatmapCell[];
+  newVsReturning: GoogleAnalyticsAudienceSegment[];
+  keyEventsByName: GoogleAnalyticsKeyEventRow[];
 };
+
+// --- Realtime -----------------------------------------------------------------------
+
+export type GoogleAnalyticsRealtime = {
+  /** Active users in the last 30 minutes. */
+  activeUsers: number;
+  /** 30 entries, minutesAgo 0 (now) … 29. */
+  perMinute: { minutesAgo: number; activeUsers: number }[];
+  topPages: { title: string; activeUsers: number }[];
+  /** ISO timestamp of the Google call. */
+  fetchedAt: string;
+};
+
+// --- Period comparison --------------------------------------------------------------
+
+export type GoogleAnalyticsDelta = {
+  /** Relative change as a fraction (0.124 = +12.4%); null when undefined. */
+  pct: number | null;
+  direction: "up" | "down" | "flat";
+};
+
+export function computeDelta(
+  current: number,
+  previous: number | null | undefined,
+): GoogleAnalyticsDelta {
+  if (
+    previous === null ||
+    previous === undefined ||
+    !Number.isFinite(previous) ||
+    previous === 0
+  ) {
+    return { pct: null, direction: "flat" };
+  }
+
+  const pct = (current - previous) / previous;
+
+  if (Math.abs(pct) < 0.0005) {
+    return { pct: 0, direction: "flat" };
+  }
+
+  return { pct, direction: pct > 0 ? "up" : "down" };
+}
+
+/** Arrow + signed percent so the direction never relies on colour alone. */
+export function formatDeltaLabel(delta: GoogleAnalyticsDelta): string {
+  if (delta.pct === null) {
+    return "n/a";
+  }
+
+  const arrow =
+    delta.direction === "up" ? "▲" : delta.direction === "down" ? "▼" : "—";
+
+  return `${arrow} ${Math.abs(delta.pct * 100).toFixed(1)}%`;
+}
 
 // --- Formatting --------------------------------------------------------------------
 

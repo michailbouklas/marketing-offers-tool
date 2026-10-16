@@ -35,7 +35,7 @@ PK `(documentid, linenumber)`; `documentid` FKs to `"api_WOLT_header"`.
 
 | Column                | Type          | Notes                                     |
 | --------------------- | ------------- | ----------------------------------------- |
-| transtype             | text          | Transaction type/category of the line     |
+| transtype             | text          | Transaction-type code — see section below |
 | linedetails           | text          | Free-text description (up to ~1000 chars) |
 | amount                | numeric(19,6) | Net amount                                |
 | vatamount             | numeric(19,6) | VAT portion                               |
@@ -59,7 +59,8 @@ journal entry the line belongs to). Otherwise same columns as Wolt lines.
 
 - All monetary values are EUR.
 - `totalpayout` on the header is the invoice-level net payout; line
-  `totalamount` values broken down by `transtype` are the per-category view.
+  `totalamount` values broken down by `transtype` are the per-category view
+  (see "Transaction types" for how they reconcile).
 - `erpsent = 'Y'` means the invoice has been transferred to the ERP;
   `'N'` means still pending. Treat NULL as pending.
 - `documentdate` is the business date to use for time filters and trends;
@@ -70,7 +71,117 @@ journal entry the line belongs to). Otherwise same columns as Wolt lines.
   `WHERE project IN (...)` filters; if you only have a brand name, ask the
   user for project codes or aggregate per `project` instead.
 
+## Transaction types (`transtype`)
+
+Codes observed in the data (2026-10-16). Filter with an exact match
+(`l.transtype = 'MKT'`), never with `ILIKE` on `linedetails`.
+
+| Code    | Meaning                                                     | Wolt | Bolt | Typical `linedetails`                                                                                          |
+| ------- | ----------------------------------------------------------- | ---- | ---- | -------------------------------------------------------------------------------------------------------------- |
+| SAL     | Sales — gross value of goods sold                           | yes  | yes  | "Total, goods sold" / "Bolt/Total sales"                                                                       |
+| COM     | Commission / agency fees kept by the aggregator             | yes  | yes  | "Commission, delivery 14.00%", "Transaction flat fee", "Venue lateness" / "Bolt/Weekly aggregate agency fees…" |
+| COM_RED | Commission reduction — campaign agency-fee credit           | no   | yes  | "Bolt/Agency fee reduction for Campaigns", "Bolt/Adjustments: Refund"                                          |
+| MKT     | Marketing spend — ad campaigns, sponsored listings, banners | yes  | yes  | "Ad campaign - Attributed purchases…", "Display Banner…" / "Bolt/Campaign fee", "Bolt/Sponsored Listing cost"  |
+| MKT_DEL | Marketing costs for delivery (part of marketing spend)      | no   | yes  | "Bolt/Marketing costs for Delivery"                                                                            |
+| DED     | Deductions                                                  | yes  | no   | "Deductions"                                                                                                   |
+| ADD     | Additions / purchase corrections                            | yes  | no   | "Additions", "Purchase correction: Additions"                                                                  |
+| DIS     | Discounts funded by the merchant                            | yes  | no   | "Total, items discounted by merchant"                                                                          |
+| ELE     | Electronics — tablet / device charges                       | yes  | no   | "iPad … Tablet: …"                                                                                             |
+
+Wording → codes:
+
+- marketing spend / marketing cost / ad spend / campaign cost / sponsored
+  listings → Wolt `MKT`; Bolt `MKT` + `MKT_DEL`. State that delivery
+  marketing is included for Bolt; split it if asked. The code is `MKT`; treat
+  `MTK` as a typo for `MKT` and answer directly.
+- commission / agency fees / "what the aggregator keeps" → `COM`. Bolt net
+  commission = `COM` − `COM_RED`; say which one you report.
+- sales / revenue / gross sales / GMV → `SAL`.
+- deductions → `DED`; additions → `ADD`; discounts → `DIS`; tablet or device
+  charges → `ELE`. All Wolt-only — say so when asked about Bolt.
+- A code not in this table → `SELECT DISTINCT transtype` first, then ask.
+
+Sign conventions (checked against header `totalpayout`, `totalamount`
+based):
+
+- Bolt stores every line as a positive magnitude. For 3,996 of 3,998
+  invoices: `totalpayout = SAL − COM + COM_RED − MKT − MKT_DEL`.
+- Wolt stores `SAL`, `COM`, `MKT` positive, `DED` and `DIS` negative, `ADD`
+  and `ELE` with either sign. For ~91% of invoices:
+  `totalpayout = SAL + DIS + DED + ADD + ELE − COM − MKT`; the rest differ
+  by more than 5 cents (cause not established — do not promise exact
+  reconciliation).
+- Wolt `MKT` contains a small number of negative lines (credits); a plain
+  `sum()` is still the right net spend.
+- `totalamount` is gross (incl. VAT) and is what reconciles to the payout;
+  `amount` is net of VAT. Default to `totalamount` and label it "incl.
+  VAT"; use `amount` for net / ex-VAT questions.
+- Present costs (`COM`, `MKT`, `MKT_DEL`) as positive spend; present Wolt
+  `DED` / `DIS` as `abs()` magnitudes labelled as deductions / discounts.
+
 ## Query patterns
+
+Marketing spend for a period, both aggregators (gross, incl. VAT):
+
+```sql
+SELECT 'wolt' AS aggregator,
+       count(*) AS line_items,
+       coalesce(sum(l.totalamount), 0) AS marketing_spend
+FROM "api_WOLT_lines" l
+JOIN "api_WOLT_header" h ON h.documentid = l.documentid
+WHERE l.transtype = 'MKT'
+  AND h.documentdate >= date_trunc('month', CURRENT_DATE)
+  AND h.documentdate <  date_trunc('month', CURRENT_DATE) + interval '1 month'
+UNION ALL
+SELECT 'bolt', count(*), coalesce(sum(l.totalamount), 0)
+FROM "api_BOLT_lines" l
+JOIN "api_BOLT_header" h ON h.documentid = l.documentid
+WHERE l.transtype IN ('MKT', 'MKT_DEL')
+  AND h.documentdate >= date_trunc('month', CURRENT_DATE)
+  AND h.documentdate <  date_trunc('month', CURRENT_DATE) + interval '1 month'
+```
+
+Marketing spend per store (Wolt; swap `partnername` for `bolt_storename` and
+the IN-list for Bolt):
+
+```sql
+SELECT coalesce(h.partnername, h.bpname) AS store,
+       coalesce(sum(l.totalamount), 0) AS marketing_spend
+FROM "api_WOLT_lines" l
+JOIN "api_WOLT_header" h ON h.documentid = l.documentid
+WHERE l.transtype = 'MKT'
+  AND h.documentdate >= CURRENT_DATE - interval '90 days'
+GROUP BY 1
+ORDER BY marketing_spend DESC NULLS LAST
+LIMIT 20
+```
+
+Marketing spend as a share of sales, per month (Bolt):
+
+```sql
+SELECT to_char(date_trunc('month', h.documentdate), 'YYYY-MM') AS month,
+       sum(CASE WHEN l.transtype = 'SAL' THEN l.totalamount ELSE 0 END) AS sales,
+       sum(CASE WHEN l.transtype IN ('MKT', 'MKT_DEL') THEN l.totalamount ELSE 0 END) AS marketing_spend,
+       round(100.0 * sum(CASE WHEN l.transtype IN ('MKT', 'MKT_DEL') THEN l.totalamount ELSE 0 END)
+             / nullif(sum(CASE WHEN l.transtype = 'SAL' THEN l.totalamount ELSE 0 END), 0), 2) AS marketing_pct_of_sales
+FROM "api_BOLT_lines" l
+JOIN "api_BOLT_header" h ON h.documentid = l.documentid
+WHERE h.documentdate IS NOT NULL
+GROUP BY 1
+ORDER BY 1
+```
+
+Net commission on Bolt (fees minus campaign fee reductions):
+
+```sql
+SELECT sum(CASE WHEN l.transtype = 'COM' THEN l.totalamount ELSE 0 END) AS commission,
+       sum(CASE WHEN l.transtype = 'COM_RED' THEN l.totalamount ELSE 0 END) AS commission_reduction,
+       sum(CASE WHEN l.transtype = 'COM' THEN l.totalamount ELSE 0 END)
+     - sum(CASE WHEN l.transtype = 'COM_RED' THEN l.totalamount ELSE 0 END) AS net_commission
+FROM "api_BOLT_lines" l
+JOIN "api_BOLT_header" h ON h.documentid = l.documentid
+WHERE h.documentdate >= CURRENT_DATE - interval '30 days'
+```
 
 Per-aggregator totals for a period:
 

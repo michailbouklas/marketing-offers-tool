@@ -68,16 +68,51 @@ read-only.
 | `dashboard-reports.ts` | Pure request builders and the response → `GoogleAnalyticsDashboard` mapper (unit-tested).                                                                         |
 | `dashboard.server.ts`  | One `batchRunReports` call (5 reports) per (property, range), cached.                                                                                             |
 
+### Widgets and the reports behind them
+
+Eleven standard reports per load, sent as three parallel `batchRunReports`
+calls (Google caps a batch at five), flattened back into
+`DASHBOARD_REPORT_ORDER` and mapped in `dashboard-reports.ts`:
+
+| Widget                       | Dimensions                                   | Metrics                                                                                             | Notes                                                                     |
+| ---------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| KPI tiles + daily trend      | `date` (+ auto `dateRange`)                  | activeUsers, newUsers, sessions, engagementRate, averageSessionDuration, keyEvents, screenPageViews | Two `dateRanges`; TOTAL row of range 0 = tiles, range 1 = period deltas   |
+| Traffic channels             | `sessionDefaultChannelGroup`                 | sessions, activeUsers                                                                               | top 10                                                                    |
+| Top pages & screens          | `unifiedScreenName`                          | sessions, activeUsers                                                                               | top 10; page title (web) or screen name (app) so app-only properties work |
+| Devices / Countries / Cities | `deviceCategory` / `country` / `city`        | sessions, activeUsers                                                                               | top 10 each                                                               |
+| Campaign performance         | `sessionSourceMedium`, `sessionCampaignName` | sessions, engagementRate, keyEvents                                                                 | top 15; engagement re-weighted by sessions when rows merge                |
+| Landing pages                | `landingPage`                                | sessions, newUsers, userEngagementDuration, keyEvents                                               | avg engagement = duration ÷ sessions                                      |
+| Hour × weekday heatmap       | `dayOfWeek`, `hour`                          | sessions                                                                                            | always 7 × 24 cells; GA `dayOfWeek` 0 = Sunday, UI shows Monday first     |
+| New vs returning             | `newVsReturning`                             | activeUsers, sessions, engagementRate                                                               | CSS conic-gradient donut, fixed colour per segment                        |
+| Key events by name           | `eventName`                                  | keyEvents                                                                                           | `metricFilter keyEvents > 0`, top 10                                      |
+
+**Live now** is not part of the dashboard batch: `GET /api/google-analytics/realtime?brand=&property=`
+runs three `runRealtimeReport` calls (total, `minutesAgo` series,
+`unifiedScreenName` top pages) over the last 30 minutes. The browser polls
+every 60 s while the tab is visible; the server shares one snapshot per
+property for 30 s (`realtime.server.ts`). Scope is resolved with the same
+helper as the page using `{ guard: "api" }` (403 JSON instead of redirect).
+
 - Date ranges end **yesterday** (`NdaysAgo` → `yesterday`): GA4 reports today
   only partially, so "last 7 days" means the seven complete days before today.
+  The comparison period is the equal-length window immediately before
+  (`2N daysAgo` → `N+1 daysAgo`).
 - Reports: daily `date` series with `metricAggregations: TOTAL` (the TOTAL row
   feeds the tiles so `activeUsers` is not over-counted by summing days), plus
-  top-10 breakdowns by `sessionDefaultChannelGroup`, `pagePath`,
+  top-10 breakdowns by `sessionDefaultChannelGroup`, `unifiedScreenName`,
   `deviceCategory`, `country` ordered by sessions.
 - Cache: `GOOGLE_ANALYTICS_CACHE_TTL_MS` (default 10 min) per process, keyed by
   property row + range, invalidated whenever an admin edits any property.
   Standard GA4 properties have a daily Data API token quota; one dashboard load
   costs one batch request.
+- The page load awaits only the permission check and brand/property scope;
+  the Google call is returned as a streamed promise (`streamed.dashboard`), so
+  the shell and controls render at once and skeletons show until GA answers.
+  The streamed promise never rejects; errors arrive as `{ error }`.
+- Breakdown rows with the same label (GA4 returns both `""` and `(not set)`)
+  are merged in the mapper. Table rows are keyed by position: a duplicate
+  key makes Svelte throw inside the resolved branch and the skeleton never
+  clears.
 - Failures (key rejected, no Viewer grant, quota, Google unreachable, missing
   encryption key) are shown inline on the page via
   `describeGoogleAnalyticsError`, so the user can still switch brand / period.

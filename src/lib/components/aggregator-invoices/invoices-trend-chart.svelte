@@ -1,6 +1,5 @@
 <script lang="ts">
   import * as Chart from "$lib/components/ui/chart/index.js";
-  import * as NativeSelect from "$lib/components/ui/native-select/index.js";
   import {
     formatInvoiceAmount,
     type InvoiceTrend,
@@ -11,13 +10,15 @@
 
   type ChartPoint = { date: Date } & Record<string, number | Date>;
 
-  let { trend }: { trend: InvoiceTrend } = $props();
-
-  // "" = all transaction types on one graph.
-  let selectedKey = $state("");
+  // `selectedType` is the page-level transaction type filter (raw `transtype`
+  // value); null = all transaction types on one graph.
+  let {
+    trend,
+    selectedType = null,
+  }: { trend: InvoiceTrend; selectedType?: string | null } = $props();
 
   // Colors are assigned by full-list index so a transaction type keeps its
-  // color when the switcher narrows the view down to a single series.
+  // color when the filter narrows the view down to a single series.
   const chartConfig = $derived(
     Object.fromEntries(
       trend.series.map((item, index) => [
@@ -29,7 +30,7 @@
 
   const visibleSeries = $derived(
     trend.series
-      .filter((item) => selectedKey === "" || item.key === selectedKey)
+      .filter((item) => selectedType === null || item.label === selectedType)
       .map((item) => ({
         key: item.key,
         label: item.label,
@@ -74,22 +75,10 @@
 </script>
 
 <div class="space-y-4">
-  <div class="flex flex-wrap items-center justify-between gap-2">
-    <p class="text-muted-foreground text-sm">
-      Daily invoice line totals per transaction type, across all invoices
-      matching the current filters.
-    </p>
-    <NativeSelect.Root
-      bind:value={selectedKey}
-      aria-label="Transaction type"
-      class="w-52"
-    >
-      <NativeSelect.Option value="">All transaction types</NativeSelect.Option>
-      {#each trend.series as item (item.key)}
-        <NativeSelect.Option value={item.key}>{item.label}</NativeSelect.Option>
-      {/each}
-    </NativeSelect.Root>
-  </div>
+  <p class="text-muted-foreground text-sm">
+    Daily invoice line totals per transaction type, across all invoices matching
+    the current filters.
+  </p>
 
   {#if chartData.length < 2 || visibleSeries.length === 0}
     <p class="text-muted-foreground text-sm">

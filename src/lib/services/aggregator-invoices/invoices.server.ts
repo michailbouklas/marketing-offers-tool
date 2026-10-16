@@ -359,14 +359,21 @@ function woltWhere(filters: InvoiceFilters): Prisma.api_WOLT_headerWhereInput {
     ...(filters.erpsent ? { erpsent: filters.erpsent } : {}),
     ...(range ? { documentdate: range } : {}),
     ...(filters.projectCodes ? { project: { in: filters.projectCodes } } : {}),
-    ...(filters.lineDetails
+    ...(filters.lineDetails || filters.transactionType
       ? {
           api_WOLT_lines: {
             some: {
-              linedetails: {
-                contains: filters.lineDetails,
-                mode: "insensitive" as const,
-              },
+              ...(filters.lineDetails
+                ? {
+                    linedetails: {
+                      contains: filters.lineDetails,
+                      mode: "insensitive" as const,
+                    },
+                  }
+                : {}),
+              ...(filters.transactionType
+                ? { transtype: filters.transactionType }
+                : {}),
             },
           },
         }
@@ -668,14 +675,21 @@ function boltWhere(filters: InvoiceFilters): Prisma.api_BOLT_headerWhereInput {
     ...(filters.erpsent ? { erpsent: filters.erpsent } : {}),
     ...(range ? { documentdate: range } : {}),
     ...(filters.projectCodes ? { project: { in: filters.projectCodes } } : {}),
-    ...(filters.lineDetails
+    ...(filters.lineDetails || filters.transactionType
       ? {
           api_BOLT_lines: {
             some: {
-              linedetails: {
-                contains: filters.lineDetails,
-                mode: "insensitive" as const,
-              },
+              ...(filters.lineDetails
+                ? {
+                    linedetails: {
+                      contains: filters.lineDetails,
+                      mode: "insensitive" as const,
+                    },
+                  }
+                : {}),
+              ...(filters.transactionType
+                ? { transtype: filters.transactionType }
+                : {}),
             },
           },
         }
@@ -972,4 +986,29 @@ export function getStoreInvoiceMetrics(
   return params.aggregator === "wolt"
     ? getWoltStoreMetrics(params)
     : getBoltStoreMetrics(params);
+}
+
+/**
+ * Distinct line `transtype` values for one aggregator, sorted. Backs the
+ * transaction type filter dropdown; scoped by aggregator only (not by the
+ * other filters) so the selected option never disappears from the list.
+ */
+export async function listInvoiceTransactionTypes(
+  aggregator: InvoiceAggregator,
+): Promise<string[]> {
+  const rows =
+    aggregator === "wolt"
+      ? await prisma.api_WOLT_lines.groupBy({
+          by: ["transtype"],
+          where: { transtype: { not: null } },
+        })
+      : await prisma.api_BOLT_lines.groupBy({
+          by: ["transtype"],
+          where: { transtype: { not: null } },
+        });
+
+  return rows
+    .map((row) => row.transtype?.trim() ?? "")
+    .filter((value) => value.length > 0)
+    .sort((left, right) => left.localeCompare(right));
 }

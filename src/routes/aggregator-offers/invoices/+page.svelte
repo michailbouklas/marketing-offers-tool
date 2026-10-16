@@ -91,6 +91,7 @@
     erpsent = data.filters.erpsent,
     brandId = data.brandId,
     lineDetails = data.filters.lineDetails,
+    transactionType = data.filters.transactionType,
     from = data.filters.from,
     to = data.filters.to,
     sortBy = data.sortBy,
@@ -104,6 +105,7 @@
     erpsent?: InvoiceErpSent | null;
     brandId?: number | null;
     lineDetails?: string | null;
+    transactionType?: string | null;
     from?: string | null;
     to?: string | null;
     sortBy?: InvoiceSortField;
@@ -134,6 +136,10 @@
 
     if (lineDetails) {
       params.set("lineDetails", lineDetails);
+    }
+
+    if (transactionType) {
+      params.set("transactionType", transactionType);
     }
 
     if (from) {
@@ -183,7 +189,8 @@
       return;
     }
 
-    goto(getRouteHref({ aggregator: next, page: 1 }));
+    // Transaction type codes differ per aggregator, so the selection is dropped.
+    goto(getRouteHref({ aggregator: next, page: 1, transactionType: null }));
   }
 
   function applyDateRange(range: { from?: string; to?: string }) {
@@ -265,9 +272,9 @@
     <Card.Root
       class="border-border/70 bg-background/90 overflow-hidden shadow-sm backdrop-blur"
     >
-      <Card.Header>
+      <Card.Header class="gap-5">
         <div
-          class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between"
+          class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
         >
           <div class="space-y-1">
             <Card.Title class="text-2xl tracking-[-0.03em]">
@@ -278,154 +285,172 @@
             </Card.Description>
           </div>
 
-          <form
-            method="GET"
-            bind:this={searchForm}
-            class="grid gap-3 lg:grid-cols-[minmax(0,11rem)_minmax(0,11rem)_minmax(0,13rem)_minmax(0,8rem)_minmax(0,11rem)_auto_auto_auto] lg:items-end"
-          >
-            <div class="space-y-2">
-              <label class="text-sm font-medium" for="invoiceNumber"
-                >Invoice #</label
-              >
-              <Input
-                id="invoiceNumber"
-                name="invoiceNumber"
-                value={data.filters.invoiceNumber ?? ""}
-                placeholder="Invoice number"
-                oninput={handleSearchInput}
-                onkeydown={handleSearchKeydown}
-              />
-            </div>
-
-            <div class="space-y-2">
-              <label class="text-sm font-medium" for="store">Store / BP</label>
-              <Input
-                id="store"
-                name="store"
-                value={data.filters.store ?? ""}
-                placeholder="Store or BP name"
-                oninput={handleSearchInput}
-                onkeydown={handleSearchKeydown}
-              />
-            </div>
-
-            <div class="space-y-2">
-              <label class="text-sm font-medium" for="lineDetails"
-                >Line details</label
-              >
-              <div class="relative">
-                <SearchIcon
-                  class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
-                />
-                <Input
-                  id="lineDetails"
-                  name="lineDetails"
-                  value={data.filters.lineDetails ?? ""}
-                  placeholder="Search line details"
-                  class="pl-9"
-                  oninput={handleSearchInput}
-                  onkeydown={handleSearchKeydown}
-                />
-              </div>
-            </div>
-
-            <div class="space-y-2"></div>
-
-            <div class="space-y-2">
-              <label class="text-sm font-medium" for="brand">Brand</label>
-              <NativeSelect.Root
-                id="brand"
-                name="brand"
-                value={data.brandId?.toString() ?? ""}
-                onchange={handleSearchChange}
-              >
-                <NativeSelect.Option value="">All brands</NativeSelect.Option>
-                {#each data.brands as brand (brand.id)}
-                  <NativeSelect.Option value={brand.id.toString()}>
-                    {formatBrandLabel(brand)}
-                  </NativeSelect.Option>
-                {/each}
-              </NativeSelect.Root>
-            </div>
-
-            <div class="space-y-2">
-              <span class="text-sm font-medium">Document date</span>
-              <DateRangeFilter
-                from={data.filters.from}
-                to={data.filters.to}
-                onApply={applyDateRange}
-              />
-            </div>
-
-            {#if data.filters.aggregator !== "wolt"}
-              <input
-                type="hidden"
-                name="aggregator"
-                value={data.filters.aggregator}
-              />
-            {/if}
-            {#if data.filters.from}
-              <input type="hidden" name="from" value={data.filters.from} />
-            {/if}
-            {#if data.filters.to}
-              <input type="hidden" name="to" value={data.filters.to} />
-            {/if}
-            <input type="hidden" name="sortBy" value={data.sortBy} />
-            <input type="hidden" name="sortDir" value={data.sortDir} />
-            {#if data.view !== "table"}
-              <input type="hidden" name="view" value={data.view} />
-            {/if}
-
-            <div class="flex gap-2">
-              <Button type="submit">Apply</Button>
+          <div class="flex items-center gap-2">
+            <span class="sr-only">View</span>
+            <ButtonGroup.Root>
               <Button
-                href={getRouteHref({
-                  page: 1,
-                  invoiceNumber: null,
-                  store: null,
-                  erpsent: null,
-                  brandId: null,
-                  lineDetails: null,
-                  from: null,
-                  to: null,
-                })}
-                variant="outline"
+                href={getRouteHref({ view: "table" })}
+                variant={data.view === "table" ? "default" : "outline"}
+                aria-current={data.view === "table" ? "page" : undefined}
               >
-                Reset
+                <TableIcon class="size-4" />
+                Table
               </Button>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <span class="sr-only">View</span>
-              <ButtonGroup.Root>
-                <Button
-                  href={getRouteHref({ view: "table" })}
-                  variant={data.view === "table" ? "default" : "outline"}
-                  aria-current={data.view === "table" ? "page" : undefined}
-                >
-                  <TableIcon class="size-4" />
-                  Table
-                </Button>
-                <Button
-                  href={getRouteHref({ view: "chart" })}
-                  variant={data.view === "chart" ? "default" : "outline"}
-                  aria-current={data.view === "chart" ? "page" : undefined}
-                >
-                  <ChartLineIcon class="size-4" />
-                  Chart
-                </Button>
-              </ButtonGroup.Root>
               <Button
-                type="button"
-                variant="outline"
-                onclick={() => (infoOpen = true)}
+                href={getRouteHref({ view: "chart" })}
+                variant={data.view === "chart" ? "default" : "outline"}
+                aria-current={data.view === "chart" ? "page" : undefined}
               >
-                <InfoIcon class="size-4" />
-                Info
+                <ChartLineIcon class="size-4" />
+                Chart
               </Button>
-            </div>
-          </form>
+            </ButtonGroup.Root>
+            <Button
+              type="button"
+              variant="outline"
+              onclick={() => (infoOpen = true)}
+            >
+              <InfoIcon class="size-4" />
+              Info
+            </Button>
+          </div>
         </div>
+
+        <form
+          method="GET"
+          bind:this={searchForm}
+          class="grid gap-x-4 gap-y-3 @md/card-header:grid-cols-2 @4xl/card-header:grid-cols-4 @4xl/card-header:items-end @6xl/card-header:grid-cols-7"
+        >
+          <div class="space-y-2">
+            <label class="text-sm font-medium" for="invoiceNumber"
+              >Invoice #</label
+            >
+            <Input
+              id="invoiceNumber"
+              name="invoiceNumber"
+              value={data.filters.invoiceNumber ?? ""}
+              placeholder="Invoice number"
+              oninput={handleSearchInput}
+              onkeydown={handleSearchKeydown}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium" for="store">Store / BP</label>
+            <Input
+              id="store"
+              name="store"
+              value={data.filters.store ?? ""}
+              placeholder="Store or BP name"
+              oninput={handleSearchInput}
+              onkeydown={handleSearchKeydown}
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium" for="lineDetails"
+              >Line details</label
+            >
+            <div class="relative">
+              <SearchIcon
+                class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+              />
+              <Input
+                id="lineDetails"
+                name="lineDetails"
+                value={data.filters.lineDetails ?? ""}
+                placeholder="Search line details"
+                class="pl-9"
+                oninput={handleSearchInput}
+                onkeydown={handleSearchKeydown}
+              />
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium" for="transactionType"
+              >Transaction type</label
+            >
+            <NativeSelect.Root
+              id="transactionType"
+              name="transactionType"
+              value={data.filters.transactionType ?? ""}
+              onchange={handleSearchChange}
+            >
+              <NativeSelect.Option value="">All types</NativeSelect.Option>
+              {#each data.transactionTypes as transactionType (transactionType)}
+                <NativeSelect.Option value={transactionType}>
+                  {transactionType}
+                </NativeSelect.Option>
+              {/each}
+            </NativeSelect.Root>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium" for="brand">Brand</label>
+            <NativeSelect.Root
+              id="brand"
+              name="brand"
+              value={data.brandId?.toString() ?? ""}
+              onchange={handleSearchChange}
+            >
+              <NativeSelect.Option value="">All brands</NativeSelect.Option>
+              {#each data.brands as brand (brand.id)}
+                <NativeSelect.Option value={brand.id.toString()}>
+                  {formatBrandLabel(brand)}
+                </NativeSelect.Option>
+              {/each}
+            </NativeSelect.Root>
+          </div>
+
+          <div class="space-y-2 @md/card-header:col-span-2">
+            <span class="text-sm font-medium">Document date</span>
+            <DateRangeFilter
+              from={data.filters.from}
+              to={data.filters.to}
+              onApply={applyDateRange}
+            />
+          </div>
+
+          {#if data.filters.aggregator !== "wolt"}
+            <input
+              type="hidden"
+              name="aggregator"
+              value={data.filters.aggregator}
+            />
+          {/if}
+          {#if data.filters.from}
+            <input type="hidden" name="from" value={data.filters.from} />
+          {/if}
+          {#if data.filters.to}
+            <input type="hidden" name="to" value={data.filters.to} />
+          {/if}
+          <input type="hidden" name="sortBy" value={data.sortBy} />
+          <input type="hidden" name="sortDir" value={data.sortDir} />
+          {#if data.view !== "table"}
+            <input type="hidden" name="view" value={data.view} />
+          {/if}
+
+          <div class="col-span-full flex gap-2">
+            <Button type="submit">Apply</Button>
+            <Button
+              href={getRouteHref({
+                page: 1,
+                invoiceNumber: null,
+                store: null,
+                erpsent: null,
+                brandId: null,
+                lineDetails: null,
+                transactionType: null,
+                from: null,
+                to: null,
+              })}
+              variant="outline"
+            >
+              Reset
+            </Button>
+          </div>
+        </form>
       </Card.Header>
 
       <Card.Content>
@@ -454,6 +479,11 @@
           {#if data.filters.lineDetails}
             <Badge variant="outline">Lines: {data.filters.lineDetails}</Badge>
           {/if}
+          {#if data.filters.transactionType}
+            <Badge variant="outline">
+              Type: {data.filters.transactionType}
+            </Badge>
+          {/if}
           {#if data.filters.from || data.filters.to}
             <Badge variant="outline">
               {data.filters.from ?? "…"} – {data.filters.to ?? "…"}
@@ -475,7 +505,10 @@
         </div>
 
         {#if data.view === "chart" && data.trend}
-          <InvoicesTrendChart trend={data.trend} />
+          <InvoicesTrendChart
+            trend={data.trend}
+            selectedType={data.filters.transactionType}
+          />
         {:else}
           <InvoicesTable
             items={rows}

@@ -45,14 +45,55 @@ export type Ga4OrderBy =
   | { metric: { metricName: string }; desc?: boolean }
   | { dimension: { dimensionName: string }; desc?: boolean };
 
+export type Ga4NumericValue = { int64Value?: string; doubleValue?: number };
+
+/** Single-field filter (the only shape the dashboard needs). */
+export type Ga4FilterExpression = {
+  filter: {
+    fieldName: string;
+    numericFilter?: {
+      operation:
+        | "EQUAL"
+        | "LESS_THAN"
+        | "LESS_THAN_OR_EQUAL"
+        | "GREATER_THAN"
+        | "GREATER_THAN_OR_EQUAL";
+      value: Ga4NumericValue;
+    };
+    stringFilter?: {
+      matchType?: "EXACT" | "BEGINS_WITH" | "ENDS_WITH" | "CONTAINS";
+      value: string;
+      caseSensitive?: boolean;
+    };
+  };
+};
+
 export type Ga4ReportRequest = {
   dimensions?: { name: string }[];
   metrics: { name: string }[];
   dateRanges: Ga4DateRange[];
+  dimensionFilter?: Ga4FilterExpression;
+  metricFilter?: Ga4FilterExpression;
   orderBys?: Ga4OrderBy[];
   limit?: number;
   metricAggregations?: "TOTAL"[];
   keepEmptyRows?: boolean;
+};
+
+export type Ga4MinuteRange = {
+  name?: string;
+  /** Inclusive; 0 = the current minute. Realtime covers at most 29 (30 min). */
+  startMinutesAgo?: number;
+  endMinutesAgo?: number;
+};
+
+/** `runRealtimeReport` body: no dateRanges, optional minuteRanges. */
+export type Ga4RealtimeRequest = {
+  dimensions?: { name: string }[];
+  metrics: { name: string }[];
+  minuteRanges?: Ga4MinuteRange[];
+  orderBys?: Ga4OrderBy[];
+  limit?: number;
 };
 
 export type Ga4Row = {
@@ -299,6 +340,24 @@ export async function runReport(
 ): Promise<Ga4ReportResponse> {
   return postDataApi<Ga4ReportResponse>(
     `properties/${propertyId}:runReport`,
+    request,
+    credentials,
+    fetchImpl,
+  );
+}
+
+/**
+ * Realtime report over the last 30 minutes. Not batchable and not cached by
+ * Google; callers must throttle (see `realtime.server.ts`).
+ */
+export async function runRealtimeReport(
+  propertyId: string,
+  request: Ga4RealtimeRequest,
+  credentials: ServiceAccountCredentials,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Ga4ReportResponse> {
+  return postDataApi<Ga4ReportResponse>(
+    `properties/${propertyId}:runRealtimeReport`,
     request,
     credentials,
     fetchImpl,
