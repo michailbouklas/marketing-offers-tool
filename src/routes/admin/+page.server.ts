@@ -19,6 +19,7 @@ export const load: PageServerLoad = async (event) => {
     urlsToScrape,
     chatUsage,
     googleReviews,
+    liveMonitoring,
   ] = await Promise.all([
     hasPermission(event, { submission: ["approve"] }),
     hasPermission(event, { submission: ["approve"] }),
@@ -30,6 +31,7 @@ export const load: PageServerLoad = async (event) => {
     hasPermission(event, { urlsToScrape: ["manage"] }),
     hasSuperUserRole(event),
     hasPermission(event, { googleReviews: ["manage"] }),
+    hasSuperUserRole(event),
   ]);
 
   return {
@@ -44,6 +46,7 @@ export const load: PageServerLoad = async (event) => {
       urlsToScrape,
       chatUsage,
       googleReviews,
+      liveMonitoring,
     },
   };
 };

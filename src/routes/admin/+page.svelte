@@ -11,6 +11,7 @@
   import MessageSquareIcon from "@lucide/svelte/icons/message-square";
   import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
   import StarIcon from "@lucide/svelte/icons/star";
+  import RadioIcon from "@lucide/svelte/icons/radio";
   import type { Component } from "svelte";
   import type { PageData } from "./$types";
 
@@ -96,6 +97,14 @@
         "See every AI conversation across the tool — totals, per-agent and per-user breakdowns, and full transcripts.",
       icon: MessageSquareIcon,
       accessKey: "chatUsage",
+    },
+    {
+      href: "/admin/live-monitoring",
+      title: "Live monitoring",
+      description:
+        "See in real time who is signed in and which page each of their open tabs is viewing.",
+      icon: RadioIcon,
+      accessKey: "liveMonitoring",
     },
     {
       href: "/admin/urls-to-scrape",
