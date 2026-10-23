@@ -15,6 +15,11 @@ import {
  *
  * The tab id lives in memory (not sessionStorage) on purpose — "Duplicate tab"
  * copies sessionStorage, which would make two tabs share one id.
+ *
+ * Each beat also carries a `viewId` that keys the persisted `page_view` row. A
+ * new one is minted when the pathname changes (query-only changes such as
+ * filter tweaks stay the same view, so they do not inflate visit counts) and
+ * when a tab is restored from bfcache.
  */
 
 const ENDPOINT = "/api/presence";
@@ -23,6 +28,9 @@ const BEAT_DEBOUNCE_MS = 150;
 
 class PresenceReporter {
   #tabId: string | null = null;
+  #viewId: string | null = null;
+  #viewPathname: string | null = null;
+  #routeId: string | null = null;
   #interval: ReturnType<typeof setInterval> | null = null;
   #pending: ReturnType<typeof setTimeout> | null = null;
 
@@ -45,8 +53,14 @@ class PresenceReporter {
     this.beat();
   }
 
-  /** Report the current page now (debounced). Call after navigation. */
-  beat(): void {
+  /**
+   * Report the current page now (debounced). Call after navigation with the
+   * SvelteKit route id (`page.route.id`).
+   */
+  beat(routeId?: string | null): void {
+    if (routeId !== undefined) {
+      this.#routeId = routeId;
+    }
     if (!this.#tabId) {
       return;
     }
@@ -81,6 +95,8 @@ class PresenceReporter {
     this.#interval = null;
     this.#pending = null;
     this.#tabId = null;
+    this.#viewId = null;
+    this.#viewPathname = null;
   }
 
   #onVisibilityChange = () => this.#send("beat");
@@ -91,6 +107,8 @@ class PresenceReporter {
 
   #onPageShow = (event: PageTransitionEvent) => {
     if (event.persisted) {
+      // A restored tab is a fresh view, not a continuation hours later.
+      this.#viewId = null;
       this.#send("beat");
     }
   };
@@ -99,9 +117,15 @@ class PresenceReporter {
     if (!this.#tabId) {
       return null;
     }
+    if (!this.#viewId || this.#viewPathname !== location.pathname) {
+      this.#viewId = crypto.randomUUID();
+      this.#viewPathname = location.pathname;
+    }
     return {
       type,
       tabId: this.#tabId,
+      viewId: this.#viewId,
+      routeId: this.#routeId,
       path: `${location.pathname}${location.search}`.slice(0, 512),
       title: document.title.slice(0, 200),
       visible: document.visibilityState === "visible",

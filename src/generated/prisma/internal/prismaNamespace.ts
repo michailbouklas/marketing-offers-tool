@@ -431,6 +431,10 @@ export const ModelName = {
   brand_entity: 'brand_entity',
   forecast_validation_run: 'forecast_validation_run',
   forecast_validation_point: 'forecast_validation_point',
+  page_view: 'page_view',
+  page_view_daily: 'page_view_daily',
+  user_visit_daily: 'user_visit_daily',
+  page_view_rollup_state: 'page_view_rollup_state',
   ai_chat_threads: 'ai_chat_threads',
   ai_chat_messages: 'ai_chat_messages'
 } as const
@@ -448,7 +452,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "ai_chat_threads" | "ai_chat_messages"
+    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "page_view" | "page_view_daily" | "user_visit_daily" | "page_view_rollup_state" | "ai_chat_threads" | "ai_chat_messages"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3930,6 +3934,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    page_view: {
+      payload: Prisma.$page_viewPayload<ExtArgs>
+      fields: Prisma.page_viewFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.page_viewFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_viewPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.page_viewFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_viewPayload>
+        }
+        findFirst: {
+          args: Prisma.page_viewFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_viewPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.page_viewFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_viewPayload>
+        }
+        findMany: {
+          args: Prisma.page_viewFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_viewPayload>[]
+        }
+        create: {
+          args: Prisma.page_viewCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_viewPayload>
+        }
+        createMany: {
+          args: Prisma.page_viewCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.page_viewCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_viewPayload>[]
+        }
+        delete: {
+          args: Prisma.page_viewDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_viewPayload>
+        }
+        update: {
+          args: Prisma.page_viewUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_viewPayload>
+        }
+        deleteMany: {
+          args: Prisma.page_viewDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.page_viewUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.page_viewUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_viewPayload>[]
+        }
+        upsert: {
+          args: Prisma.page_viewUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_viewPayload>
+        }
+        aggregate: {
+          args: Prisma.Page_viewAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePage_view>
+        }
+        groupBy: {
+          args: Prisma.page_viewGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Page_viewGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.page_viewCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Page_viewCountAggregateOutputType> | number
+        }
+      }
+    }
+    page_view_daily: {
+      payload: Prisma.$page_view_dailyPayload<ExtArgs>
+      fields: Prisma.page_view_dailyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.page_view_dailyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_dailyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.page_view_dailyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_dailyPayload>
+        }
+        findFirst: {
+          args: Prisma.page_view_dailyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_dailyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.page_view_dailyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_dailyPayload>
+        }
+        findMany: {
+          args: Prisma.page_view_dailyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_dailyPayload>[]
+        }
+        create: {
+          args: Prisma.page_view_dailyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_dailyPayload>
+        }
+        createMany: {
+          args: Prisma.page_view_dailyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.page_view_dailyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_dailyPayload>[]
+        }
+        delete: {
+          args: Prisma.page_view_dailyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_dailyPayload>
+        }
+        update: {
+          args: Prisma.page_view_dailyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_dailyPayload>
+        }
+        deleteMany: {
+          args: Prisma.page_view_dailyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.page_view_dailyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.page_view_dailyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_dailyPayload>[]
+        }
+        upsert: {
+          args: Prisma.page_view_dailyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_dailyPayload>
+        }
+        aggregate: {
+          args: Prisma.Page_view_dailyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePage_view_daily>
+        }
+        groupBy: {
+          args: Prisma.page_view_dailyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Page_view_dailyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.page_view_dailyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Page_view_dailyCountAggregateOutputType> | number
+        }
+      }
+    }
+    user_visit_daily: {
+      payload: Prisma.$user_visit_dailyPayload<ExtArgs>
+      fields: Prisma.user_visit_dailyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.user_visit_dailyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_visit_dailyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.user_visit_dailyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_visit_dailyPayload>
+        }
+        findFirst: {
+          args: Prisma.user_visit_dailyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_visit_dailyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.user_visit_dailyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_visit_dailyPayload>
+        }
+        findMany: {
+          args: Prisma.user_visit_dailyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_visit_dailyPayload>[]
+        }
+        create: {
+          args: Prisma.user_visit_dailyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_visit_dailyPayload>
+        }
+        createMany: {
+          args: Prisma.user_visit_dailyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.user_visit_dailyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_visit_dailyPayload>[]
+        }
+        delete: {
+          args: Prisma.user_visit_dailyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_visit_dailyPayload>
+        }
+        update: {
+          args: Prisma.user_visit_dailyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_visit_dailyPayload>
+        }
+        deleteMany: {
+          args: Prisma.user_visit_dailyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.user_visit_dailyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.user_visit_dailyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_visit_dailyPayload>[]
+        }
+        upsert: {
+          args: Prisma.user_visit_dailyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$user_visit_dailyPayload>
+        }
+        aggregate: {
+          args: Prisma.User_visit_dailyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUser_visit_daily>
+        }
+        groupBy: {
+          args: Prisma.user_visit_dailyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.User_visit_dailyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.user_visit_dailyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.User_visit_dailyCountAggregateOutputType> | number
+        }
+      }
+    }
+    page_view_rollup_state: {
+      payload: Prisma.$page_view_rollup_statePayload<ExtArgs>
+      fields: Prisma.page_view_rollup_stateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.page_view_rollup_stateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_rollup_statePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.page_view_rollup_stateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_rollup_statePayload>
+        }
+        findFirst: {
+          args: Prisma.page_view_rollup_stateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_rollup_statePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.page_view_rollup_stateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_rollup_statePayload>
+        }
+        findMany: {
+          args: Prisma.page_view_rollup_stateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_rollup_statePayload>[]
+        }
+        create: {
+          args: Prisma.page_view_rollup_stateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_rollup_statePayload>
+        }
+        createMany: {
+          args: Prisma.page_view_rollup_stateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.page_view_rollup_stateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_rollup_statePayload>[]
+        }
+        delete: {
+          args: Prisma.page_view_rollup_stateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_rollup_statePayload>
+        }
+        update: {
+          args: Prisma.page_view_rollup_stateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_rollup_statePayload>
+        }
+        deleteMany: {
+          args: Prisma.page_view_rollup_stateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.page_view_rollup_stateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.page_view_rollup_stateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_rollup_statePayload>[]
+        }
+        upsert: {
+          args: Prisma.page_view_rollup_stateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$page_view_rollup_statePayload>
+        }
+        aggregate: {
+          args: Prisma.Page_view_rollup_stateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePage_view_rollup_state>
+        }
+        groupBy: {
+          args: Prisma.page_view_rollup_stateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Page_view_rollup_stateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.page_view_rollup_stateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Page_view_rollup_stateCountAggregateOutputType> | number
+        }
+      }
+    }
     ai_chat_threads: {
       payload: Prisma.$ai_chat_threadsPayload<ExtArgs>
       fields: Prisma.ai_chat_threadsFieldRefs
@@ -4767,6 +5067,59 @@ export const Forecast_validation_pointScalarFieldEnum = {
 export type Forecast_validation_pointScalarFieldEnum = (typeof Forecast_validation_pointScalarFieldEnum)[keyof typeof Forecast_validation_pointScalarFieldEnum]
 
 
+export const Page_viewScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tabId: 'tabId',
+  routeId: 'routeId',
+  path: 'path',
+  title: 'title',
+  startedAt: 'startedAt',
+  lastSeenAt: 'lastSeenAt',
+  visible: 'visible',
+  foregroundMs: 'foregroundMs',
+  totalMs: 'totalMs'
+} as const
+
+export type Page_viewScalarFieldEnum = (typeof Page_viewScalarFieldEnum)[keyof typeof Page_viewScalarFieldEnum]
+
+
+export const Page_view_dailyScalarFieldEnum = {
+  day: 'day',
+  userId: 'userId',
+  routeId: 'routeId',
+  views: 'views',
+  foregroundMs: 'foregroundMs',
+  totalMs: 'totalMs',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt'
+} as const
+
+export type Page_view_dailyScalarFieldEnum = (typeof Page_view_dailyScalarFieldEnum)[keyof typeof Page_view_dailyScalarFieldEnum]
+
+
+export const User_visit_dailyScalarFieldEnum = {
+  day: 'day',
+  userId: 'userId',
+  visits: 'visits',
+  pageViews: 'pageViews',
+  foregroundMs: 'foregroundMs',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt'
+} as const
+
+export type User_visit_dailyScalarFieldEnum = (typeof User_visit_dailyScalarFieldEnum)[keyof typeof User_visit_dailyScalarFieldEnum]
+
+
+export const Page_view_rollup_stateScalarFieldEnum = {
+  id: 'id',
+  rolledUpThrough: 'rolledUpThrough',
+  updatedAt: 'updatedAt'
+} as const
+
+export type Page_view_rollup_stateScalarFieldEnum = (typeof Page_view_rollup_stateScalarFieldEnum)[keyof typeof Page_view_rollup_stateScalarFieldEnum]
+
+
 export const Ai_chat_threadsScalarFieldEnum = {
   id: 'id',
   resourceId: 'resourceId',
@@ -5345,6 +5698,10 @@ export type GlobalOmitConfig = {
   brand_entity?: Prisma.brand_entityOmit
   forecast_validation_run?: Prisma.forecast_validation_runOmit
   forecast_validation_point?: Prisma.forecast_validation_pointOmit
+  page_view?: Prisma.page_viewOmit
+  page_view_daily?: Prisma.page_view_dailyOmit
+  user_visit_daily?: Prisma.user_visit_dailyOmit
+  page_view_rollup_state?: Prisma.page_view_rollup_stateOmit
   ai_chat_threads?: Prisma.ai_chat_threadsOmit
   ai_chat_messages?: Prisma.ai_chat_messagesOmit
 }

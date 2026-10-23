@@ -5,6 +5,7 @@ import {
   getForecastEnv,
   getForecastValidationEnv,
   getGoogleAnalyticsRefreshEnv,
+  getPageViewEnv,
 } from "$lib/server/env";
 import {
   getNotificationsEnv,
@@ -17,6 +18,7 @@ import {
   tryRunGoogleAnalyticsRefreshExclusively,
 } from "$lib/services/google-analytics/refresh-queue.server";
 import { runOfferDigest } from "$lib/services/notifications/offer-digest.server";
+import { tryRunPageViewRollupExclusively } from "$lib/services/page-views/page-view-rollup.server";
 import type { DigestRunSummary } from "$lib/services/notifications/types";
 
 /**
@@ -31,7 +33,10 @@ import type { DigestRunSummary } from "$lib/services/notifications/types";
  *   default 06:00 `FORECAST_VALIDATION_TIMEZONE`), and
  * - the Google Analytics refresh sweep that retries dashboard reports Google
  *   refused (quota / 5xx) until they land (`GOOGLE_ANALYTICS_REFRESH_CRON`,
- *   default every minute).
+ *   default every minute), and
+ * - the page-view rollup that folds raw live-monitoring page views into the
+ *   permanent daily tables and purges raw rows past retention
+ *   (`PAGE_VIEW_ROLLUP_CRON`, default 04:30 `ACTIVITY_TIMEZONE`).
  *
  * Assumes a single app instance: each instance runs its own cron, so multiple
  * replicas would each fire (the advisory locks still prevent overlapping work,
@@ -45,6 +50,7 @@ const globalForScheduler = globalThis as typeof globalThis & {
   gapQueueSnapshotCron?: Cron;
   forecastValidationCron?: Cron;
   googleAnalyticsRefreshCron?: Cron;
+  pageViewRollupCron?: Cron;
 };
 
 export type DigestTriggerResult =
@@ -282,6 +288,49 @@ function startGoogleAnalyticsRefreshScheduler(): void {
   );
 }
 
+/**
+ * Start the nightly page-view rollup + purge exactly once. Disabled with
+ * `PAGE_VIEW_ROLLUP_ENABLED=false` (e.g. when an external scheduler runs
+ * `bun run page-views:rollup` instead).
+ */
+function startPageViewRollupScheduler(): void {
+  if (globalForScheduler.pageViewRollupCron) {
+    return;
+  }
+
+  const pageViewEnv = getPageViewEnv();
+
+  if (!pageViewEnv.PAGE_VIEW_ROLLUP_ENABLED) {
+    console.info("[page-views] rollup scheduler disabled by env.");
+    return;
+  }
+
+  const pattern = pageViewEnv.PAGE_VIEW_ROLLUP_CRON;
+  const timezone = pageViewEnv.ACTIVITY_TIMEZONE;
+
+  globalForScheduler.pageViewRollupCron = new Cron(
+    pattern,
+    { protect: true, name: "page-view-rollup", timezone },
+    async () => {
+      try {
+        const result = await tryRunPageViewRollupExclusively("cron");
+
+        if (result.status === "ran") {
+          console.info("[page-views] rollup complete:", result.summary);
+        } else {
+          console.warn(`[page-views] rollup skipped: ${result.reason}`);
+        }
+      } catch (error) {
+        console.error("[page-views] rollup failed:", error);
+      }
+    },
+  );
+
+  console.info(
+    `[page-views] rollup scheduler started (cron "${pattern}", ${timezone}).`,
+  );
+}
+
 /** Start every in-process cron. No-op during build. */
 export function startScheduler(): void {
   if (building) {
@@ -292,4 +341,5 @@ export function startScheduler(): void {
   startGapQueueSnapshotScheduler();
   startForecastValidationScheduler();
   startGoogleAnalyticsRefreshScheduler();
+  startPageViewRollupScheduler();
 }

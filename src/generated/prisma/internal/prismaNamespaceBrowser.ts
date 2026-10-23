@@ -98,6 +98,10 @@ export const ModelName = {
   brand_entity: 'brand_entity',
   forecast_validation_run: 'forecast_validation_run',
   forecast_validation_point: 'forecast_validation_point',
+  page_view: 'page_view',
+  page_view_daily: 'page_view_daily',
+  user_visit_daily: 'user_visit_daily',
+  page_view_rollup_state: 'page_view_rollup_state',
   ai_chat_threads: 'ai_chat_threads',
   ai_chat_messages: 'ai_chat_messages'
 } as const
@@ -838,6 +842,59 @@ export const Forecast_validation_pointScalarFieldEnum = {
 } as const
 
 export type Forecast_validation_pointScalarFieldEnum = (typeof Forecast_validation_pointScalarFieldEnum)[keyof typeof Forecast_validation_pointScalarFieldEnum]
+
+
+export const Page_viewScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tabId: 'tabId',
+  routeId: 'routeId',
+  path: 'path',
+  title: 'title',
+  startedAt: 'startedAt',
+  lastSeenAt: 'lastSeenAt',
+  visible: 'visible',
+  foregroundMs: 'foregroundMs',
+  totalMs: 'totalMs'
+} as const
+
+export type Page_viewScalarFieldEnum = (typeof Page_viewScalarFieldEnum)[keyof typeof Page_viewScalarFieldEnum]
+
+
+export const Page_view_dailyScalarFieldEnum = {
+  day: 'day',
+  userId: 'userId',
+  routeId: 'routeId',
+  views: 'views',
+  foregroundMs: 'foregroundMs',
+  totalMs: 'totalMs',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt'
+} as const
+
+export type Page_view_dailyScalarFieldEnum = (typeof Page_view_dailyScalarFieldEnum)[keyof typeof Page_view_dailyScalarFieldEnum]
+
+
+export const User_visit_dailyScalarFieldEnum = {
+  day: 'day',
+  userId: 'userId',
+  visits: 'visits',
+  pageViews: 'pageViews',
+  foregroundMs: 'foregroundMs',
+  firstSeenAt: 'firstSeenAt',
+  lastSeenAt: 'lastSeenAt'
+} as const
+
+export type User_visit_dailyScalarFieldEnum = (typeof User_visit_dailyScalarFieldEnum)[keyof typeof User_visit_dailyScalarFieldEnum]
+
+
+export const Page_view_rollup_stateScalarFieldEnum = {
+  id: 'id',
+  rolledUpThrough: 'rolledUpThrough',
+  updatedAt: 'updatedAt'
+} as const
+
+export type Page_view_rollup_stateScalarFieldEnum = (typeof Page_view_rollup_stateScalarFieldEnum)[keyof typeof Page_view_rollup_stateScalarFieldEnum]
 
 
 export const Ai_chat_threadsScalarFieldEnum = {

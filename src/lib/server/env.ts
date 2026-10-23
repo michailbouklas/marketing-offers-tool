@@ -521,6 +521,32 @@ export function getDataQualityEnv(): DataQualityEnv {
 }
 
 /**
+ * Configuration for page-view analytics (live-monitoring history): the nightly
+ * rollup + purge schedule, raw-row retention, and the timezone that defines a
+ * calendar day. See `src/lib/services/page-views/page-view-rollup.server.ts`.
+ */
+export type PageViewEnv = {
+  /** Start the in-process nightly rollup cron. */
+  PAGE_VIEW_ROLLUP_ENABLED: boolean;
+  /** croner pattern; default 04:30 every day (after the 04:00 DQ rebuild). */
+  PAGE_VIEW_ROLLUP_CRON: string;
+  /** IANA timezone for the cron pattern AND for bucketing views into days. */
+  ACTIVITY_TIMEZONE: string;
+  /** Days of raw page_view rows to keep; older rows survive only as rollups. */
+  PAGE_VIEW_RETENTION_DAYS: number;
+};
+
+export function getPageViewEnv(): PageViewEnv {
+  return {
+    PAGE_VIEW_ROLLUP_ENABLED: readBooleanFlag("PAGE_VIEW_ROLLUP_ENABLED", true),
+    PAGE_VIEW_ROLLUP_CRON:
+      readEnv("PAGE_VIEW_ROLLUP_CRON")?.trim() || "30 4 * * *",
+    ACTIVITY_TIMEZONE: readEnv("ACTIVITY_TIMEZONE")?.trim() || "Europe/Nicosia",
+    PAGE_VIEW_RETENTION_DAYS: readPositiveInt("PAGE_VIEW_RETENTION_DAYS", 180),
+  };
+}
+
+/**
  * Configuration for forecast validation runs: the daily croner sweep that
  * compares recorded forecasts with the sales that actually happened, the
  * default window of `bun run forecast:validate`, how long to wait for lagging

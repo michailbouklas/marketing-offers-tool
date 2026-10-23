@@ -38,6 +38,10 @@ export interface PresenceSnapshot {
 export const presenceHeartbeatSchema = z.object({
   type: z.enum(["beat", "leave"]),
   tabId: z.uuid(),
+  /** New per navigation; keys the persisted `page_view` row. */
+  viewId: z.uuid(),
+  /** SvelteKit route id (`page.route.id`); null when no route matched. */
+  routeId: z.string().startsWith("/").max(256).nullable(),
   path: z.string().startsWith("/").max(512),
   title: z.string().max(200),
   visible: z.boolean(),

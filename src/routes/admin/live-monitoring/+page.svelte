@@ -10,6 +10,7 @@
   import ArrowLeftIcon from "@lucide/svelte/icons/arrow-left";
   import EyeOffIcon from "@lucide/svelte/icons/eye-off";
   import RadioIcon from "@lucide/svelte/icons/radio";
+  import HistoryIcon from "@lucide/svelte/icons/history";
 
   type ConnectionStatus = "connecting" | "live" | "reconnecting";
 
@@ -156,10 +157,16 @@
         </p>
       </div>
 
-      <Button href="/admin" variant="outline">
-        <ArrowLeftIcon class="size-4" />
-        Back to admin
-      </Button>
+      <div class="flex flex-wrap gap-2">
+        <Button href="/admin/live-monitoring/history">
+          <HistoryIcon class="size-4" />
+          History
+        </Button>
+        <Button href="/admin" variant="outline">
+          <ArrowLeftIcon class="size-4" />
+          Back to admin
+        </Button>
+      </div>
     </section>
 
     <section class="flex flex-wrap items-center gap-3 text-sm">

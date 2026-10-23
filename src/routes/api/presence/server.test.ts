@@ -10,9 +10,16 @@ vi.mock("$lib/services/presence/presence-registry.server", () => ({
   removeTab: vi.fn(),
 }));
 
+vi.mock("$lib/services/page-views/page-view-recorder.server", () => ({
+  recordPageViewBeat: vi.fn(),
+  recordPageViewLeave: vi.fn(),
+}));
+
 const authModule = await import("$lib/server/auth-guards");
 const registryModule =
   await import("$lib/services/presence/presence-registry.server");
+const recorderModule =
+  await import("$lib/services/page-views/page-view-recorder.server");
 const { POST } = await import("./+server");
 
 const requireApiMock =
@@ -26,8 +33,15 @@ const upsertMock = registryModule.upsertTab as unknown as ReturnType<
 const removeMock = registryModule.removeTab as unknown as ReturnType<
   typeof vi.fn
 >;
+const beatMock = recorderModule.recordPageViewBeat as unknown as ReturnType<
+  typeof vi.fn
+>;
+const leaveMock = recorderModule.recordPageViewLeave as unknown as ReturnType<
+  typeof vi.fn
+>;
 
 const TAB_ID = "2f1c8f0e-6a3b-4c1d-9e2f-0a1b2c3d4e5f";
+const VIEW_ID = "7d3e2b1a-0c9f-4e8d-a7b6-5c4d3e2f1a0b";
 
 function makeEvent(body: string) {
   return {
@@ -42,6 +56,8 @@ function heartbeat(overrides: Record<string, unknown> = {}) {
   return JSON.stringify({
     type: "beat",
     tabId: TAB_ID,
+    viewId: VIEW_ID,
+    routeId: "/aggregator-kpis",
     path: "/aggregator-kpis?period=7d",
     title: "Aggregator KPIs",
     visible: true,
@@ -119,5 +135,62 @@ describe("POST /api/presence", () => {
     expect(response.status).toBe(204);
     expect(removeMock).toHaveBeenCalledWith("user-1", TAB_ID);
     expect(upsertMock).not.toHaveBeenCalled();
+  });
+
+  it("persists the page view with identity from the session", async () => {
+    await POST(makeEvent(heartbeat({ visible: false })));
+
+    expect(beatMock).toHaveBeenCalledWith({
+      userId: "user-1",
+      viewId: VIEW_ID,
+      tabId: TAB_ID,
+      routeId: "/aggregator-kpis",
+      path: "/aggregator-kpis?period=7d",
+      title: "Aggregator KPIs",
+      visible: false,
+    });
+    expect(leaveMock).not.toHaveBeenCalled();
+  });
+
+  it("closes out the page view on leave", async () => {
+    await POST(makeEvent(heartbeat({ type: "leave" })));
+
+    expect(leaveMock).toHaveBeenCalledWith("user-1", VIEW_ID);
+    expect(beatMock).not.toHaveBeenCalled();
+  });
+
+  it("still returns 204 and updates the live view when persistence fails", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    beatMock.mockRejectedValueOnce(new Error("db down"));
+
+    const response = await POST(makeEvent(heartbeat()));
+
+    expect(response.status).toBe(204);
+    expect(upsertMock).toHaveBeenCalledTimes(1);
+    expect(consoleError).toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
+  it("rejects heartbeats without a valid viewId or routeId", async () => {
+    for (const bad of [
+      heartbeat({ viewId: undefined }),
+      heartbeat({ viewId: "nope" }),
+      heartbeat({ routeId: "no-leading-slash" }),
+    ]) {
+      await expect(POST(makeEvent(bad))).rejects.toMatchObject({
+        status: 400,
+      });
+    }
+    expect(beatMock).not.toHaveBeenCalled();
+  });
+
+  it("accepts a null routeId (no matching route)", async () => {
+    const response = await POST(makeEvent(heartbeat({ routeId: null })));
+    expect(response.status).toBe(204);
+    expect(beatMock).toHaveBeenCalledWith(
+      expect.objectContaining({ routeId: null }),
+    );
   });
 });

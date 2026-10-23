@@ -49,7 +49,7 @@
     return () => presenceReporter.destroy();
   });
 
-  afterNavigate(() => presenceReporter.beat());
+  afterNavigate(() => presenceReporter.beat(page.route.id));
 </script>
 
 <ModeWatcher />
