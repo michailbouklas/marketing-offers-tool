@@ -7,6 +7,7 @@ import {
 } from "../chat-registry";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
+import { userSkillsFor } from "../skills/user-skills-fs";
 import { forecastTools } from "../tools/forecast-tools";
 import { querySalesSql } from "../tools/query-sales-sql";
 import { sharedTools } from "../tools/shared";
@@ -265,5 +266,7 @@ export const forecastsAgent = new Agent({
   },
   model: getAiChatEnv().AI_CHAT_MODEL,
   tools: { ...sharedTools, ...forecastTools, querySalesSql },
+  // Admin-authored skills assigned to this assistant (workspace/user-skills/forecasts-agent).
+  skills: userSkillsFor("forecasts-agent"),
   memory: () => getChatMemory(),
 });

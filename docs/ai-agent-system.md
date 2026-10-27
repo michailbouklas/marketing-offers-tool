@@ -208,6 +208,26 @@ summary + hard rules; the deep reference material (full column tables, vetted
 SQL, edge-case playbooks) lives in skills that are loaded on demand. This
 keeps the per-request system prompt small.
 
+### 4.1 Admin-authored skills (`/admin/skills`)
+
+Admins, brand managers and super users can also write skills in the app
+(`src/routes/admin/skills`, permission `skill: ["manage"]`). Those live in
+the `AgentSkill` table (the source of truth) and are **projected to disk**
+under `workspace/user-skills/<agentId>/<skillName>/` — one copy per
+assistant the skill is assigned to — at server start (`hooks.server.ts`
+`init` → `resyncUserSkills()`) and after every save/delete. The folder is
+gitignored and owned by `skills/user-skills-fs.ts`; never edit it by hand.
+
+Each agent sets `skills: userSkillsFor("<its id>")`, i.e. its own
+`user-skills/<agentId>` folder. Mastra rebuilds the agent-level skill list on
+every request (no restart or refresh needed) and merges it with the shared
+Workspace skills; agent-level entries win on name conflicts, which is why
+the editor refuses names that match a built-in skill. The list of assignable
+assistants is `src/lib/services/skills/assistants.ts` (kept equal to the
+`chatAgents` keys by a test). Users without the superUser role only see and
+edit the skills they created. `mastra dev` Studio reads the same folder but
+never runs the boot projection: start the web app once first.
+
 ## 5. Agents (`agents/*.ts`)
 
 One `Agent` per app section, all following the same shape (see

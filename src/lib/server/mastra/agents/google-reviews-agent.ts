@@ -1,6 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
+import { userSkillsFor } from "../skills/user-skills-fs";
 import { queryGoogleReviewsSql } from "../tools/query-google-reviews-sql";
 import { sharedTools } from "../tools/shared";
 
@@ -122,5 +123,7 @@ export const googleReviewsAgent = new Agent({
   instructions,
   model: getAiChatEnv().AI_CHAT_MODEL,
   tools: { ...sharedTools, queryGoogleReviewsSql },
+  // Admin-authored skills assigned to this assistant (workspace/user-skills/google-reviews-agent).
+  skills: userSkillsFor("google-reviews-agent"),
   memory: () => getChatMemory(),
 });

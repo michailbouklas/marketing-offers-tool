@@ -12,8 +12,6 @@ import {
   SensitiveDataFilter,
 } from "@mastra/observability";
 import { PostgresStore } from "@mastra/pg";
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
 import { competitionAgent } from "./agents/competition-agent";
 import { forecastsAgent } from "./agents/forecasts-agent";
 import { googleAnalyticsAgent } from "./agents/google-analytics-agent";
@@ -27,38 +25,11 @@ import {
   IMAGE_COMPLIANCE_WORKFLOW_ID,
   imageComplianceWorkflow,
 } from "./workflows/image-compliance-workflow";
+import { workspaceDir } from "./workspace-dir";
 
 const globalForMastra = globalThis as typeof globalThis & {
   mastraCache?: Mastra;
 };
-
-/**
- * Workspace files (skills) live next to the Mastra code. `vite dev` and
- * `node build` both run from the project root, but `mastra dev` runs its
- * bundle from .mastra/output — so walk upward until the directory is found.
- * Override with MASTRA_WORKSPACE_DIR when deploying the build elsewhere.
- */
-function workspaceDir(): string {
-  const override = process.env.MASTRA_WORKSPACE_DIR;
-
-  if (override) {
-    return override;
-  }
-
-  let dir = process.cwd();
-
-  for (let depth = 0; depth < 4; depth += 1) {
-    const candidate = join(dir, "src", "lib", "server", "mastra", "workspace");
-
-    if (existsSync(candidate)) {
-      return candidate;
-    }
-
-    dir = dirname(dir);
-  }
-
-  return join(process.cwd(), "src", "lib", "server", "mastra", "workspace");
-}
 
 /**
  * Instance-level storage. Threads/messages/etc. live in Postgres (the same

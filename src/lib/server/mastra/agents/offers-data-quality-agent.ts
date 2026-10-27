@@ -3,6 +3,7 @@ import type { RequestContext } from "@mastra/core/request-context";
 import { BRAND_SCOPE_RUNTIME_KEY } from "../chat-registry";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
+import { userSkillsFor } from "../skills/user-skills-fs";
 import { queryDataQualitySql } from "../tools/query-data-quality-sql";
 import { queryDimOffersSql } from "../tools/query-dim-offers-sql";
 import { sharedTools } from "../tools/shared";
@@ -162,5 +163,7 @@ export const offersDataQualityAgent = new Agent({
   },
   model: getAiChatEnv().AI_CHAT_MODEL,
   tools: { ...sharedTools, queryDataQualitySql, queryDimOffersSql },
+  // Admin-authored skills assigned to this assistant (workspace/user-skills/offers-data-quality-agent).
+  skills: userSkillsFor("offers-data-quality-agent"),
   memory: () => getChatMemory(),
 });

@@ -30,5 +30,8 @@ uploads/*
 # Mastra dev playground output
 .mastra/
 
+# Disk projection of the AgentSkill table (rebuilt at boot and on save); never commit
+src/lib/server/mastra/workspace/user-skills/
+
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 graft/

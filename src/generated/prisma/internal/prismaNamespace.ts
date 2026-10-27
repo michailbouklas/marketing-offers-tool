@@ -435,6 +435,7 @@ export const ModelName = {
   page_view_daily: 'page_view_daily',
   user_visit_daily: 'user_visit_daily',
   page_view_rollup_state: 'page_view_rollup_state',
+  AgentSkill: 'AgentSkill',
   ai_chat_threads: 'ai_chat_threads',
   ai_chat_messages: 'ai_chat_messages'
 } as const
@@ -452,7 +453,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "page_view" | "page_view_daily" | "user_visit_daily" | "page_view_rollup_state" | "ai_chat_threads" | "ai_chat_messages"
+    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "page_view" | "page_view_daily" | "user_visit_daily" | "page_view_rollup_state" | "agentSkill" | "ai_chat_threads" | "ai_chat_messages"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4230,6 +4231,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AgentSkill: {
+      payload: Prisma.$AgentSkillPayload<ExtArgs>
+      fields: Prisma.AgentSkillFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AgentSkillFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentSkillPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AgentSkillFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentSkillPayload>
+        }
+        findFirst: {
+          args: Prisma.AgentSkillFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentSkillPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AgentSkillFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentSkillPayload>
+        }
+        findMany: {
+          args: Prisma.AgentSkillFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentSkillPayload>[]
+        }
+        create: {
+          args: Prisma.AgentSkillCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentSkillPayload>
+        }
+        createMany: {
+          args: Prisma.AgentSkillCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AgentSkillCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentSkillPayload>[]
+        }
+        delete: {
+          args: Prisma.AgentSkillDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentSkillPayload>
+        }
+        update: {
+          args: Prisma.AgentSkillUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentSkillPayload>
+        }
+        deleteMany: {
+          args: Prisma.AgentSkillDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AgentSkillUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AgentSkillUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentSkillPayload>[]
+        }
+        upsert: {
+          args: Prisma.AgentSkillUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AgentSkillPayload>
+        }
+        aggregate: {
+          args: Prisma.AgentSkillAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAgentSkill>
+        }
+        groupBy: {
+          args: Prisma.AgentSkillGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AgentSkillGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AgentSkillCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AgentSkillCountAggregateOutputType> | number
+        }
+      }
+    }
     ai_chat_threads: {
       payload: Prisma.$ai_chat_threadsPayload<ExtArgs>
       fields: Prisma.ai_chat_threadsFieldRefs
@@ -5120,6 +5195,23 @@ export const Page_view_rollup_stateScalarFieldEnum = {
 export type Page_view_rollup_stateScalarFieldEnum = (typeof Page_view_rollup_stateScalarFieldEnum)[keyof typeof Page_view_rollup_stateScalarFieldEnum]
 
 
+export const AgentSkillScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  instructions: 'instructions',
+  userInvocable: 'userInvocable',
+  tags: 'tags',
+  referenceFiles: 'referenceFiles',
+  agentIds: 'agentIds',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AgentSkillScalarFieldEnum = (typeof AgentSkillScalarFieldEnum)[keyof typeof AgentSkillScalarFieldEnum]
+
+
 export const Ai_chat_threadsScalarFieldEnum = {
   id: 'id',
   resourceId: 'resourceId',
@@ -5702,6 +5794,7 @@ export type GlobalOmitConfig = {
   page_view_daily?: Prisma.page_view_dailyOmit
   user_visit_daily?: Prisma.user_visit_dailyOmit
   page_view_rollup_state?: Prisma.page_view_rollup_stateOmit
+  agentSkill?: Prisma.AgentSkillOmit
   ai_chat_threads?: Prisma.ai_chat_threadsOmit
   ai_chat_messages?: Prisma.ai_chat_messagesOmit
 }

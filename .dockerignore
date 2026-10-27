@@ -4,6 +4,8 @@ build
 .git
 .gitignore
 .env
+# Local projection of admin-authored skills; the container rebuilds it from the DB at boot
+src/lib/server/mastra/workspace/user-skills
 dev-err.txt
 dev-out.txt
 offers-console.txt
