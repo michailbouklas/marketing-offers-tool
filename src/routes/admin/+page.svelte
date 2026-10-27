@@ -12,6 +12,7 @@
   import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
   import StarIcon from "@lucide/svelte/icons/star";
   import RadioIcon from "@lucide/svelte/icons/radio";
+  import SparklesIcon from "@lucide/svelte/icons/sparkles";
   import type { Component } from "svelte";
   import type { PageData } from "./$types";
 
@@ -121,6 +122,14 @@
         "Curate review categories at the source and manage the places the scraper searches for on Google Maps.",
       icon: StarIcon,
       accessKey: "googleReviews",
+    },
+    {
+      href: "/admin/skills",
+      title: "Agent skills",
+      description:
+        "Write SKILL.md instructions the AI assistants load on demand and choose which assistants get each skill.",
+      icon: SparklesIcon,
+      accessKey: "skills",
     },
   ];
 

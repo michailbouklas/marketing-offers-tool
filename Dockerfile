@@ -47,5 +47,10 @@ RUN apt-get update \
 COPY --from=officecli /usr/local/bin/officecli /usr/local/bin/officecli
 COPY --from=install /temp/prod/node_modules ./node_modules
 COPY --from=builder /app/build ./build
+# Mastra workspace skills are read from disk at request time, not bundled into
+# build/. Admin-authored skills are projected into user-skills/ here at boot
+# (hooks.server.ts init), so the directory must be writable by the runtime user.
+COPY --from=builder /app/src/lib/server/mastra/workspace ./mastra-workspace
+ENV MASTRA_WORKSPACE_DIR=/app/mastra-workspace
 EXPOSE 3000
 CMD ["node", "build/index.js"]

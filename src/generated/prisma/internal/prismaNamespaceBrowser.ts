@@ -102,6 +102,7 @@ export const ModelName = {
   page_view_daily: 'page_view_daily',
   user_visit_daily: 'user_visit_daily',
   page_view_rollup_state: 'page_view_rollup_state',
+  AgentSkill: 'AgentSkill',
   ai_chat_threads: 'ai_chat_threads',
   ai_chat_messages: 'ai_chat_messages'
 } as const
@@ -895,6 +896,23 @@ export const Page_view_rollup_stateScalarFieldEnum = {
 } as const
 
 export type Page_view_rollup_stateScalarFieldEnum = (typeof Page_view_rollup_stateScalarFieldEnum)[keyof typeof Page_view_rollup_stateScalarFieldEnum]
+
+
+export const AgentSkillScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  instructions: 'instructions',
+  userInvocable: 'userInvocable',
+  tags: 'tags',
+  referenceFiles: 'referenceFiles',
+  agentIds: 'agentIds',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AgentSkillScalarFieldEnum = (typeof AgentSkillScalarFieldEnum)[keyof typeof AgentSkillScalarFieldEnum]
 
 
 export const Ai_chat_threadsScalarFieldEnum = {

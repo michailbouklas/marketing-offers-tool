@@ -3,6 +3,7 @@ import type { RequestContext } from "@mastra/core/request-context";
 import { CHANNEL_RUNTIME_KEY } from "../chat-registry";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
+import { userSkillsFor } from "../skills/user-skills-fs";
 import { querySalesSql } from "../tools/query-sales-sql";
 import { sharedTools } from "../tools/shared";
 import {
@@ -164,5 +165,7 @@ export const salesAgent = new Agent({
   },
   model: getAiChatEnv().AI_CHAT_MODEL,
   tools: { ...sharedTools, querySalesSql },
+  // Admin-authored skills assigned to this assistant (workspace/user-skills/sales-agent).
+  skills: userSkillsFor("sales-agent"),
   memory: () => getChatMemory(),
 });

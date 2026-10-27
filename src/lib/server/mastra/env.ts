@@ -90,6 +90,21 @@ export function getAiChatEnv(): AiChatEnv {
   };
 }
 
+export interface SkillEnhanceEnv {
+  /** Model for the "AI" rewrite buttons on /admin/skills (`provider/model`). */
+  SKILL_ENHANCE_MODEL: string;
+}
+
+export function getSkillEnhanceEnv(): SkillEnhanceEnv {
+  // Also copies OPENAI_API_KEY into process.env for the model router.
+  getAiChatEnv();
+
+  const model = readEnv("SKILL_ENHANCE_MODEL") ?? "openai/gpt-4o-mini";
+
+  return {
+    SKILL_ENHANCE_MODEL: model.includes("/") ? model : `openai/${model}`,
+  };
+}
 /** Same PostgreSQL database the app's Prisma client points at. */
 export function getDatabaseUrl(): string {
   const url = readEnv("DATABASE_URL");

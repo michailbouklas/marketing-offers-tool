@@ -288,6 +288,14 @@ export type user_visit_daily = Prisma.user_visit_dailyModel
  */
 export type page_view_rollup_state = Prisma.page_view_rollup_stateModel
 /**
+ * Model AgentSkill
+ * Admin-authored Agent Skill (SKILL.md + references/*.md) created from /admin/skills.
+ * The database is the source of truth; `src/lib/server/mastra/workspace/user-skills/<agentId>/<name>`
+ * is a disk projection rebuilt at boot (hooks.server.ts init) and after every save, one copy per
+ * assigned assistant so only those assistants see the skill.
+ */
+export type AgentSkill = Prisma.AgentSkillModel
+/**
  * Model ai_chat_threads
  * One per-user conversation session. `id` is "<agentId>:<userId>:<sessionKey>",
  * `resourceId` is the user id, `title` is AI-generated after the first exchange.

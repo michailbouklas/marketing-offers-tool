@@ -9,6 +9,7 @@ import {
 } from "../chat-registry";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
+import { userSkillsFor } from "../skills/user-skills-fs";
 import { googleAnalyticsTools } from "../tools/google-analytics-tools";
 import { sharedTools } from "../tools/shared";
 
@@ -282,5 +283,7 @@ export const googleAnalyticsAgent = new Agent({
   },
   model: getAiChatEnv().AI_CHAT_MODEL,
   tools: { ...sharedTools, ...googleAnalyticsTools },
+  // Admin-authored skills assigned to this assistant (workspace/user-skills/google-analytics-agent).
+  skills: userSkillsFor("google-analytics-agent"),
   memory: () => getChatMemory(),
 });

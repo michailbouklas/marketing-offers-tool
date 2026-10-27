@@ -1,6 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
+import { userSkillsFor } from "../skills/user-skills-fs";
 import { queryInvoicesSql } from "../tools/query-invoices-sql";
 import { sharedTools } from "../tools/shared";
 
@@ -148,5 +149,7 @@ export const invoicesAgent = new Agent({
   instructions,
   model: getAiChatEnv().AI_CHAT_MODEL,
   tools: { ...sharedTools, queryInvoicesSql },
+  // Admin-authored skills assigned to this assistant (workspace/user-skills/invoices-agent).
+  skills: userSkillsFor("invoices-agent"),
   memory: () => getChatMemory(),
 });

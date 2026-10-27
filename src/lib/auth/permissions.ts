@@ -28,6 +28,7 @@ export const statement = {
   forecasts: ["view"],
   notifications: ["run"],
   urlsToScrape: ["manage"],
+  skill: ["manage"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -83,6 +84,7 @@ export const roles = {
     aggregatorInvoices: ["view"],
     sales: ["view"],
     forecasts: ["view"],
+    skill: ["manage"],
   }),
   approver: ac.newRole({
     submission: ["approve", "reject"],
@@ -98,6 +100,7 @@ export const roles = {
     promptGallery: ["manage"],
     urlsToScrape: ["manage"],
     googleReviews: ["view", "manage"],
+    skill: ["manage"],
   }),
   offerEditor: ac.newRole({
     offer: ["edit"],
@@ -135,6 +138,7 @@ export const roles = {
     forecasts: ["view"],
     notifications: ["run"],
     urlsToScrape: ["manage"],
+    skill: ["manage"],
   }),
 } satisfies Record<UserRole, Role>;
 

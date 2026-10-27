@@ -224,6 +224,7 @@ model user {
   page_views                       page_view[]
   page_view_daily                  page_view_daily[]
   visit_daily                      user_visit_daily[]
+  agent_skills                     AgentSkill[]                        @relation("AgentSkillCreator")
 }
 
 model session {
@@ -1063,4 +1064,30 @@ model page_view_rollup_state {
   id              Int       @id @default(1)
   rolledUpThrough DateTime? @db.Date
   updatedAt       DateTime  @updatedAt
+}
+
+/// Admin-authored Agent Skill (SKILL.md + references/*.md) created from /admin/skills.
+/// The database is the source of truth; `src/lib/server/mastra/workspace/user-skills/<agentId>/<name>`
+/// is a disk projection rebuilt at boot (hooks.server.ts init) and after every save, one copy per
+/// assigned assistant so only those assistants see the skill.
+model AgentSkill {
+  id              Int      @id @default(autoincrement())
+  /// Folder name and frontmatter `name` (Mastra rules: kebab-case, <= 64 chars).
+  name            String   @unique
+  description     String
+  /// Markdown body of SKILL.md (LF-normalised).
+  instructions    String
+  userInvocable   Boolean  @default(true)
+  tags            String[] @default([])
+  /// [{ filename: "foo.md", content: "..." }] written to references/.
+  referenceFiles  Json     @default("[]")
+  /// Chat agent ids (src/lib/services/skills/assistants.ts) the skill is projected for.
+  agentIds        String[] @default([])
+  /// Creator; users without the superUser role only see their own skills. Null once the user is deleted.
+  createdByUserId String?
+  createdBy       user?    @relation("AgentSkillCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([createdByUserId])
 }
