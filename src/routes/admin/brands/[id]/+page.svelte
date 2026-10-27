@@ -1,348 +1,48 @@
 <script lang="ts">
-  import { invalidateAll } from "$app/navigation";
-  import { SvelteSet } from "svelte/reactivity";
-  import { toast } from "svelte-sonner";
-  import AssignEntitiesDialog from "$lib/components/admin/assign-entities-dialog.svelte";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
+  import BrandAiContextTab from "$lib/components/admin/brand/brand-ai-context-tab.svelte";
+  import BrandAssetsCard from "$lib/components/admin/brand/brand-assets-card.svelte";
+  import BrandEntitiesCard from "$lib/components/admin/brand/brand-entities-card.svelte";
+  import BrandPricingTargetsCard from "$lib/components/admin/brand/brand-pricing-targets-card.svelte";
   import GoogleAnalyticsPropertiesCard from "$lib/components/admin/google-analytics-properties-card.svelte";
-  import { Badge } from "$lib/components/ui/badge/index.js";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import * as Card from "$lib/components/ui/card/index.js";
-  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import { Input } from "$lib/components/ui/input/index.js";
-  import { Label } from "$lib/components/ui/label/index.js";
-  import { Textarea } from "$lib/components/ui/textarea/index.js";
-  import type {
-    BrandAssignmentRow,
-    BrandEntityType,
-  } from "$lib/services/brand-entities";
+  import * as Tabs from "$lib/components/ui/tabs/index.js";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
 
-  let markdown = $state(data.guidelines);
-  let savingGuidelines = $state(false);
-  // A number input binds a number (or null when blank), never a string.
-  let idealFcPercentInput = $state<string | number | null>(
-    data.idealFcPercent ?? null,
-  );
-  let savingPricingTargets = $state(false);
-  let uploadInput = $state<HTMLInputElement | undefined>();
-  let uploading = $state(false);
-  let deletingId = $state<string | null>(null);
-  let editingAsset = $state<{
-    id: string;
-    name: string;
-    displayName: string | null;
-  } | null>(null);
-  let editName = $state("");
-  let savingName = $state(false);
+  const TABS = [
+    "general",
+    "ai-context",
+    "assets",
+    "analytics",
+    "entities",
+  ] as const;
+  type TabId = (typeof TABS)[number];
+  const DEFAULT_TAB: TabId = "general";
 
-  let assignDialogOpen = $state(false);
-  let assignEntityType = $state<BrandEntityType>("competitionRestaurant");
-  let removingAssignmentId = $state<string | null>(null);
-  const selectedAssignments = new SvelteSet<string>();
-  let bulkRemoving = $state(false);
+  function isTabId(value: string | null): value is TabId {
+    return value !== null && (TABS as readonly string[]).includes(value);
+  }
 
-  $effect(() => {
-    markdown = data.guidelines;
-  });
-
-  $effect(() => {
-    idealFcPercentInput = data.idealFcPercent ?? null;
-  });
-
-  // Drop selections that no longer exist after the list reloads.
-  $effect(() => {
-    const ids = new Set(data.assignments.map((assignment) => assignment.id));
-    for (const id of selectedAssignments) {
-      if (!ids.has(id)) {
-        selectedAssignments.delete(id);
-      }
-    }
-  });
-
-  const competitionAssignments = $derived(
-    data.assignments.filter(
-      (assignment) => assignment.entityType === "competitionRestaurant",
-    ),
-  );
-  const googleReviewsAssignments = $derived(
-    data.assignments.filter(
-      (assignment) => assignment.entityType === "googleReviewsBusiness",
-    ),
-  );
-  const aggregatorStoreAssignments = $derived(
-    data.assignments.filter(
-      (assignment) => assignment.entityType === "aggregatorStore",
-    ),
+  // The URL is the single source of truth, so reload, back/forward and deep
+  // links (e.g. ?tab=entities from Google Reviews) all land on the right tab.
+  const tab = $derived<TabId>(
+    (() => {
+      const raw = page.url.searchParams.get("tab");
+      return isTabId(raw) ? raw : DEFAULT_TAB;
+    })(),
   );
 
-  function openAssignDialog(entityType: BrandEntityType) {
-    assignEntityType = entityType;
-    assignDialogOpen = true;
-  }
-
-  async function removeAssignment(assignmentId: string) {
-    if (removingAssignmentId) return;
-    if (!confirm("Remove this entity from the brand?")) return;
-    removingAssignmentId = assignmentId;
-    try {
-      const res = await fetch(`/api/admin/brand-entities/${assignmentId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Remove failed: ${res.status}`);
-      }
-      toast.success("Assignment removed.");
-      await invalidateAll();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
-      removingAssignmentId = null;
-    }
-  }
-
-  function toggleAssignment(id: string) {
-    if (selectedAssignments.has(id)) {
-      selectedAssignments.delete(id);
-    } else {
-      selectedAssignments.add(id);
-    }
-  }
-
-  function groupAllSelected(items: BrandAssignmentRow[]): boolean {
-    return (
-      items.length > 0 &&
-      items.every((assignment) => selectedAssignments.has(assignment.id))
-    );
-  }
-
-  function groupPartiallySelected(items: BrandAssignmentRow[]): boolean {
-    return (
-      !groupAllSelected(items) &&
-      items.some((assignment) => selectedAssignments.has(assignment.id))
-    );
-  }
-
-  function toggleGroup(items: BrandAssignmentRow[]) {
-    const allSelected = groupAllSelected(items);
-    for (const assignment of items) {
-      if (allSelected) {
-        selectedAssignments.delete(assignment.id);
-      } else {
-        selectedAssignments.add(assignment.id);
-      }
-    }
-  }
-
-  async function removeSelectedAssignments() {
-    if (bulkRemoving || selectedAssignments.size === 0) return;
-    const count = selectedAssignments.size;
-    if (
-      !confirm(
-        `Remove ${count} ${count === 1 ? "entity" : "entities"} from this brand?`,
-      )
-    ) {
-      return;
-    }
-    bulkRemoving = true;
-    try {
-      const res = await fetch("/api/admin/brand-entities", {
-        method: "DELETE",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ids: [...selectedAssignments] }),
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Remove failed: ${res.status}`);
-      }
-      const data = (await res.json()) as { count: number };
-      toast.success(
-        `${data.count} ${data.count === 1 ? "entity" : "entities"} removed.`,
-      );
-      selectedAssignments.clear();
-      await invalidateAll();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
-      bulkRemoving = false;
-    }
-  }
-
-  function formatBytes(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-  }
-
-  async function saveGuidelines() {
-    if (savingGuidelines) return;
-    savingGuidelines = true;
-    try {
-      const res = await fetch(`/api/admin/brands/${data.brand.id}/guidelines`, {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ markdown }),
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Save failed: ${res.status}`);
-      }
-      toast.success("Guidelines saved.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
-      savingGuidelines = false;
-    }
-  }
-
-  async function savePricingTargets() {
-    if (savingPricingTargets) return;
-
-    const trimmed =
-      idealFcPercentInput === null ? "" : String(idealFcPercentInput).trim();
-    const percent = trimmed === "" ? null : Number.parseFloat(trimmed);
-
-    if (percent !== null && (!Number.isFinite(percent) || percent <= 0)) {
-      toast.error("Brand Ideal FC % must be a number greater than 0.");
-      return;
-    }
-
-    if (percent !== null && percent > 100) {
-      toast.error("Brand Ideal FC % cannot exceed 100.");
-      return;
-    }
-
-    savingPricingTargets = true;
-    try {
-      const res = await fetch(
-        `/api/admin/brands/${data.brand.id}/pricing-targets`,
-        {
-          method: "PUT",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ ideal_fc_perc: percent }),
-        },
-      );
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Save failed: ${res.status}`);
-      }
-      toast.success(
-        percent === null
-          ? "Brand Ideal FC % cleared."
-          : "Brand Ideal FC % saved.",
-      );
-      await invalidateAll();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
-      savingPricingTargets = false;
-    }
-  }
-
-  async function uploadFiles(files: FileList | File[]) {
-    if (uploading) return;
-    const arr = Array.from(files);
-    if (arr.length === 0) return;
-    uploading = true;
-    try {
-      const form = new FormData();
-      for (const file of arr) {
-        form.append("file", file);
-      }
-      const res = await fetch(`/api/admin/brands/${data.brand.id}/assets`, {
-        method: "POST",
-        body: form,
-      });
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Upload failed: ${res.status}`);
-      }
-      toast.success(
-        `${arr.length} asset${arr.length === 1 ? "" : "s"} uploaded.`,
-      );
-      await invalidateAll();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
-      uploading = false;
-      if (uploadInput) uploadInput.value = "";
-    }
-  }
-
-  function handleFileInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files) void uploadFiles(input.files);
-  }
-
-  function handleDrop(event: DragEvent) {
-    event.preventDefault();
-    if (!event.dataTransfer?.files) return;
-    void uploadFiles(event.dataTransfer.files);
-  }
-
-  function handleDragOver(event: DragEvent) {
-    event.preventDefault();
-  }
-
-  function openEditDialog(asset: {
-    id: string;
-    name: string;
-    displayName: string | null;
-  }) {
-    editingAsset = asset;
-    editName = asset.displayName ?? "";
-  }
-
-  async function saveAssetName(event: SubmitEvent) {
-    event.preventDefault();
-    if (savingName || !editingAsset) return;
-    savingName = true;
-    try {
-      const res = await fetch(
-        `/api/admin/brands/${data.brand.id}/assets/${editingAsset.id}`,
-        {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ name: editName }),
-        },
-      );
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Save failed: ${res.status}`);
-      }
-      toast.success("Asset name saved.");
-      editingAsset = null;
-      await invalidateAll();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
-      savingName = false;
-    }
-  }
-
-  async function deleteAsset(assetId: string) {
-    if (deletingId) return;
-    if (!confirm("Delete this brand asset? This cannot be undone.")) return;
-    deletingId = assetId;
-    try {
-      const res = await fetch(
-        `/api/admin/brands/${data.brand.id}/assets/${assetId}`,
-        { method: "DELETE" },
-      );
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(text || `Delete failed: ${res.status}`);
-      }
-      toast.success("Asset deleted.");
-      await invalidateAll();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
-      deletingId = null;
-    }
+  function selectTab(value: string) {
+    const next = isTabId(value) ? value : DEFAULT_TAB;
+    if (next === tab) return;
+    const query = next === DEFAULT_TAB ? "" : `?tab=${next}`;
+    // The load function never reads the URL, so this does not re-fetch.
+    void goto(`${page.url.pathname}${query}`, {
+      noScroll: true,
+      keepFocus: true,
+    });
   }
 </script>
 
@@ -350,74 +50,9 @@
   <title>{data.brand.name} brand | Admin</title>
 </svelte:head>
 
-<main class="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
-  {#snippet assignmentGroup(heading: string, items: PageData["assignments"])}
-    <div class="space-y-2">
-      <div class="flex items-center gap-2">
-        {#if items.length > 0}
-          <button
-            type="button"
-            class="inline-flex"
-            onclick={() => toggleGroup(items)}
-            aria-label={`Select all ${heading}`}
-          >
-            <Checkbox
-              checked={groupAllSelected(items)}
-              indeterminate={groupPartiallySelected(items)}
-              class="pointer-events-none"
-            />
-          </button>
-        {/if}
-        <h3 class="text-sm font-medium">
-          {heading}
-          <span class="text-muted-foreground">({items.length})</span>
-        </h3>
-      </div>
-      {#if items.length === 0}
-        <p class="text-muted-foreground text-sm">None assigned yet.</p>
-      {:else}
-        <ul class="divide-border divide-y rounded-md border">
-          {#each items as assignment (assignment.id)}
-            <li class="flex items-center gap-3 px-3 py-2">
-              <button
-                type="button"
-                class="inline-flex shrink-0"
-                onclick={() => toggleAssignment(assignment.id)}
-                aria-label={`Select ${assignment.displayName ?? assignment.entityId}`}
-              >
-                <Checkbox
-                  checked={selectedAssignments.has(assignment.id)}
-                  class="pointer-events-none"
-                />
-              </button>
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium">
-                  {assignment.displayName ?? assignment.entityId}
-                </p>
-                {#if assignment.subLabel}
-                  <p class="text-muted-foreground truncate text-xs">
-                    {assignment.subLabel}
-                  </p>
-                {/if}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                class="text-destructive shrink-0"
-                disabled={removingAssignmentId !== null || bulkRemoving}
-                onclick={() => removeAssignment(assignment.id)}
-              >
-                {removingAssignmentId === assignment.id
-                  ? "Removing…"
-                  : "Remove"}
-              </Button>
-            </li>
-          {/each}
-        </ul>
-      {/if}
-    </div>
-  {/snippet}
-
+<main
+  class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8"
+>
   <section class="space-y-2">
     <a
       class="text-muted-foreground text-sm hover:underline"
@@ -436,261 +71,57 @@
     </p>
   </section>
 
-  <Card.Root>
-    <Card.Header>
-      <Card.Title>Pricing targets</Card.Title>
-      <Card.Description>
-        Yearly food-cost target for this brand. The offers data-quality form
-        uses it to calculate Ideal price as (FC € ÷ Brand Ideal FC %) × 1.05 ×
-        1.07. Submissions for this brand are blocked until it is set.
-      </Card.Description>
-    </Card.Header>
-    <Card.Content class="space-y-3">
-      <div class="grid gap-2 sm:max-w-xs">
-        <Label for="brand-ideal-fc-perc">Brand Ideal FC %</Label>
-        <div class="relative">
-          <Input
-            id="brand-ideal-fc-perc"
-            type="number"
-            step="0.1"
-            min="0"
-            max="100"
-            class="pr-10"
-            placeholder="e.g. 30"
-            bind:value={idealFcPercentInput}
-          />
-          <span
-            class="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm"
-            >%</span
-          >
-        </div>
-        <p class="text-muted-foreground text-xs">
-          Leave blank to clear the target. Stored as a fraction, shown as a
-          percent.
-        </p>
-      </div>
-      <div class="flex justify-end">
-        <Button onclick={savePricingTargets} disabled={savingPricingTargets}>
-          {savingPricingTargets ? "Saving…" : "Save pricing targets"}
-        </Button>
-      </div>
-    </Card.Content>
-  </Card.Root>
+  <Tabs.Root value={tab} onValueChange={selectTab} class="gap-6">
+    <!-- Scrolls the strip on narrow screens. overflow-y is hidden because the
+         trigger line boxes overrun the h-8 list by 1px, which would otherwise
+         render a vertical scrollbar. -->
+    <div class="max-w-full overflow-x-auto overflow-y-hidden">
+      <Tabs.List class="w-full">
+        <Tabs.Trigger value="general">General</Tabs.Trigger>
+        <Tabs.Trigger value="ai-context">AI context</Tabs.Trigger>
+        <Tabs.Trigger value="assets">Assets</Tabs.Trigger>
+        <Tabs.Trigger value="analytics">Analytics</Tabs.Trigger>
+        <Tabs.Trigger value="entities">
+          Entities
+          <span class="text-muted-foreground">({data.assignments.length})</span>
+        </Tabs.Trigger>
+      </Tabs.List>
+    </div>
 
-  <GoogleAnalyticsPropertiesCard
-    brandId={data.brand.id}
-    properties={data.googleAnalytics.properties}
-    canManage={data.googleAnalytics.canManage}
-    configured={data.googleAnalytics.configured}
-  />
-
-  <Card.Root>
-    <Card.Header>
-      <Card.Title>Guidelines</Card.Title>
-      <Card.Description>
-        Injected at the start of the final prompt for any generation that
-        selects this brand. Markdown is sent verbatim. Not used by Enhance.
-      </Card.Description>
-    </Card.Header>
-    <Card.Content class="space-y-3">
-      <Textarea
-        rows={10}
-        bind:value={markdown}
-        placeholder="e.g. Use vibrant, appetising colours; show food at 45° angle."
+    <Tabs.Content value="general">
+      <BrandPricingTargetsCard
+        brandId={data.brand.id}
+        idealFcPercent={data.idealFcPercent}
       />
-      <div class="flex justify-end">
-        <Button
-          onclick={saveGuidelines}
-          disabled={savingGuidelines || !data.brand.slug}
-        >
-          {savingGuidelines ? "Saving…" : "Save guidelines"}
-        </Button>
-      </div>
-    </Card.Content>
-  </Card.Root>
+    </Tabs.Content>
 
-  <Card.Root>
-    <Card.Header>
-      <Card.Title>Assets</Card.Title>
-      <Card.Description>
-        Reference images that admins can attach to generations for this brand.
-      </Card.Description>
-    </Card.Header>
-    <Card.Content class="space-y-4">
-      <div
-        role="button"
-        tabindex="0"
-        class="border-input hover:border-foreground/40 flex cursor-pointer items-center justify-center rounded-md border-2 border-dashed p-6 text-sm"
-        ondrop={handleDrop}
-        ondragover={handleDragOver}
-        onclick={() => uploadInput?.click()}
-        onkeydown={(e) => {
-          if (e.key === "Enter" || e.key === " ") uploadInput?.click();
-        }}
-      >
-        {uploading ? "Uploading…" : "Drop images here or click to choose files"}
-      </div>
-      <input
-        bind:this={uploadInput}
-        type="file"
-        accept="image/png,image/jpeg,image/webp"
-        multiple
-        class="hidden"
-        onchange={handleFileInput}
+    <Tabs.Content value="ai-context">
+      <BrandAiContextTab
+        brandId={data.brand.id}
+        slug={data.brand.slug}
+        guidelines={data.guidelines}
+        complianceRules={data.complianceRules}
       />
+    </Tabs.Content>
 
-      {#if data.assets.length === 0}
-        <p class="text-muted-foreground text-center text-sm">
-          No assets uploaded yet.
-        </p>
-      {:else}
-        <div class="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-          {#each data.assets as asset (asset.id)}
-            <Card.Root>
-              <Card.Header class="p-3">
-                <Card.Title
-                  class="truncate text-sm"
-                  title={asset.displayName ?? asset.name}
-                >
-                  {asset.displayName ?? asset.name}
-                </Card.Title>
-                <Card.Description class="text-xs">
-                  {formatBytes(asset.sizeBytes)}
-                </Card.Description>
-              </Card.Header>
-              <Card.Content class="space-y-2 p-3 pt-0">
-                <img
-                  src={`/api/brand-assets/${asset.id}`}
-                  alt={asset.displayName ?? asset.name}
-                  class="bg-muted h-32 w-full rounded object-contain"
-                  loading="lazy"
-                />
-                <div class="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    class="flex-1"
-                    onclick={() => openEditDialog(asset)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    class="flex-1"
-                    disabled={deletingId !== null}
-                    onclick={() => deleteAsset(asset.id)}
-                  >
-                    {deletingId === asset.id ? "Deleting…" : "Delete"}
-                  </Button>
-                </div>
-              </Card.Content>
-            </Card.Root>
-          {/each}
-        </div>
-      {/if}
-    </Card.Content>
-  </Card.Root>
+    <Tabs.Content value="assets">
+      <BrandAssetsCard brandId={data.brand.id} assets={data.assets} />
+    </Tabs.Content>
 
-  <Card.Root>
-    <Card.Header
-      class="flex flex-row flex-wrap items-start justify-between gap-3"
-    >
-      <div class="space-y-1.5">
-        <Card.Title>Assigned entities</Card.Title>
-        <Card.Description>
-          Scraped competition restaurants and Google reviews businesses grouped
-          under this brand.
-        </Card.Description>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        {#if selectedAssignments.size > 0}
-          <Button
-            variant="destructive"
-            size="sm"
-            disabled={bulkRemoving}
-            onclick={removeSelectedAssignments}
-          >
-            {bulkRemoving
-              ? "Removing…"
-              : `Remove selected (${selectedAssignments.size})`}
-          </Button>
-        {/if}
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => openAssignDialog("competitionRestaurant")}
-        >
-          Assign competition restaurant
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => openAssignDialog("googleReviewsBusiness")}
-        >
-          Assign Google reviews business
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => openAssignDialog("aggregatorStore")}
-        >
-          Assign aggregator KPI store
-        </Button>
-      </div>
-    </Card.Header>
-    <Card.Content class="space-y-6">
-      {@render assignmentGroup(
-        "Competition restaurants",
-        competitionAssignments,
-      )}
-      {@render assignmentGroup(
-        "Google reviews businesses",
-        googleReviewsAssignments,
-      )}
-      {@render assignmentGroup(
-        "Aggregator KPI stores",
-        aggregatorStoreAssignments,
-      )}
-    </Card.Content>
-  </Card.Root>
+    <Tabs.Content value="analytics">
+      <GoogleAnalyticsPropertiesCard
+        brandId={data.brand.id}
+        properties={data.googleAnalytics.properties}
+        canManage={data.googleAnalytics.canManage}
+        configured={data.googleAnalytics.configured}
+      />
+    </Tabs.Content>
+
+    <Tabs.Content value="entities">
+      <BrandEntitiesCard
+        brandId={data.brand.id}
+        assignments={data.assignments}
+      />
+    </Tabs.Content>
+  </Tabs.Root>
 </main>
-
-<AssignEntitiesDialog
-  brandId={data.brand.id}
-  entityType={assignEntityType}
-  bind:open={assignDialogOpen}
-  onAssigned={() => invalidateAll()}
-/>
-
-<Dialog.Root
-  open={editingAsset !== null}
-  onOpenChange={(open) => {
-    if (!open) editingAsset = null;
-  }}
->
-  <Dialog.Content class="sm:max-w-md">
-    <Dialog.Header>
-      <Dialog.Title>Edit asset name</Dialog.Title>
-      <Dialog.Description>
-        Leave empty to fall back to the file name.
-      </Dialog.Description>
-    </Dialog.Header>
-    <form class="space-y-4" onsubmit={saveAssetName}>
-      <div class="space-y-2">
-        <Label for="asset-name">Name</Label>
-        <Input
-          id="asset-name"
-          bind:value={editName}
-          maxlength={120}
-          placeholder={editingAsset?.name}
-        />
-      </div>
-      <Dialog.Footer>
-        <Button type="submit" disabled={savingName}>
-          {savingName ? "Saving…" : "Save"}
-        </Button>
-      </Dialog.Footer>
-    </form>
-  </Dialog.Content>
-</Dialog.Root>

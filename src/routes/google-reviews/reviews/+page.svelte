@@ -534,7 +534,7 @@
                       <p class="mt-1">
                         {#if data.canManageBrands}
                           <a
-                            href={`/admin/brands/${data.brandId}`}
+                            href={`/admin/brands/${data.brandId}?tab=entities`}
                             class="text-foreground underline underline-offset-4"
                           >
                             Assign businesses in Admin → Brands
