@@ -3,6 +3,7 @@
   import { toast } from "svelte-sonner";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
+  import ShieldCheckIcon from "@lucide/svelte/icons/shield-check";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
   import BrandAssetGalleryDialog from "./BrandAssetGalleryDialog.svelte";
@@ -539,9 +540,15 @@
           Generate images from prompts using configured AI providers.
         </p>
       </div>
-      <Button href="/image-generator/me" variant="outline" size="sm">
-        My generated images
-      </Button>
+      <div class="flex flex-wrap gap-2">
+        <Button href="/image-compliance-checker" variant="outline" size="sm">
+          <ShieldCheckIcon />
+          Compliance checker
+        </Button>
+        <Button href="/image-generator/me" variant="outline" size="sm">
+          My generated images
+        </Button>
+      </div>
     </div>
     <div class="flex flex-wrap gap-2 pt-2">
       <ComposerPresetPopover

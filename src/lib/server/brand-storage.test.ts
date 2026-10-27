@@ -5,10 +5,13 @@ import { join } from "node:path";
 import { LocalObjectStore } from "./object-store.server";
 import {
   brandAssetKey,
+  brandComplianceRulesKey,
   brandGuidelinesKey,
   deleteBrandAsset,
+  readBrandComplianceRules,
   readBrandGuidelines,
   writeBrandAsset,
+  writeBrandComplianceRules,
   writeBrandGuidelines,
 } from "./brand-storage";
 
@@ -115,6 +118,29 @@ describe("brand-storage", () => {
 
   it("rejects unsafe slug when writing guidelines", async () => {
     await expect(writeBrandGuidelines(store, "..", "x")).rejects.toThrow(
+      /invalid brand slug/i,
+    );
+  });
+
+  it("readBrandComplianceRules returns null when the rules file is missing", async () => {
+    expect(await readBrandComplianceRules(store, "acme")).toBeNull();
+  });
+
+  it("round-trips compliance rules markdown in a separate file", async () => {
+    const rules = "- Logo top-left.\n- No red backgrounds.";
+    await writeBrandComplianceRules(store, "acme", rules);
+    expect(
+      readFileSync(pathForKey(brandComplianceRulesKey("acme")), "utf8"),
+    ).toBe(rules);
+    expect(await readBrandComplianceRules(store, "acme")).toBe(rules);
+    expect(brandComplianceRulesKey("acme")).not.toBe(
+      brandGuidelinesKey("acme"),
+    );
+    expect(await readBrandGuidelines(store, "acme")).toBeNull();
+  });
+
+  it("rejects unsafe slug when writing compliance rules", async () => {
+    await expect(writeBrandComplianceRules(store, "..", "x")).rejects.toThrow(
       /invalid brand slug/i,
     );
   });

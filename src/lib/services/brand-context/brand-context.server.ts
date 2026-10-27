@@ -2,8 +2,10 @@ import { randomUUID } from "node:crypto";
 import { getObjectStore } from "$lib/server/object-store.server";
 import { prisma } from "$lib/server/prisma";
 import {
+  readBrandComplianceRules,
   readBrandGuidelines,
   writeBrandAsset,
+  writeBrandComplianceRules,
   writeBrandGuidelines,
 } from "$lib/server/brand-storage";
 
@@ -137,4 +139,22 @@ export async function setBrandGuidelines(
   markdown: string,
 ): Promise<void> {
   await writeBrandGuidelines(getObjectStore(), slug, markdown);
+}
+
+/**
+ * Compliance-checker rules (brands/<slug>/compliance-rules.md). Deliberately a
+ * separate file from the generation guidelines: those are prompt text, these
+ * are verifiable constraints, and generation never reads them.
+ */
+export async function getBrandComplianceRules(
+  slug: string,
+): Promise<string | null> {
+  return readBrandComplianceRules(getObjectStore(), slug);
+}
+
+export async function setBrandComplianceRules(
+  slug: string,
+  markdown: string,
+): Promise<void> {
+  await writeBrandComplianceRules(getObjectStore(), slug, markdown);
 }

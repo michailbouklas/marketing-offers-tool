@@ -18,10 +18,15 @@ import { competitionAgent } from "./agents/competition-agent";
 import { forecastsAgent } from "./agents/forecasts-agent";
 import { googleAnalyticsAgent } from "./agents/google-analytics-agent";
 import { googleReviewsAgent } from "./agents/google-reviews-agent";
+import { imageComplianceAgent } from "./agents/image-compliance-agent";
 import { invoicesAgent } from "./agents/invoices-agent";
 import { offersDataQualityAgent } from "./agents/offers-data-quality-agent";
 import { salesAgent } from "./agents/sales-agent";
 import { getAiChatEnv, getClickhouseEnv, getDatabaseUrl } from "./env";
+import {
+  IMAGE_COMPLIANCE_WORKFLOW_ID,
+  imageComplianceWorkflow,
+} from "./workflows/image-compliance-workflow";
 
 const globalForMastra = globalThis as typeof globalThis & {
   mastraCache?: Mastra;
@@ -124,6 +129,10 @@ function createMastra(): Mastra {
       "sales-agent": salesAgent,
       "forecasts-agent": forecastsAgent,
       "google-analytics-agent": googleAnalyticsAgent,
+      "image-compliance-agent": imageComplianceAgent,
+    },
+    workflows: {
+      [IMAGE_COMPLIANCE_WORKFLOW_ID]: imageComplianceWorkflow,
     },
     storage: createStorage(),
     observability: new Observability({

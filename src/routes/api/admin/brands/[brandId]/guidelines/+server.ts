@@ -5,7 +5,10 @@ import {
   getBrandGuidelines,
   setBrandGuidelines,
 } from "$lib/services/brand-context/brand-context.server";
-import { prisma } from "$lib/server/prisma";
+import {
+  brandSlugOr404,
+  parseBrandId,
+} from "$lib/services/brand-context/brand-route.server";
 import type { RequestHandler } from "./$types";
 
 const GUIDELINES_MAX_BYTES = 50_000;
@@ -13,34 +16,6 @@ const GUIDELINES_MAX_BYTES = 50_000;
 const putBodySchema = z.object({
   markdown: z.string().max(GUIDELINES_MAX_BYTES),
 });
-
-function parseBrandId(param: string | undefined): number {
-  if (!param) {
-    error(400, "brandId is required");
-  }
-  const id = Number.parseInt(param, 10);
-  if (!Number.isInteger(id) || id <= 0) {
-    error(400, "brandId must be a positive integer");
-  }
-  return id;
-}
-
-async function brandSlugOr404(brandId: number): Promise<string> {
-  const brand = await prisma.brand.findUnique({
-    where: { id: brandId },
-    select: { id: true, slug: true },
-  });
-  if (!brand) {
-    error(404, "Brand not found");
-  }
-  if (!brand.slug) {
-    error(
-      400,
-      `Brand ${brandId} has no slug; populate brand.slug before editing guidelines`,
-    );
-  }
-  return brand.slug;
-}
 
 export const GET: RequestHandler = async (event) => {
   await requireApiPermission(event, { brand: ["manage"] });

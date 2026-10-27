@@ -8,6 +8,7 @@ import { isGoogleAnalyticsCryptoConfigured } from "$lib/server/google-analytics-
 import { prisma } from "$lib/server/prisma";
 import { listPropertiesForBrandAdmin } from "$lib/services/google-analytics/properties.server";
 import {
+  getBrandComplianceRules,
   getBrandGuidelines,
   listBrandAssets,
 } from "$lib/services/brand-context/brand-context.server";
@@ -45,19 +46,26 @@ export const load: PageServerLoad = async (event) => {
       ? null
       : Math.round(Number(ideal_fc_perc.toString()) * 100 * 100) / 100;
 
-  const [assets, guidelines, assignments, googleAnalyticsProperties, role] =
-    await Promise.all([
-      listBrandAssets(brand.id),
-      brand.slug ? getBrandGuidelines(brand.slug) : Promise.resolve(null),
-      // Store names live in the merchant-scrapes replica, which the assignment
-      // service deliberately doesn't reach into — inject the resolver here.
-      listBrandAssignments(
-        { brandId: brand.id },
-        { aggregatorStore: resolveAggregatorStoreNames },
-      ),
-      listPropertiesForBrandAdmin(brand.id),
-      getAuthenticatedUserRole(event),
-    ]);
+  const [
+    assets,
+    guidelines,
+    complianceRules,
+    assignments,
+    googleAnalyticsProperties,
+    role,
+  ] = await Promise.all([
+    listBrandAssets(brand.id),
+    brand.slug ? getBrandGuidelines(brand.slug) : Promise.resolve(null),
+    brand.slug ? getBrandComplianceRules(brand.slug) : Promise.resolve(null),
+    // Store names live in the merchant-scrapes replica, which the assignment
+    // service deliberately doesn't reach into — inject the resolver here.
+    listBrandAssignments(
+      { brandId: brand.id },
+      { aggregatorStore: resolveAggregatorStoreNames },
+    ),
+    listPropertiesForBrandAdmin(brand.id),
+    getAuthenticatedUserRole(event),
+  ]);
 
   return {
     brand,
@@ -82,5 +90,6 @@ export const load: PageServerLoad = async (event) => {
           : String(asset.createdAt),
     })),
     guidelines: guidelines ?? "",
+    complianceRules: complianceRules ?? "",
   };
 };

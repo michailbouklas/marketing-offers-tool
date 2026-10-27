@@ -5,6 +5,7 @@ import { extensionForContentType } from "./reference-storage";
 const BRANDS_SUBDIR = "brands";
 const ASSETS_SUBDIR = "assets";
 const GUIDELINES_FILE = "guidelines.md";
+const COMPLIANCE_RULES_FILE = "compliance-rules.md";
 
 export interface WriteBrandAssetResult {
   id: string;
@@ -52,6 +53,11 @@ export function brandAssetKey(
 
 export function brandGuidelinesKey(slug: string): StorageKey {
   return `${BRANDS_SUBDIR}/${ensureSafeSlug(slug)}/${GUIDELINES_FILE}`;
+}
+
+/** Checker-only rules; a sibling of guidelines.md so generation never sees them. */
+export function brandComplianceRulesKey(slug: string): StorageKey {
+  return `${BRANDS_SUBDIR}/${ensureSafeSlug(slug)}/${COMPLIANCE_RULES_FILE}`;
 }
 
 export async function writeBrandAsset(
@@ -105,4 +111,19 @@ export async function writeBrandGuidelines(
   markdown: string,
 ): Promise<void> {
   await store.putText(brandGuidelinesKey(slug), markdown);
+}
+
+export async function readBrandComplianceRules(
+  store: ObjectStore,
+  slug: string,
+): Promise<string | null> {
+  return store.getText(brandComplianceRulesKey(slug));
+}
+
+export async function writeBrandComplianceRules(
+  store: ObjectStore,
+  slug: string,
+  markdown: string,
+): Promise<void> {
+  await store.putText(brandComplianceRulesKey(slug), markdown);
 }
