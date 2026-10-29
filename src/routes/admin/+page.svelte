@@ -13,6 +13,7 @@
   import StarIcon from "@lucide/svelte/icons/star";
   import RadioIcon from "@lucide/svelte/icons/radio";
   import SparklesIcon from "@lucide/svelte/icons/sparkles";
+  import MegaphoneIcon from "@lucide/svelte/icons/megaphone";
   import type { Component } from "svelte";
   import type { PageData } from "./$types";
 
@@ -50,6 +51,14 @@
         "Create internal accounts, change roles, and assign brands to teammates.",
       icon: UsersIcon,
       accessKey: "users",
+    },
+    {
+      href: "/admin/features",
+      title: "Release notes",
+      description:
+        "Publish what changed in each build. Users see it on their next sign-in and in the What's new menu in the header.",
+      icon: MegaphoneIcon,
+      accessKey: "releases",
     },
     {
       href: "/admin/brands",

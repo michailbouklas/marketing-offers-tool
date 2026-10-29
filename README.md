@@ -42,6 +42,16 @@ bun run preview
 
 > Production deploys run the Node adapter output (`build/`). Set the env vars listed in `.env.example` on the host before starting.
 
+### Docker image and the build version
+
+Build the production image with `bun run docker:build` (plus any `docker compose build` flags) rather than a bare `docker compose build`. The script computes the release-notes build identifier `YYYYMMDD-<sha7>` from the current commit and passes it as the `APP_BUILD_VERSION` build arg; the Dockerfile promotes it to a runtime `ENV`, and `/admin/features` stamps it onto every release note published from that image. `.git` is docker-ignored, so the value cannot be derived inside the build. Never set `APP_BUILD_VERSION` in `.env`: compose's `env_file` would override the value baked into the image. Local dev servers report `dev`.
+
+```bash
+bun run docker:build                 # docker compose build with APP_BUILD_VERSION set
+bun run docker:build -- --dry-run    # only print the version that would be used
+docker compose up -d
+```
+
 ### Image-generator object storage
 
 The Image Generator persists generated images, reference images, and brand assets through a single **object store** abstraction (`src/lib/server/object-store.server.ts`). The store resolves files by a portable, slash-separated **storage key** (e.g. `images/<id>.png`, `references/<id>.<ext>`, `brands/<slug>/assets/<id>.<ext>`) which is what the `localPath` columns now hold (the column name is historical — the value is a key, not a filesystem path). There are two drivers, selected at runtime:

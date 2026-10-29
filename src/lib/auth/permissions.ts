@@ -29,6 +29,7 @@ export const statement = {
   notifications: ["run"],
   urlsToScrape: ["manage"],
   skill: ["manage"],
+  release: ["manage"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -59,6 +60,8 @@ export const ac = createAccessControl(statement);
  *   `/google-analytics`, `/aggregator-kpis`, `/aggregator-offers/invoices`,
  *   `/sales/chat`, and `/forecasts` analytics sections.
  * - `superUser` — admin-equivalent that holds every resource permission.
+ *   It is also the only role that may publish release notes (`release: ["manage"]`,
+ *   the /admin/features tool).
  *
  * Explicit empty action arrays (rather than `{}`) keep a role's resource keys
  * concrete instead of `never`, which is required for assignability to Better
@@ -139,6 +142,7 @@ export const roles = {
     notifications: ["run"],
     urlsToScrape: ["manage"],
     skill: ["manage"],
+    release: ["manage"],
   }),
 } satisfies Record<UserRole, Role>;
 

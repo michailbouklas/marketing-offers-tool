@@ -595,3 +595,12 @@ export function getForecastValidationEnv(): ForecastValidationEnv {
     ),
   };
 }
+
+/**
+ * Build identifier baked into the Docker image (`--build-arg APP_BUILD_VERSION`,
+ * set by `bun run docker:build` to `YYYYMMDD-<sha7>`). `"dev"` when unset, i.e.
+ * on every local dev server. Stamped onto release notes at publish time.
+ */
+export function getAppBuildVersion(): string {
+  return readEnv("APP_BUILD_VERSION")?.trim() || "dev";
+}

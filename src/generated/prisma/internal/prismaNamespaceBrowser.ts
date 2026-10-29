@@ -103,6 +103,8 @@ export const ModelName = {
   user_visit_daily: 'user_visit_daily',
   page_view_rollup_state: 'page_view_rollup_state',
   AgentSkill: 'AgentSkill',
+  Release: 'Release',
+  ReleaseRead: 'ReleaseRead',
   ai_chat_threads: 'ai_chat_threads',
   ai_chat_messages: 'ai_chat_messages'
 } as const
@@ -913,6 +915,27 @@ export const AgentSkillScalarFieldEnum = {
 } as const
 
 export type AgentSkillScalarFieldEnum = (typeof AgentSkillScalarFieldEnum)[keyof typeof AgentSkillScalarFieldEnum]
+
+
+export const ReleaseScalarFieldEnum = {
+  id: 'id',
+  version: 'version',
+  title: 'title',
+  body: 'body',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type ReleaseScalarFieldEnum = (typeof ReleaseScalarFieldEnum)[keyof typeof ReleaseScalarFieldEnum]
+
+
+export const ReleaseReadScalarFieldEnum = {
+  userId: 'userId',
+  releaseId: 'releaseId',
+  readAt: 'readAt'
+} as const
+
+export type ReleaseReadScalarFieldEnum = (typeof ReleaseReadScalarFieldEnum)[keyof typeof ReleaseReadScalarFieldEnum]
 
 
 export const Ai_chat_threadsScalarFieldEnum = {

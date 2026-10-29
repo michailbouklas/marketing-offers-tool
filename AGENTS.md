@@ -272,6 +272,15 @@ Before every new task, use the SymDex MCP server to reindex the project so the s
 - `src/lib/server/mastra/tools/query-dim-offers-sql.ts`: Mastra tool running read-only ClickHouse SELECTs against the current offer pricing (`dim_offers`) plus `transaction_details` and `apidata_replica.dim_items`. Uses the default ClickHouse database, `readonly=2`, and a 200-row cap.
 - `src/lib/server/mastra/workspace/skills/data-quality-sql/SKILL.md` and `.../dim-offers-sql/SKILL.md`: Schema references and proven query patterns for the two data-quality SQL tools (PostgreSQL workflow tables and ClickHouse pricing tables respectively).
 
+- `src/lib/services/releases/releases.ts`: Browser-safe contract for release notes (the header "What's new" menu): `ReleaseSummary`/`ReleaseDetail`/`ReleaseInbox` types, the `published` SSE event schema, API URLs, the `app:releases` invalidate key and the pure `buildReleaseInboxItems` helper.
+- `src/lib/services/releases/release-form.ts`: Zod + superforms schema for publishing a release (`title`, markdown `body`); the build version is never a form field.
+- `src/lib/services/releases/release-version.ts`: Pure `formatBuildVersion(date, sha)` -> `YYYYMMDD-<sha7>` shared by `scripts/docker-build.ts` and the UI.
+- `src/lib/services/releases/releases.server.ts`: Server-only Prisma queries for `Release`/`ReleaseRead`: admin list, detail, `createRelease` (commits + author auto-read + broadcasts), per-user inbox for the root layout, mark-read helpers.
+- `src/lib/services/releases/release-events.server.ts`: In-process (`globalThis`) pub/sub between the publish action and open `/api/releases/stream` SSE connections. Single-instance assumption; swap for Postgres `LISTEN/NOTIFY` before running replicas.
+- `src/lib/state/release-events.svelte.ts`: Client singleton: one `EventSource` per browser (Web Lock leader + BroadcastChannel fan-out) that lights the header dot and shows the "refresh the page" toast on a publish.
+- `src/routes/api/releases/stream/+server.ts`, `.../read/+server.ts`, `.../[id]/+server.ts`: Authenticated SSE stream of published releases, read-state writes (`{ all: true }` / `{ releaseId }`), and single-release detail.
+- `src/routes/admin/features/+page.server.ts`: superUser-only (`release: ["manage"]`) release-notes page: lists releases and publishes a new one stamped with `getAppBuildVersion()` (`APP_BUILD_VERSION`, baked by `bun run docker:build`).
+
 <!-- gitnexus:start -->
 
 # GitNexus — Code Intelligence

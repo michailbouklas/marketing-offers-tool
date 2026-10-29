@@ -2,6 +2,7 @@
   import { page } from "$app/state";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+  import ReleaseMenu from "$lib/components/releases/release-menu.svelte";
   import MoonIcon from "@lucide/svelte/icons/moon";
   import SunIcon from "@lucide/svelte/icons/sun";
   import UserIcon from "@lucide/svelte/icons/user";
@@ -24,6 +25,7 @@
   <Sidebar.Trigger />
 
   <div class="ml-auto flex items-center gap-2">
+    <ReleaseMenu />
     <Button href="/profile" variant="ghost" size="sm" class="max-w-[12rem]">
       <UserIcon class="size-4" />
       <span class="truncate">{displayName}</span>

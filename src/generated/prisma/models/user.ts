@@ -249,6 +249,8 @@ export type userWhereInput = {
   page_view_daily?: Prisma.Page_view_dailyListRelationFilter
   visit_daily?: Prisma.User_visit_dailyListRelationFilter
   agent_skills?: Prisma.AgentSkillListRelationFilter
+  releases?: Prisma.ReleaseListRelationFilter
+  release_reads?: Prisma.ReleaseReadListRelationFilter
 }
 
 export type userOrderByWithRelationInput = {
@@ -282,6 +284,8 @@ export type userOrderByWithRelationInput = {
   page_view_daily?: Prisma.page_view_dailyOrderByRelationAggregateInput
   visit_daily?: Prisma.user_visit_dailyOrderByRelationAggregateInput
   agent_skills?: Prisma.AgentSkillOrderByRelationAggregateInput
+  releases?: Prisma.ReleaseOrderByRelationAggregateInput
+  release_reads?: Prisma.ReleaseReadOrderByRelationAggregateInput
 }
 
 export type userWhereUniqueInput = Prisma.AtLeast<{
@@ -318,6 +322,8 @@ export type userWhereUniqueInput = Prisma.AtLeast<{
   page_view_daily?: Prisma.Page_view_dailyListRelationFilter
   visit_daily?: Prisma.User_visit_dailyListRelationFilter
   agent_skills?: Prisma.AgentSkillListRelationFilter
+  releases?: Prisma.ReleaseListRelationFilter
+  release_reads?: Prisma.ReleaseReadListRelationFilter
 }, "id" | "email">
 
 export type userOrderByWithAggregationInput = {
@@ -385,6 +391,8 @@ export type userCreateInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateInput = {
@@ -418,6 +426,8 @@ export type userUncheckedCreateInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userUpdateInput = {
@@ -451,6 +461,8 @@ export type userUpdateInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateInput = {
@@ -484,6 +496,8 @@ export type userUncheckedUpdateInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateManyInput = {
@@ -854,6 +868,36 @@ export type userUpdateOneWithoutAgent_skillsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.userUpdateToOneWithWhereWithoutAgent_skillsInput, Prisma.userUpdateWithoutAgent_skillsInput>, Prisma.userUncheckedUpdateWithoutAgent_skillsInput>
 }
 
+export type userCreateNestedOneWithoutReleasesInput = {
+  create?: Prisma.XOR<Prisma.userCreateWithoutReleasesInput, Prisma.userUncheckedCreateWithoutReleasesInput>
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutReleasesInput
+  connect?: Prisma.userWhereUniqueInput
+}
+
+export type userUpdateOneWithoutReleasesNestedInput = {
+  create?: Prisma.XOR<Prisma.userCreateWithoutReleasesInput, Prisma.userUncheckedCreateWithoutReleasesInput>
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutReleasesInput
+  upsert?: Prisma.userUpsertWithoutReleasesInput
+  disconnect?: Prisma.userWhereInput | boolean
+  delete?: Prisma.userWhereInput | boolean
+  connect?: Prisma.userWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.userUpdateToOneWithWhereWithoutReleasesInput, Prisma.userUpdateWithoutReleasesInput>, Prisma.userUncheckedUpdateWithoutReleasesInput>
+}
+
+export type userCreateNestedOneWithoutRelease_readsInput = {
+  create?: Prisma.XOR<Prisma.userCreateWithoutRelease_readsInput, Prisma.userUncheckedCreateWithoutRelease_readsInput>
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutRelease_readsInput
+  connect?: Prisma.userWhereUniqueInput
+}
+
+export type userUpdateOneRequiredWithoutRelease_readsNestedInput = {
+  create?: Prisma.XOR<Prisma.userCreateWithoutRelease_readsInput, Prisma.userUncheckedCreateWithoutRelease_readsInput>
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutRelease_readsInput
+  upsert?: Prisma.userUpsertWithoutRelease_readsInput
+  connect?: Prisma.userWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.userUpdateToOneWithWhereWithoutRelease_readsInput, Prisma.userUpdateWithoutRelease_readsInput>, Prisma.userUncheckedUpdateWithoutRelease_readsInput>
+}
+
 export type userCreateWithoutBrand_assignmentsInput = {
   id: string
   name: string
@@ -884,6 +928,8 @@ export type userCreateWithoutBrand_assignmentsInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutBrand_assignmentsInput = {
@@ -916,6 +962,8 @@ export type userUncheckedCreateWithoutBrand_assignmentsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutBrand_assignmentsInput = {
@@ -964,6 +1012,8 @@ export type userUpdateWithoutBrand_assignmentsInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutBrand_assignmentsInput = {
@@ -996,6 +1046,8 @@ export type userUncheckedUpdateWithoutBrand_assignmentsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutSessionsInput = {
@@ -1028,6 +1080,8 @@ export type userCreateWithoutSessionsInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutSessionsInput = {
@@ -1060,6 +1114,8 @@ export type userUncheckedCreateWithoutSessionsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutSessionsInput = {
@@ -1108,6 +1164,8 @@ export type userUpdateWithoutSessionsInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutSessionsInput = {
@@ -1140,6 +1198,8 @@ export type userUncheckedUpdateWithoutSessionsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutAccountsInput = {
@@ -1172,6 +1232,8 @@ export type userCreateWithoutAccountsInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutAccountsInput = {
@@ -1204,6 +1266,8 @@ export type userUncheckedCreateWithoutAccountsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutAccountsInput = {
@@ -1252,6 +1316,8 @@ export type userUpdateWithoutAccountsInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutAccountsInput = {
@@ -1284,6 +1350,8 @@ export type userUncheckedUpdateWithoutAccountsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutDim_offers_auditsInput = {
@@ -1316,6 +1384,8 @@ export type userCreateWithoutDim_offers_auditsInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutDim_offers_auditsInput = {
@@ -1348,6 +1418,8 @@ export type userUncheckedCreateWithoutDim_offers_auditsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutDim_offers_auditsInput = {
@@ -1396,6 +1468,8 @@ export type userUpdateWithoutDim_offers_auditsInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutDim_offers_auditsInput = {
@@ -1428,6 +1502,8 @@ export type userUncheckedUpdateWithoutDim_offers_auditsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutUrls_to_scrapeInput = {
@@ -1460,6 +1536,8 @@ export type userCreateWithoutUrls_to_scrapeInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutUrls_to_scrapeInput = {
@@ -1492,6 +1570,8 @@ export type userUncheckedCreateWithoutUrls_to_scrapeInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutUrls_to_scrapeInput = {
@@ -1540,6 +1620,8 @@ export type userUpdateWithoutUrls_to_scrapeInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutUrls_to_scrapeInput = {
@@ -1572,6 +1654,8 @@ export type userUncheckedUpdateWithoutUrls_to_scrapeInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutGenerated_imagesInput = {
@@ -1604,6 +1688,8 @@ export type userCreateWithoutGenerated_imagesInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutGenerated_imagesInput = {
@@ -1636,6 +1722,8 @@ export type userUncheckedCreateWithoutGenerated_imagesInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutGenerated_imagesInput = {
@@ -1684,6 +1772,8 @@ export type userUpdateWithoutGenerated_imagesInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutGenerated_imagesInput = {
@@ -1716,6 +1806,8 @@ export type userUncheckedUpdateWithoutGenerated_imagesInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutReference_imagesInput = {
@@ -1748,6 +1840,8 @@ export type userCreateWithoutReference_imagesInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutReference_imagesInput = {
@@ -1780,6 +1874,8 @@ export type userUncheckedCreateWithoutReference_imagesInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutReference_imagesInput = {
@@ -1828,6 +1924,8 @@ export type userUpdateWithoutReference_imagesInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutReference_imagesInput = {
@@ -1860,6 +1958,8 @@ export type userUncheckedUpdateWithoutReference_imagesInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutImage_presetsInput = {
@@ -1892,6 +1992,8 @@ export type userCreateWithoutImage_presetsInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutImage_presetsInput = {
@@ -1924,6 +2026,8 @@ export type userUncheckedCreateWithoutImage_presetsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutImage_presetsInput = {
@@ -1972,6 +2076,8 @@ export type userUpdateWithoutImage_presetsInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutImage_presetsInput = {
@@ -2004,6 +2110,8 @@ export type userUncheckedUpdateWithoutImage_presetsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutImage_templatesInput = {
@@ -2036,6 +2144,8 @@ export type userCreateWithoutImage_templatesInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutImage_templatesInput = {
@@ -2068,6 +2178,8 @@ export type userUncheckedCreateWithoutImage_templatesInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutImage_templatesInput = {
@@ -2116,6 +2228,8 @@ export type userUpdateWithoutImage_templatesInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutImage_templatesInput = {
@@ -2148,6 +2262,8 @@ export type userUncheckedUpdateWithoutImage_templatesInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutGenerated_copiesInput = {
@@ -2180,6 +2296,8 @@ export type userCreateWithoutGenerated_copiesInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutGenerated_copiesInput = {
@@ -2212,6 +2330,8 @@ export type userUncheckedCreateWithoutGenerated_copiesInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutGenerated_copiesInput = {
@@ -2260,6 +2380,8 @@ export type userUpdateWithoutGenerated_copiesInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutGenerated_copiesInput = {
@@ -2292,6 +2414,8 @@ export type userUncheckedUpdateWithoutGenerated_copiesInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutCompetition_restaurant_prefsInput = {
@@ -2324,6 +2448,8 @@ export type userCreateWithoutCompetition_restaurant_prefsInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutCompetition_restaurant_prefsInput = {
@@ -2356,6 +2482,8 @@ export type userUncheckedCreateWithoutCompetition_restaurant_prefsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutCompetition_restaurant_prefsInput = {
@@ -2404,6 +2532,8 @@ export type userUpdateWithoutCompetition_restaurant_prefsInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutCompetition_restaurant_prefsInput = {
@@ -2436,6 +2566,8 @@ export type userUncheckedUpdateWithoutCompetition_restaurant_prefsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutCompetition_dashboard_widgetsInput = {
@@ -2468,6 +2600,8 @@ export type userCreateWithoutCompetition_dashboard_widgetsInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutCompetition_dashboard_widgetsInput = {
@@ -2500,6 +2634,8 @@ export type userUncheckedCreateWithoutCompetition_dashboard_widgetsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutCompetition_dashboard_widgetsInput = {
@@ -2548,6 +2684,8 @@ export type userUpdateWithoutCompetition_dashboard_widgetsInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutCompetition_dashboard_widgetsInput = {
@@ -2580,6 +2718,8 @@ export type userUncheckedUpdateWithoutCompetition_dashboard_widgetsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutGoogle_reviews_business_prefsInput = {
@@ -2612,6 +2752,8 @@ export type userCreateWithoutGoogle_reviews_business_prefsInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutGoogle_reviews_business_prefsInput = {
@@ -2644,6 +2786,8 @@ export type userUncheckedCreateWithoutGoogle_reviews_business_prefsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutGoogle_reviews_business_prefsInput = {
@@ -2692,6 +2836,8 @@ export type userUpdateWithoutGoogle_reviews_business_prefsInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutGoogle_reviews_business_prefsInput = {
@@ -2724,6 +2870,8 @@ export type userUncheckedUpdateWithoutGoogle_reviews_business_prefsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -2756,6 +2904,8 @@ export type userCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -2788,6 +2938,8 @@ export type userUncheckedCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -2836,6 +2988,8 @@ export type userUpdateWithoutGoogle_reviews_dashboard_widgetsInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -2868,6 +3022,8 @@ export type userUncheckedUpdateWithoutGoogle_reviews_dashboard_widgetsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutMonitor_entriesInput = {
@@ -2900,6 +3056,8 @@ export type userCreateWithoutMonitor_entriesInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutMonitor_entriesInput = {
@@ -2932,6 +3090,8 @@ export type userUncheckedCreateWithoutMonitor_entriesInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutMonitor_entriesInput = {
@@ -2980,6 +3140,8 @@ export type userUpdateWithoutMonitor_entriesInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutMonitor_entriesInput = {
@@ -3012,6 +3174,8 @@ export type userUncheckedUpdateWithoutMonitor_entriesInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutPage_viewsInput = {
@@ -3044,6 +3208,8 @@ export type userCreateWithoutPage_viewsInput = {
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutPage_viewsInput = {
@@ -3076,6 +3242,8 @@ export type userUncheckedCreateWithoutPage_viewsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutPage_viewsInput = {
@@ -3124,6 +3292,8 @@ export type userUpdateWithoutPage_viewsInput = {
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutPage_viewsInput = {
@@ -3156,6 +3326,8 @@ export type userUncheckedUpdateWithoutPage_viewsInput = {
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutPage_view_dailyInput = {
@@ -3188,6 +3360,8 @@ export type userCreateWithoutPage_view_dailyInput = {
   page_views?: Prisma.page_viewCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutPage_view_dailyInput = {
@@ -3220,6 +3394,8 @@ export type userUncheckedCreateWithoutPage_view_dailyInput = {
   page_views?: Prisma.page_viewUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutPage_view_dailyInput = {
@@ -3268,6 +3444,8 @@ export type userUpdateWithoutPage_view_dailyInput = {
   page_views?: Prisma.page_viewUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutPage_view_dailyInput = {
@@ -3300,6 +3478,8 @@ export type userUncheckedUpdateWithoutPage_view_dailyInput = {
   page_views?: Prisma.page_viewUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutVisit_dailyInput = {
@@ -3332,6 +3512,8 @@ export type userCreateWithoutVisit_dailyInput = {
   page_views?: Prisma.page_viewCreateNestedManyWithoutUserInput
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutVisit_dailyInput = {
@@ -3364,6 +3546,8 @@ export type userUncheckedCreateWithoutVisit_dailyInput = {
   page_views?: Prisma.page_viewUncheckedCreateNestedManyWithoutUserInput
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutVisit_dailyInput = {
@@ -3412,6 +3596,8 @@ export type userUpdateWithoutVisit_dailyInput = {
   page_views?: Prisma.page_viewUpdateManyWithoutUserNestedInput
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutVisit_dailyInput = {
@@ -3444,6 +3630,8 @@ export type userUncheckedUpdateWithoutVisit_dailyInput = {
   page_views?: Prisma.page_viewUncheckedUpdateManyWithoutUserNestedInput
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutAgent_skillsInput = {
@@ -3476,6 +3664,8 @@ export type userCreateWithoutAgent_skillsInput = {
   page_views?: Prisma.page_viewCreateNestedManyWithoutUserInput
   page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutAgent_skillsInput = {
@@ -3508,6 +3698,8 @@ export type userUncheckedCreateWithoutAgent_skillsInput = {
   page_views?: Prisma.page_viewUncheckedCreateNestedManyWithoutUserInput
   page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutAgent_skillsInput = {
@@ -3556,6 +3748,8 @@ export type userUpdateWithoutAgent_skillsInput = {
   page_views?: Prisma.page_viewUpdateManyWithoutUserNestedInput
   page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutAgent_skillsInput = {
@@ -3588,6 +3782,312 @@ export type userUncheckedUpdateWithoutAgent_skillsInput = {
   page_views?: Prisma.page_viewUncheckedUpdateManyWithoutUserNestedInput
   page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type userCreateWithoutReleasesInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.accountCreateNestedManyWithoutUserInput
+  brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
+  dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutUserInput
+  image_presets?: Prisma.ImageGeneratorPresetCreateNestedManyWithoutUserInput
+  image_templates?: Prisma.ImageGeneratorTemplateCreateNestedManyWithoutUserInput
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefCreateNestedManyWithoutUserInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetCreateNestedManyWithoutUserInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput
+  monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput
+  page_views?: Prisma.page_viewCreateNestedManyWithoutUserInput
+  page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
+  visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
+  agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+}
+
+export type userUncheckedCreateWithoutReleasesInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
+  brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutUserInput
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedCreateNestedManyWithoutUserInput
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedCreateNestedManyWithoutUserInput
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedCreateNestedManyWithoutUserInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput
+  monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput
+  page_views?: Prisma.page_viewUncheckedCreateNestedManyWithoutUserInput
+  page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
+  visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
+  agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type userCreateOrConnectWithoutReleasesInput = {
+  where: Prisma.userWhereUniqueInput
+  create: Prisma.XOR<Prisma.userCreateWithoutReleasesInput, Prisma.userUncheckedCreateWithoutReleasesInput>
+}
+
+export type userUpsertWithoutReleasesInput = {
+  update: Prisma.XOR<Prisma.userUpdateWithoutReleasesInput, Prisma.userUncheckedUpdateWithoutReleasesInput>
+  create: Prisma.XOR<Prisma.userCreateWithoutReleasesInput, Prisma.userUncheckedCreateWithoutReleasesInput>
+  where?: Prisma.userWhereInput
+}
+
+export type userUpdateToOneWithWhereWithoutReleasesInput = {
+  where?: Prisma.userWhereInput
+  data: Prisma.XOR<Prisma.userUpdateWithoutReleasesInput, Prisma.userUncheckedUpdateWithoutReleasesInput>
+}
+
+export type userUpdateWithoutReleasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
+  brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
+  dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutUserNestedInput
+  image_presets?: Prisma.ImageGeneratorPresetUpdateManyWithoutUserNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateUpdateManyWithoutUserNestedInput
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUpdateManyWithoutUserNestedInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUpdateManyWithoutUserNestedInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput
+  monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput
+  page_views?: Prisma.page_viewUpdateManyWithoutUserNestedInput
+  page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
+  visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
+  agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+}
+
+export type userUncheckedUpdateWithoutReleasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
+  brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutUserNestedInput
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedUpdateManyWithoutUserNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedUpdateManyWithoutUserNestedInput
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedUpdateManyWithoutUserNestedInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput
+  monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput
+  page_views?: Prisma.page_viewUncheckedUpdateManyWithoutUserNestedInput
+  page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
+  visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
+  agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type userCreateWithoutRelease_readsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.accountCreateNestedManyWithoutUserInput
+  brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
+  dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutUserInput
+  image_presets?: Prisma.ImageGeneratorPresetCreateNestedManyWithoutUserInput
+  image_templates?: Prisma.ImageGeneratorTemplateCreateNestedManyWithoutUserInput
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefCreateNestedManyWithoutUserInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetCreateNestedManyWithoutUserInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput
+  monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput
+  page_views?: Prisma.page_viewCreateNestedManyWithoutUserInput
+  page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
+  visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
+  agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+}
+
+export type userUncheckedCreateWithoutRelease_readsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
+  brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutUserInput
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedCreateNestedManyWithoutUserInput
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedCreateNestedManyWithoutUserInput
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedCreateNestedManyWithoutUserInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput
+  monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput
+  page_views?: Prisma.page_viewUncheckedCreateNestedManyWithoutUserInput
+  page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
+  visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
+  agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+}
+
+export type userCreateOrConnectWithoutRelease_readsInput = {
+  where: Prisma.userWhereUniqueInput
+  create: Prisma.XOR<Prisma.userCreateWithoutRelease_readsInput, Prisma.userUncheckedCreateWithoutRelease_readsInput>
+}
+
+export type userUpsertWithoutRelease_readsInput = {
+  update: Prisma.XOR<Prisma.userUpdateWithoutRelease_readsInput, Prisma.userUncheckedUpdateWithoutRelease_readsInput>
+  create: Prisma.XOR<Prisma.userCreateWithoutRelease_readsInput, Prisma.userUncheckedCreateWithoutRelease_readsInput>
+  where?: Prisma.userWhereInput
+}
+
+export type userUpdateToOneWithWhereWithoutRelease_readsInput = {
+  where?: Prisma.userWhereInput
+  data: Prisma.XOR<Prisma.userUpdateWithoutRelease_readsInput, Prisma.userUncheckedUpdateWithoutRelease_readsInput>
+}
+
+export type userUpdateWithoutRelease_readsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
+  brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
+  dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutUserNestedInput
+  image_presets?: Prisma.ImageGeneratorPresetUpdateManyWithoutUserNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateUpdateManyWithoutUserNestedInput
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUpdateManyWithoutUserNestedInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUpdateManyWithoutUserNestedInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput
+  monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput
+  page_views?: Prisma.page_viewUpdateManyWithoutUserNestedInput
+  page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
+  visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
+  agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+}
+
+export type userUncheckedUpdateWithoutRelease_readsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
+  brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutUserNestedInput
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedUpdateManyWithoutUserNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedUpdateManyWithoutUserNestedInput
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedUpdateManyWithoutUserNestedInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput
+  monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput
+  page_views?: Prisma.page_viewUncheckedUpdateManyWithoutUserNestedInput
+  page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
+  visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
+  agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 
@@ -3615,6 +4115,8 @@ export type UserCountOutputType = {
   page_view_daily: number
   visit_daily: number
   agent_skills: number
+  releases: number
+  release_reads: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3637,6 +4139,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   page_view_daily?: boolean | UserCountOutputTypeCountPage_view_dailyArgs
   visit_daily?: boolean | UserCountOutputTypeCountVisit_dailyArgs
   agent_skills?: boolean | UserCountOutputTypeCountAgent_skillsArgs
+  releases?: boolean | UserCountOutputTypeCountReleasesArgs
+  release_reads?: boolean | UserCountOutputTypeCountRelease_readsArgs
 }
 
 /**
@@ -3782,6 +4286,20 @@ export type UserCountOutputTypeCountAgent_skillsArgs<ExtArgs extends runtime.Typ
   where?: Prisma.AgentSkillWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountReleasesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReleaseWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountRelease_readsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReleaseReadWhereInput
+}
+
 
 export type userSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3814,6 +4332,8 @@ export type userSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   page_view_daily?: boolean | Prisma.user$page_view_dailyArgs<ExtArgs>
   visit_daily?: boolean | Prisma.user$visit_dailyArgs<ExtArgs>
   agent_skills?: boolean | Prisma.user$agent_skillsArgs<ExtArgs>
+  releases?: boolean | Prisma.user$releasesArgs<ExtArgs>
+  release_reads?: boolean | Prisma.user$release_readsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -3880,6 +4400,8 @@ export type userInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   page_view_daily?: boolean | Prisma.user$page_view_dailyArgs<ExtArgs>
   visit_daily?: boolean | Prisma.user$visit_dailyArgs<ExtArgs>
   agent_skills?: boolean | Prisma.user$agent_skillsArgs<ExtArgs>
+  releases?: boolean | Prisma.user$releasesArgs<ExtArgs>
+  release_reads?: boolean | Prisma.user$release_readsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type userIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -3907,6 +4429,8 @@ export type $userPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     page_view_daily: Prisma.$page_view_dailyPayload<ExtArgs>[]
     visit_daily: Prisma.$user_visit_dailyPayload<ExtArgs>[]
     agent_skills: Prisma.$AgentSkillPayload<ExtArgs>[]
+    releases: Prisma.$ReleasePayload<ExtArgs>[]
+    release_reads: Prisma.$ReleaseReadPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -4333,6 +4857,8 @@ export interface Prisma__userClient<T, Null = never, ExtArgs extends runtime.Typ
   page_view_daily<T extends Prisma.user$page_view_dailyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user$page_view_dailyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$page_view_dailyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   visit_daily<T extends Prisma.user$visit_dailyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user$visit_dailyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$user_visit_dailyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   agent_skills<T extends Prisma.user$agent_skillsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user$agent_skillsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AgentSkillPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  releases<T extends Prisma.user$releasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user$releasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReleasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  release_reads<T extends Prisma.user$release_readsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user$release_readsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReleaseReadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5219,6 +5745,54 @@ export type user$agent_skillsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.AgentSkillScalarFieldEnum | Prisma.AgentSkillScalarFieldEnum[]
+}
+
+/**
+ * user.releases
+ */
+export type user$releasesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Release
+   */
+  select?: Prisma.ReleaseSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Release
+   */
+  omit?: Prisma.ReleaseOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReleaseInclude<ExtArgs> | null
+  where?: Prisma.ReleaseWhereInput
+  orderBy?: Prisma.ReleaseOrderByWithRelationInput | Prisma.ReleaseOrderByWithRelationInput[]
+  cursor?: Prisma.ReleaseWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReleaseScalarFieldEnum | Prisma.ReleaseScalarFieldEnum[]
+}
+
+/**
+ * user.release_reads
+ */
+export type user$release_readsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReleaseRead
+   */
+  select?: Prisma.ReleaseReadSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReleaseRead
+   */
+  omit?: Prisma.ReleaseReadOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReleaseReadInclude<ExtArgs> | null
+  where?: Prisma.ReleaseReadWhereInput
+  orderBy?: Prisma.ReleaseReadOrderByWithRelationInput | Prisma.ReleaseReadOrderByWithRelationInput[]
+  cursor?: Prisma.ReleaseReadWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReleaseReadScalarFieldEnum | Prisma.ReleaseReadScalarFieldEnum[]
 }
 
 /**

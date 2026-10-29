@@ -436,6 +436,8 @@ export const ModelName = {
   user_visit_daily: 'user_visit_daily',
   page_view_rollup_state: 'page_view_rollup_state',
   AgentSkill: 'AgentSkill',
+  Release: 'Release',
+  ReleaseRead: 'ReleaseRead',
   ai_chat_threads: 'ai_chat_threads',
   ai_chat_messages: 'ai_chat_messages'
 } as const
@@ -453,7 +455,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "page_view" | "page_view_daily" | "user_visit_daily" | "page_view_rollup_state" | "agentSkill" | "ai_chat_threads" | "ai_chat_messages"
+    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "page_view" | "page_view_daily" | "user_visit_daily" | "page_view_rollup_state" | "agentSkill" | "release" | "releaseRead" | "ai_chat_threads" | "ai_chat_messages"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4305,6 +4307,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Release: {
+      payload: Prisma.$ReleasePayload<ExtArgs>
+      fields: Prisma.ReleaseFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReleaseFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleasePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReleaseFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleasePayload>
+        }
+        findFirst: {
+          args: Prisma.ReleaseFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleasePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReleaseFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleasePayload>
+        }
+        findMany: {
+          args: Prisma.ReleaseFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleasePayload>[]
+        }
+        create: {
+          args: Prisma.ReleaseCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleasePayload>
+        }
+        createMany: {
+          args: Prisma.ReleaseCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReleaseCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleasePayload>[]
+        }
+        delete: {
+          args: Prisma.ReleaseDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleasePayload>
+        }
+        update: {
+          args: Prisma.ReleaseUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleasePayload>
+        }
+        deleteMany: {
+          args: Prisma.ReleaseDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReleaseUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReleaseUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleasePayload>[]
+        }
+        upsert: {
+          args: Prisma.ReleaseUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleasePayload>
+        }
+        aggregate: {
+          args: Prisma.ReleaseAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRelease>
+        }
+        groupBy: {
+          args: Prisma.ReleaseGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReleaseGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReleaseCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReleaseCountAggregateOutputType> | number
+        }
+      }
+    }
+    ReleaseRead: {
+      payload: Prisma.$ReleaseReadPayload<ExtArgs>
+      fields: Prisma.ReleaseReadFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReleaseReadFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleaseReadPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReleaseReadFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleaseReadPayload>
+        }
+        findFirst: {
+          args: Prisma.ReleaseReadFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleaseReadPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReleaseReadFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleaseReadPayload>
+        }
+        findMany: {
+          args: Prisma.ReleaseReadFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleaseReadPayload>[]
+        }
+        create: {
+          args: Prisma.ReleaseReadCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleaseReadPayload>
+        }
+        createMany: {
+          args: Prisma.ReleaseReadCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReleaseReadCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleaseReadPayload>[]
+        }
+        delete: {
+          args: Prisma.ReleaseReadDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleaseReadPayload>
+        }
+        update: {
+          args: Prisma.ReleaseReadUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleaseReadPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReleaseReadDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReleaseReadUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReleaseReadUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleaseReadPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReleaseReadUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReleaseReadPayload>
+        }
+        aggregate: {
+          args: Prisma.ReleaseReadAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReleaseRead>
+        }
+        groupBy: {
+          args: Prisma.ReleaseReadGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReleaseReadGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReleaseReadCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReleaseReadCountAggregateOutputType> | number
+        }
+      }
+    }
     ai_chat_threads: {
       payload: Prisma.$ai_chat_threadsPayload<ExtArgs>
       fields: Prisma.ai_chat_threadsFieldRefs
@@ -5212,6 +5362,27 @@ export const AgentSkillScalarFieldEnum = {
 export type AgentSkillScalarFieldEnum = (typeof AgentSkillScalarFieldEnum)[keyof typeof AgentSkillScalarFieldEnum]
 
 
+export const ReleaseScalarFieldEnum = {
+  id: 'id',
+  version: 'version',
+  title: 'title',
+  body: 'body',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type ReleaseScalarFieldEnum = (typeof ReleaseScalarFieldEnum)[keyof typeof ReleaseScalarFieldEnum]
+
+
+export const ReleaseReadScalarFieldEnum = {
+  userId: 'userId',
+  releaseId: 'releaseId',
+  readAt: 'readAt'
+} as const
+
+export type ReleaseReadScalarFieldEnum = (typeof ReleaseReadScalarFieldEnum)[keyof typeof ReleaseReadScalarFieldEnum]
+
+
 export const Ai_chat_threadsScalarFieldEnum = {
   id: 'id',
   resourceId: 'resourceId',
@@ -5795,6 +5966,8 @@ export type GlobalOmitConfig = {
   user_visit_daily?: Prisma.user_visit_dailyOmit
   page_view_rollup_state?: Prisma.page_view_rollup_stateOmit
   agentSkill?: Prisma.AgentSkillOmit
+  release?: Prisma.ReleaseOmit
+  releaseRead?: Prisma.ReleaseReadOmit
   ai_chat_threads?: Prisma.ai_chat_threadsOmit
   ai_chat_messages?: Prisma.ai_chat_messagesOmit
 }

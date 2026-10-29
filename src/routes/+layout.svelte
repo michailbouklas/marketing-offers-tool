@@ -8,6 +8,8 @@
   import { Toaster } from "$lib/components/ui/sonner/index.js";
   import { scrapeStream } from "$lib/state/scrape-stream.svelte";
   import { presenceReporter } from "$lib/state/presence-reporter";
+  import { releaseEvents } from "$lib/state/release-events.svelte";
+  import ReleaseAnnouncementDialog from "$lib/components/releases/release-announcement-dialog.svelte";
   import { afterNavigate } from "$app/navigation";
   import { aggregatorStore } from "$lib/state/aggregator.svelte";
   import type { AggregatorValue } from "$lib/services/aggregator-kpis/aggregator-kpis";
@@ -50,6 +52,17 @@
   });
 
   afterNavigate(() => presenceReporter.beat(page.route.id));
+
+  // Release notes: one SSE connection per browser (Web Lock + BroadcastChannel)
+  // that lights the header dot and shows the "refresh" toast when a super user
+  // publishes. Torn down on sign-out so the lock passes to another tab.
+  $effect(() => {
+    if (!presenceUserId) {
+      return;
+    }
+    releaseEvents.init(presenceUserId);
+    return () => releaseEvents.destroy();
+  });
 </script>
 
 <ModeWatcher />
@@ -59,6 +72,7 @@
     <AppSidebar />
     <Sidebar.Inset class="min-w-0">
       <TopNav />
+      <ReleaseAnnouncementDialog />
       {@render children()}
     </Sidebar.Inset>
   </Sidebar.Provider>

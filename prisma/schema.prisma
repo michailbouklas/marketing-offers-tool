@@ -225,6 +225,8 @@ model user {
   page_view_daily                  page_view_daily[]
   visit_daily                      user_visit_daily[]
   agent_skills                     AgentSkill[]                        @relation("AgentSkillCreator")
+  releases                         Release[]                           @relation("ReleaseAuthor")
+  release_reads                    ReleaseRead[]
 }
 
 model session {
@@ -1090,4 +1092,32 @@ model AgentSkill {
   updatedAt       DateTime @updatedAt
 
   @@index([createdByUserId])
+}
+
+/// A published "what's new" note (/admin/features). Saving publishes immediately; there is no draft state.
+model Release {
+  id              Int           @id @default(autoincrement())
+  /// Build the note was published from (APP_BUILD_VERSION, e.g. 20261029-ab12cd3; "dev" locally). Not unique on purpose.
+  version         String
+  title           String
+  /// Markdown body (LF-normalised). Rendered client-side only (marked + DOMPurify).
+  body            String
+  /// Author; null once the user is deleted.
+  createdByUserId String?
+  createdBy       user?         @relation("ReleaseAuthor", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime      @default(now())
+  reads           ReleaseRead[]
+
+  @@index([createdAt])
+}
+
+/// One row per (user, release) once the user has seen it. Absence = unread.
+model ReleaseRead {
+  userId    String
+  releaseId Int
+  readAt    DateTime @default(now())
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  release   Release  @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+
+  @@id([userId, releaseId])
 }

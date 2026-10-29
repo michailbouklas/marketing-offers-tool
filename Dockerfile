@@ -35,6 +35,11 @@ RUN bun run build
 
 FROM base AS runner
 WORKDIR /app
+# Build identifier shown on /admin/features and stamped onto release notes.
+# Passed by `bun run docker:build` (scripts/docker-build.ts) as YYYYMMDD-<sha7>;
+# ARGs are stage-scoped, so it is declared here where it becomes a runtime ENV.
+ARG APP_BUILD_VERSION=dev
+ENV APP_BUILD_VERSION=${APP_BUILD_VERSION}
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000

@@ -3,6 +3,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Set by `bun run docker:build`; never put APP_BUILD_VERSION in .env (env_file would
+        # override the value baked into the image at runtime).
+        APP_BUILD_VERSION: ${APP_BUILD_VERSION:-dev}
     env_file:
       - .env
     environment:

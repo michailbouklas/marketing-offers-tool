@@ -26,7 +26,8 @@
     "google-places:sync-brands": "bun scripts/sync-google-places-brands.ts",
     "forecast:dev": "cd forecast-service && uv run uvicorn forecast_service.api:app --reload --port 8000",
     "dev:all": "concurrently -n web,forecast -c blue,green \"bun run dev\" \"bun run forecast:dev\"",
-    "forecast:test": "cd forecast-service && uv run pytest -q"
+    "forecast:test": "cd forecast-service && uv run pytest -q",
+    "docker:build": "bun scripts/docker-build.ts"
   },
   "devDependencies": {
     "@fontsource-variable/inter": "^5.2.8",

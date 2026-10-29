@@ -296,6 +296,16 @@ export type page_view_rollup_state = Prisma.page_view_rollup_stateModel
  */
 export type AgentSkill = Prisma.AgentSkillModel
 /**
+ * Model Release
+ * A published "what's new" note (/admin/features). Saving publishes immediately; there is no draft state.
+ */
+export type Release = Prisma.ReleaseModel
+/**
+ * Model ReleaseRead
+ * One row per (user, release) once the user has seen it. Absence = unread.
+ */
+export type ReleaseRead = Prisma.ReleaseReadModel
+/**
  * Model ai_chat_threads
  * One per-user conversation session. `id` is "<agentId>:<userId>:<sessionKey>",
  * `resourceId` is the user id, `title` is AI-generated after the first exchange.
