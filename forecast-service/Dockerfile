@@ -1,4 +1,5 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1
+# (>= 1.10 needed for `--mount=type=secret,env=`; `1` resolves to the latest stable 1.x)
 # Stateless forecast engine. Built from ./forecast-service as the compose `forecast` service.
 
 # ---------------------------------------------------------------- deps
@@ -40,7 +41,11 @@ USER app
 
 # Load the Stan binary once, bake the numba kernel cache into the layer and download the
 # TimesFM 2.5 checkpoint (925 MB) into HF_HOME so the container never needs the network.
-RUN python -m forecast_service --warmup
+# HF_TOKEN is an optional BuildKit secret (compose: `build.secrets` <- .env HF_TOKEN). It lifts
+# the anonymous Hub rate limit for the download and exists only for this step: it is never an
+# ARG/ENV, so it is not baked into any layer. Without it the build still works (public model).
+RUN --mount=type=secret,id=HF_TOKEN,env=HF_TOKEN \
+    python -m forecast_service --warmup
 ENV HF_HUB_OFFLINE=1
 
 EXPOSE 8000
