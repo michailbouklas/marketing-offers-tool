@@ -6,6 +6,7 @@ import { z } from "zod";
 const globalForEnv = globalThis as typeof globalThis & {
   imageGeneratorEnvCache?: ImageGeneratorEnv;
   imageGeneratorEnvFileValues?: Record<string, string>;
+  appBuildVersionFile?: string | null;
   imageGeneratorEnvWarned?: boolean;
 };
 
@@ -597,12 +598,23 @@ export function getForecastValidationEnv(): ForecastValidationEnv {
 }
 
 /**
- * Build identifier baked into the Docker image (`--build-arg APP_BUILD_VERSION`,
- * set by `bun run docker:build` to `YYYYMMDD-<sha7>`). `"dev"` when unset, i.e.
- * on every local dev server. Stamped onto release notes at publish time.
+ * Build identifier stamped onto release notes at publish time. Precedence:
+ * `APP_BUILD_VERSION` env (explicit override), then the `BUILD_VERSION` file the
+ * Dockerfile writes next to the app (`YYYYMMDD-<sha7>`, see
+ * scripts/build-version.ts), then `"dev"` (every local dev server).
  */
 export function getAppBuildVersion(): string {
-  return readEnv("APP_BUILD_VERSION")?.trim() || "dev";
+  const fromEnv = readEnv("APP_BUILD_VERSION")?.trim();
+  if (fromEnv) {
+    return fromEnv;
+  }
+  if (globalForEnv.appBuildVersionFile === undefined) {
+    const path = join(process.cwd(), "BUILD_VERSION");
+    globalForEnv.appBuildVersionFile = existsSync(path)
+      ? readFileSync(path, "utf8").trim() || null
+      : null;
+  }
+  return globalForEnv.appBuildVersionFile || "dev";
 }
 
 /**

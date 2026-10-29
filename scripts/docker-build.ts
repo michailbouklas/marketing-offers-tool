@@ -1,30 +1,20 @@
 /**
- * Builds the app image with the release-notes build identifier baked in.
+ * Optional helper: builds the app image with an explicit build identifier.
  *
  *   bun run docker:build [extra docker compose build args]
  *
- * Computes `YYYYMMDD-<sha7>` from the current commit and hands it to
- * `docker compose build` as APP_BUILD_VERSION (consumed by the `args:` block in
- * docker-compose.yml and promoted to a runtime ENV in the Dockerfile). The
- * value cannot be computed inside the build because `.git` is docker-ignored.
- * Works from PowerShell and bash alike; `--dry-run` only prints the version.
+ * Normally unnecessary: the Dockerfile computes `YYYYMMDD-<sha7>` itself from
+ * the copied `.git/HEAD` (see scripts/build-version.ts), so a plain
+ * `docker compose up -d --build` already stamps the version. Use this when the
+ * build context has no git metadata (e.g. an exported tarball) and you want
+ * to pass the version from the host, or `--dry-run` to print it.
  */
-import { execSync, spawnSync } from "node:child_process";
-import { formatBuildVersion } from "../src/lib/services/releases/release-version.js";
-
-function currentSha(): string {
-  try {
-    return execSync("git rev-parse --short=7 HEAD", {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    });
-  } catch {
-    return "";
-  }
-}
+import { spawnSync } from "node:child_process";
+import { dirname } from "node:path";
+import { computeBuildVersion } from "./build-version.js";
 
 const args = process.argv.slice(2);
-const version = formatBuildVersion(new Date(), currentSha());
+const version = computeBuildVersion(dirname(import.meta.dir));
 
 if (args.includes("--dry-run")) {
   process.stdout.write(`${version}\n`);

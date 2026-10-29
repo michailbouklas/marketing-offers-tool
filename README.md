@@ -44,12 +44,13 @@ bun run preview
 
 ### Docker image and the build version
 
-Build the production image with `bun run docker:build` (plus any `docker compose build` flags) rather than a bare `docker compose build`. The script computes the release-notes build identifier `YYYYMMDD-<sha7>` from the current commit and passes it as the `APP_BUILD_VERSION` build arg; the Dockerfile promotes it to a runtime `ENV`, and `/admin/features` stamps it onto every release note published from that image. `.git` is docker-ignored, so the value cannot be derived inside the build. Never set `APP_BUILD_VERSION` in `.env`: compose's `env_file` would override the value baked into the image. Local dev servers report `dev`.
+`docker compose up -d --build` is the whole deploy. The builder stage computes the release-notes build identifier `YYYYMMDD-<sha7>` from the copied `.git/HEAD` (`.dockerignore` lets only `HEAD`, `packed-refs` and `refs/heads/` through) plus the build date, writes it to `BUILD_VERSION` in the image, and `/admin/features` stamps it onto every release note published from that image. Nothing has to be set on the host. Without git metadata in the build context the sha part is `nogit`; local dev servers report `dev`.
+
+To force a specific value, pass it as a build arg (it wins over the computed one): `APP_BUILD_VERSION=... docker compose build`, or `bun run docker:build` which derives it on the host. Never put `APP_BUILD_VERSION` in `.env`: compose's `env_file` would inject it at runtime and override the value baked into the image.
 
 ```bash
-bun run docker:build                 # docker compose build with APP_BUILD_VERSION set
-bun run docker:build -- --dry-run    # only print the version that would be used
-docker compose up -d
+docker compose up -d --build                 # build + (re)start with the version baked in
+docker compose exec app cat BUILD_VERSION    # confirm what the running container reports
 ```
 
 ### Image-generator object storage

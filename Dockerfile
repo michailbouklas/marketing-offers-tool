@@ -31,15 +31,19 @@ WORKDIR /app
 COPY --from=install /temp/dev/node_modules ./node_modules
 COPY . .
 ENV NODE_ENV=production
+# Release-notes build identifier. Computed from the copied .git/HEAD (see
+# .dockerignore exceptions) plus the build date, so a plain
+# `docker compose up -d --build` stamps it. An explicit --build-arg wins.
+ARG APP_BUILD_VERSION=
+RUN APP_BUILD_VERSION="$APP_BUILD_VERSION" bun scripts/build-version.ts > BUILD_VERSION && cat BUILD_VERSION
 RUN bun run build
 
 FROM base AS runner
 WORKDIR /app
-# Build identifier shown on /admin/features and stamped onto release notes.
-# Passed by `bun run docker:build` (scripts/docker-build.ts) as YYYYMMDD-<sha7>;
-# ARGs are stage-scoped, so it is declared here where it becomes a runtime ENV.
-ARG APP_BUILD_VERSION=dev
-ENV APP_BUILD_VERSION=${APP_BUILD_VERSION}
+# Build identifier shown on /admin/features and stamped onto release notes:
+# getAppBuildVersion() reads APP_BUILD_VERSION when set, else ./BUILD_VERSION
+# written by the builder stage, else "dev".
+COPY --from=builder /app/BUILD_VERSION ./BUILD_VERSION
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
