@@ -71,7 +71,18 @@
   let sessionKey = $state<string>(crypto.randomUUID());
 
   const chat = new Chat({
-    transport: new DefaultChatTransport({ api: "/api/ai/chat" }),
+    transport: new DefaultChatTransport({
+      api: "/api/ai/chat",
+      // Memory-backed agents: the server loads the thread history itself, so
+      // only the new message travels (Mastra's documented useChat pattern).
+      // Replaying the client copy made Mastra overwrite the stored assistant
+      // turns with reasoning-less versions, which OpenAI's Responses API then
+      // rejected on the next turn ("message ... was provided without its
+      // required 'reasoning' item").
+      prepareSendMessagesRequest: ({ messages, body }) => ({
+        body: { ...body, messages: messages.slice(-1) },
+      }),
+    }),
   });
 
   async function fetchSessions() {

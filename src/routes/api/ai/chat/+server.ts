@@ -177,8 +177,13 @@ export const POST: RequestHandler = async (event) => {
     agentId,
     version: "v6",
     params: {
+      // Only the newest message is forwarded — memory holds the thread. A
+      // replayed client history (UIMessages carry no reasoning parts) gets
+      // upserted over the stored assistant turns, after which OpenAI reasoning
+      // models reject the next request because the replayed message items
+      // lack their paired reasoning items.
       // Cast: the zod pass-through type is looser than Mastra's UIMessage.
-      messages: body.data.messages as never,
+      messages: body.data.messages.slice(-1) as never,
       maxSteps: 8,
       ...(requestContext ? { requestContext } : {}),
       memory: {
