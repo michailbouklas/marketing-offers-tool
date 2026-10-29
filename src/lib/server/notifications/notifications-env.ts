@@ -188,6 +188,17 @@ export function hasNotificationsTransport(): boolean {
   );
 }
 
+/**
+ * Whether outbound mail can be sent at all: an SMTP host and a sender. Unlike
+ * `hasNotificationsTransport()` this does not require the digest queue, so it
+ * is the right gate for one-off mail such as the release-notes notifier.
+ */
+export function hasMailTransport(): boolean {
+  const config = getNotificationsEnv();
+
+  return Boolean(config.SMTP_HOST && config.NOTIFICATIONS_FROM_EMAIL);
+}
+
 export function resetNotificationsEnvForTesting(): void {
   globalForNotificationsEnv.notificationsEnvCache = undefined;
   globalForNotificationsEnv.notificationsEnvFileValues = undefined;

@@ -281,6 +281,11 @@ Before every new task, use the SymDex MCP server to reindex the project so the s
 - `src/routes/api/releases/stream/+server.ts`, `.../read/+server.ts`, `.../[id]/+server.ts`: Authenticated SSE stream of published releases, read-state writes (`{ all: true }` / `{ releaseId }`), and single-release detail.
 - `src/routes/admin/features/+page.server.ts`: superUser-only (`release: ["manage"]`) release-notes page: lists releases and publishes a new one stamped with `getAppBuildVersion()` (`APP_BUILD_VERSION`, baked by `bun run docker:build`).
 
+- `src/lib/services/releases/release-email.server.ts`: Pure email template for release notes (markdown -> inline-styled HTML via `marked`, raw HTML escaped, plain-text alternative); subject = release title.
+- `src/lib/services/releases/release-notify.server.ts`: Recipient list (banned users excluded) and the per-user send loop for the "Notify users" dialog, through `sendEmail` in `mailer.server.ts`.
+- `src/routes/api/admin/releases/recipients/+server.ts`, `.../[id]/notify/+server.ts`: superUser-only (`release: ["manage"]`) JSON routes behind the dialog; the notify route returns 503 when SMTP is not configured (`hasMailTransport()`).
+- `src/lib/server/mailer.server.ts`: now exposes the generic `sendEmail(OutboundEmail)`; `sendDigestEmail` is an alias kept for the digest.
+
 <!-- gitnexus:start -->
 
 # GitNexus — Code Intelligence

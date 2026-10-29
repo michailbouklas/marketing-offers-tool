@@ -5,7 +5,7 @@
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { buttonVariants } from "$lib/components/ui/button/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
-  import SparklesIcon from "@lucide/svelte/icons/sparkles";
+  import BellIcon from "@lucide/svelte/icons/bell";
   import { cn } from "$lib/utils.js";
   import {
     EMPTY_RELEASE_INBOX,
@@ -85,7 +85,7 @@
     aria-label={label}
     title="What's new"
   >
-    <SparklesIcon class="size-5" />
+    <BellIcon class="size-5" />
     {#if unreadCount > 0}
       <span
         class="bg-primary ring-background absolute top-1.5 right-1.5 size-2 rounded-full ring-2"

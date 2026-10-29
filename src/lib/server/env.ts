@@ -604,3 +604,12 @@ export function getForecastValidationEnv(): ForecastValidationEnv {
 export function getAppBuildVersion(): string {
   return readEnv("APP_BUILD_VERSION")?.trim() || "dev";
 }
+
+/**
+ * Absolute app URL for links in outbound email (`PUBLIC_BASE_URL`, falling
+ * back to `ORIGIN`), without a trailing slash. Null when neither is set.
+ */
+export function getPublicBaseUrl(): string | null {
+  const raw = (readEnv("PUBLIC_BASE_URL") ?? readEnv("ORIGIN"))?.trim();
+  return raw ? raw.replace(/\/+$/, "") : null;
+}

@@ -19,6 +19,35 @@ export function releaseDetailUrl(id: number): string {
   return `/api/releases/${id}`;
 }
 
+/** superUser-only: users the "Notify users" dialog may email. */
+export const RELEASE_RECIPIENTS_URL = "/api/admin/releases/recipients";
+
+export function releaseNotifyUrl(id: number): string {
+  return `/api/admin/releases/${id}/notify`;
+}
+
+export type ReleaseRecipient = {
+  id: string;
+  /** Null when the account has no name set. */
+  name: string | null;
+  email: string;
+};
+
+/** Body of `POST /api/admin/releases/[id]/notify`. */
+export const notifyReleaseRequestSchema = z.object({
+  userIds: z.array(z.string().min(1)).min(1).max(1000),
+});
+
+export type NotifyReleaseRequest = z.infer<typeof notifyReleaseRequestSchema>;
+
+export type ReleaseNotifyResult = {
+  releaseId: number;
+  sent: number;
+  failed: { userId: string; email: string; error: string }[];
+  /** Ids that did not resolve to an active user (deleted or banned meanwhile). */
+  skipped: number;
+};
+
 /** Same short date style the admin tables use (`toLocaleDateString`). */
 export function formatReleaseDate(iso: string): string {
   return new Date(iso).toLocaleDateString();

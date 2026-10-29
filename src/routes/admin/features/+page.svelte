@@ -1,5 +1,6 @@
 <script lang="ts">
   import { toast } from "svelte-sonner";
+  import NotifyUsersDialog from "$lib/components/admin/releases/notify-users-dialog.svelte";
   import ReleaseFormDialog from "$lib/components/admin/releases/release-form-dialog.svelte";
   import ReleasesTable from "$lib/components/admin/releases/releases-table.svelte";
   import ReleaseDialog from "$lib/components/releases/release-dialog.svelte";
@@ -10,6 +11,7 @@
   import {
     releaseDetailUrl,
     type ReleaseDetail,
+    type ReleaseSummary,
   } from "$lib/services/releases/releases";
   import type { PageData } from "./$types";
 
@@ -19,10 +21,17 @@
   let viewOpen = $state(false);
   let viewing = $state<ReleaseDetail | null>(null);
   let viewLoading = $state(false);
+  let notifyOpen = $state(false);
+  let notifyTarget = $state<ReleaseSummary | null>(null);
   const cache = new Map<number, ReleaseDetail>();
 
   function openCreate() {
     createOpen = true;
+  }
+
+  function openNotify(id: number) {
+    notifyTarget = data.releases.find((release) => release.id === id) ?? null;
+    notifyOpen = notifyTarget !== null;
   }
 
   function handleResult(result: ReleaseActionMessage) {
@@ -105,7 +114,11 @@
         </Card.Description>
       </Card.Header>
       <Card.Content>
-        <ReleasesTable releases={data.releases} onOpen={openRelease} />
+        <ReleasesTable
+          releases={data.releases}
+          onOpen={openRelease}
+          onNotify={openNotify}
+        />
       </Card.Content>
     </Card.Root>
   </main>
@@ -119,3 +132,5 @@
 />
 
 <ReleaseDialog release={viewing} bind:open={viewOpen} loading={viewLoading} />
+
+<NotifyUsersDialog release={notifyTarget} bind:open={notifyOpen} />

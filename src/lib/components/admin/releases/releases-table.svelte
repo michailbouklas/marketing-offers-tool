@@ -2,6 +2,7 @@
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
+  import MailIcon from "@lucide/svelte/icons/mail";
   import {
     formatReleaseDate,
     type ReleaseSummary,
@@ -9,8 +10,14 @@
 
   type Row = ReleaseSummary & { readCount: number };
 
-  let { releases, onOpen }: { releases: Row[]; onOpen: (id: number) => void } =
-    $props();
+  type Props = {
+    releases: Row[];
+    onOpen: (id: number) => void;
+    /** Opens the "Notify users" email dialog for this release. */
+    onNotify: (id: number) => void;
+  };
+
+  let { releases, onOpen, onNotify }: Props = $props();
 </script>
 
 <Table.Root>
@@ -39,13 +46,23 @@
         <Table.Cell>{formatReleaseDate(release.createdAt)}</Table.Cell>
         <Table.Cell class="text-right">{release.readCount}</Table.Cell>
         <Table.Cell class="text-end">
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={() => onOpen(release.id)}
-          >
-            View
-          </Button>
+          <div class="flex items-center justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onclick={() => onOpen(release.id)}
+            >
+              View
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onclick={() => onNotify(release.id)}
+            >
+              <MailIcon class="size-4" />
+              Notify users
+            </Button>
+          </div>
         </Table.Cell>
       </Table.Row>
     {:else}

@@ -2,8 +2,8 @@ import nodemailer, { type Transporter } from "nodemailer";
 import { getNotificationsEnv } from "$lib/server/notifications/notifications-env";
 
 /**
- * SMTP transport for outbound mail (currently only the offer-notification
- * digest). Built lazily from `notifications-env` and cached on `globalThis` so
+ * SMTP transport for outbound mail (the offer-notification digest and the
+ * release-notes "notify users" emails). Built lazily from `notifications-env` and cached on `globalThis` so
  * a single connection pool is reused across requests and dev HMR reloads. The
  * caller is expected to have checked `hasNotificationsTransport()` first; this
  * module throws if SMTP is unconfigured.
@@ -52,18 +52,23 @@ function getTransporter(): Transporter {
   return transporter;
 }
 
-export interface DigestEmail {
+export interface OutboundEmail {
   to: string;
   subject: string;
   html: string;
   text: string;
 }
 
+/** Kept for the digest caller; same shape as `OutboundEmail`. */
+export type DigestEmail = OutboundEmail;
+
 /**
- * Send one digest email. Rejects on transport/delivery failure so the caller
- * can isolate per-recipient failures and decide whether to advance the cursor.
+ * Send one email through the configured SMTP transport. Rejects on
+ * transport/delivery failure so callers can isolate per-recipient failures
+ * (the digest advances its cursor on that basis; the release notifier reports
+ * the failed addresses).
  */
-export async function sendDigestEmail(email: DigestEmail): Promise<void> {
+export async function sendEmail(email: OutboundEmail): Promise<void> {
   const config = getNotificationsEnv();
 
   if (!config.NOTIFICATIONS_FROM_EMAIL) {
@@ -80,3 +85,6 @@ export async function sendDigestEmail(email: DigestEmail): Promise<void> {
     html: email.html,
   });
 }
+
+/** Digest-specific name retained for `offer-digest.server.ts`. */
+export const sendDigestEmail = sendEmail;
