@@ -58,6 +58,11 @@ statsforecast numba kernels are exercised once and cached in the layer. The imag
 installs the `foundation` extra and, during that same warm-up, downloads the TimesFM 2.5
 checkpoint into `HF_HOME=/app/hf-cache` (`HF_HUB_OFFLINE=1` afterwards, so the running
 container never reaches the network); compose enables the model and caps the service at 3 GB.
+That download is anonymous unless `HF_TOKEN` is set in `.env`: compose forwards it as a
+BuildKit secret (`build.secrets` → `RUN --mount=type=secret,env=HF_TOKEN`) to the warm-up
+step only, so it lifts the Hub's anonymous rate limit without ending up in any image layer.
+A read-scoped token from <https://huggingface.co/settings/tokens> is enough; leaving it empty
+still builds, you just get the "unauthenticated requests are rate-limited" warning.
 
 ## Environment variables
 
