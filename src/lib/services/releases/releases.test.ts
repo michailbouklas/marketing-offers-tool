@@ -6,6 +6,7 @@ import {
   type ReleaseSummary,
 } from "./releases";
 import {
+  editReleaseFormSchema,
   normalizeReleaseBody,
   releaseFormSchema,
   RELEASE_TITLE_MAX_LENGTH,
@@ -92,6 +93,23 @@ describe("schemas", () => {
         title: "a".repeat(RELEASE_TITLE_MAX_LENGTH + 1),
         body: "x",
       }).success,
+    ).toBe(false);
+  });
+
+  it("coerces the edit form id from FormData and rejects missing or zero ids", () => {
+    const ok = editReleaseFormSchema.safeParse({
+      id: "7",
+      title: "t",
+      body: "b",
+    });
+    expect(ok.success).toBe(true);
+    expect(ok.data?.id).toBe(7);
+    expect(
+      editReleaseFormSchema.safeParse({ id: "0", title: "t", body: "b" })
+        .success,
+    ).toBe(false);
+    expect(
+      editReleaseFormSchema.safeParse({ title: "t", body: "b" }).success,
     ).toBe(false);
   });
 

@@ -2,7 +2,7 @@ import { prisma } from "$lib/server/prisma";
 import { getPublicBaseUrl } from "$lib/server/env";
 import { sendEmail } from "$lib/server/mailer.server";
 import { buildReleaseEmail } from "./release-email.server";
-import { getReleaseDetail } from "./releases.server";
+import { getReleaseDetail, ReleaseNotFoundError } from "./releases.server";
 import type { ReleaseNotifyResult, ReleaseRecipient } from "./releases";
 
 /**
@@ -30,12 +30,8 @@ export async function listReleaseRecipients(): Promise<ReleaseRecipient[]> {
   }));
 }
 
-export class ReleaseNotFoundError extends Error {
-  constructor(releaseId: number) {
-    super(`Release ${releaseId} not found.`);
-    this.name = "ReleaseNotFoundError";
-  }
-}
+// Shared with `updateRelease`; re-exported so existing imports keep working.
+export { ReleaseNotFoundError };
 
 export async function notifyUsersOfRelease(input: {
   releaseId: number;

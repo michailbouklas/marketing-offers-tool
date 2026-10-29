@@ -105,6 +105,22 @@ export function getSkillEnhanceEnv(): SkillEnhanceEnv {
     SKILL_ENHANCE_MODEL: model.includes("/") ? model : `openai/${model}`,
   };
 }
+export interface ReleaseFormatEnv {
+  /** Model for the "AI" format button on /admin/features (`provider/model`). */
+  RELEASE_FORMAT_MODEL: string;
+}
+
+export function getReleaseFormatEnv(): ReleaseFormatEnv {
+  // Also copies OPENAI_API_KEY into process.env for the model router.
+  getAiChatEnv();
+
+  const model = readEnv("RELEASE_FORMAT_MODEL") ?? "openai/gpt-4o-mini";
+
+  return {
+    RELEASE_FORMAT_MODEL: model.includes("/") ? model : `openai/${model}`,
+  };
+}
+
 /** Same PostgreSQL database the app's Prisma client points at. */
 export function getDatabaseUrl(): string {
   const url = readEnv("DATABASE_URL");

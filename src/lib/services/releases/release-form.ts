@@ -30,6 +30,16 @@ export const releaseFormSchema = z.object({
 
 export type ReleaseFormData = z.infer<typeof releaseFormSchema>;
 
+/**
+ * Editing an existing release: same fields plus the row id. The id posts as a
+ * FormData string, hence `coerce`. Version is still never a form field.
+ */
+export const editReleaseFormSchema = releaseFormSchema.extend({
+  id: z.coerce.number().int().positive(),
+});
+
+export type EditReleaseFormData = z.infer<typeof editReleaseFormSchema>;
+
 export type ReleaseActionMessage = {
   type: "success" | "error";
   text: string;

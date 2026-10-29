@@ -3,6 +3,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import MailIcon from "@lucide/svelte/icons/mail";
+  import PencilIcon from "@lucide/svelte/icons/pencil";
   import {
     formatReleaseDate,
     type ReleaseSummary,
@@ -13,11 +14,13 @@
   type Props = {
     releases: Row[];
     onOpen: (id: number) => void;
+    /** Opens the release form pre-filled for a silent correction. */
+    onEdit: (id: number) => void;
     /** Opens the "Notify users" email dialog for this release. */
     onNotify: (id: number) => void;
   };
 
-  let { releases, onOpen, onNotify }: Props = $props();
+  let { releases, onOpen, onEdit, onNotify }: Props = $props();
 </script>
 
 <Table.Root>
@@ -53,6 +56,14 @@
               onclick={() => onOpen(release.id)}
             >
               View
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onclick={() => onEdit(release.id)}
+            >
+              <PencilIcon class="size-4" />
+              Edit
             </Button>
             <Button
               variant="secondary"

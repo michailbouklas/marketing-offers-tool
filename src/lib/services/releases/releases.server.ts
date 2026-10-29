@@ -16,6 +16,13 @@ import {
 
 export type ReleaseAdminRow = ReleaseSummary & { readCount: number };
 
+export class ReleaseNotFoundError extends Error {
+  constructor(releaseId: number) {
+    super(`Release ${releaseId} not found.`);
+    this.name = "ReleaseNotFoundError";
+  }
+}
+
 const summarySelect = {
   id: true,
   version: true,
@@ -111,6 +118,38 @@ export async function createRelease(
     release: summary,
   });
   return { ...summary, body: row.body };
+}
+
+export type UpdateReleaseInput = {
+  id: number;
+  title: string;
+  body: string;
+};
+
+/**
+ * Silent correction of a published note: title and body only. Deliberately
+ * no SSE event, no ReleaseRead reset and no version change — users who
+ * already read it are not re-prompted.
+ */
+export async function updateRelease(
+  input: UpdateReleaseInput,
+): Promise<ReleaseDetail> {
+  const exists = await prisma.release.findUnique({
+    where: { id: input.id },
+    select: { id: true },
+  });
+  if (!exists) {
+    throw new ReleaseNotFoundError(input.id);
+  }
+  const row = await prisma.release.update({
+    where: { id: input.id },
+    data: {
+      title: input.title.trim(),
+      body: normalizeReleaseBody(input.body),
+    },
+    select: { ...summarySelect, body: true },
+  });
+  return { ...toSummary(row), body: row.body };
 }
 
 /**

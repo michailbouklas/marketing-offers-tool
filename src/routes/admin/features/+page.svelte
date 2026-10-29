@@ -18,6 +18,8 @@
   let { data }: { data: PageData } = $props();
 
   let createOpen = $state(false);
+  let editOpen = $state(false);
+  let editing = $state<ReleaseDetail | null>(null);
   let viewOpen = $state(false);
   let viewing = $state<ReleaseDetail | null>(null);
   let viewLoading = $state(false);
@@ -34,12 +36,36 @@
     notifyOpen = notifyTarget !== null;
   }
 
-  function handleResult(result: ReleaseActionMessage) {
+  function handleResult(result: ReleaseActionMessage, mode: "create" | "edit") {
     if (result.type === "success") {
-      createOpen = false;
+      if (mode === "create") {
+        createOpen = false;
+      } else {
+        editOpen = false;
+        // The body changed: drop the cached copy so View / Edit refetch it.
+        if (editing) cache.delete(editing.id);
+      }
       toast.success(result.text);
     } else {
       toast.error(result.text);
+    }
+  }
+
+  /** Table rows carry no body; fetch it once per release (null on failure, already toasted). */
+  async function loadDetail(id: number): Promise<ReleaseDetail | null> {
+    const cached = cache.get(id);
+    if (cached) return cached;
+    try {
+      const res = await fetch(releaseDetailUrl(id));
+      if (!res.ok) throw new Error(`Failed to load release (${res.status}).`);
+      const detail = (await res.json()) as ReleaseDetail;
+      cache.set(id, detail);
+      return detail;
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not load the release.",
+      );
+      return null;
     }
   }
 
@@ -48,20 +74,20 @@
     viewLoading = viewing === null;
     viewOpen = true;
     if (viewing) return;
-    try {
-      const res = await fetch(releaseDetailUrl(id));
-      if (!res.ok) throw new Error(`Failed to load release (${res.status}).`);
-      const detail = (await res.json()) as ReleaseDetail;
-      cache.set(id, detail);
+    const detail = await loadDetail(id);
+    viewLoading = false;
+    if (detail) {
       viewing = detail;
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Could not load the release.",
-      );
+    } else {
       viewOpen = false;
-    } finally {
-      viewLoading = false;
     }
+  }
+
+  async function openEdit(id: number) {
+    const detail = await loadDetail(id);
+    if (!detail) return;
+    editing = detail;
+    editOpen = true;
   }
 </script>
 
@@ -117,6 +143,7 @@
         <ReleasesTable
           releases={data.releases}
           onOpen={openRelease}
+          onEdit={openEdit}
           onNotify={openNotify}
         />
       </Card.Content>
@@ -126,9 +153,19 @@
 
 <ReleaseFormDialog
   form={data.createForm}
-  buildVersion={data.buildVersion}
+  mode="create"
+  version={data.buildVersion}
   bind:open={createOpen}
-  onResult={handleResult}
+  onResult={(result) => handleResult(result, "create")}
+/>
+
+<ReleaseFormDialog
+  form={data.editForm}
+  mode="edit"
+  version={editing?.version ?? ""}
+  values={editing}
+  bind:open={editOpen}
+  onResult={(result) => handleResult(result, "edit")}
 />
 
 <ReleaseDialog release={viewing} bind:open={viewOpen} loading={viewLoading} />
