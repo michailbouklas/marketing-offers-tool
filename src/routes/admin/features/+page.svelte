@@ -2,6 +2,7 @@
   import { toast } from "svelte-sonner";
   import NotifyUsersDialog from "$lib/components/admin/releases/notify-users-dialog.svelte";
   import ReleaseFormDialog from "$lib/components/admin/releases/release-form-dialog.svelte";
+  import ReleaseReadersDialog from "$lib/components/admin/releases/release-readers-dialog.svelte";
   import ReleasesTable from "$lib/components/admin/releases/releases-table.svelte";
   import ReleaseDialog from "$lib/components/releases/release-dialog.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
@@ -25,6 +26,8 @@
   let viewLoading = $state(false);
   let notifyOpen = $state(false);
   let notifyTarget = $state<ReleaseSummary | null>(null);
+  let readersOpen = $state(false);
+  let readersTarget = $state<ReleaseSummary | null>(null);
   const cache = new Map<number, ReleaseDetail>();
 
   function openCreate() {
@@ -34,6 +37,11 @@
   function openNotify(id: number) {
     notifyTarget = data.releases.find((release) => release.id === id) ?? null;
     notifyOpen = notifyTarget !== null;
+  }
+
+  function openReaders(id: number) {
+    readersTarget = data.releases.find((release) => release.id === id) ?? null;
+    readersOpen = readersTarget !== null;
   }
 
   function handleResult(result: ReleaseActionMessage, mode: "create" | "edit") {
@@ -145,6 +153,7 @@
           onOpen={openRelease}
           onEdit={openEdit}
           onNotify={openNotify}
+          onReaders={openReaders}
         />
       </Card.Content>
     </Card.Root>
@@ -171,3 +180,5 @@
 <ReleaseDialog release={viewing} bind:open={viewOpen} loading={viewLoading} />
 
 <NotifyUsersDialog release={notifyTarget} bind:open={notifyOpen} />
+
+<ReleaseReadersDialog release={readersTarget} bind:open={readersOpen} />

@@ -5,6 +5,7 @@ import {
   buildReleaseInboxItems,
   type ReleaseDetail,
   type ReleaseInbox,
+  type ReleaseReader,
   type ReleaseSummary,
 } from "./releases";
 
@@ -60,6 +61,26 @@ export async function listReleases(): Promise<ReleaseAdminRow[]> {
   return rows.map((row) => ({
     ...toSummary(row),
     readCount: row._count.reads,
+  }));
+}
+
+/** Admin "Read by" dialog: who read one release, newest read first. */
+export async function listReleaseReaders(
+  releaseId: number,
+): Promise<ReleaseReader[]> {
+  const rows = await prisma.releaseRead.findMany({
+    where: { releaseId },
+    orderBy: { readAt: "desc" },
+    select: {
+      readAt: true,
+      user: { select: { id: true, name: true, email: true } },
+    },
+  });
+  return rows.map((row) => ({
+    id: row.user.id,
+    name: row.user.name?.trim() || null,
+    email: row.user.email,
+    readAt: row.readAt.toISOString(),
   }));
 }
 

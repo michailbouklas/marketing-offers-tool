@@ -18,9 +18,11 @@
     onEdit: (id: number) => void;
     /** Opens the "Notify users" email dialog for this release. */
     onNotify: (id: number) => void;
+    /** Opens the "Read by" dialog listing who read this release. */
+    onReaders: (id: number) => void;
   };
 
-  let { releases, onOpen, onEdit, onNotify }: Props = $props();
+  let { releases, onOpen, onEdit, onNotify, onReaders }: Props = $props();
 </script>
 
 <Table.Root>
@@ -47,7 +49,17 @@
           {release.createdByName ?? "—"}
         </Table.Cell>
         <Table.Cell>{formatReleaseDate(release.createdAt)}</Table.Cell>
-        <Table.Cell class="text-right">{release.readCount}</Table.Cell>
+        <Table.Cell class="text-right">
+          <Button
+            variant="link"
+            size="sm"
+            class="h-auto p-0"
+            onclick={() => onReaders(release.id)}
+            aria-label={`Show who read ${release.title}`}
+          >
+            {release.readCount}
+          </Button>
+        </Table.Cell>
         <Table.Cell class="text-end">
           <div class="flex items-center justify-end gap-2">
             <Button

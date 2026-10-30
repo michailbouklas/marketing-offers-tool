@@ -26,6 +26,20 @@ export function releaseNotifyUrl(id: number): string {
   return `/api/admin/releases/${id}/notify`;
 }
 
+/** superUser-only: users who have read a release, newest read first. */
+export function releaseReadersUrl(id: number): string {
+  return `/api/admin/releases/${id}/readers`;
+}
+
+export type ReleaseReader = {
+  id: string;
+  /** Null when the account has no name set. */
+  name: string | null;
+  email: string;
+  /** ISO timestamp. */
+  readAt: string;
+};
+
 /** superUser-only: AI format pass for the release form body. */
 export const RELEASE_FORMAT_URL = "/api/admin/releases/format";
 
