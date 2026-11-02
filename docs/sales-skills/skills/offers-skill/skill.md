@@ -179,7 +179,7 @@ LEFT JOIN (
 
 - `trde_net_value` — revenue of the combo/offer
 - `trde_normal_price` — standard price before adjustments
-- `trde_discount` / `trde_line_discount` — any discounts applied
+- `trde_discount` — order discount **percentage** (0–100), not an amount; the amount is `transactions.tran_discount`
 
 **Component rows** — typically informational/structural:
 

@@ -206,6 +206,8 @@ model user {
   banExpires                       DateTime?
   createdAt                        DateTime
   updatedAt                        DateTime
+  /// Per-user preferences (JSON object, e.g. { preferences: { "salesExplore.columns": [...] } }).
+  meta                             Json?
   sessions                         session[]
   accounts                         account[]
   brand_assignments                user_brand[]

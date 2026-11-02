@@ -177,10 +177,15 @@
       ],
     },
     {
-      href: "/sales/chat",
-      label: "Sales Chat",
+      href: "/sales/dashboard",
+      label: "Sales",
       icon: ChartColumnIcon,
       roles: salesRoles,
+      children: [
+        { href: "/sales/dashboard", label: "Dashboard" },
+        { href: "/sales/explore", label: "Explore" },
+        { href: "/sales/chat", label: "Chat" },
+      ],
     },
     {
       href: "/forecasts",

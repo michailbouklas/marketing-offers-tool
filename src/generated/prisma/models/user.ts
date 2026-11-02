@@ -64,6 +64,7 @@ export type UserCountAggregateOutputType = {
   banExpires: number
   createdAt: number
   updatedAt: number
+  meta: number
   _all: number
 }
 
@@ -108,6 +109,7 @@ export type UserCountAggregateInputType = {
   banExpires?: true
   createdAt?: true
   updatedAt?: true
+  meta?: true
   _all?: true
 }
 
@@ -195,6 +197,7 @@ export type UserGroupByOutputType = {
   banExpires: Date | null
   createdAt: Date
   updatedAt: Date
+  meta: runtime.JsonValue | null
   _count: UserCountAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
@@ -230,6 +233,7 @@ export type userWhereInput = {
   banExpires?: Prisma.DateTimeNullableFilter<"user"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"user"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"user"> | Date | string
+  meta?: Prisma.JsonNullableFilter<"user">
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   brand_assignments?: Prisma.User_brandListRelationFilter
@@ -265,6 +269,7 @@ export type userOrderByWithRelationInput = {
   banExpires?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  meta?: Prisma.SortOrderInput | Prisma.SortOrder
   sessions?: Prisma.sessionOrderByRelationAggregateInput
   accounts?: Prisma.accountOrderByRelationAggregateInput
   brand_assignments?: Prisma.user_brandOrderByRelationAggregateInput
@@ -303,6 +308,7 @@ export type userWhereUniqueInput = Prisma.AtLeast<{
   banExpires?: Prisma.DateTimeNullableFilter<"user"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"user"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"user"> | Date | string
+  meta?: Prisma.JsonNullableFilter<"user">
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   brand_assignments?: Prisma.User_brandListRelationFilter
@@ -338,6 +344,7 @@ export type userOrderByWithAggregationInput = {
   banExpires?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  meta?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.userCountOrderByAggregateInput
   _max?: Prisma.userMaxOrderByAggregateInput
   _min?: Prisma.userMinOrderByAggregateInput
@@ -358,6 +365,7 @@ export type userScalarWhereWithAggregatesInput = {
   banExpires?: Prisma.DateTimeNullableWithAggregatesFilter<"user"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"user"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"user"> | Date | string
+  meta?: Prisma.JsonNullableWithAggregatesFilter<"user">
 }
 
 export type userCreateInput = {
@@ -372,6 +380,7 @@ export type userCreateInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -407,6 +416,7 @@ export type userUncheckedCreateInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -442,6 +452,7 @@ export type userUpdateInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -477,6 +488,7 @@ export type userUncheckedUpdateInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -512,6 +524,7 @@ export type userCreateManyInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type userUpdateManyMutationInput = {
@@ -526,6 +539,7 @@ export type userUpdateManyMutationInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type userUncheckedUpdateManyInput = {
@@ -540,6 +554,7 @@ export type userUncheckedUpdateManyInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type UserScalarRelationFilter = {
@@ -559,6 +574,7 @@ export type userCountOrderByAggregateInput = {
   banExpires?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  meta?: Prisma.SortOrder
 }
 
 export type userMaxOrderByAggregateInput = {
@@ -910,6 +926,7 @@ export type userCreateWithoutBrand_assignmentsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput
@@ -944,6 +961,7 @@ export type userUncheckedCreateWithoutBrand_assignmentsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput
@@ -994,6 +1012,7 @@ export type userUpdateWithoutBrand_assignmentsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput
@@ -1028,6 +1047,7 @@ export type userUncheckedUpdateWithoutBrand_assignmentsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput
@@ -1062,6 +1082,7 @@ export type userCreateWithoutSessionsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
   dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput
@@ -1096,6 +1117,7 @@ export type userUncheckedCreateWithoutSessionsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput
@@ -1146,6 +1168,7 @@ export type userUpdateWithoutSessionsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
   dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput
@@ -1180,6 +1203,7 @@ export type userUncheckedUpdateWithoutSessionsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput
@@ -1214,6 +1238,7 @@ export type userCreateWithoutAccountsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
   dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput
@@ -1248,6 +1273,7 @@ export type userUncheckedCreateWithoutAccountsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput
@@ -1298,6 +1324,7 @@ export type userUpdateWithoutAccountsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
   dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput
@@ -1332,6 +1359,7 @@ export type userUncheckedUpdateWithoutAccountsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
   dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput
@@ -1366,6 +1394,7 @@ export type userCreateWithoutDim_offers_auditsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -1400,6 +1429,7 @@ export type userUncheckedCreateWithoutDim_offers_auditsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -1450,6 +1480,7 @@ export type userUpdateWithoutDim_offers_auditsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -1484,6 +1515,7 @@ export type userUncheckedUpdateWithoutDim_offers_auditsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -1518,6 +1550,7 @@ export type userCreateWithoutUrls_to_scrapeInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -1552,6 +1585,7 @@ export type userUncheckedCreateWithoutUrls_to_scrapeInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -1602,6 +1636,7 @@ export type userUpdateWithoutUrls_to_scrapeInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -1636,6 +1671,7 @@ export type userUncheckedUpdateWithoutUrls_to_scrapeInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -1670,6 +1706,7 @@ export type userCreateWithoutGenerated_imagesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -1704,6 +1741,7 @@ export type userUncheckedCreateWithoutGenerated_imagesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -1754,6 +1792,7 @@ export type userUpdateWithoutGenerated_imagesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -1788,6 +1827,7 @@ export type userUncheckedUpdateWithoutGenerated_imagesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -1822,6 +1862,7 @@ export type userCreateWithoutReference_imagesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -1856,6 +1897,7 @@ export type userUncheckedCreateWithoutReference_imagesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -1906,6 +1948,7 @@ export type userUpdateWithoutReference_imagesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -1940,6 +1983,7 @@ export type userUncheckedUpdateWithoutReference_imagesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -1974,6 +2018,7 @@ export type userCreateWithoutImage_presetsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -2008,6 +2053,7 @@ export type userUncheckedCreateWithoutImage_presetsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -2058,6 +2104,7 @@ export type userUpdateWithoutImage_presetsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -2092,6 +2139,7 @@ export type userUncheckedUpdateWithoutImage_presetsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -2126,6 +2174,7 @@ export type userCreateWithoutImage_templatesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -2160,6 +2209,7 @@ export type userUncheckedCreateWithoutImage_templatesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -2210,6 +2260,7 @@ export type userUpdateWithoutImage_templatesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -2244,6 +2295,7 @@ export type userUncheckedUpdateWithoutImage_templatesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -2278,6 +2330,7 @@ export type userCreateWithoutGenerated_copiesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -2312,6 +2365,7 @@ export type userUncheckedCreateWithoutGenerated_copiesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -2362,6 +2416,7 @@ export type userUpdateWithoutGenerated_copiesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -2396,6 +2451,7 @@ export type userUncheckedUpdateWithoutGenerated_copiesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -2430,6 +2486,7 @@ export type userCreateWithoutCompetition_restaurant_prefsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -2464,6 +2521,7 @@ export type userUncheckedCreateWithoutCompetition_restaurant_prefsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -2514,6 +2572,7 @@ export type userUpdateWithoutCompetition_restaurant_prefsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -2548,6 +2607,7 @@ export type userUncheckedUpdateWithoutCompetition_restaurant_prefsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -2582,6 +2642,7 @@ export type userCreateWithoutCompetition_dashboard_widgetsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -2616,6 +2677,7 @@ export type userUncheckedCreateWithoutCompetition_dashboard_widgetsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -2666,6 +2728,7 @@ export type userUpdateWithoutCompetition_dashboard_widgetsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -2700,6 +2763,7 @@ export type userUncheckedUpdateWithoutCompetition_dashboard_widgetsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -2734,6 +2798,7 @@ export type userCreateWithoutGoogle_reviews_business_prefsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -2768,6 +2833,7 @@ export type userUncheckedCreateWithoutGoogle_reviews_business_prefsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -2818,6 +2884,7 @@ export type userUpdateWithoutGoogle_reviews_business_prefsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -2852,6 +2919,7 @@ export type userUncheckedUpdateWithoutGoogle_reviews_business_prefsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -2886,6 +2954,7 @@ export type userCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -2920,6 +2989,7 @@ export type userUncheckedCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -2970,6 +3040,7 @@ export type userUpdateWithoutGoogle_reviews_dashboard_widgetsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -3004,6 +3075,7 @@ export type userUncheckedUpdateWithoutGoogle_reviews_dashboard_widgetsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -3038,6 +3110,7 @@ export type userCreateWithoutMonitor_entriesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -3072,6 +3145,7 @@ export type userUncheckedCreateWithoutMonitor_entriesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -3122,6 +3196,7 @@ export type userUpdateWithoutMonitor_entriesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -3156,6 +3231,7 @@ export type userUncheckedUpdateWithoutMonitor_entriesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -3190,6 +3266,7 @@ export type userCreateWithoutPage_viewsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -3224,6 +3301,7 @@ export type userUncheckedCreateWithoutPage_viewsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -3274,6 +3352,7 @@ export type userUpdateWithoutPage_viewsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -3308,6 +3387,7 @@ export type userUncheckedUpdateWithoutPage_viewsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -3342,6 +3422,7 @@ export type userCreateWithoutPage_view_dailyInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -3376,6 +3457,7 @@ export type userUncheckedCreateWithoutPage_view_dailyInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -3426,6 +3508,7 @@ export type userUpdateWithoutPage_view_dailyInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -3460,6 +3543,7 @@ export type userUncheckedUpdateWithoutPage_view_dailyInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -3494,6 +3578,7 @@ export type userCreateWithoutVisit_dailyInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -3528,6 +3613,7 @@ export type userUncheckedCreateWithoutVisit_dailyInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -3578,6 +3664,7 @@ export type userUpdateWithoutVisit_dailyInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -3612,6 +3699,7 @@ export type userUncheckedUpdateWithoutVisit_dailyInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -3646,6 +3734,7 @@ export type userCreateWithoutAgent_skillsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -3680,6 +3769,7 @@ export type userUncheckedCreateWithoutAgent_skillsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -3730,6 +3820,7 @@ export type userUpdateWithoutAgent_skillsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -3764,6 +3855,7 @@ export type userUncheckedUpdateWithoutAgent_skillsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -3798,6 +3890,7 @@ export type userCreateWithoutReleasesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -3832,6 +3925,7 @@ export type userUncheckedCreateWithoutReleasesInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -3882,6 +3976,7 @@ export type userUpdateWithoutReleasesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -3916,6 +4011,7 @@ export type userUncheckedUpdateWithoutReleasesInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -3950,6 +4046,7 @@ export type userCreateWithoutRelease_readsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
@@ -3984,6 +4081,7 @@ export type userUncheckedCreateWithoutRelease_readsInput = {
   banExpires?: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
   brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
@@ -4034,6 +4132,7 @@ export type userUpdateWithoutRelease_readsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
@@ -4068,6 +4167,7 @@ export type userUncheckedUpdateWithoutRelease_readsInput = {
   banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
   brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
@@ -4313,6 +4413,7 @@ export type userSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   banExpires?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  meta?: boolean
   sessions?: boolean | Prisma.user$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.user$accountsArgs<ExtArgs>
   brand_assignments?: boolean | Prisma.user$brand_assignmentsArgs<ExtArgs>
@@ -4349,6 +4450,7 @@ export type userSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   banExpires?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  meta?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type userSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -4363,6 +4465,7 @@ export type userSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   banExpires?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  meta?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type userSelectScalar = {
@@ -4377,9 +4480,10 @@ export type userSelectScalar = {
   banExpires?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  meta?: boolean
 }
 
-export type userOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "role" | "banned" | "banReason" | "banExpires" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type userOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "role" | "banned" | "banReason" | "banExpires" | "createdAt" | "updatedAt" | "meta", ExtArgs["result"]["user"]>
 export type userInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | Prisma.user$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.user$accountsArgs<ExtArgs>
@@ -4444,6 +4548,10 @@ export type $userPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     banExpires: Date | null
     createdAt: Date
     updatedAt: Date
+    /**
+     * Per-user preferences (JSON object, e.g. { preferences: { "salesExplore.columns": [...] } }).
+     */
+    meta: runtime.JsonValue | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -4899,6 +5007,7 @@ export interface userFieldRefs {
   readonly banExpires: Prisma.FieldRef<"user", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"user", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"user", 'DateTime'>
+  readonly meta: Prisma.FieldRef<"user", 'Json'>
 }
     
 

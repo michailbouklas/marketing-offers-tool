@@ -25,8 +25,8 @@ On `transactions`:
 
 On `transaction_details`:
 
-- `trde_discount` (Decimal) — discount amount on this individual line item
-- `trde_line_discount` (Decimal) — line-level discount
+- `trde_discount` (Decimal) — the order's discount **percentage** (0–100), copied onto every line of a discounted order. NOT an amount: never `sum()` it. `trde_net_price = trde_normal_price × (1 − trde_discount/100)`. The discount amount is `transactions.tran_discount` (net of VAT).
+- `trde_line_discount` (Decimal) — always 0 in the data (verified 2026-11-02); do not use
 - `trde_coupon` (String) — coupon code used
 - `trde_is_coupon` (Int32) — 1 = this line is a coupon redemption
 - `trde_coupon_group` (Int32) — coupon group id for aggregating coupon families
@@ -92,7 +92,7 @@ ORDER BY avg_discount DESC
 ### Coupon redemption summary
 
 ```sql
-SELECT trde_coupon, count() AS redemption_count, sum(trde_discount) AS total_discount
+SELECT trde_coupon, count() AS redemption_count
 FROM transaction_details
 WHERE brand = 'bk'
   AND trde_is_coupon = 1

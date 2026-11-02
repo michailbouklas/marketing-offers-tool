@@ -73,6 +73,7 @@
   "dependencies": {
     "@ai-sdk/svelte": "^5.0.32",
     "@clickhouse/client": "^1.12.1",
+    "@gp-grid/vue": "^1.1.0",
     "@mastra/ai-sdk": "^1.6.2",
     "@mastra/clickhouse": "^1.12.0",
     "@mastra/core": "^1.51.0",
@@ -93,6 +94,7 @@
     "sharp": "^0.34.5",
     "sveltekit-superforms": "^2.30.0",
     "three": "^0.185.1",
+    "vue": "^3.5.44",
     "ws": "^8.21.3",
     "zod": "^4.3.6"
   }

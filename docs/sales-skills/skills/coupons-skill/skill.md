@@ -88,8 +88,8 @@ AND (
 | `trde_coupon`         | The explicit coupon/promo code — primary field for coupon analysis                |
 | `trde_coupon_group`   | Grouping field; often defaults to `0` — not reliable as a primary key             |
 | `trde_net_value`      | `0` on coupon marker rows; `> 0` on affected sale rows                            |
-| `trde_discount`       | Discount applied to an affected sale row                                          |
-| `trde_line_discount`  | Line-level discount on an affected sale row                                       |
+| `trde_discount`       | Order discount **percentage** (0–100) on every line of the order — not an amount, never sum it |
+| `trde_line_discount`  | Always 0 in the data — do not use                                                 |
 | `trde_is_master_item` | Not a reliable indicator of coupon header rows — do not use as primary key        |
 | `item_name`           | Describes the promotion on marker rows; product name on sale rows                 |
 | `item_category`       | Contains `'Coupon'` for coupon marker rows                                        |
@@ -190,7 +190,7 @@ AND trde_net_value > 0
 Using the affected sale rows, calculate:
 
 - Discounted revenue (`trde_net_value`)
-- Total discount value (`trde_discount` / `trde_line_discount`)
+- Total discount value: `transactions.tran_discount` of the orders holding the coupon (`trde_discount` is a percentage)
 - Coupon usage frequency (count by `trde_coupon`)
 - Product-level coupon impact
 

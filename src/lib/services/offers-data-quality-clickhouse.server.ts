@@ -76,7 +76,7 @@ export type TransactedOfferItem = {
 
 const DEFAULT_LOOKBACK_DAYS = 90;
 const DEFAULT_MISSING_OFFERS_SINCE = "2024-01-01";
-const OFFER_ITEM_CATEGORIES = [
+export const OFFER_ITEM_CATEGORIES = [
   "Amount Of Money Offers",
   "Bolt Offers PH",
   "Call Center Offers",

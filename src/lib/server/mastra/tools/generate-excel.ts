@@ -16,11 +16,11 @@ const MAX_COLUMNS = 50;
 const MAX_ROWS_PER_SHEET = 5_000;
 const MAX_TOTAL_CELLS = 20_000;
 const MAX_EXTRA_COMMANDS = 200;
-const MAX_FILE_BYTES = 25 * 1024 * 1024;
+export const MAX_FILE_BYTES = 25 * 1024 * 1024;
 const CREATE_TIMEOUT_MS = 15_000;
 const BATCH_TIMEOUT_MS = 60_000;
 
-const XLSX_MIME =
+export const XLSX_MIME =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 /**
@@ -67,7 +67,7 @@ function columnRef(index: number): string {
 }
 
 /** Restrict to download-header-safe characters and force the .xlsx suffix. */
-function sanitizeFilename(raw: string): string {
+export function sanitizeFilename(raw: string): string {
   const base = raw
     .replace(/\.xlsx$/i, "")
     .replace(/[^A-Za-z0-9 ._()-]+/g, "-")
@@ -163,7 +163,7 @@ interface OfficeCliBatchOutput {
  * Windows antivirus briefly locks freshly written files (EBUSY/EPERM), so a
  * read right after officecli exits can fail; retry with a short backoff.
  */
-async function readFileWithRetry(path: string): Promise<Buffer> {
+export async function readFileWithRetry(path: string): Promise<Buffer> {
   let lastError: unknown;
   for (let attempt = 0; attempt < 5; attempt += 1) {
     try {
@@ -180,7 +180,7 @@ async function readFileWithRetry(path: string): Promise<Buffer> {
   throw lastError;
 }
 
-async function runOfficeCli(
+export async function runOfficeCli(
   args: string[],
   timeoutMs: number,
 ): Promise<string> {
@@ -202,7 +202,7 @@ async function runOfficeCli(
  * follow-up commands; it must be closed to release the file lock before we
  * can read or delete the xlsx. Idempotent and best-effort.
  */
-async function closeResident(xlsxPath: string): Promise<void> {
+export async function closeResident(xlsxPath: string): Promise<void> {
   await runOfficeCli(["close", xlsxPath, "--json"], CREATE_TIMEOUT_MS).catch(
     () => {},
   );
