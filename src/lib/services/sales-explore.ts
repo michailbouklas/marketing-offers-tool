@@ -220,6 +220,13 @@ export type ExploreValueBreakdown = {
   lineNet: number;
   discount: number;
   discountOrders: number;
+  /** Sum of `tran_total` (net + VAT + delivery + service). */
+  paid: number;
+  medianNet: number;
+  /** Order net of orders holding an offer line (count = buckets.offer.orders). */
+  offerOrderNet: number;
+  /** Combo + other line net inside those offer orders: spend added to the deal. */
+  offerAddOnNet: number;
   buckets: Record<
     ValueBucket,
     { net: number; orders: number; discount: number }

@@ -568,10 +568,16 @@ SELECT
   countIf(o_disc != 0) AS discountOrders,
   sumForEach(bn) AS bucketNet,
   sumForEach(share) AS bucketDiscount,
-  sumForEach(arrayMap(b -> has(k, b), [1, 2, 3])) AS bucketOrders
+  sumForEach(arrayMap(b -> has(k, b), [1, 2, 3])) AS bucketOrders,
+  sum(o_paid) AS paid,
+  quantileExact(0.5)(o_net) AS medianNet,
+  sumIf(o_net, has(k, 1)) AS offerOrderNet,
+  sumIf(bn[2] + bn[3], has(k, 1)) AS offerAddOnNet
 FROM (
   SELECT
     toFloat64(tran_net) AS o_net,
+    -- net + VAT + delivery + service: what the customer paid.
+    toFloat64(tran_total) AS o_paid,
     toFloat64(tran_discount) AS o_disc,
     arrayMap(x -> multiIf(
       has(offer_heads, x.1) OR has(offer_heads, x.2), 1,
@@ -617,6 +623,10 @@ FROM (
     bucketNet: number[];
     bucketDiscount: number[];
     bucketOrders: (string | number)[];
+    paid: number;
+    medianNet: number;
+    offerOrderNet: number;
+    offerAddOnNet: number;
   }>();
   const at = (values: (string | number)[] | undefined, i: number) =>
     toNumber(values?.[i] ?? 0);
@@ -626,6 +636,10 @@ FROM (
     lineNet: toNumber(row?.lineNet ?? 0),
     discount: toNumber(row?.discount ?? 0),
     discountOrders: toNumber(row?.discountOrders ?? 0),
+    paid: toNumber(row?.paid ?? 0),
+    medianNet: toNumber(row?.medianNet ?? 0),
+    offerOrderNet: toNumber(row?.offerOrderNet ?? 0),
+    offerAddOnNet: toNumber(row?.offerAddOnNet ?? 0),
     buckets: Object.fromEntries(
       VALUE_BUCKETS.map((bucket, i) => [
         bucket,

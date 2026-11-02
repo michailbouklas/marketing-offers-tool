@@ -95,7 +95,55 @@
       : [],
   );
   const remainder = $derived(data ? data.orderNet - data.lineNet : 0);
+
+  const avg = (sum: number, count: number) => (count ? sum / count : null);
+  const money = (value: number | null) =>
+    value === null ? "—" : formatSalesAmount(value);
+  // Average check per order: the POS has no guest count.
+  const checkTiles = $derived.by(() => {
+    if (!data) return [];
+    const offerOrders = data.buckets.offer.orders;
+    const withOffer = avg(data.offerOrderNet, offerOrders);
+    const withoutOffer = avg(
+      data.orderNet - data.offerOrderNet,
+      data.orders - offerOrders,
+    );
+    const uplift =
+      withOffer !== null && withoutOffer
+        ? `${withOffer >= withoutOffer ? "+" : ""}${((withOffer / withoutOffer - 1) * 100).toFixed(1)}% vs without · `
+        : "";
+    return [
+      {
+        label: "Avg check",
+        value: money(avg(data.orderNet, data.orders)),
+        note: `median ${formatSalesAmount(data.medianNet)} · ${money(avg(data.paid, data.orders))} paid incl. VAT`,
+      },
+      {
+        label: "Avg check with an offer",
+        value: money(withOffer),
+        note: `${uplift}${pct(offerOrders, data.orders)} of orders`,
+      },
+      {
+        label: "Avg check without an offer",
+        value: money(withoutOffer),
+        note: `${formatSalesCount(data.orders - offerOrders)} orders`,
+      },
+      {
+        label: "Added to the offer",
+        value: money(avg(data.offerAddOnNet, offerOrders)),
+        note: "combos + other items per offer order",
+      },
+    ];
+  });
 </script>
+
+{#snippet tile(label: string, value: string, note: string)}
+  <div class="bg-muted/50 rounded-lg px-3 py-2">
+    <p class="text-muted-foreground text-xs">{label}</p>
+    <p class="text-base font-semibold">{value}</p>
+    <p class="text-muted-foreground text-xs">{note}</p>
+  </div>
+{/snippet}
 
 <Dialog.Root bind:open>
   <Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
@@ -110,14 +158,11 @@
       </div>
     {:else if data}
       <div class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-        {#each [{ label: "Order net", value: data.orderNet, note: `${formatSalesCount(data.orders)} orders` }, { label: "From offers", value: data.buckets.offer.net, note: `${pct(data.buckets.offer.net, data.orderNet)} of net` }, { label: "From combos", value: data.buckets.combo.net, note: `${pct(data.buckets.combo.net, data.orderNet)} of net` }, { label: "Discounts given", value: data.discount, note: `${pct(data.discount, data.orderNet + data.discount)} of pre-discount · ${formatSalesCount(data.discountOrders)} orders` }] as tile (tile.label)}
-          <div class="bg-muted/50 rounded-lg px-3 py-2">
-            <p class="text-muted-foreground text-xs">{tile.label}</p>
-            <p class="text-base font-semibold">
-              {formatSalesAmount(tile.value)}
-            </p>
-            <p class="text-muted-foreground text-xs">{tile.note}</p>
-          </div>
+        {#each [{ label: "Order net", value: data.orderNet, note: `${formatSalesCount(data.orders)} orders` }, { label: "From offers", value: data.buckets.offer.net, note: `${pct(data.buckets.offer.net, data.orderNet)} of net` }, { label: "From combos", value: data.buckets.combo.net, note: `${pct(data.buckets.combo.net, data.orderNet)} of net` }, { label: "Discounts given", value: data.discount, note: `${pct(data.discount, data.orderNet + data.discount)} of pre-discount · ${formatSalesCount(data.discountOrders)} orders, ${money(avg(data.discount, data.discountOrders))} each` }] as t (t.label)}
+          {@render tile(t.label, formatSalesAmount(t.value), t.note)}
+        {/each}
+        {#each checkTiles as t (t.label)}
+          {@render tile(t.label, t.value, t.note)}
         {/each}
       </div>
 
@@ -167,7 +212,11 @@
             <Table.Head class="text-right">Net</Table.Head>
             <Table.Head class="text-right">% of net</Table.Head>
             <Table.Head class="text-right">Discount given</Table.Head>
-            <Table.Head class="text-right">Avg net / order</Table.Head>
+            <Table.Head
+              class="text-right"
+              title="This group's net divided by the orders containing it"
+              >Net per order containing</Table.Head
+            >
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -219,6 +268,10 @@
           each bundle (an item in both counts as an offer). Discounts are the
           order discounts, on top of the net, split across groups by the
           discounted items' value. Delivery charges are left out.
+        </p>
+        <p>
+          Checks are per order: the POS records no guest count. "Paid incl. VAT"
+          adds VAT, delivery and service charges.
         </p>
         {#if Math.abs(remainder) >= 0.01}
           <p>

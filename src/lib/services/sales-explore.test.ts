@@ -222,6 +222,10 @@ describe("queryExploreBreakdown", () => {
           bucketNet: [10, 5, 15],
           bucketDiscount: [3, 0, 1],
           bucketOrders: ["1", "1", "2"],
+          paid: 36,
+          medianNet: 9,
+          offerOrderNet: 18,
+          offerAddOnNet: 8,
         },
       ],
     } as never);
@@ -244,6 +248,13 @@ describe("queryExploreBreakdown", () => {
     expect(call.query_params.offerCats).toContain("Coupons BK");
     expect(call.query_params.comboCats).toContain("Combo Meals");
     expect(result.orders).toBe(3);
+    expect(call.query).toContain("sumIf(bn[2] + bn[3], has(k, 1))");
+    expect(result).toMatchObject({
+      paid: 36,
+      medianNet: 9,
+      offerOrderNet: 18,
+      offerAddOnNet: 8,
+    });
     expect(result.buckets.offer).toEqual({ net: 10, orders: 1, discount: 3 });
     expect(result.buckets.other).toEqual({ net: 15, orders: 2, discount: 1 });
   });
