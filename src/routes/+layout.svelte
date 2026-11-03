@@ -4,6 +4,7 @@
   import { ModeWatcher } from "mode-watcher";
   import TopNav from "$lib/components/navigation/top-nav.svelte";
   import AppSidebar from "$lib/components/navigation/app-sidebar.svelte";
+  import CommandPalette from "$lib/components/navigation/command-palette.svelte";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import { Toaster } from "$lib/components/ui/sonner/index.js";
   import { scrapeStream } from "$lib/state/scrape-stream.svelte";
@@ -70,6 +71,7 @@
 {#if user}
   <Sidebar.Provider>
     <AppSidebar />
+    <CommandPalette />
     <Sidebar.Inset class="min-w-0">
       <TopNav />
       <ReleaseAnnouncementDialog />

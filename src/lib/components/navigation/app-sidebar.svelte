@@ -1,67 +1,17 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import {
-    aggregatorInvoicesRoles,
-    aggregatorKpisRoles,
-    canAccessAdminSection,
-    competitionRoles,
-    forecastsRoles,
-    googleAnalyticsRoles,
-    googleReviewsRoles,
-    hasAnyRole,
-    salesRoles,
-    type UserRole,
-  } from "$lib/auth/roles";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
   import SignOutButton from "$lib/components/ui/sign-out-button/index.svelte";
-  import HouseIcon from "@lucide/svelte/icons/house";
-  import StoreIcon from "@lucide/svelte/icons/store";
-  import ShieldCheckIcon from "@lucide/svelte/icons/shield-check";
-  import ImageIcon from "@lucide/svelte/icons/image";
-  import PenLineIcon from "@lucide/svelte/icons/pen-line";
-  import LightbulbIcon from "@lucide/svelte/icons/lightbulb";
-  import ShieldIcon from "@lucide/svelte/icons/shield";
-  import TrendingUpIcon from "@lucide/svelte/icons/trending-up";
-  import StarIcon from "@lucide/svelte/icons/star";
-  import GaugeIcon from "@lucide/svelte/icons/gauge";
-  import ChartColumnIcon from "@lucide/svelte/icons/chart-column";
-  import ChartSplineIcon from "@lucide/svelte/icons/chart-spline";
-  import ChartLineIcon from "@lucide/svelte/icons/chart-line";
-  import type { Component } from "svelte";
-
-  // `roles` lists the role(s) that may see the item. Omit it for items visible
-  // to everyone. `superUser` is included on capability-gated items since it is
-  // the admin-equivalent that holds every resource permission.
-  type NavLeaf = {
-    href: string;
-    label: string;
-    icon: Component;
-    roles?: UserRole[];
-    badge?: number;
-  };
-
-  type NavChild = {
-    href: string;
-    label: string;
-    roles?: UserRole[];
-  };
-
-  // A group renders as a parent entry with indented sub-items (always
-  // expanded). The parent link points at the group's landing page.
-  type NavGroup = {
-    href: string;
-    label: string;
-    icon: Component;
-    roles?: UserRole[];
-    badge?: number;
-    children: NavChild[];
-  };
-
-  type NavItem = NavLeaf | NavGroup;
-
-  function isGroup(item: NavItem): item is NavGroup {
-    return "children" in item;
-  }
+  import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+  import * as Collapsible from "$lib/components/ui/collapsible/index.js";
+  import { slide } from "svelte/transition";
+  import { prefersReducedMotion } from "svelte/motion";
+  import {
+    isGroup,
+    visibleNavItems,
+    type NavGroup,
+    type NavItem,
+  } from "./nav-items";
 
   const user = $derived(page.data.user as { role?: string } | null | undefined);
 
@@ -71,157 +21,13 @@
     (page.data.pendingNotificationCount as number | undefined) ?? 0,
   );
 
-  const allNavItems: NavItem[] = [
-    { href: "/", label: "Home", icon: HouseIcon },
-    {
-      href: "/aggregator-offers",
-      label: "Aggregator Offers",
-      icon: StoreIcon,
-      roles: ["offerEditor", ...aggregatorInvoicesRoles],
-      children: [
-        {
-          href: "/aggregator-offers",
-          label: "Offers",
-          roles: ["offerEditor", "superUser"],
-        },
-        {
-          href: "/aggregator-offers/invoices",
-          label: "Invoices",
-          roles: aggregatorInvoicesRoles,
-        },
-      ],
-    },
-    {
-      href: "/offers-data-quality",
-      label: "Data Quality",
-      icon: ShieldCheckIcon,
-      roles: ["offerEditor", "superUser"],
-    },
-    {
-      href: "/image-generator",
-      label: "Image Generator",
-      icon: ImageIcon,
-      roles: ["admin", "superUser", "brandManager", "imageEditor"],
-    },
-    {
-      href: "/image-generator/inspiration",
-      label: "Inspiration",
-      icon: LightbulbIcon,
-      roles: ["admin", "superUser", "brandManager", "imageEditor"],
-    },
-    {
-      href: "/copywriter",
-      label: "Copywriter",
-      icon: PenLineIcon,
-      roles: ["superUser", "copywriter"],
-    },
-    {
-      href: "/competition",
-      label: "Competition",
-      icon: TrendingUpIcon,
-      roles: competitionRoles,
-      children: [
-        { href: "/competition", label: "Dashboard" },
-        { href: "/competition/offers", label: "Active Offers" },
-        {
-          href: "/competition/offers/scrape-sessions",
-          label: "Scrape Sessions",
-          roles: ["superUser"],
-        },
-        { href: "/competition/restaurants", label: "Restaurants" },
-      ],
-    },
-    {
-      href: "/google-reviews",
-      label: "Google Reviews",
-      icon: StarIcon,
-      roles: googleReviewsRoles,
-      children: [
-        { href: "/google-reviews", label: "Dashboard" },
-        { href: "/google-reviews/reviews", label: "Reviews" },
-        { href: "/google-reviews/businesses", label: "Businesses" },
-        {
-          href: "/google-reviews/negative-reviews-categories",
-          label: "Negative review categories",
-        },
-      ],
-    },
-    {
-      href: "/google-analytics",
-      label: "Google Analytics",
-      icon: ChartLineIcon,
-      roles: googleAnalyticsRoles,
-    },
-    {
-      href: "/aggregator-kpis",
-      label: "Aggregator KPIs",
-      icon: GaugeIcon,
-      roles: aggregatorKpisRoles,
-      children: [
-        { href: "/aggregator-kpis", label: "Overview" },
-        { href: "/aggregator-kpis/metrics", label: "Metrics" },
-        { href: "/aggregator-kpis/closures", label: "Closures" },
-        {
-          href: "/aggregator-kpis/order-rejections",
-          label: "Order Rejections",
-        },
-        { href: "/aggregator-kpis/punctuality", label: "Punctuality" },
-        { href: "/aggregator-kpis/pro-growth", label: "Pro Growth" },
-        { href: "/aggregator-kpis/ratings", label: "Ratings" },
-        { href: "/aggregator-kpis/reviews", label: "Reviews" },
-        {
-          href: "/aggregator-kpis/sessions",
-          label: "Sessions",
-          roles: ["admin", "superUser"],
-        },
-      ],
-    },
-    {
-      href: "/sales/dashboard",
-      label: "Sales",
-      icon: ChartColumnIcon,
-      roles: salesRoles,
-      children: [
-        { href: "/sales/dashboard", label: "Dashboard" },
-        { href: "/sales/explore", label: "Explore" },
-        { href: "/sales/chat", label: "Chat" },
-      ],
-    },
-    {
-      href: "/forecasts",
-      label: "Sales Forecasts",
-      icon: ChartSplineIcon,
-      roles: forecastsRoles,
-      children: [
-        { href: "/forecasts", label: "Overview" },
-        { href: "/forecasts/compare", label: "Compare models" },
-        { href: "/forecasts/validation", label: "Validation" },
-      ],
-    },
-  ];
-
-  const navigationItems = $derived<NavItem[]>([
-    ...allNavItems
-      .filter((item) => !item.roles || hasAnyRole(user?.role, item.roles))
-      .map((item) => {
-        const visibleItem = isGroup(item)
-          ? {
-              ...item,
-              children: item.children.filter(
-                (child) => !child.roles || hasAnyRole(user?.role, child.roles),
-              ),
-            }
-          : item;
-
-        return visibleItem.href === "/competition" &&
-          pendingNotificationCount > 0
-          ? { ...visibleItem, badge: pendingNotificationCount }
-          : visibleItem;
-      }),
-    ...(canAccessAdminSection(user?.role)
-      ? [{ href: "/admin", label: "Admin", icon: ShieldIcon }]
-      : []),
-  ]);
+  const navigationItems = $derived<NavItem[]>(
+    visibleNavItems(user?.role).map((item) =>
+      item.href === "/competition" && pendingNotificationCount > 0
+        ? { ...item, badge: pendingNotificationCount }
+        : item,
+    ),
+  );
 
   // Sidebar badges hide in icon-collapsed mode; cap the label so a large
   // backlog stays legible.
@@ -262,6 +68,13 @@
   function isGroupActive(group: NavGroup) {
     return group.children.some((child) => isActive(child.href));
   }
+
+  // Explicit user toggles; untouched groups follow the route (open when active).
+  let openGroups = $state<Record<string, boolean>>({});
+
+  function isGroupOpen(group: NavGroup) {
+    return openGroups[group.href] ?? isGroupActive(group);
+  }
 </script>
 
 <Sidebar.Root collapsible="icon">
@@ -299,35 +112,68 @@
           {#each navigationItems as item (item.href)}
             <Sidebar.MenuItem>
               {#if isGroup(item)}
-                <Sidebar.MenuButton
-                  isActive={isGroupActive(item)}
-                  tooltipContent={item.label}
+                {@const open = isGroupOpen(item)}
+                <Collapsible.Root
+                  {open}
+                  onOpenChange={(value) => (openGroups[item.href] = value)}
                 >
-                  {#snippet child({ props })}
-                    <a href={item.href} {...props}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </a>
-                  {/snippet}
-                </Sidebar.MenuButton>
-                {#if item.badge}
-                  <Sidebar.MenuBadge
-                    >{formatBadge(item.badge)}</Sidebar.MenuBadge
+                  <Sidebar.MenuButton
+                    isActive={isGroupActive(item)}
+                    tooltipContent={item.label}
                   >
-                {/if}
-                <Sidebar.MenuSub>
-                  {#each item.children as subItem (subItem.href)}
-                    <Sidebar.MenuSubItem>
-                      <Sidebar.MenuSubButton isActive={isActive(subItem.href)}>
-                        {#snippet child({ props })}
-                          <a href={subItem.href} {...props}>
-                            <span>{subItem.label}</span>
-                          </a>
-                        {/snippet}
-                      </Sidebar.MenuSubButton>
-                    </Sidebar.MenuSubItem>
-                  {/each}
-                </Sidebar.MenuSub>
+                    {#snippet child({ props })}
+                      <a href={item.href} {...props}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                      </a>
+                    {/snippet}
+                  </Sidebar.MenuButton>
+                  <Collapsible.Trigger>
+                    {#snippet child({ props })}
+                      <Sidebar.MenuAction
+                        {...props}
+                        aria-label={`${open ? "Collapse" : "Expand"} ${item.label}`}
+                        class={open ? "rotate-90" : ""}
+                      >
+                        <ChevronRightIcon />
+                      </Sidebar.MenuAction>
+                    {/snippet}
+                  </Collapsible.Trigger>
+                  {#if item.badge}
+                    <!-- right-7 keeps the badge clear of the chevron -->
+                    <Sidebar.MenuBadge class="right-7"
+                      >{formatBadge(item.badge)}</Sidebar.MenuBadge
+                    >
+                  {/if}
+                  <Collapsible.Content forceMount>
+                    {#snippet child({ props, open: contentOpen })}
+                      {#if contentOpen}
+                        <div
+                          {...props}
+                          transition:slide={{
+                            duration: prefersReducedMotion.current ? 0 : 200,
+                          }}
+                        >
+                          <Sidebar.MenuSub>
+                            {#each item.children as subItem (subItem.href)}
+                              <Sidebar.MenuSubItem>
+                                <Sidebar.MenuSubButton
+                                  isActive={isActive(subItem.href)}
+                                >
+                                  {#snippet child({ props })}
+                                    <a href={subItem.href} {...props}>
+                                      <span>{subItem.label}</span>
+                                    </a>
+                                  {/snippet}
+                                </Sidebar.MenuSubButton>
+                              </Sidebar.MenuSubItem>
+                            {/each}
+                          </Sidebar.MenuSub>
+                        </div>
+                      {/if}
+                    {/snippet}
+                  </Collapsible.Content>
+                </Collapsible.Root>
               {:else}
                 <Sidebar.MenuButton
                   isActive={isActive(item.href)}
