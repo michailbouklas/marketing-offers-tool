@@ -6,6 +6,7 @@ import {
   getForecastValidationEnv,
   getGoogleAnalyticsRefreshEnv,
   getPageViewEnv,
+  getSalesOffersCacheEnv,
 } from "$lib/server/env";
 import {
   getNotificationsEnv,
@@ -19,6 +20,7 @@ import {
 } from "$lib/services/google-analytics/refresh-queue.server";
 import { runOfferDigest } from "$lib/services/notifications/offer-digest.server";
 import { tryRunPageViewRollupExclusively } from "$lib/services/page-views/page-view-rollup.server";
+import { refreshAllOfferValues } from "$lib/services/sales-offers.server";
 import type { DigestRunSummary } from "$lib/services/notifications/types";
 
 /**
@@ -36,7 +38,10 @@ import type { DigestRunSummary } from "$lib/services/notifications/types";
  *   default every minute), and
  * - the page-view rollup that folds raw live-monitoring page views into the
  *   permanent daily tables and purges raw rows past retention
- *   (`PAGE_VIEW_ROLLUP_CRON`, default 04:30 `ACTIVITY_TIMEZONE`).
+ *   (`PAGE_VIEW_ROLLUP_CRON`, default 04:30 `ACTIVITY_TIMEZONE`), and
+ * - the /sales/offers value cache rebuild, every brand from ClickHouse into
+ *   Postgres (`SALES_OFFERS_CACHE_CRON`, default 05:00
+ *   `SALES_OFFERS_CACHE_TIMEZONE`).
  *
  * Assumes a single app instance: each instance runs its own cron, so multiple
  * replicas would each fire (the advisory locks still prevent overlapping work,
@@ -51,6 +56,7 @@ const globalForScheduler = globalThis as typeof globalThis & {
   forecastValidationCron?: Cron;
   googleAnalyticsRefreshCron?: Cron;
   pageViewRollupCron?: Cron;
+  salesOffersCacheCron?: Cron;
 };
 
 export type DigestTriggerResult =
@@ -331,6 +337,47 @@ function startPageViewRollupScheduler(): void {
   );
 }
 
+/**
+ * Start the daily /sales/offers cache rebuild exactly once. Disabled with
+ * `SALES_OFFERS_CACHE_ENABLED=false`.
+ */
+function startSalesOffersCacheScheduler(): void {
+  if (globalForScheduler.salesOffersCacheCron) {
+    return;
+  }
+
+  const cacheEnv = getSalesOffersCacheEnv();
+
+  if (!cacheEnv.SALES_OFFERS_CACHE_ENABLED) {
+    console.info("[sales-offers] cache scheduler disabled by env.");
+    return;
+  }
+
+  const pattern = cacheEnv.SALES_OFFERS_CACHE_CRON;
+  const timezone = cacheEnv.SALES_OFFERS_CACHE_TIMEZONE;
+
+  globalForScheduler.salesOffersCacheCron = new Cron(
+    pattern,
+    { protect: true, name: "sales-offers-cache", timezone },
+    async () => {
+      try {
+        const started = Date.now();
+        const summary = await refreshAllOfferValues();
+        console.info("[sales-offers] cache rebuild complete:", {
+          ...summary,
+          ms: Date.now() - started,
+        });
+      } catch (error) {
+        console.error("[sales-offers] cache rebuild failed:", error);
+      }
+    },
+  );
+
+  console.info(
+    `[sales-offers] cache scheduler started (cron "${pattern}", ${timezone}).`,
+  );
+}
+
 /** Start every in-process cron. No-op during build. */
 export function startScheduler(): void {
   if (building) {
@@ -342,4 +389,5 @@ export function startScheduler(): void {
   startForecastValidationScheduler();
   startGoogleAnalyticsRefreshScheduler();
   startPageViewRollupScheduler();
+  startSalesOffersCacheScheduler();
 }

@@ -548,6 +548,32 @@ export function getPageViewEnv(): PageViewEnv {
 }
 
 /**
+ * Daily rebuild of the /sales/offers value cache (croner pattern + IANA
+ * timezone). See `src/lib/services/sales-offers.server.ts`.
+ */
+export type SalesOffersCacheEnv = {
+  /** Start the in-process daily rebuild cron. */
+  SALES_OFFERS_CACHE_ENABLED: boolean;
+  /** croner pattern; default 05:00 every day, after the 04:xx jobs. */
+  SALES_OFFERS_CACHE_CRON: string;
+  /** IANA timezone the cron pattern is evaluated in. */
+  SALES_OFFERS_CACHE_TIMEZONE: string;
+};
+
+export function getSalesOffersCacheEnv(): SalesOffersCacheEnv {
+  return {
+    SALES_OFFERS_CACHE_ENABLED: readBooleanFlag(
+      "SALES_OFFERS_CACHE_ENABLED",
+      true,
+    ),
+    SALES_OFFERS_CACHE_CRON:
+      readEnv("SALES_OFFERS_CACHE_CRON")?.trim() || "0 5 * * *",
+    SALES_OFFERS_CACHE_TIMEZONE:
+      readEnv("SALES_OFFERS_CACHE_TIMEZONE")?.trim() || "Europe/Nicosia",
+  };
+}
+
+/**
  * Configuration for forecast validation runs: the daily croner sweep that
  * compares recorded forecasts with the sales that actually happened, the
  * default window of `bun run forecast:validate`, how long to wait for lagging

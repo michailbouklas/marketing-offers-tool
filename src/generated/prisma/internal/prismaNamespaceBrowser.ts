@@ -105,6 +105,7 @@ export const ModelName = {
   AgentSkill: 'AgentSkill',
   Release: 'Release',
   ReleaseRead: 'ReleaseRead',
+  sales_offer_value_cache: 'sales_offer_value_cache',
   ai_chat_threads: 'ai_chat_threads',
   ai_chat_messages: 'ai_chat_messages'
 } as const
@@ -937,6 +938,15 @@ export const ReleaseReadScalarFieldEnum = {
 } as const
 
 export type ReleaseReadScalarFieldEnum = (typeof ReleaseReadScalarFieldEnum)[keyof typeof ReleaseReadScalarFieldEnum]
+
+
+export const Sales_offer_value_cacheScalarFieldEnum = {
+  brandAlias: 'brandAlias',
+  rows: 'rows',
+  computedAt: 'computedAt'
+} as const
+
+export type Sales_offer_value_cacheScalarFieldEnum = (typeof Sales_offer_value_cacheScalarFieldEnum)[keyof typeof Sales_offer_value_cacheScalarFieldEnum]
 
 
 export const Ai_chat_threadsScalarFieldEnum = {

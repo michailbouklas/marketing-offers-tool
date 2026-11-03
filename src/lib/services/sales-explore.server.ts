@@ -92,7 +92,7 @@ export const EXPLORE_OFFER_CATEGORIES: string[] = [
  * sit in an offer category (e.g. KFC call-centre sides) are not offers.
  * Needs `{offerCats:Array(String)}` bound.
  */
-const OFFER_LINE_SQL = `item_category IN {offerCats:Array(String)}
+export const OFFER_LINE_SQL = `item_category IN {offerCats:Array(String)}
     AND (trde_item = trde_combo_item OR trde_combo_item_pos = -1 OR trde_combo_item = '')
     AND trde_void_time = ''`;
 
@@ -137,7 +137,7 @@ const COMBO_LINE_SQL = `item_category IN {comboCats:Array(String)}
     AND trde_sub_line = 0
     AND trde_void_time = ''`;
 
-function detailsTable(): string {
+export function detailsTable(): string {
   return salesTransactionsTable().replace(
     /\.transactions$/,
     ".transaction_details",

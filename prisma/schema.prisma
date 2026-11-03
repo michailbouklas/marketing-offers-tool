@@ -1123,3 +1123,12 @@ model ReleaseRead {
 
   @@id([userId, releaseId])
 }
+
+/// All-time per-offer POS aggregates for /sales/offers, one row per brand.
+/// Rebuilt daily (SALES_OFFERS_CACHE_CRON) and on demand from the page; the
+/// verdicts are applied on read so brand FC targets apply immediately.
+model sales_offer_value_cache {
+  brandAlias String   @id @db.VarChar(64)
+  rows       Json
+  computedAt DateTime @default(now())
+}

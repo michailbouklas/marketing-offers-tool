@@ -330,6 +330,13 @@ export type Release = Prisma.ReleaseModel
  */
 export type ReleaseRead = Prisma.ReleaseReadModel
 /**
+ * Model sales_offer_value_cache
+ * All-time per-offer POS aggregates for /sales/offers, one row per brand.
+ * Rebuilt daily (SALES_OFFERS_CACHE_CRON) and on demand from the page; the
+ * verdicts are applied on read so brand FC targets apply immediately.
+ */
+export type sales_offer_value_cache = Prisma.sales_offer_value_cacheModel
+/**
  * Model ai_chat_threads
  * One per-user conversation session. `id` is "<agentId>:<userId>:<sessionKey>",
  * `resourceId` is the user id, `title` is AI-generated after the first exchange.

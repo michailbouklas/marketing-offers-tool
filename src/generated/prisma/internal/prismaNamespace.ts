@@ -438,6 +438,7 @@ export const ModelName = {
   AgentSkill: 'AgentSkill',
   Release: 'Release',
   ReleaseRead: 'ReleaseRead',
+  sales_offer_value_cache: 'sales_offer_value_cache',
   ai_chat_threads: 'ai_chat_threads',
   ai_chat_messages: 'ai_chat_messages'
 } as const
@@ -455,7 +456,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "page_view" | "page_view_daily" | "user_visit_daily" | "page_view_rollup_state" | "agentSkill" | "release" | "releaseRead" | "ai_chat_threads" | "ai_chat_messages"
+    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "page_view" | "page_view_daily" | "user_visit_daily" | "page_view_rollup_state" | "agentSkill" | "release" | "releaseRead" | "sales_offer_value_cache" | "ai_chat_threads" | "ai_chat_messages"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4455,6 +4456,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    sales_offer_value_cache: {
+      payload: Prisma.$sales_offer_value_cachePayload<ExtArgs>
+      fields: Prisma.sales_offer_value_cacheFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.sales_offer_value_cacheFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sales_offer_value_cachePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.sales_offer_value_cacheFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sales_offer_value_cachePayload>
+        }
+        findFirst: {
+          args: Prisma.sales_offer_value_cacheFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sales_offer_value_cachePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.sales_offer_value_cacheFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sales_offer_value_cachePayload>
+        }
+        findMany: {
+          args: Prisma.sales_offer_value_cacheFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sales_offer_value_cachePayload>[]
+        }
+        create: {
+          args: Prisma.sales_offer_value_cacheCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sales_offer_value_cachePayload>
+        }
+        createMany: {
+          args: Prisma.sales_offer_value_cacheCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.sales_offer_value_cacheCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sales_offer_value_cachePayload>[]
+        }
+        delete: {
+          args: Prisma.sales_offer_value_cacheDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sales_offer_value_cachePayload>
+        }
+        update: {
+          args: Prisma.sales_offer_value_cacheUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sales_offer_value_cachePayload>
+        }
+        deleteMany: {
+          args: Prisma.sales_offer_value_cacheDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.sales_offer_value_cacheUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.sales_offer_value_cacheUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sales_offer_value_cachePayload>[]
+        }
+        upsert: {
+          args: Prisma.sales_offer_value_cacheUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sales_offer_value_cachePayload>
+        }
+        aggregate: {
+          args: Prisma.Sales_offer_value_cacheAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSales_offer_value_cache>
+        }
+        groupBy: {
+          args: Prisma.sales_offer_value_cacheGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Sales_offer_value_cacheGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.sales_offer_value_cacheCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Sales_offer_value_cacheCountAggregateOutputType> | number
+        }
+      }
+    }
     ai_chat_threads: {
       payload: Prisma.$ai_chat_threadsPayload<ExtArgs>
       fields: Prisma.ai_chat_threadsFieldRefs
@@ -5384,6 +5459,15 @@ export const ReleaseReadScalarFieldEnum = {
 export type ReleaseReadScalarFieldEnum = (typeof ReleaseReadScalarFieldEnum)[keyof typeof ReleaseReadScalarFieldEnum]
 
 
+export const Sales_offer_value_cacheScalarFieldEnum = {
+  brandAlias: 'brandAlias',
+  rows: 'rows',
+  computedAt: 'computedAt'
+} as const
+
+export type Sales_offer_value_cacheScalarFieldEnum = (typeof Sales_offer_value_cacheScalarFieldEnum)[keyof typeof Sales_offer_value_cacheScalarFieldEnum]
+
+
 export const Ai_chat_threadsScalarFieldEnum = {
   id: 'id',
   resourceId: 'resourceId',
@@ -5969,6 +6053,7 @@ export type GlobalOmitConfig = {
   agentSkill?: Prisma.AgentSkillOmit
   release?: Prisma.ReleaseOmit
   releaseRead?: Prisma.ReleaseReadOmit
+  sales_offer_value_cache?: Prisma.sales_offer_value_cacheOmit
   ai_chat_threads?: Prisma.ai_chat_threadsOmit
   ai_chat_messages?: Prisma.ai_chat_messagesOmit
 }
