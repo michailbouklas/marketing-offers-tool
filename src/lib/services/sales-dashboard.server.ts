@@ -10,16 +10,20 @@ import {
 } from "$lib/services/forecasts/forecast-series.server";
 import {
   resolveSalesDashboardFilters,
+  SALES_DASHBOARD_HISTORY_YEARS,
+  shiftYears,
   type SalesDashboardBrand,
   type SalesDashboardFilters,
-  type SalesDayBrandRow,
+  type SalesDayTotal,
   type SalesDivisionOption,
   type SalesLocationOption,
+  type SalesStoreRow,
 } from "./sales-dashboard";
 
 /**
- * Server-only ClickHouse reads for /sales/dashboard. Sales rows only
- * (`tran_sales_factor = 1`), revenue = `tran_net`, and every query is bound
+ * Server-only ClickHouse reads for /sales/dashboard. Net sales =
+ * `tran_net * tran_sales_factor` (returns netted out), transactions = sales
+ * rows only (`tran_sales_factor = 1`), and every query is bound
  * to the caller's scoped brand codes plus a `tran_date` window so partitions
  * are pruned. Divisions are filtered by name: `tran_division` ids are shared
  * across brands and some ids carry several names.
@@ -106,41 +110,91 @@ function filterClause(filters: SalesDashboardFilters) {
     clauses.push("AND division_name = {division:String}");
     params.division = filters.divisionName;
   }
+  if (filters.channels.length > 0) {
+    clauses.push("AND dim_division_group_channel IN {channels:Array(String)}");
+    params.channels = filters.channels;
+  }
 
   return { sql: clauses.join("\n        "), params };
 }
 
-export async function getSalesDayBrandRows(
+/** Daily totals for the dashboard's single brand, `from - 10y` through `to`. */
+export async function getSalesDailyTotals(
   filters: SalesDashboardFilters,
-): Promise<SalesDayBrandRow[]> {
+): Promise<SalesDayTotal[]> {
   const extra = filterClause(filters);
   const result = await clickhouse.query({
     query: `
-      SELECT toString(tran_date) AS day, lower(brand) AS brand_code,
-             sum(tran_net) AS net, count() AS txns
+      SELECT toString(tran_date) AS day,
+             sum(tran_net * tran_sales_factor) AS net,
+             countIf(tran_sales_factor = 1) AS txns
       FROM ${salesTransactionsTable()}
-      WHERE tran_date BETWEEN {from:Date} AND {to:Date}
+      WHERE tran_date BETWEEN {historyFrom:Date} AND {to:Date}
         AND lower(brand) IN {brands:Array(String)}
-        AND tran_sales_factor = 1
         ${extra.sql}
-      GROUP BY day, brand_code
-      ORDER BY day, brand_code
+      GROUP BY tran_date
+      ORDER BY tran_date
     `,
-    query_params: extra.params,
+    query_params: {
+      ...extra.params,
+      historyFrom: shiftYears(filters.from, -SALES_DASHBOARD_HISTORY_YEARS),
+    },
     format: "JSONEachRow",
   });
   const rows = await result.json<{
     day: string;
-    brand_code: string;
     net: string | number;
     txns: string | number;
   }>();
 
   return rows.map((row) => ({
     day: row.day,
-    brand: row.brand_code,
     net: toNumber(row.net),
     txns: toNumber(row.txns),
+  }));
+}
+
+/** Per-store totals for the range and the same dates last year, in one scan. */
+export async function getSalesStoreRows(
+  filters: SalesDashboardFilters,
+): Promise<SalesStoreRow[]> {
+  const extra = filterClause(filters);
+  const lyFrom = shiftYears(filters.from, -1);
+  const lyTo = shiftYears(filters.to, -1);
+  const result = await clickhouse.query({
+    query: `
+      SELECT location_name AS location, store_bi_name AS store,
+             sumIf(tran_net * tran_sales_factor, tran_date >= {from:Date}) AS net,
+             countIf(tran_sales_factor = 1 AND tran_date >= {from:Date}) AS txns,
+             sumIf(tran_net * tran_sales_factor, tran_date <= {lyTo:Date}) AS ly_net,
+             countIf(tran_sales_factor = 1 AND tran_date <= {lyTo:Date}) AS ly_txns
+      FROM ${salesTransactionsTable()}
+      WHERE (tran_date BETWEEN {from:Date} AND {to:Date}
+             OR tran_date BETWEEN {lyFrom:Date} AND {lyTo:Date})
+        AND lower(brand) IN {brands:Array(String)}
+        ${extra.sql}
+      GROUP BY location, store
+      HAVING txns > 0
+    `,
+    query_params: { ...extra.params, lyFrom, lyTo },
+    format: "JSONEachRow",
+  });
+  const rows = await result.json<{
+    location: string;
+    store: string;
+    net: string | number;
+    txns: string | number;
+    ly_net: string | number;
+    ly_txns: string | number;
+  }>();
+
+  return rows.map((row) => ({
+    location: row.location.trim(),
+    store: row.store.trim(),
+    net: toNumber(row.net),
+    txns: toNumber(row.txns),
+    lyNet: toNumber(row.ly_net),
+    lyTxns: toNumber(row.ly_txns),
   }));
 }
 
@@ -153,6 +207,7 @@ export async function getSalesDashboardOptions(
 ): Promise<{
   locations: SalesLocationOption[];
   divisions: SalesDivisionOption[];
+  channels: string[];
 }> {
   const params = { from: filters.from, to: filters.to, brands: filters.brands };
   const where = `
@@ -161,7 +216,7 @@ export async function getSalesDashboardOptions(
         AND lower(brand) IN {brands:Array(String)}
         AND tran_sales_factor = 1`;
 
-  const [locationResult, divisionResult] = await Promise.all([
+  const [locationResult, divisionResult, channelResult] = await Promise.all([
     clickhouse.query({
       query: `
         SELECT tran_location AS id, anyLast(location_name) AS name
@@ -177,6 +232,14 @@ export async function getSalesDashboardOptions(
                division_name AS division
         ${where}
         ORDER BY division_group, division`,
+      query_params: params,
+      format: "JSONEachRow",
+    }),
+    clickhouse.query({
+      query: `
+        SELECT DISTINCT dim_division_group_channel AS channel
+        ${where}
+        ORDER BY channel`,
       query_params: params,
       format: "JSONEachRow",
     }),
@@ -199,5 +262,8 @@ export async function getSalesDashboardOptions(
     divisions: divisions
       .filter((row) => row.division.trim().length > 0)
       .map((row) => ({ group: row.division_group, division: row.division })),
+    channels: (await channelResult.json<{ channel: string }>())
+      .map((row) => row.channel)
+      .filter((channel) => channel.trim().length > 0),
   };
 }

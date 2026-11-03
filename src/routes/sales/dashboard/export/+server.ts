@@ -1,18 +1,27 @@
 import { error, json } from "@sveltejs/kit";
 import { requireApiPermission } from "$lib/server/auth-guards";
 import { generateExcelFile } from "$lib/server/mastra/tools/generate-excel";
-import { buildSalesDayRows } from "$lib/services/sales-dashboard";
 import {
-  getSalesDayBrandRows,
+  buildSalesDashboard,
+  buildSalesStoreRows,
+  withSingleBrand,
+} from "$lib/services/sales-dashboard";
+import {
+  getSalesDailyTotals,
+  getSalesStoreRows,
   resolveSalesDashboardScope,
 } from "$lib/services/sales-dashboard.server";
 import type { RequestHandler } from "./$types";
 
+const money = (value: number | null) =>
+  value === null ? null : Math.round(value * 100) / 100;
+const pct = (value: number | null) =>
+  value === null ? null : Math.round(value * 10_000) / 100;
+
 /**
- * Builds an .xlsx of the dashboard's current filters (re-queried server-side,
- * never client data) and returns its download URL. Wide layout — one row per
- * day, a transactions + net sales column pair per brand — keeps a full year
- * of every brand under generateExcelFile's cell cap.
+ * Builds an .xlsx of the dashboard's current brand + filters (re-queried
+ * server-side, never client data) and returns its download URL: daily
+ * breakdown, store breakdown and the period comparison.
  */
 export const GET: RequestHandler = async (event) => {
   const { user } = await requireApiPermission(event, { sales: ["view"] });
@@ -22,33 +31,70 @@ export const GET: RequestHandler = async (event) => {
     error(403, "No brands assigned");
   }
 
-  const { filters } = scope;
-  const names = new Map(scope.brands.map((brand) => [brand.alias, brand.name]));
-  const days = buildSalesDayRows(
-    await getSalesDayBrandRows(filters),
-    filters.brands,
-    filters.from,
-    filters.to,
-  );
+  const filters = withSingleBrand(scope.filters);
+  const [days, stores] = await Promise.all([
+    getSalesDailyTotals(filters),
+    getSalesStoreRows(filters),
+  ]);
+  const dashboard = buildSalesDashboard(days, filters.from, filters.to);
+  const brand = filters.brands[0];
 
   const result = await generateExcelFile({
-    filename: `sales-${filters.from}-to-${filters.to}`,
+    filename: `sales-${brand}-${filters.from}-to-${filters.to}`,
     sheets: [
       {
-        name: "Sales",
+        name: "Daily",
         columns: [
           "Date",
-          ...filters.brands.flatMap((alias) => [
-            `${names.get(alias) ?? alias} transactions`,
-            `${names.get(alias) ?? alias} net sales (EUR)`,
-          ]),
+          "Net sales (EUR)",
+          "Net sales last year (EUR)",
+          "Transactions",
+          "Avg ticket (EUR)",
         ],
-        rows: days.map((day) => [
+        rows: dashboard.daily.map((day) => [
           day.day,
-          ...filters.brands.flatMap((alias) => [
-            day.byBrand[alias].txns,
-            Math.round(day.byBrand[alias].net * 100) / 100,
-          ]),
+          money(day.net),
+          money(day.lyNet),
+          day.txns,
+          money(day.atv),
+        ]),
+      },
+      {
+        name: "Stores",
+        columns: [
+          "Location",
+          "Store",
+          "Net sales (EUR)",
+          "Net sales vs LY (%)",
+          "Transactions",
+          "Transactions vs LY (%)",
+          "Avg ticket (EUR)",
+          "Avg ticket vs LY (%)",
+        ],
+        rows: buildSalesStoreRows(stores).map((row) => [
+          row.location,
+          row.store,
+          money(row.net),
+          pct(row.netPct),
+          row.txns,
+          pct(row.txnsPct),
+          money(row.atv),
+          pct(row.atvPct),
+        ]),
+      },
+      {
+        name: "Periods",
+        columns: [
+          "Period",
+          "Net sales (EUR)",
+          "Transactions",
+          "Avg ticket (EUR)",
+        ],
+        rows: dashboard.periods.map((period) => [
+          period.label,
+          money(period.net),
+          period.txns === null ? null : Math.round(period.txns),
+          money(period.atv),
         ]),
       },
     ],
