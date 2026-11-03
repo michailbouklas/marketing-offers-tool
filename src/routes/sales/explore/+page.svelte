@@ -234,6 +234,8 @@
   /** POSTs an export request, then follows the returned download URL. */
   async function downloadExcel(path: string, body: unknown) {
     exporting = true;
+    // One toast for both entry points: the context menu closes on click.
+    const toastId = toast.loading("Preparing the Excel export…");
     try {
       const response = await fetch(`${endpoint}/${path}${page.url.search}`, {
         method: "POST",
@@ -250,11 +252,13 @@
         downloadUrl: string;
       };
       window.location.assign(downloadUrl);
+      toast.success("Excel export ready, downloading.", { id: toastId });
     } catch (cause) {
       toast.error(
         cause instanceof Error
           ? cause.message
           : "The Excel export could not be generated.",
+        { id: toastId },
       );
     } finally {
       exporting = false;
@@ -365,10 +369,11 @@
         >
           {#if exporting}
             <LoaderCircleIcon class="size-4 animate-spin" />
+            Working…
           {:else}
             <DownloadIcon class="size-4" />
+            Export to Excel
           {/if}
-          Export to Excel
         </Button>
       </div>
     </div>
