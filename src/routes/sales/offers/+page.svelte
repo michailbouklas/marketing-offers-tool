@@ -1,7 +1,7 @@
 <script lang="ts">
   import { invalidateAll } from "$app/navigation";
   import { page } from "$app/state";
-  import { Badge } from "$lib/components/ui/badge/index.js";
+  import { Badge, badgeVariants } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
@@ -20,6 +20,7 @@
   import ArrowUpDownIcon from "@lucide/svelte/icons/arrow-up-down";
   import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import RefreshCwIcon from "@lucide/svelte/icons/refresh-cw";
+  import { cn } from "$lib/utils.js";
   import { toast } from "svelte-sonner";
   import type { PageData } from "./$types";
 
@@ -39,6 +40,7 @@
   let refreshing = $state(false);
   let selected = $state<OfferValue | null>(null);
   let dialogOpen = $state(false);
+  let verdictFilter = $state<OfferVerdict | null>(null); // ignored when its verdict has no rows (e.g. after switching brand)
 
   const updatedAt = new Intl.DateTimeFormat("en-GB", {
     dateStyle: "medium",
@@ -221,13 +223,35 @@
           </Card.Content>
         </Card.Root>
       {:else}
+        {@const activeFilter =
+          verdictFilter && countBy(offers, verdictFilter) > 0
+            ? verdictFilter
+            : null}
+        {@const visibleOffers = activeFilter
+          ? offers.filter((offer) => offer.verdict === activeFilter)
+          : offers}
         <div class="flex flex-wrap gap-2 text-sm">
           {#each VERDICTS as verdict (verdict)}
             {@const count = countBy(offers, verdict)}
             {#if count > 0}
-              <Badge variant={VERDICT_VARIANT[verdict]}>
+              <button
+                type="button"
+                aria-pressed={activeFilter === verdict}
+                title={activeFilter === verdict
+                  ? "Show all offers"
+                  : `Show only ${OFFER_VERDICT_LABELS[verdict].toLowerCase()}`}
+                class={cn(
+                  badgeVariants({ variant: VERDICT_VARIANT[verdict] }),
+                  "cursor-pointer hover:opacity-80",
+                  activeFilter && activeFilter !== verdict && "opacity-40",
+                  activeFilter === verdict &&
+                    "ring-ring ring-offset-background ring-2 ring-offset-1",
+                )}
+                onclick={() =>
+                  (verdictFilter = activeFilter === verdict ? null : verdict)}
+              >
                 {OFFER_VERDICT_LABELS[verdict]}: {count}
-              </Badge>
+              </button>
             {/if}
           {/each}
         </div>
@@ -276,7 +300,7 @@
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-                {#each sorted(offers) as offer (offer.code)}
+                {#each sorted(visibleOffers) as offer (offer.code)}
                   <Table.Row>
                     <Table.Cell class="max-w-72">
                       <button

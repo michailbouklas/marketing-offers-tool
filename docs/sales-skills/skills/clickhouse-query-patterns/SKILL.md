@@ -59,7 +59,7 @@ Common fix patterns:
 - Nested aggregates → break into CTEs:
   BAD: `SELECT studentTTest(any(x), any(y)) FROM t`
   GOOD: `WITH pre AS (SELECT any(x) AS x_val, any(y) AS y_val FROM t)
-       SELECT studentTTest(x_val, y_val) FROM pre`
+     SELECT studentTTest(x_val, y_val) FROM pre`
 - String vs number comparison → use `toString()` or `toInt32()` casts.
 - Date vs DateTime mismatch → use `toDate()` or `toDateTime()`.
 

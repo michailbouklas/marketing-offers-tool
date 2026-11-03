@@ -8,17 +8,17 @@ PostgreSQL database. Every statement below was checked against both databases on
 
 ## TL;DR
 
-| # | Change | UI code change needed? | Action |
-|---|--------|------------------------|--------|
-| 1 | `reviews` gained a column (`import_batch_id uuid NULL`) | No | **Replica admin: re-attach `reviews` in ClickHouse.** Per ClickHouse docs a column addition stops replication of that table. |
-| 2 | Duplicate review rows were merged and deleted in PostgreSQL | No | Already replicated (35,922 `_sign = -1` rows visible). `FINAL` hides them. |
-| 3 | New tables `pipeline_runs`, `pipeline_run_stages` | No (optional feature) | Not in the replica. `ATTACH TABLE` them only if the UI wants run status. |
-| 4 | Going forward, a reviewer can have several reviews for one business | No | Row counts from `reviews` will grow relative to `review_summaries.review_count`. |
-| 5 | `reviews.review_date` is now filled for relative dates ("2 months ago") | No | More rows enter the date-based charts; dates are approximate (see §4.3). |
-| 6 | Failed sentiment calls now leave `sentiment` NULL instead of writing a fake `neutral` | No | Expect slightly more `null` sentiment and slightly fewer `neutral`. |
-| 7 | Snapshot tables get one row per business per day | No (UI does not read them) | Only relevant to Grafana panels. |
-| 8 | `reviews` gained `google_review_id text NULL` (migration 012, 2026-09-16) | No | **Replica admin: re-attach `reviews` again** (same procedure as §1). |
-| 9 | Translated duplicate reviews (~1,200 rows) will be merged and deleted | No | Replicates as `_sign = -1`; `FINAL` hides them (same as §2). |
+| #   | Change                                                                                | UI code change needed?     | Action                                                                                                                       |
+| --- | ------------------------------------------------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `reviews` gained a column (`import_batch_id uuid NULL`)                               | No                         | **Replica admin: re-attach `reviews` in ClickHouse.** Per ClickHouse docs a column addition stops replication of that table. |
+| 2   | Duplicate review rows were merged and deleted in PostgreSQL                           | No                         | Already replicated (35,922 `_sign = -1` rows visible). `FINAL` hides them.                                                   |
+| 3   | New tables `pipeline_runs`, `pipeline_run_stages`                                     | No (optional feature)      | Not in the replica. `ATTACH TABLE` them only if the UI wants run status.                                                     |
+| 4   | Going forward, a reviewer can have several reviews for one business                   | No                         | Row counts from `reviews` will grow relative to `review_summaries.review_count`.                                             |
+| 5   | `reviews.review_date` is now filled for relative dates ("2 months ago")               | No                         | More rows enter the date-based charts; dates are approximate (see §4.3).                                                     |
+| 6   | Failed sentiment calls now leave `sentiment` NULL instead of writing a fake `neutral` | No                         | Expect slightly more `null` sentiment and slightly fewer `neutral`.                                                          |
+| 7   | Snapshot tables get one row per business per day                                      | No (UI does not read them) | Only relevant to Grafana panels.                                                                                             |
+| 8   | `reviews` gained `google_review_id text NULL` (migration 012, 2026-09-16)             | No                         | **Replica admin: re-attach `reviews` again** (same procedure as §1).                                                         |
+| 9   | Translated duplicate reviews (~1,200 rows) will be merged and deleted                 | No                         | Replicates as `_sign = -1`; `FINAL` hides them (same as §2).                                                                 |
 
 None of the ClickHouse queries under `src/lib/services/google-reviews/*.server.ts` need to
 change. Items 1 and 3 are operations on the replica, not code.
@@ -305,11 +305,13 @@ than one row; 1,198 of them were translated copies created by the 2026-09-15 scr
 ## 7. Checklist
 
 Replica admin
+
 - [ ] `DETACH TABLE … reviews PERMANENTLY; ATTACH TABLE … reviews;` (§1), and again after migration 012 (§6)
 - [ ] Optionally attach `pipeline_runs`, `pipeline_run_stages` (§3)
 - [ ] Verify counts match after the next pipeline run (§1)
 
 UI team
+
 - [ ] No mandatory code changes.
 - [ ] If adding `import_batch_id` or run status to the UI: extend `ReviewQueryRow`,
       `GoogleReviewRow`, `mapReviewRow`, `docs/google-reviews/schema.sql`, and the agent SQL
@@ -317,6 +319,7 @@ UI team
 - [ ] Be aware of the day-level date approximation (§4.3) when reading the reviews-per-day chart.
 
 Scraper team (done in the `google-maps-scraper` repo)
+
 - [x] Migrations 007, 009, 010 written; 009 and 010 applied by hand on 2026-09-15; 007's rehash
       step still pending (`bun run migrate:up` applies it and records all three in
       `schema_migrations`).

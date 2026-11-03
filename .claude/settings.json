@@ -83,7 +83,5 @@
       }
     ]
   },
-  "footerLinksRegexes": [
-    "graft/[\\w./-]+\\.md"
-  ]
+  "footerLinksRegexes": ["graft/[\\w./-]+\\.md"]
 }

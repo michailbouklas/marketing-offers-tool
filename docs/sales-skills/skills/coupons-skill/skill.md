@@ -78,22 +78,22 @@ AND (
 
 ## Field Reference
 
-| Field                 | Role in Coupon Structure                                                          |
-| --------------------- | --------------------------------------------------------------------------------- |
-| `transactionid`       | Groups all rows in the same transaction                                           |
-| `trde_line`           | Identifies the main line within the transaction                                   |
-| `trde_sub_line`       | Distinguishes parent rows from subordinate rows                                   |
-| `trde_item`           | Item code of the current row                                                      |
-| `trde_combo_item`     | Acts as promotional parent reference; equals `trde_item` on the coupon marker row |
-| `trde_coupon`         | The explicit coupon/promo code — primary field for coupon analysis                |
-| `trde_coupon_group`   | Grouping field; often defaults to `0` — not reliable as a primary key             |
-| `trde_net_value`      | `0` on coupon marker rows; `> 0` on affected sale rows                            |
+| Field                 | Role in Coupon Structure                                                                       |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
+| `transactionid`       | Groups all rows in the same transaction                                                        |
+| `trde_line`           | Identifies the main line within the transaction                                                |
+| `trde_sub_line`       | Distinguishes parent rows from subordinate rows                                                |
+| `trde_item`           | Item code of the current row                                                                   |
+| `trde_combo_item`     | Acts as promotional parent reference; equals `trde_item` on the coupon marker row              |
+| `trde_coupon`         | The explicit coupon/promo code — primary field for coupon analysis                             |
+| `trde_coupon_group`   | Grouping field; often defaults to `0` — not reliable as a primary key                          |
+| `trde_net_value`      | `0` on coupon marker rows; `> 0` on affected sale rows                                         |
 | `trde_discount`       | Order discount **percentage** (0–100) on every line of the order — not an amount, never sum it |
-| `trde_line_discount`  | Always 0 in the data — do not use                                                 |
-| `trde_is_master_item` | Not a reliable indicator of coupon header rows — do not use as primary key        |
-| `item_name`           | Describes the promotion on marker rows; product name on sale rows                 |
-| `item_category`       | Contains `'Coupon'` for coupon marker rows                                        |
-| `brand`               | Coupon structure implementation may vary by brand                                 |
+| `trde_line_discount`  | Always 0 in the data — do not use                                                              |
+| `trde_is_master_item` | Not a reliable indicator of coupon header rows — do not use as primary key                     |
+| `item_name`           | Describes the promotion on marker rows; product name on sale rows                              |
+| `item_category`       | Contains `'Coupon'` for coupon marker rows                                                     |
+| `brand`               | Coupon structure implementation may vary by brand                                              |
 
 ---
 
