@@ -39,6 +39,10 @@ export type ExploreRow = { pk: string } & Record<
   string | number
 >;
 
+/** `<date>_<location>_<division>_<no>` — the warehouse `transactions.pk`. */
+export const ORDER_PK_PATTERN =
+  /^(\d{4}-\d{2}-\d{2})_(\d{1,5})_(\d{1,10})_(\d{1,10})$/;
+
 export const EXPLORE_PAGE_MAX_ROWS = 1_000;
 export const EXPLORE_VALUES_LIMIT = 200;
 /** officecli imports ~100k rows in ~7 s; above this the export is refused. */
@@ -202,6 +206,12 @@ export type ExploreExportRequest = z.infer<typeof exploreExportRequestSchema>;
 export const exploreBreakdownRequestSchema = z.object({
   filter: exploreFilterSchema,
   offers: offerFilterSchema,
+  /** Grid selection: only these orders. */
+  pks: z
+    .array(z.string().regex(ORDER_PK_PATTERN))
+    .min(1)
+    .max(EXPLORE_PAGE_MAX_ROWS)
+    .optional(),
 });
 
 export const VALUE_BUCKETS = ["offer", "combo", "other"] as const;
@@ -233,10 +243,6 @@ export type ExploreValueBreakdown = {
   >;
 };
 
-/** `<date>_<location>_<division>_<no>` — the warehouse `transactions.pk`. */
-export const ORDER_PK_PATTERN =
-  /^(\d{4}-\d{2}-\d{2})_(\d{1,5})_(\d{1,10})_(\d{1,10})$/;
-
 /** Offers Assistant list: offers present in the current (column-filtered) data. */
 export const exploreOfferOptionsRequestSchema = z.object({
   search: z.string().max(100).default(""),
@@ -247,6 +253,17 @@ export const exploreOfferOptionsRequestSchema = z.object({
 export const exploreOrderOffersRequestSchema = z.object({
   pks: z.array(z.string().regex(ORDER_PK_PATTERN)).max(EXPLORE_PAGE_MAX_ROWS),
 });
+
+/** Selected orders (grid right-click): Excel of their full lines. */
+export const exploreOrdersExportRequestSchema = z.object({
+  pks: z
+    .array(z.string().regex(ORDER_PK_PATTERN))
+    .min(1)
+    .max(EXPLORE_PAGE_MAX_ROWS),
+});
+
+/** Selected orders the Sales Assistant gets in full (lines go in its prompt). */
+export const EXPLORE_AI_MAX_ORDERS = 50;
 
 export const EXPLORE_OFFER_OPTIONS_LIMIT = 200;
 

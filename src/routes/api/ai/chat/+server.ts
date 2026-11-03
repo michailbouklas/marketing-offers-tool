@@ -8,10 +8,14 @@ import {
   requireApiPermission,
   requireAuthenticatedApiUser,
 } from "$lib/server/auth-guards";
-import { buildBrandScopeRequestContext } from "$lib/server/brand-scope.server";
+import {
+  buildBrandScopeRequestContext,
+  type ScopedBrand,
+} from "$lib/server/brand-scope.server";
 import {
   resolveGoogleAnalyticsPageContext,
   resolvePageContext,
+  resolveSalesSelectedOrders,
 } from "$lib/server/chat-page-context";
 import { getMastra } from "$lib/server/mastra";
 import {
@@ -19,9 +23,15 @@ import {
   FORECAST_PAGE_CONTEXT_RUNTIME_KEY,
   GOOGLE_ANALYTICS_PAGE_CONTEXT_RUNTIME_KEY,
   GOOGLE_ANALYTICS_SCOPE_RUNTIME_KEY,
+  SALES_SELECTED_ORDERS_RUNTIME_KEY,
   type GoogleAnalyticsScopeEntry,
+  type SalesSelectedOrders,
 } from "$lib/server/mastra/chat-registry";
 import { listGoogleAnalyticsBrandsForUser } from "$lib/services/google-analytics/properties.server";
+import {
+  ORDER_LINE_HEADER_LABELS,
+  queryOrderLines,
+} from "$lib/services/sales-explore.server";
 import { z } from "zod";
 import type { RequestEvent, RequestHandler } from "./$types";
 
@@ -101,7 +111,7 @@ async function buildAgentRequestContext(
   }
 
   const requestContext = new RequestContext();
-  let scopedAliases: string[] = [];
+  let scopedBrands: ScopedBrand[] = [];
   let googleAnalyticsScope: GoogleAnalyticsScopeEntry[] = [];
 
   if (config.brandScoped) {
@@ -110,8 +120,9 @@ async function buildAgentRequestContext(
       { id: userId, role },
       requestContext,
     );
-    scopedAliases = scope.brands.map((brand) => brand.alias);
+    scopedBrands = scope.brands;
   }
+  const scopedAliases = scopedBrands.map((brand) => brand.alias);
 
   if (config.googleAnalyticsScoped) {
     const brands = await listGoogleAnalyticsBrandsForUser(userId);
@@ -131,7 +142,17 @@ async function buildAgentRequestContext(
   }
 
   if (config.pageContext && rawPageContext !== undefined) {
-    if (config.googleAnalyticsScoped) {
+    if (agentId === "sales-agent") {
+      const pks = resolveSalesSelectedOrders(rawPageContext);
+      if (pks.length > 0) {
+        const selected: SalesSelectedOrders = {
+          pks,
+          lines: await queryOrderLines(scopedBrands, pks),
+          headerLabels: ORDER_LINE_HEADER_LABELS,
+        };
+        requestContext.set(SALES_SELECTED_ORDERS_RUNTIME_KEY, selected);
+      }
+    } else if (config.googleAnalyticsScoped) {
       const pageContext = resolveGoogleAnalyticsPageContext(
         rawPageContext,
         googleAnalyticsScope,

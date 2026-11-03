@@ -5,6 +5,10 @@ import type {
 } from "$lib/server/mastra/chat-registry";
 import { isForecastHorizon } from "$lib/services/forecasts/forecast-types";
 import { googleAnalyticsRangeOptions } from "$lib/services/google-analytics/google-analytics";
+import {
+  EXPLORE_AI_MAX_ORDERS,
+  ORDER_PK_PATTERN,
+} from "$lib/services/sales-explore";
 
 /**
  * Normalises the optional `context` object the chat widget sends (the Sales
@@ -72,6 +76,24 @@ export function resolvePageContext(
     : [];
 
   return { brand, location, horizon, models };
+}
+
+/**
+ * Order pks the `/sales/explore` widget sends (`{ orders: string[] }`):
+ * keeps well-formed pks only, deduplicated, at most
+ * {@link EXPLORE_AI_MAX_ORDERS}. Brand scope is enforced later, in SQL.
+ * Returns [] when there is nothing usable.
+ */
+export function resolveSalesSelectedOrders(raw: unknown): string[] {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+    return [];
+  }
+  const orders = (raw as Record<string, unknown>).orders;
+  if (!Array.isArray(orders)) return [];
+  const pks = orders.filter(
+    (pk): pk is string => typeof pk === "string" && ORDER_PK_PATTERN.test(pk),
+  );
+  return [...new Set(pks)].slice(0, EXPLORE_AI_MAX_ORDERS);
 }
 
 /**

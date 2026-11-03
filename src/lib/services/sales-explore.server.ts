@@ -144,6 +144,24 @@ function detailsTable(): string {
   );
 }
 
+/**
+ * Bound params `{days:Array(Date)}` + `{keys:Array(Tuple(Date, Int16, Int32,
+ * Int32))}` for order pks; malformed pks are dropped.
+ */
+function orderKeyParams(pks: string[]): { days: string[]; keys: TupleParam[] } {
+  const keys = pks.flatMap((pk) => {
+    const match = ORDER_PK_PATTERN.exec(pk);
+    return match
+      ? [[match[1], Number(match[2]), Number(match[3]), Number(match[4])]]
+      : [];
+  });
+  return {
+    days: [...new Set(keys.map((key) => key[0] as string))],
+    // Plain arrays serialize as Array, not Tuple.
+    keys: keys.map((key) => new TupleParam(key)),
+  };
+}
+
 type Params = Record<string, unknown>;
 
 /** Bound-parameter collector: returns `{pN:Type}` placeholders. */
@@ -431,16 +449,11 @@ export async function queryOrderOffers(
   brands: string[],
   pks: string[],
 ): Promise<Record<string, ExploreOrderOffer[]>> {
-  const keys = pks.flatMap((pk) => {
-    const match = ORDER_PK_PATTERN.exec(pk);
-    return match
-      ? [[match[1], Number(match[2]), Number(match[3]), Number(match[4])]]
-      : [];
-  });
+  const keys = orderKeyParams(pks);
   const result: Record<string, ExploreOrderOffer[]> = Object.fromEntries(
     pks.map((pk) => [pk, []]),
   );
-  if (keys.length === 0) return result;
+  if (keys.keys.length === 0) return result;
 
   const response = await clickhouse.query({
     query: `
@@ -455,9 +468,7 @@ WHERE trde_date IN {days:Array(Date)}
   AND ${OFFER_LINE_SQL}
 GROUP BY trde_date, trde_location, trde_division, trde_no`,
     query_params: {
-      days: [...new Set(keys.map((key) => key[0]))],
-      // Plain arrays serialize as Array, not Tuple.
-      keys: keys.map((key) => new TupleParam(key)),
+      ...keys,
       brands,
       offerCats: EXPLORE_OFFER_CATEGORIES,
     },
@@ -550,7 +561,12 @@ LIMIT {limit:UInt32}`,
  */
 export async function queryExploreBreakdown(
   scope: SalesDashboardScope["filters"],
-  request: { filter: ExploreFilter; offers?: OfferFilter | null },
+  request: {
+    filter: ExploreFilter;
+    offers?: OfferFilter | null;
+    /** Only these orders (grid selection), still inside the window + brands. */
+    pks?: string[];
+  },
 ): Promise<ExploreValueBreakdown> {
   const where = buildExploreWhere(
     scope,
@@ -558,6 +574,12 @@ export async function queryExploreBreakdown(
     undefined,
     request.offers,
   );
+  if (request.pks) {
+    Object.assign(where.params, orderKeyParams(request.pks));
+    where.sql += `\n  AND tran_date IN {days:Array(Date)}
+  AND (tran_date, tran_location, tran_division, tran_no)
+    IN {keys:Array(Tuple(Date, Int16, Int32, Int32))}`;
+  }
   const result = await clickhouse.query({
     query: `
 SELECT
@@ -740,6 +762,153 @@ ORDER BY trde_line, trde_sub_line`,
       isCombo: Boolean(toNumber(line.isCombo as number)),
     })),
   };
+}
+
+/** Order columns repeated on every line of the selected-orders export. */
+const ORDER_LINE_HEADER_IDS = [
+  "order_no",
+  "day",
+  "time",
+  "brand",
+  "store",
+  "channel",
+  "division",
+  "payment",
+  "type",
+  "net",
+  "discount",
+] as const satisfies readonly ExploreColumnId[];
+
+/** Label, SQL over transaction_details, kind. Discount is a percent. */
+const ORDER_LINE_COLUMNS: [string, string, "text" | "number"][] = [
+  ["Line", "trde_line", "number"],
+  ["Sub-line", "trde_sub_line", "number"],
+  ["Item code", "trde_item", "text"],
+  ["Item", "item_name", "text"],
+  ["Category", "item_category", "text"],
+  ["Qty", "trde_qty * trde_qty_ratio", "number"],
+  ["Line net (EUR)", "trde_net_value", "number"],
+  ["Line gross (EUR)", "trde_gross_value", "number"],
+  ["Line discount %", "trde_discount", "number"],
+  ["Coupon", "trde_coupon", "text"],
+  ["Combo item", "trde_combo_item", "text"],
+  [
+    "Voided",
+    "if(trde_void_time != '' OR trde_void_series_number != 0, 'Yes', '')",
+    "text",
+  ],
+  ["Offer", `if(${OFFER_LINE_SQL}, 'Yes', '')`, "text"],
+  ["Combo", `if(${COMBO_LINE_SQL}, 'Yes', '')`, "text"],
+  ["Comment", "trde_comment", "text"],
+];
+
+/** Labels of the order-level columns in {@link queryOrderLines} rows. */
+export const ORDER_LINE_HEADER_LABELS: string[] = ORDER_LINE_HEADER_IDS.map(
+  (id) => orderHeaderLabel(id),
+);
+
+function orderHeaderLabel(id: ExploreColumnId): string {
+  const label = EXPLORE_COLUMNS.find((column) => column.id === id)!.label;
+  return id === "net" || id === "discount"
+    ? `Order ${label[0].toLowerCase()}${label.slice(1)}`
+    : label;
+}
+
+/**
+ * Every line of the given orders, one row per line with the order columns
+ * repeated, labelled for Excel. Headers are brand-checked (a pk of another
+ * brand drops out); lines are read by the transaction_details primary-key
+ * prefix. Text starting with `=` gets a leading space (officecli import).
+ */
+function orderLinesQuery(
+  brands: { alias: string; name: string }[],
+  pks: string[],
+): { query: string; query_params: Params } {
+  const keys = orderKeyParams(pks);
+  const safeText = (sql: string) =>
+    `if(startsWith(${sql}, '='), concat(' ', ${sql}), ${sql})`;
+  const select = [
+    ...ORDER_LINE_HEADER_IDS.map((id) => {
+      let sql = `h_${id}`;
+      if (id === "brand") {
+        sql = `transform(${sql}, {aliases:Array(String)}, {names:Array(String)}, ${sql})`;
+      }
+      const kind = KIND.get(id);
+      if (kind === "text") sql = safeText(sql);
+      else if (kind === "number" && id !== "order_no") sql = `round(${sql}, 2)`;
+      return `${sql} AS ${quoteAlias(orderHeaderLabel(id))}`;
+    }),
+    ...ORDER_LINE_COLUMNS.map(([label, , kind], i) => {
+      const sql =
+        kind === "text"
+          ? safeText(`l_${i}`)
+          : label === "Line" || label === "Sub-line"
+            ? `l_${i}`
+            : `round(l_${i}, 2)`;
+      return `${sql} AS ${quoteAlias(label)}`;
+    }),
+  ].join(",\n  ");
+
+  return {
+    query: `
+SELECT ${select}
+FROM (
+  SELECT tran_date AS k_d, tran_location AS k_l, tran_division AS k_v,
+    tran_no AS k_n,
+    ${ORDER_LINE_HEADER_IDS.map((id) => `${COLUMN_SQL[id]} AS h_${id}`).join(",\n    ")}
+  FROM ${salesTransactionsTable()}
+  WHERE tran_date IN {days:Array(Date)}
+    AND (tran_date, tran_location, tran_division, tran_no)
+      IN {keys:Array(Tuple(Date, Int16, Int32, Int32))}
+    AND lower(brand) IN {aliases:Array(String)}
+) AS h
+INNER JOIN (
+  SELECT trde_date AS k_d, trde_location AS k_l, trde_division AS k_v,
+    trde_no AS k_n,
+    ${ORDER_LINE_COLUMNS.map(([, sql], i) => `${sql} AS l_${i}`).join(",\n    ")}
+  FROM ${detailsTable()}
+  WHERE trde_date IN {days:Array(Date)}
+    AND (trde_date, trde_location, trde_division, trde_no)
+      IN {keys:Array(Tuple(Date, Int16, Int32, Int32))}
+) AS l USING (k_d, k_l, k_v, k_n)
+ORDER BY k_d, k_l, k_v, k_n, l_0, l_1`,
+    query_params: {
+      ...keys,
+      aliases: brands.map((brand) => brand.alias),
+      names: brands.map((brand) => brand.name),
+      offerCats: EXPLORE_OFFER_CATEGORIES,
+      comboCats: EXPLORE_COMBO_CATEGORIES,
+    },
+  };
+}
+
+/** Selected orders' lines as an Excel-ready CSV (UTF-8 BOM, header row). */
+export async function writeOrderLinesCsv(
+  brands: { alias: string; name: string }[],
+  pks: string[],
+  csvPath: string,
+): Promise<void> {
+  const { query, query_params } = orderLinesQuery(brands, pks);
+  const { stream } = await clickhouse.exec({
+    query: `${query}\nFORMAT CSVWithNames`,
+    query_params,
+  });
+  const file = createWriteStream(csvPath);
+  file.write("﻿");
+  await pipeline(stream, file);
+}
+
+/** Same rows as the export, keyed by column label (for the Sales Assistant). */
+export async function queryOrderLines(
+  brands: { alias: string; name: string }[],
+  pks: string[],
+): Promise<Record<string, string | number>[]> {
+  if (pks.length === 0) return [];
+  const result = await clickhouse.query({
+    ...orderLinesQuery(brands, pks),
+    format: "JSONEachRow",
+  });
+  return result.json<Record<string, string | number>>();
 }
 
 /** Header labels are fixed strings from EXPLORE_COLUMNS, never user input. */

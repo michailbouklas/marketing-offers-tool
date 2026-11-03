@@ -1,6 +1,10 @@
 import { Agent } from "@mastra/core/agent";
 import type { RequestContext } from "@mastra/core/request-context";
-import { CHANNEL_RUNTIME_KEY } from "../chat-registry";
+import {
+  CHANNEL_RUNTIME_KEY,
+  SALES_SELECTED_ORDERS_RUNTIME_KEY,
+  type SalesSelectedOrders,
+} from "../chat-registry";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
 import { userSkillsFor } from "../skills/user-skills-fs";
@@ -146,6 +150,59 @@ const openWebUiChannelSection = [
   "- Reply in plain GitHub-flavored markdown only.",
 ].join("\n");
 
+const cell = (value: unknown) =>
+  String(value ?? "")
+    .replace(/\|/g, "\\|")
+    .replace(/\s+/g, " ")
+    .trim();
+
+/**
+ * Orders the user selected in /sales/explore, already read inside their
+ * brand scope: one heading per order, then its lines as a table.
+ */
+export function buildSelectedOrdersSection(
+  requestContext?: RequestContext,
+): string {
+  const selected = requestContext?.get(SALES_SELECTED_ORDERS_RUNTIME_KEY) as
+    | SalesSelectedOrders
+    | undefined;
+  if (!selected || selected.pks.length === 0) return "";
+
+  const lineLabels = Object.keys(selected.lines[0] ?? {}).filter(
+    (label) => !selected.headerLabels.includes(label),
+  );
+  const blocks: string[] = [];
+  let lastKey = "";
+  for (const line of selected.lines) {
+    const key = selected.headerLabels.map((label) => line[label]).join("|");
+    if (key !== lastKey) {
+      lastKey = key;
+      blocks.push(
+        `\n**${selected.headerLabels.map((label) => `${label}: ${cell(line[label])}`).join(" · ")}**\n`,
+        `| ${lineLabels.join(" | ")} |`,
+        `|${lineLabels.map(() => "---").join("|")}|`,
+      );
+    }
+    blocks.push(
+      `| ${lineLabels.map((label) => cell(line[label])).join(" | ")} |`,
+    );
+  }
+
+  return [
+    "",
+    "",
+    "## Selected orders (from the Sales Explorer grid)",
+    "",
+    `The user selected ${selected.pks.length} order(s) in the Sales Explorer and is asking about them. Answer from the lines below first; query only for what they do not contain.`,
+    "- Order pks (`<tran_date>_<tran_location>_<tran_division>_<tran_no>`, i.e. transactions.pk; lines join on trde_date/trde_location/trde_division/trde_no):",
+    `  ${selected.pks.join(", ")}`,
+    '- Line net already includes the order discount; "Line discount %" is a percent. Delivery-charge lines (category INTERNAL USE) are not part of the order net. Voided lines carry net 0. Offer/Combo mark offer and meal-deal header lines.',
+    selected.lines.length === 0
+      ? "- No lines were found for these orders within the user's brands."
+      : blocks.join("\n"),
+  ].join("\n");
+}
+
 function buildChannelSection(requestContext?: RequestContext): string {
   return requestContext?.get(CHANNEL_RUNTIME_KEY) === "openwebui"
     ? `\n\n${openWebUiChannelSection}`
@@ -161,7 +218,7 @@ export const salesAgent = new Agent({
   name: "Sales Assistant",
   instructions: ({ requestContext }) => {
     const brands = resolveScopedBrands(requestContext);
-    return `${baseInstructions}\n\n${buildBrandScopeSection(brands)}${buildChannelSection(requestContext)}`;
+    return `${baseInstructions}\n\n${buildBrandScopeSection(brands)}${buildChannelSection(requestContext)}${buildSelectedOrdersSection(requestContext)}`;
   },
   model: getAiChatEnv().AI_CHAT_MODEL,
   tools: { ...sharedTools, querySalesSql },

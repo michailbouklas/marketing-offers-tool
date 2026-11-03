@@ -48,6 +48,8 @@
      * in (`pageContext` in the chat registry) as a hint for defaults.
      */
     context?: Record<string, unknown>;
+    /** Bind to open the panel from the page (e.g. a menu action). */
+    open?: boolean;
   }
 
   let {
@@ -56,9 +58,8 @@
     greeting = "Hi! Ask me anything about this page's data.",
     placeholder = "Ask a question…",
     context,
+    open = $bindable(false),
   }: Props = $props();
-
-  let open = $state(false);
   let maximized = $state(false);
   let input = $state("");
   let scrollContainer: HTMLDivElement | null = $state(null);
@@ -148,6 +149,21 @@
     await fetchSessions();
   }
 
+  /**
+   * Fresh thread, and no resume of the last one on open (e.g. a page action
+   * that brings its own context). Earlier threads stay in the history menu.
+   */
+  export async function startNewConversation() {
+    historyRequested = true;
+    skipResume = true;
+    // A reply still streaming belongs to the old thread: stop it first.
+    if (busy) await chat.stop();
+    sessionKey = crypto.randomUUID();
+    chat.messages = [];
+    historyOpen = false;
+  }
+  let skipResume = false;
+
   // On first open, resume the most recent conversation (if any).
   $effect(() => {
     if (open && !historyRequested) {
@@ -155,7 +171,7 @@
       void (async () => {
         await fetchSessions();
 
-        if (sessions.length > 0) {
+        if (sessions.length > 0 && !skipResume) {
           await loadSession(sessions[0].key);
         }
       })();

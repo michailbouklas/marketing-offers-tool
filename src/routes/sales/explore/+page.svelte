@@ -17,7 +17,9 @@
     salesDashboardSearch,
   } from "$lib/services/sales-dashboard";
   import {
+    EXPLORE_AI_MAX_ORDERS,
     EXPLORE_EXPORT_MAX_ROWS,
+    EXPLORE_PAGE_MAX_ROWS,
     type ExploreGridState,
     type ExploreOrder,
     type ExploreOrderOffer,
@@ -30,6 +32,8 @@
   import ChartPieIcon from "@lucide/svelte/icons/chart-pie";
   import TicketPercentIcon from "@lucide/svelte/icons/ticket-percent";
   import XIcon from "@lucide/svelte/icons/x";
+  import SparklesIcon from "@lucide/svelte/icons/sparkles";
+  import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import { toast } from "svelte-sonner";
   import type { PageData } from "./$types";
@@ -59,6 +63,28 @@
     offer: ExploreOrderOffer;
     anchor: { getBoundingClientRect: () => DOMRect };
   } | null>(null);
+  // Right-click on selected rows: their loaded pks and the selection size.
+  let rowsMenu = $state<{
+    pks: string[];
+    selected: number;
+    anchor: { getBoundingClientRect: () => DOMRect };
+  } | null>(null);
+  let aiOpen = $state(false);
+  let chatWidget = $state<ReturnType<typeof ChatWidget>>();
+  // Value breakdown of the selected orders only; null = the whole grid.
+  let breakdownPks = $state<string[] | null>(null);
+  let aiContext = $state<{ orders: string[] } | undefined>(undefined);
+  const rowsMenuNote = $derived.by(() => {
+    if (!rowsMenu) return "";
+    const { pks, selected } = rowsMenu;
+    if (selected > EXPLORE_PAGE_MAX_ROWS) {
+      return `Select up to ${formatSalesCount(EXPLORE_PAGE_MAX_ROWS)} orders.`;
+    }
+    if (pks.length < selected) {
+      return `${formatSalesCount(selected - pks.length)} not loaded yet; scroll through them to include them.`;
+    }
+    return "";
+  });
 
   // Mirror what the grid just queried into the address bar. replaceState
   // leaves page.url alone, so the grid does not re-query; read location.
@@ -170,16 +196,49 @@
       );
       return;
     }
+    await downloadExcel("export", {
+      sort: gridState.sort,
+      filter: gridState.filter,
+      offers: gridState.offers,
+    });
+  }
+
+  function openRowsMenu(pks: string[], selected: number, x: number, y: number) {
+    rowsMenu = {
+      pks,
+      selected,
+      anchor: { getBoundingClientRect: () => new DOMRect(x, y, 0, 0) },
+    };
+  }
+
+  async function exportSelected() {
+    const pks = rowsMenu?.pks ?? [];
+    rowsMenu = null;
+    await downloadExcel("orders-export", { pks });
+  }
+
+  async function askAiAboutSelected() {
+    // Frozen at click time: later selections do not change the conversation.
+    aiContext = { orders: rowsMenu?.pks ?? [] };
+    rowsMenu = null;
+    await chatWidget?.startNewConversation();
+    aiOpen = true;
+  }
+
+  function breakdownOfSelected() {
+    breakdownPks = rowsMenu?.pks ?? null;
+    rowsMenu = null;
+    breakdownOpen = true;
+  }
+
+  /** POSTs an export request, then follows the returned download URL. */
+  async function downloadExcel(path: string, body: unknown) {
     exporting = true;
     try {
-      const response = await fetch(`${endpoint}/export${page.url.search}`, {
+      const response = await fetch(`${endpoint}/${path}${page.url.search}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          sort: gridState.sort,
-          filter: gridState.filter,
-          offers: gridState.offers,
-        }),
+        body: JSON.stringify(body),
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as {
@@ -291,7 +350,10 @@
           variant={offerFilter ? "secondary" : "outline"}
           disabled={!gridState || gridState.totalRows === 0}
           title={gridState?.totalRows === 0 ? "No orders match" : undefined}
-          onclick={() => (breakdownOpen = true)}
+          onclick={() => {
+            breakdownPks = null;
+            breakdownOpen = true;
+          }}
         >
           <ChartPieIcon class="size-4" />
           Value breakdown
@@ -367,9 +429,78 @@
         initialFilter={initial.filter}
         onOpenOrder={openOrder}
         onOfferMenu={openOfferMenu}
+        onRowsMenu={openRowsMenu}
         onState={syncUrl}
       />
     </div>
+
+    <Popover.Root
+      open={rowsMenu !== null}
+      onOpenChange={(open) => {
+        if (!open) rowsMenu = null;
+      }}
+    >
+      <Popover.Content
+        customAnchor={rowsMenu?.anchor ?? null}
+        align="start"
+        class="w-72 p-1"
+      >
+        <p class="text-muted-foreground px-2 py-1.5 text-xs">
+          {formatSalesCount(rowsMenu?.selected ?? 0)}
+          {rowsMenu?.selected === 1 ? "order" : "orders"} selected
+          {#if rowsMenuNote}
+            <span class="block">{rowsMenuNote}</span>
+          {/if}
+        </p>
+        <button
+          type="button"
+          class="hover:bg-accent focus-visible:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none disabled:pointer-events-none disabled:opacity-50"
+          disabled={exporting || !rowsMenu?.pks.length}
+          onclick={exportSelected}
+        >
+          <DownloadIcon class="size-4" />
+          Export to Excel (all lines)
+        </button>
+        <button
+          type="button"
+          class="hover:bg-accent focus-visible:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none disabled:pointer-events-none disabled:opacity-50"
+          disabled={!rowsMenu?.pks.length}
+          onclick={breakdownOfSelected}
+        >
+          <ChartPieIcon class="size-4" />
+          Value breakdown
+        </button>
+        <button
+          type="button"
+          class="hover:bg-accent focus-visible:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none disabled:pointer-events-none disabled:opacity-50"
+          disabled={!rowsMenu?.pks.length ||
+            rowsMenu.pks.length > EXPLORE_AI_MAX_ORDERS}
+          title={(rowsMenu?.pks.length ?? 0) > EXPLORE_AI_MAX_ORDERS
+            ? `Ask AI takes up to ${EXPLORE_AI_MAX_ORDERS} orders`
+            : undefined}
+          onclick={askAiAboutSelected}
+        >
+          <SparklesIcon class="size-4" />
+          Ask AI
+          {#if (rowsMenu?.pks.length ?? 0) > EXPLORE_AI_MAX_ORDERS}
+            <span class="text-muted-foreground ml-auto text-xs">
+              max {EXPLORE_AI_MAX_ORDERS}
+            </span>
+          {/if}
+        </button>
+      </Popover.Content>
+    </Popover.Root>
+
+    <ChatWidget
+      bind:this={chatWidget}
+      agentId="sales-agent"
+      title="Sales Assistant"
+      greeting={aiContext
+        ? `Ask me about the ${aiContext.orders.length} selected order${aiContext.orders.length === 1 ? "" : "s"}: items, offers, discounts, totals…`
+        : "Hi! Right-click selected orders and choose Ask AI, or ask anything about your sales."}
+      bind:open={aiOpen}
+      context={aiContext}
+    />
 
     <Popover.Root
       open={offerMenu !== null}
@@ -402,7 +533,10 @@
       search={page.url.search}
       filter={gridState?.filter ?? {}}
       offers={offerFilter}
-      scope={breakdownScope}
+      pks={breakdownPks}
+      scope={breakdownPks
+        ? `${formatSalesCount(breakdownPks.length)} selected ${breakdownPks.length === 1 ? "order" : "orders"}`
+        : breakdownScope}
     />
 
     <OffersAssistantDialog

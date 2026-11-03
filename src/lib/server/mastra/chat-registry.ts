@@ -19,9 +19,9 @@ export type ChatAgentConfig = {
    * When true, the chat endpoint accepts an optional `context` object from
    * the widget (the page's current filters), validates it, drops anything
    * outside the caller's scope and publishes it under the agent's page-context
-   * key (`FORECAST_PAGE_CONTEXT_RUNTIME_KEY` or
-   * `GOOGLE_ANALYTICS_PAGE_CONTEXT_RUNTIME_KEY`). A hint for defaults only —
-   * never an authorisation input.
+   * key (`FORECAST_PAGE_CONTEXT_RUNTIME_KEY`,
+   * `GOOGLE_ANALYTICS_PAGE_CONTEXT_RUNTIME_KEY` or, for `sales-agent`,
+   * `SALES_SELECTED_ORDERS_RUNTIME_KEY`). Never an authorisation input.
    */
   pageContext?: boolean;
   /**
@@ -77,6 +77,22 @@ export type ForecastPageContext = {
   horizon: number | null;
   /** Model ids selected on the page (may be empty). */
   models: string[];
+};
+
+/**
+ * RequestContext key carrying the orders the user selected in the Sales
+ * Explorer grid, with their full lines already read inside the caller's brand
+ * scope. Set only when the widget sent valid order pks.
+ */
+export const SALES_SELECTED_ORDERS_RUNTIME_KEY = "salesSelectedOrders";
+
+export type SalesSelectedOrders = {
+  /** The validated order pks (`<date>_<location>_<division>_<no>`). */
+  pks: string[];
+  /** One row per line, keyed by column label; order columns repeated. */
+  lines: Record<string, string | number>[];
+  /** Labels of the order-level columns in `lines`. */
+  headerLabels: string[];
 };
 
 /**
@@ -136,9 +152,11 @@ export const chatAgents: Record<string, ChatAgentConfig> = {
   },
   // Brand-scoped on top of the permission gate: answers are limited to the
   // caller's assigned brands (superUser/admin get all active brands).
+  // pageContext: /sales/explore sends the orders selected in the grid.
   "sales-agent": {
     permissions: { sales: ["view"] },
     brandScoped: true,
+    pageContext: true,
   },
   // Forecasts Assistant on /forecasts: same permission as the page, brand
   // scoped like the sales agent, and it receives the page's filters as hints.

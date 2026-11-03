@@ -2,6 +2,7 @@
   import "@gp-grid/vue/dist/styles.css";
   import {
     EXPLORE_COLUMNS,
+    EXPLORE_PAGE_MAX_ROWS,
     serializeGridFilter,
     type ExploreColumnState,
     type ExploreFilter,
@@ -29,6 +30,7 @@
     initialFilter,
     onOpenOrder,
     onOfferMenu,
+    onRowsMenu,
     onState,
   }: {
     /** Route base, e.g. "/sales/explore". */
@@ -45,8 +47,51 @@
     onOpenOrder: (pk: string) => void;
     /** Click or right-click on an offer in the Offers column (viewport coords). */
     onOfferMenu: (offer: ExploreOrderOffer, x: number, y: number) => void;
+    /**
+     * Right-click on a body cell: how many rows are selected (cell range,
+     * else the active cell) and the pks of those already loaded. Above
+     * EXPLORE_PAGE_MAX_ROWS (e.g. Ctrl+A) pks is left empty.
+     */
+    onRowsMenu: (pks: string[], selected: number, x: number, y: number) => void;
     onState: (state: ExploreGridState) => void;
   } = $props();
+
+  function openRowsMenu(event: MouseEvent) {
+    const core = getCore?.();
+    // Body cells only; the keyboard Menu key / Shift+F10 also lands here.
+    if (!core || (event.target as Element).closest('[role="columnheader"]')) {
+      return;
+    }
+    const range = core.selection.getSelectionRange();
+    const active = core.selection.getActiveCell();
+    const [from, to] = range
+      ? [
+          Math.min(range.startRow, range.endRow),
+          Math.max(range.startRow, range.endRow),
+        ]
+      : active
+        ? [active.row, active.row]
+        : [0, -1];
+    if (to < from) return;
+    event.preventDefault();
+    const selected = to - from + 1;
+    const pks: string[] = [];
+    if (selected <= EXPLORE_PAGE_MAX_ROWS) {
+      for (let row = from; row <= to; row++) {
+        const pk = (core.rows.getData(row) as ExploreRow | undefined)?.pk;
+        if (pk) pks.push(pk);
+      }
+    }
+    // A keyboard-opened menu has no pointer position: anchor at the grid.
+    const box = container.getBoundingClientRect();
+    const fromKeyboard = event.clientX === 0 && event.clientY === 0;
+    onRowsMenu(
+      pks,
+      selected,
+      fromKeyboard ? box.left + 16 : event.clientX,
+      fromKeyboard ? box.top + 48 : event.clientY,
+    );
+  }
 
   let container: HTMLDivElement;
   // Vue-reactive props object of the mounted <GpGrid>; set once mounted.
@@ -439,4 +484,9 @@
   });
 </script>
 
-<div bind:this={container} class="h-[70vh] min-h-96 w-full"></div>
+<div
+  bind:this={container}
+  class="h-[70vh] min-h-96 w-full"
+  role="presentation"
+  oncontextmenu={openRowsMenu}
+></div>

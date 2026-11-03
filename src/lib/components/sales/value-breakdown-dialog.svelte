@@ -20,6 +20,7 @@
     search,
     filter,
     offers,
+    pks = null,
     scope,
   }: {
     open: boolean;
@@ -29,6 +30,8 @@
     /** The grid's current column filters. */
     filter: unknown;
     offers: OfferFilter | null;
+    /** Only these orders (grid selection); null = every matching order. */
+    pks?: string[] | null;
     /** Human-readable description of what is being measured. */
     scope: string;
   } = $props();
@@ -63,7 +66,7 @@
       const response = await fetch(`${endpoint}/breakdown${search}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ filter, offers }),
+        body: JSON.stringify({ filter, offers, ...(pks ? { pks } : {}) }),
       });
       if (!response.ok) throw new Error(String(response.status));
       data = (await response.json()) as ExploreValueBreakdown;
