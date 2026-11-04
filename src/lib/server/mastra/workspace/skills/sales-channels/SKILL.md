@@ -53,10 +53,10 @@ GROUP BY channel
 ORDER BY revenue DESC
 ```
 
-### Hourly sales distribution (Athens local time)
+### Hourly sales distribution (Cyprus local time, stored as is)
 
 ```sql
-SELECT toHour(toTimeZone(trans_order_time, 'Europe/Athens')) AS hour_of_day,
+SELECT toHour(trans_order_time) AS hour_of_day,
        count() AS txn_count, sum(tran_net) AS revenue
 FROM transactions
 WHERE brand = 'wagamama'

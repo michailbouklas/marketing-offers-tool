@@ -90,7 +90,7 @@ async function getLatestSalesDay(brands: string[]): Promise<string> {
   return row && row.day > "1970-01-01" ? row.day : addDays(today, -1);
 }
 
-function filterClause(filters: SalesDashboardFilters) {
+export function filterClause(filters: SalesDashboardFilters) {
   const clauses: string[] = [];
   const params: Record<string, unknown> = {
     from: filters.from,

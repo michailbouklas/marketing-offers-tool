@@ -90,8 +90,8 @@ question touches its area:
 - Item-level queries: exclude trde_item = '-1' and, unless analysing offers
   (see the "sales-offers" skill override), exclude zero-price rows
   (trde_gross_value != 0 AND trde_net_price != 0 AND trde_gross_price != 0).
-- Local times: convert DateTime columns with
-  toTimeZone(trans_order_time, 'Europe/Athens') for hour-of-day analysis.
+- Local times: trans_order_time already holds Cyprus local time. Do NOT
+  convert it with toTimeZone; use toHour(trans_order_time) directly.
 
 ## Excel export
 

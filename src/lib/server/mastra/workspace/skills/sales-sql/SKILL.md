@@ -33,7 +33,7 @@ Primary key `pk` (String). Join to details via
 | tran_total                                                                                                                    | Decimal(15,4)          | Total                                                    |
 | tran_receipt                                                                                                                  | String                 | Receipt id                                               |
 | tran_employee / tran_cashin_employee                                                                                          | String                 | Employee ids                                             |
-| trans_order_time / trans_cashin_time                                                                                          | DateTime               | Convert with toTimeZone(..., 'Europe/Athens')            |
+| trans_order_time / trans_cashin_time                                                                                          | DateTime               | Already Cyprus local time; do NOT apply toTimeZone            |
 | tran_cashed_in / tran_driver_cashed_in                                                                                        | Bool                   |                                                          |
 | tran_customer / tran_cust_no / tran_sales_customer                                                                            | String / Int32 / Int32 | Customer refs                                            |
 | tran_cash_method                                                                                                              | String                 | Payment code — display cash_method_description           |
@@ -117,7 +117,7 @@ Push date filters on BOTH sides for partition pruning.
   location_name / division_name.
 - Channel analysis: `dim_division_group_channel` ('Dine In', 'Delivery',
   'Drive Through', …); 'Own' vs 'External' in `dim_division_group_source`.
-- Time of day: `toHour(toTimeZone(trans_order_time, 'Europe/Athens'))`.
+- Time of day: `toHour(trans_order_time)`.
 - Returns/refunds: `tran_sales_factor = -1`; sales-focused queries typically
   filter `tran_sales_factor = 1`.
 - Voided items: `trde_void_time != ''` (voided) / `trde_void_series_number = 0`
@@ -261,10 +261,10 @@ ORDER BY gross_total DESC
 LIMIT 20
 ```
 
-### 6. Hourly sales distribution (Athens local time)
+### 6. Hourly sales distribution (Cyprus local time, stored as is)
 
 ```sql
-SELECT toHour(toTimeZone(trans_order_time, 'Europe/Athens')) AS hour_of_day,
+SELECT toHour(trans_order_time) AS hour_of_day,
        count() AS txn_count, sum(tran_net) AS revenue
 FROM transactions
 WHERE brand = 'wagamama'

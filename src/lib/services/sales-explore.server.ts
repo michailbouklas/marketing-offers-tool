@@ -43,7 +43,8 @@ import {
 const COLUMN_SQL: Record<ExploreColumnId, string> = {
   order_no: "tran_no",
   day: "tran_date",
-  time: "formatDateTime(toTimeZone(trans_order_time, 'Europe/Athens'), '%H:%i')",
+  // trans_order_time already holds Cyprus wall-clock time (verified 2026-11-04); toTimeZone would shift it 2-3 h.
+  time: "formatDateTime(trans_order_time, '%H:%i')",
   brand: "lower(brand)",
   store: "location_name",
   channel: "dim_division_group_channel",

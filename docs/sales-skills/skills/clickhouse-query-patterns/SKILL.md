@@ -72,7 +72,7 @@ Common fix patterns:
   - Ranges: `tran_date BETWEEN toDate('2025-01-01') AND toDate('2025-09-19')`.
   - Month queries without year: Assume current year, e.g., for August: `toYear(tran_date) = toYear(today()) AND toMonth(tran_date) = 8`.
 - Timezone: When you need local time for DateTime columns, convert with
-  `toTimeZone(trans_order_time, 'Europe/Athens')`.
+  `trans_order_time` as is (already Cyprus local time, no toTimeZone).
 - Partition pruning: Both tables are partitioned by toYYYYMM on their date column.
   ALWAYS include a date filter so ClickHouse can skip irrelevant partitions.
   In JOINs filter both t.tran_date and td.trde_date.
@@ -109,7 +109,7 @@ When joining, push date filters on BOTH sides for partition pruning:
 - Division: use tran_division (or trde_division) to filter, but return division_name field.
 - Division grouping: use dim_division_group_channel for channel analysis (e.g. 'Dine In', 'Delivery', 'Drive Through').
 - Date fields: use tran_date for transactions, trde_date for transaction_details.
-- Time fields: trans_order_time (DateTime) for order time. Always convert with toTimeZone(..., 'Europe/Athens').
+- Time fields: trans_order_time (DateTime) for order time. Already Cyprus local time; do NOT convert with toTimeZone (it shifts hours by 2-3).
 - Returns: tran_sales_factor = -1 indicates a return/refund.
 - Voided items: trde_void_time != '' on transaction_details.
 - Online orders: tran_online_factor = 1 on transactions.
@@ -189,10 +189,10 @@ ORDER BY gross_total DESC
 LIMIT 20
 ```
 
-### 6. Hourly sales distribution (Athens local time)
+### 6. Hourly sales distribution (Cyprus local time, stored as is)
 
 ```sql
-SELECT toHour(toTimeZone(trans_order_time, 'Europe/Athens')) AS hour_of_day,
+SELECT toHour(trans_order_time) AS hour_of_day,
        count() AS txn_count, sum(tran_net) AS revenue
 FROM transactions
 WHERE brand = 'wagamama'

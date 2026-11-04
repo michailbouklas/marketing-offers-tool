@@ -177,6 +177,7 @@ const allNavItems: NavItem[] = [
     children: [
       { href: "/sales/dashboard", label: "Dashboard" },
       { href: "/sales/explore", label: "Explore" },
+      { href: "/sales/hours", label: "Busy & dead hours" },
       { href: "/sales/offers", label: "Offers" },
       { href: "/sales/chat", label: "Chat" },
     ],
