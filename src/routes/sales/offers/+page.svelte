@@ -3,10 +3,13 @@
   import { page } from "$app/state";
   import { Badge, badgeVariants } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
+  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import { Skeleton } from "$lib/components/ui/skeleton/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
+  import OfferCompareDialog from "$lib/components/sales/offer-compare-dialog.svelte";
   import OfferValueDialog from "$lib/components/sales/offer-value-dialog.svelte";
   import {
     formatSalesAmount,
@@ -41,6 +44,26 @@
   let selected = $state<OfferValue | null>(null);
   let dialogOpen = $state(false);
   let verdictFilter = $state<OfferVerdict | null>(null); // ignored when its verdict has no rows (e.g. after switching brand)
+  // Codes of ticked offers; only those in the current brand's list count.
+  let compareCodes = $state<string[]>([]);
+  let comparePair = $state<[OfferValue, OfferValue] | null>(null);
+  let compareOpen = $state(false);
+  let tooManyOpen = $state(false);
+
+  function toggleCompare(code: string, checked: boolean) {
+    compareCodes = checked
+      ? [...compareCodes, code]
+      : compareCodes.filter((item) => item !== code);
+  }
+
+  function openCompare(picked: OfferValue[]) {
+    if (picked.length > 2) {
+      tooManyOpen = true;
+      return;
+    }
+    comparePair = [picked[0], picked[1]];
+    compareOpen = true;
+  }
 
   const updatedAt = new Intl.DateTimeFormat("en-GB", {
     dateStyle: "medium",
@@ -195,6 +218,9 @@
       </Card.Root>
     {:then cached}
       {@const offers = cached?.offers ?? []}
+      {@const picked = offers.filter((offer) =>
+        compareCodes.includes(offer.code),
+      )}
       <div class="flex flex-wrap items-center gap-3 text-sm">
         <span class="text-muted-foreground">
           {cached
@@ -214,6 +240,16 @@
             <RefreshCwIcon aria-hidden="true" />
             Refresh
           {/if}
+        </Button>
+        <Button
+          size="sm"
+          disabled={picked.length < 2}
+          title={picked.length < 2
+            ? "Tick two offers in the table to compare them"
+            : undefined}
+          onclick={() => openCompare(picked)}
+        >
+          Offer VS{picked.length > 0 ? ` (${picked.length})` : ""}
         </Button>
       </div>
       {#if offers.length === 0}
@@ -276,6 +312,9 @@
             <Table.Root>
               <Table.Header>
                 <Table.Row>
+                  <Table.Head class="w-10">
+                    <span class="sr-only">Compare</span>
+                  </Table.Head>
                   {#each COLUMNS as column (column.key)}
                     <Table.Head
                       class={column.numeric ? "text-right" : ""}
@@ -302,6 +341,14 @@
               <Table.Body>
                 {#each sorted(visibleOffers) as offer (offer.code)}
                   <Table.Row>
+                    <Table.Cell>
+                      <Checkbox
+                        checked={compareCodes.includes(offer.code)}
+                        onCheckedChange={(checked) =>
+                          toggleCompare(offer.code, checked)}
+                        aria-label="Compare {offer.name}"
+                      />
+                    </Table.Cell>
                     <Table.Cell class="max-w-72">
                       <button
                         type="button"
@@ -364,6 +411,28 @@
         idealFcPerc={cached?.idealFcPerc ?? null}
         verdictVariant={VERDICT_VARIANT}
       />
+      <OfferCompareDialog
+        bind:open={compareOpen}
+        offers={comparePair}
+        brand={brand.alias}
+        verdictVariant={VERDICT_VARIANT}
+      />
+      <AlertDialog.Root bind:open={tooManyOpen}>
+        <AlertDialog.Content>
+          <AlertDialog.Header>
+            <AlertDialog.Title>Pick two offers</AlertDialog.Title>
+            <AlertDialog.Description>
+              Only 2 offers can be compared at a time. You have {picked.length}
+              ticked; untick {picked.length - 2} to continue.
+            </AlertDialog.Description>
+          </AlertDialog.Header>
+          <AlertDialog.Footer>
+            <AlertDialog.Action onclick={() => (tooManyOpen = false)}>
+              OK
+            </AlertDialog.Action>
+          </AlertDialog.Footer>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
     {:catch}
       <Card.Root>
         <Card.Content class="text-destructive py-8 text-sm">

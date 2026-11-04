@@ -110,6 +110,110 @@ export const OFFER_VERDICT_LABELS: Record<OfferVerdict, string> = {
   no_target: "No brand target",
 };
 
+/** One offer's POS totals on one business day, for the Offer VS dialog. */
+export type OfferDailyRow = {
+  code: string;
+  day: string;
+  units: number;
+  orders: number;
+  net: number;
+};
+
+export type CompareMetric = {
+  label: string;
+  a: number | null;
+  b: number | null;
+  kind: "money" | "count" | "decimal" | "percent";
+  /** Which direction wins; null = context only, no winner. */
+  better: "higher" | "lower" | null;
+};
+
+/**
+ * Offer VS rows. Rates are per active day / order / unit because the two
+ * offers rarely ran for the same length of time.
+ */
+export function offerCompareMetrics(
+  a: OfferValue,
+  b: OfferValue,
+): CompareMetric[] {
+  const per = (value: number | null, by: number) =>
+    value === null || by <= 0 ? null : value / by;
+  const row = (
+    label: string,
+    kind: CompareMetric["kind"],
+    better: CompareMetric["better"],
+    of: (offer: OfferValue) => number | null,
+  ): CompareMetric => ({ label, kind, better, a: of(a), b: of(b) });
+
+  return [
+    row("Units / active day", "decimal", "higher", (o) =>
+      per(o.units, o.daysOnSale),
+    ),
+    row("Orders / active day", "decimal", "higher", (o) =>
+      per(o.orders, o.daysOnSale),
+    ),
+    row("Offer net / active day", "money", "higher", (o) =>
+      per(o.offerNet, o.daysOnSale),
+    ),
+    row("Contribution / active day", "money", "higher", (o) =>
+      per(o.contribution, o.daysOnSale),
+    ),
+    row("Avg price paid / unit", "money", null, (o) =>
+      per(o.offerNet, o.units),
+    ),
+    row("Food cost / unit", "money", "lower", (o) => per(o.foodCost, o.units)),
+    row("Offer margin", "percent", "higher", (o) =>
+      o.foodCost === null || o.offerNet <= 0
+        ? null
+        : 1 - o.foodCost / o.offerNet,
+    ),
+    row("Add-on / order", "money", "higher", (o) => per(o.addonNet, o.orders)),
+    row("Margin incl. basket", "percent", "higher", (o) => o.marginPct),
+    row("Active days", "count", null, (o) => o.daysOnSale),
+    row("Lifetime units", "count", null, (o) => o.units),
+    row("Lifetime offer net", "money", null, (o) => o.offerNet),
+    row("Lifetime contribution", "money", null, (o) => o.contribution),
+  ];
+}
+
+/** "a", "b", or null on a tie, a missing value or a context-only row. */
+export function compareWinner(metric: CompareMetric): "a" | "b" | null {
+  const { a, b, better } = metric;
+  if (better === null || a === null || b === null || a === b) return null;
+  return a > b === (better === "higher") ? "a" : "b";
+}
+
+const DAY_MS = 86_400_000;
+
+/**
+ * Units per week since the offer's first sale in `rows` (index 0 = launch
+ * week). Weeks without sales inside the run are 0, so pauses stay visible.
+ */
+export function weeklyCurve(rows: OfferDailyRow[], code: string): number[] {
+  const own = rows.filter((row) => row.code === code);
+  if (own.length === 0) return [];
+  const first = Math.min(...own.map((row) => Date.parse(row.day)));
+  const weeks: number[] = [];
+  for (const row of own) {
+    const week = Math.floor((Date.parse(row.day) - first) / DAY_MS / 7);
+    while (weeks.length <= week) weeks.push(0);
+    weeks[week] += row.units;
+  }
+  return weeks;
+}
+
+/** Share of the offer's units sold on each weekday, Monday first. */
+export function weekdayMix(rows: OfferDailyRow[], code: string): number[] {
+  const units = [0, 0, 0, 0, 0, 0, 0];
+  for (const row of rows) {
+    if (row.code !== code) continue;
+    // getUTCDay: 0 = Sunday; ISO dates parse as UTC midnight.
+    units[(new Date(row.day).getUTCDay() + 6) % 7] += row.units;
+  }
+  const total = units.reduce((sum, value) => sum + value, 0);
+  return units.map((value) => (total > 0 ? value / total : 0));
+}
+
 const pct = (value: number) => `${Math.round(value * 100)}%`;
 
 /** Plain-language reason for the verdict, for the offer detail dialog. */

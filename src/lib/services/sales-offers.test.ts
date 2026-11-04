@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  compareWinner,
+  offerCompareMetrics,
   offerReason,
   unitFoodCost,
   valueOffer,
+  weekdayMix,
+  weeklyCurve,
+  type OfferDailyRow,
   type OfferValueRow,
 } from "./sales-offers";
 
@@ -80,5 +85,59 @@ describe("offerReason", () => {
       offerReason(valueOffer({ ...row, fcPerc: null }, 0.3), 0.3),
     ).toContain("Offers data quality");
     expect(offerReason(valueOffer(row, null), null)).toContain("ideal FC %");
+  });
+});
+
+describe("offerCompareMetrics", () => {
+  const metric = (label: string, a: OfferValueRow, b: OfferValueRow) =>
+    offerCompareMetrics(valueOffer(a, 0.3), valueOffer(b, 0.3)).find(
+      (m) => m.label === label,
+    )!;
+
+  it("normalises per active day so a long run does not win by default", () => {
+    // A: 100 units in 300 days; B: 60 units in 30 days.
+    const m = metric("Units / active day", row, {
+      ...row,
+      units: 60,
+      daysOnSale: 30,
+    });
+    expect(m.a).toBeCloseTo(1 / 3);
+    expect(m.b).toBeCloseTo(2);
+    expect(compareWinner(m)).toBe("b");
+  });
+  it("lower food cost per unit wins", () => {
+    const m = metric("Food cost / unit", row, { ...row, fcPerc: 0.2 });
+    expect(compareWinner(m)).toBe("b");
+  });
+  it("has no winner on missing values, ties or context rows", () => {
+    expect(
+      compareWinner(metric("Offer margin", row, { ...row, fcPerc: null })),
+    ).toBeNull();
+    expect(compareWinner(metric("Units / active day", row, row))).toBeNull();
+    expect(
+      compareWinner(metric("Lifetime units", row, { ...row, units: 1 })),
+    ).toBeNull();
+  });
+});
+
+describe("weekly curve and weekday mix", () => {
+  const daily: OfferDailyRow[] = [
+    { code: "A", day: "2026-11-02", units: 3, orders: 3, net: 30 }, // Monday
+    { code: "A", day: "2026-11-08", units: 2, orders: 2, net: 20 }, // Sunday
+    { code: "A", day: "2026-11-23", units: 5, orders: 5, net: 50 }, // Monday, week 3
+    { code: "B", day: "2026-11-03", units: 7, orders: 7, net: 70 },
+  ];
+
+  it("buckets units into weeks since launch, keeping pauses as 0", () => {
+    expect(weeklyCurve(daily, "A")).toEqual([5, 0, 0, 5]);
+    expect(weeklyCurve(daily, "B")).toEqual([7]);
+    expect(weeklyCurve(daily, "C")).toEqual([]);
+  });
+  it("splits units by weekday, Monday first, summing to 1", () => {
+    const mix = weekdayMix(daily, "A");
+    expect(mix[0]).toBeCloseTo(0.8);
+    expect(mix[6]).toBeCloseTo(0.2);
+    expect(mix.reduce((s, v) => s + v, 0)).toBeCloseTo(1);
+    expect(weekdayMix(daily, "C")).toEqual([0, 0, 0, 0, 0, 0, 0]);
   });
 });

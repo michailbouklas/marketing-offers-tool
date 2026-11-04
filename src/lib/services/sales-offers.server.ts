@@ -12,6 +12,7 @@ import {
 } from "./sales-explore.server";
 import {
   valueOffer,
+  type OfferDailyRow,
   type OfferValue,
   type OfferValueRow,
 } from "./sales-offers";
@@ -121,6 +122,42 @@ async function queryOfferRows(brand: string): Promise<OfferValueRow[]> {
     orders: toNumber(row.orders),
     offerNet: toNumber(row.offerNet),
     addonNet: toNumber(row.addonNet),
+  }));
+}
+
+/**
+ * Daily POS totals of a few offers of one brand for Offer VS. Same line rules
+ * as `queryOfferRows`, so the days add up to the cached lifetime totals.
+ */
+export async function getOfferDailyRows(
+  brand: string,
+  codes: string[],
+): Promise<OfferDailyRow[]> {
+  const result = await clickhouse.query({
+    query: `
+        SELECT ${CODE_SQL} AS code,
+          toString(trde_date) AS day,
+          sumIf(toFloat64(trde_qty), trde_item = code) AS units,
+          uniqExactIf((trde_location, trde_division, trde_no),
+            trde_item = code) AS orders,
+          sum(toFloat64(trde_net_value)) AS net
+        FROM ${detailsTable()}
+        WHERE lower(brand) = {brand:String} AND trde_void_time = ''
+          AND trde_item != '-1' AND code IN {codes:Array(String)}
+        GROUP BY code, trde_date
+        ORDER BY trde_date
+      `,
+    query_params: { brand, codes },
+    format: "JSONEachRow",
+  });
+  const rows =
+    await result.json<Record<keyof OfferDailyRow, string | number>>();
+  return rows.map((row) => ({
+    code: String(row.code),
+    day: String(row.day),
+    units: toNumber(row.units),
+    orders: toNumber(row.orders),
+    net: toNumber(row.net),
   }));
 }
 
