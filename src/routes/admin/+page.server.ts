@@ -22,6 +22,7 @@ export const load: PageServerLoad = async (event) => {
     liveMonitoring,
     skills,
     releases,
+    recipes,
   ] = await Promise.all([
     hasPermission(event, { submission: ["approve"] }),
     hasPermission(event, { submission: ["approve"] }),
@@ -36,6 +37,7 @@ export const load: PageServerLoad = async (event) => {
     hasSuperUserRole(event),
     hasPermission(event, { skill: ["manage"] }),
     hasPermission(event, { release: ["manage"] }),
+    hasPermission(event, { recipe: ["manage"] }),
   ]);
 
   return {
@@ -53,6 +55,7 @@ export const load: PageServerLoad = async (event) => {
       liveMonitoring,
       skills,
       releases,
+      recipes,
     },
   };
 };

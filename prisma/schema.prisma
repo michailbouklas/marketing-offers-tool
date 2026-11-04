@@ -79,6 +79,40 @@ model brand {
   image_templates             ImageGeneratorTemplateBrand[]
   brand_entities              brand_entity[]
   google_analytics_properties brand_google_analytics_property[]
+  recipes                     recipe[]
+}
+
+// --- Recipes (/admin/recipes) ------------------------------------------------
+// One recipe per brand menu item (ClickHouse apidata_replica.dim_items.item_code).
+// Lines point at SAP materials (MSSQL dbo.sapbw_items, PK databaseId+item_number);
+// cost is read live from SAP, unit_cost_snapshot only records the cost at save.
+model recipe {
+  id               Int           @id @default(autoincrement())
+  brandId          Int
+  item_code        String        @db.VarChar(100)
+  item_description String        @default("") @db.Text
+  updated_by       String?
+  created_at       DateTime      @default(now()) @db.Timestamp(3)
+  updated_at       DateTime      @updatedAt @db.Timestamp(3)
+  brand            brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  lines            recipe_line[]
+
+  @@unique([brandId, item_code])
+}
+
+model recipe_line {
+  id                 Int      @id @default(autoincrement())
+  recipeId           Int
+  sort_order         Int
+  database_id        String   @db.VarChar(7)
+  item_number        String   @db.VarChar(50)
+  item_description   String   @default("") @db.Text
+  uom                String   @default("") @db.VarChar(100)
+  quantity           Decimal  @db.Decimal(18, 6)
+  unit_cost_snapshot Decimal? @db.Decimal(19, 6)
+  recipe             recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([recipeId])
 }
 
 model user_brand {

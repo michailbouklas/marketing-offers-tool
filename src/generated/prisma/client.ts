@@ -62,6 +62,16 @@ export type error_log = Prisma.error_logModel
  */
 export type brand = Prisma.brandModel
 /**
+ * Model recipe
+ * 
+ */
+export type recipe = Prisma.recipeModel
+/**
+ * Model recipe_line
+ * 
+ */
+export type recipe_line = Prisma.recipe_lineModel
+/**
  * Model user_brand
  * 
  */
