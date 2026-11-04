@@ -1,5 +1,5 @@
 import { IDEAL_PRICE_MARKUP_FACTORS } from "./offers-data-quality";
-import { formatSalesAmount } from "./sales-dashboard";
+import { formatSalesAmount, isIsoDate } from "./sales-dashboard";
 
 /**
  * /sales/offers: all-time value of each offer of one brand. Offer net is every
@@ -109,6 +109,21 @@ export const OFFER_VERDICT_LABELS: Record<OfferVerdict, string> = {
   no_cost: "No cost data",
   no_target: "No brand target",
 };
+
+export type OfferDateRange = { from: string; to: string };
+
+/**
+ * Date range from the URL; null (all time, served from the cache) unless both
+ * ends are valid. Reversed ends are swapped.
+ */
+export function parseOfferDateRange(
+  params: URLSearchParams,
+): OfferDateRange | null {
+  const from = params.get("from");
+  const to = params.get("to");
+  if (!isIsoDate(from) || !isIsoDate(to)) return null;
+  return from <= to ? { from, to } : { from: to, to: from };
+}
 
 /** One offer's POS totals on one business day, for the Offer VS dialog. */
 export type OfferDailyRow = {

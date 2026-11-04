@@ -3,6 +3,7 @@ import {
   compareWinner,
   offerCompareMetrics,
   offerReason,
+  parseOfferDateRange,
   unitFoodCost,
   valueOffer,
   weekdayMix,
@@ -139,5 +140,22 @@ describe("weekly curve and weekday mix", () => {
     expect(mix[6]).toBeCloseTo(0.2);
     expect(mix.reduce((s, v) => s + v, 0)).toBeCloseTo(1);
     expect(weekdayMix(daily, "C")).toEqual([0, 0, 0, 0, 0, 0, 0]);
+  });
+});
+
+describe("parseOfferDateRange", () => {
+  const parse = (query: string) =>
+    parseOfferDateRange(new URLSearchParams(query));
+
+  it("is all time (null) unless both ends are valid days", () => {
+    expect(parse("")).toBeNull();
+    expect(parse("from=2026-01-01")).toBeNull();
+    expect(parse("from=2026-02-30&to=2026-03-01")).toBeNull();
+  });
+  it("swaps reversed ends", () => {
+    expect(parse("from=2026-03-01&to=2026-01-01")).toEqual({
+      from: "2026-01-01",
+      to: "2026-03-01",
+    });
   });
 });

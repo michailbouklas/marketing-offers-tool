@@ -81,7 +81,7 @@ export type SalesDashboard = {
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const DAY_MS = 86_400_000;
 
-function isIsoDate(value: string | null | undefined): value is string {
+export function isIsoDate(value: string | null | undefined): value is string {
   if (typeof value !== "string" || !ISO_DATE_PATTERN.test(value)) {
     return false;
   }

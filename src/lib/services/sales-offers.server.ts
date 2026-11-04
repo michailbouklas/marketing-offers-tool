@@ -13,6 +13,7 @@ import {
 import {
   valueOffer,
   type OfferDailyRow,
+  type OfferDateRange,
   type OfferValue,
   type OfferValueRow,
 } from "./sales-offers";
@@ -20,13 +21,28 @@ import {
 /** The offer a line belongs to: its combo head, or itself when unlinked. */
 const CODE_SQL = "if(trde_combo_item = '', trde_item, trde_combo_item)";
 
+/** SQL + params limiting `trde_date` to a range; empty for all time. */
+function rangeFilter(range: OfferDateRange | null) {
+  return range
+    ? {
+        sql: "AND trde_date BETWEEN {from:Date} AND {to:Date}",
+        params: { from: range.from, to: range.to },
+      }
+    : { sql: "", params: {} };
+}
+
 /**
- * All-time POS aggregates of every offer of one brand (header codes from the
- * offer POS categories plus the brand's dim_offers codes), most recently sold
- * first. Scans the brand's whole history (~5–8 s), hence the Postgres cache.
+ * POS aggregates of every offer of one brand (header codes from the offer POS
+ * categories plus the brand's dim_offers codes), most recently sold first.
+ * All time scans the brand's whole history (~5–8 s), hence the Postgres cache;
+ * a date range limits every line, including the add-on basket.
  */
-async function queryOfferRows(brand: string): Promise<OfferValueRow[]> {
+async function queryOfferRows(
+  brand: string,
+  range: OfferDateRange | null = null,
+): Promise<OfferValueRow[]> {
   const details = detailsTable();
+  const dates = rangeFilter(range);
   const result = await clickhouse.query({
     query: `
         WITH codes AS (
@@ -64,6 +80,7 @@ async function queryOfferRows(brand: string): Promise<OfferValueRow[]> {
           FROM ${details}
           WHERE lower(brand) = {brand:String} AND trde_void_time = ''
             AND trde_item != '-1' AND code IN codes
+            ${dates.sql}
           GROUP BY code
         ) AS l
         LEFT JOIN (
@@ -77,6 +94,7 @@ async function queryOfferRows(brand: string): Promise<OfferValueRow[]> {
             FROM ${details}
             WHERE lower(brand) = {brand:String} AND trde_void_time = ''
               AND trde_item != '-1'
+              ${dates.sql}
             GROUP BY trde_date, trde_location, trde_division, trde_no
             HAVING notEmpty(offers)
           )
@@ -98,7 +116,11 @@ async function queryOfferRows(brand: string): Promise<OfferValueRow[]> {
         ORDER BY l.last_day DESC, l.offer_net DESC
         SETTINGS join_use_nulls = 1
       `,
-    query_params: { brand, offerCats: EXPLORE_OFFER_CATEGORIES },
+    query_params: {
+      brand,
+      offerCats: EXPLORE_OFFER_CATEGORIES,
+      ...dates.params,
+    },
     format: "JSONEachRow",
   });
 
@@ -132,7 +154,9 @@ async function queryOfferRows(brand: string): Promise<OfferValueRow[]> {
 export async function getOfferDailyRows(
   brand: string,
   codes: string[],
+  range: OfferDateRange | null = null,
 ): Promise<OfferDailyRow[]> {
+  const dates = rangeFilter(range);
   const result = await clickhouse.query({
     query: `
         SELECT ${CODE_SQL} AS code,
@@ -144,10 +168,11 @@ export async function getOfferDailyRows(
         FROM ${detailsTable()}
         WHERE lower(brand) = {brand:String} AND trde_void_time = ''
           AND trde_item != '-1' AND code IN {codes:Array(String)}
+          ${dates.sql}
         GROUP BY code, trde_date
         ORDER BY trde_date
       `,
-    query_params: { brand, codes },
+    query_params: { brand, codes, ...dates.params },
     format: "JSONEachRow",
   });
   const rows =
@@ -220,6 +245,23 @@ export async function getCachedOfferValues(
     ),
     computedAt: cached.computedAt,
     idealFcPerc: target?.ideal_fc_perc ?? null,
+  };
+}
+
+/** Offers measured inside a date range, live from ClickHouse (not cached). */
+export async function getOfferValuesForRange(
+  brand: string,
+  range: OfferDateRange,
+): Promise<CachedOfferValues> {
+  const [rows, target] = await Promise.all([
+    queryOfferRows(brand, range),
+    getBrandPricingTargetByAlias(brand),
+  ]);
+  const idealFcPerc = target?.ideal_fc_perc ?? null;
+  return {
+    offers: rows.map((row) => valueOffer(row, idealFcPerc)),
+    computedAt: new Date(),
+    idealFcPerc,
   };
 }
 

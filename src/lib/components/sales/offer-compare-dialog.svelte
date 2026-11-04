@@ -17,6 +17,7 @@
     weeklyCurve,
     type CompareMetric,
     type OfferDailyRow,
+    type OfferDateRange,
     type OfferValue,
     type OfferVerdict,
   } from "$lib/services/sales-offers";
@@ -29,12 +30,15 @@
     open = $bindable(false),
     offers,
     brand,
+    range = null,
     verdictVariant,
   }: {
     open: boolean;
     /** Exactly two offers; the page only opens the dialog then. */
     offers: [OfferValue, OfferValue] | null;
     brand: string;
+    /** Table date range; null = all time. */
+    range?: OfferDateRange | null;
     verdictVariant: Record<
       OfferVerdict,
       "default" | "secondary" | "destructive" | "outline"
@@ -56,7 +60,7 @@
     fetch("/sales/offers/compare", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ brand, codes }),
+      body: JSON.stringify({ brand, codes, range }),
     })
       .then(async (response) => {
         if (!response.ok) throw new Error(await response.text());

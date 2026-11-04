@@ -1,12 +1,14 @@
 <script lang="ts">
-  import { invalidateAll } from "$app/navigation";
+  import { goto, invalidateAll } from "$app/navigation";
   import { page } from "$app/state";
   import { Badge, badgeVariants } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
+  import DateRangeFilter from "$lib/components/date-range-filter.svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
   import { Skeleton } from "$lib/components/ui/skeleton/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import OfferCompareDialog from "$lib/components/sales/offer-compare-dialog.svelte";
@@ -20,6 +22,7 @@
     type OfferValue,
     type OfferVerdict,
   } from "$lib/services/sales-offers";
+  import SearchIcon from "@lucide/svelte/icons/search";
   import ArrowUpDownIcon from "@lucide/svelte/icons/arrow-up-down";
   import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import RefreshCwIcon from "@lucide/svelte/icons/refresh-cw";
@@ -49,6 +52,21 @@
   let comparePair = $state<[OfferValue, OfferValue] | null>(null);
   let compareOpen = $state(false);
   let tooManyOpen = $state(false);
+  let search = $state("");
+
+  /** Same page with another brand and/or range; omitted range = all time. */
+  function offersHref(alias: string, range: { from?: string; to?: string }) {
+    const params = new URLSearchParams({ brands: alias });
+    if (range.from && range.to) {
+      params.set("from", range.from);
+      params.set("to", range.to);
+    }
+    return `${page.url.pathname}?${params}`;
+  }
+
+  const matchesSearch = (offer: OfferValue, query: string) =>
+    offer.name.toLowerCase().includes(query) ||
+    offer.code.toLowerCase().includes(query);
 
   function toggleCompare(code: string, checked: boolean) {
     compareCodes = checked
@@ -174,10 +192,11 @@
       Offers value
     </h1>
     <p class="text-muted-foreground max-w-3xl text-base leading-7">
-      Every offer the brand has sold, measured over its whole life. Contribution
-      is the offer's net sales (excl. VAT) minus its food cost, plus the margin
-      on everything else bought in the same orders (costed at the brand's ideal
-      FC %). An offer is positive when that margin meets the brand target.
+      Every offer the brand has sold, measured over its whole life or over the
+      dates you pick. Contribution is the offer's net sales (excl. VAT) minus
+      its food cost, plus the margin on everything else bought in the same
+      orders (costed at the brand's ideal FC %). An offer is positive when that
+      margin meets the brand target.
     </p>
   </section>
 
@@ -189,27 +208,44 @@
       </Card.Content>
     </Card.Root>
   {:else}
-    <div class="space-y-2">
-      <span class="text-sm font-medium" id="brand-label">Brand</span>
-      <ButtonGroup.Root aria-labelledby="brand-label" class="flex-wrap">
-        {#each allBrands as item (item.alias)}
-          <Button
-            href={`${page.url.pathname}?brands=${encodeURIComponent(item.alias)}`}
-            variant={item.alias === brand.alias ? "default" : "outline"}
-            aria-current={item.alias === brand.alias ? "page" : undefined}
-          >
-            {item.name}
-          </Button>
-        {/each}
-      </ButtonGroup.Root>
+    {@const range = data.range ?? null}
+    <div class="flex flex-wrap items-end gap-6">
+      <div class="space-y-2">
+        <span class="text-sm font-medium" id="brand-label">Brand</span>
+        <ButtonGroup.Root aria-labelledby="brand-label" class="flex-wrap">
+          {#each allBrands as item (item.alias)}
+            <Button
+              href={offersHref(item.alias, range ?? {})}
+              variant={item.alias === brand.alias ? "default" : "outline"}
+              aria-current={item.alias === brand.alias ? "page" : undefined}
+            >
+              {item.name}
+            </Button>
+          {/each}
+        </ButtonGroup.Root>
+      </div>
+
+      <div class="space-y-2">
+        <span class="text-sm font-medium">Date range</span>
+        <DateRangeFilter
+          from={range?.from}
+          to={range?.to}
+          onApply={(next) =>
+            goto(offersHref(brand.alias, next), {
+              keepFocus: true,
+              noScroll: true,
+            })}
+        />
+      </div>
     </div>
 
     {#await data.offers}
       <Card.Root aria-busy="true">
         <Card.Content class="space-y-3 py-6">
           <p class="text-muted-foreground text-sm">
-            First visit for {brand.name}: adding up its full sales history.
-            Later visits load instantly from the daily cache.
+            {range
+              ? `Adding up ${brand.name}'s sales from ${range.from} to ${range.to}.`
+              : `First visit for ${brand.name}: adding up its full sales history. Later visits load instantly from the daily cache.`}
           </p>
           {#each { length: 8 } as _, index (index)}
             <Skeleton class="h-8 w-full" />
@@ -222,25 +258,31 @@
         compareCodes.includes(offer.code),
       )}
       <div class="flex flex-wrap items-center gap-3 text-sm">
-        <span class="text-muted-foreground">
-          {cached
-            ? `Updated ${updatedAt.format(cached.computedAt)} · refreshed daily`
-            : "Another refresh is computing this brand; reload in a minute."}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={refreshing}
-          onclick={() => refresh(brand.alias)}
-        >
-          {#if refreshing}
-            <LoaderCircleIcon class="animate-spin" aria-hidden="true" />
-            Refreshing…
-          {:else}
-            <RefreshCwIcon aria-hidden="true" />
-            Refresh
-          {/if}
-        </Button>
+        {#if range}
+          <span class="text-muted-foreground">
+            Sales from {range.from} to {range.to}, computed live
+          </span>
+        {:else}
+          <span class="text-muted-foreground">
+            {cached
+              ? `All time · updated ${updatedAt.format(cached.computedAt)} · refreshed daily`
+              : "Another refresh is computing this brand; reload in a minute."}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={refreshing}
+            onclick={() => refresh(brand.alias)}
+          >
+            {#if refreshing}
+              <LoaderCircleIcon class="animate-spin" aria-hidden="true" />
+              Refreshing…
+            {:else}
+              <RefreshCwIcon aria-hidden="true" />
+              Refresh
+            {/if}
+          </Button>
+        {/if}
         <Button
           size="sm"
           disabled={picked.length < 2}
@@ -255,7 +297,7 @@
       {#if offers.length === 0}
         <Card.Root>
           <Card.Content class="text-muted-foreground py-8 text-sm">
-            No offers found for {brand.name}.
+            No offers found for {brand.name}{range ? " in these dates" : ""}.
           </Card.Content>
         </Card.Root>
       {:else}
@@ -263,9 +305,25 @@
           verdictFilter && countBy(offers, verdictFilter) > 0
             ? verdictFilter
             : null}
-        {@const visibleOffers = activeFilter
-          ? offers.filter((offer) => offer.verdict === activeFilter)
-          : offers}
+        {@const query = search.trim().toLowerCase()}
+        {@const visibleOffers = offers.filter(
+          (offer) =>
+            (!activeFilter || offer.verdict === activeFilter) &&
+            (!query || matchesSearch(offer, query)),
+        )}
+        <div class="relative max-w-sm">
+          <SearchIcon
+            class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
+            aria-hidden="true"
+          />
+          <Input
+            type="search"
+            bind:value={search}
+            placeholder="Search offers by name or code"
+            aria-label="Search offers by name or code"
+            class="pl-8"
+          />
+        </div>
         <div class="flex flex-wrap gap-2 text-sm">
           {#each VERDICTS as verdict (verdict)}
             {@const count = countBy(offers, verdict)}
@@ -399,6 +457,15 @@
                       </Badge>
                     </Table.Cell>
                   </Table.Row>
+                {:else}
+                  <Table.Row>
+                    <Table.Cell
+                      colspan={COLUMNS.length + 2}
+                      class="text-muted-foreground py-6 text-center"
+                    >
+                      No offers match "{search.trim()}".
+                    </Table.Cell>
+                  </Table.Row>
                 {/each}
               </Table.Body>
             </Table.Root>
@@ -415,6 +482,7 @@
         bind:open={compareOpen}
         offers={comparePair}
         brand={brand.alias}
+        {range}
         verdictVariant={VERDICT_VARIANT}
       />
       <AlertDialog.Root bind:open={tooManyOpen}>
