@@ -4,6 +4,8 @@
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import ChevronsLeftRightEllipsisIcon from "@lucide/svelte/icons/chevrons-left-right-ellipsis";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
+  import DownloadIcon from "@lucide/svelte/icons/download";
+  import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import XIcon from "@lucide/svelte/icons/x";
   import { toast } from "svelte-sonner";
   import { Badge } from "$lib/components/ui/badge/index.js";
@@ -40,6 +42,7 @@
   let currentSortBy = $state<GapListSortField>("brand");
   let currentSortDir = $state<GapListSortDirection>("asc");
   let isRefreshing = $state(false);
+  let isExporting = $state(false);
   let latestRefreshRequestId = 0;
 
   const gaps = $derived(queuePage.items);
@@ -219,6 +222,31 @@
       gap.detected_at,
       index,
     ].join(":");
+  }
+
+  async function exportExcel() {
+    isExporting = true;
+    try {
+      const params = new URLSearchParams({ sortBy, sortDir });
+      for (const alias of appliedAliases) {
+        params.append("brandAlias", alias);
+      }
+      if (onlySubmitted) {
+        params.set("status", "submitted");
+      }
+      const response = await fetch(`/offers-data-quality/export?${params}`);
+      if (!response.ok) {
+        throw new Error(`Export failed (${response.status})`);
+      }
+      const { downloadUrl } = (await response.json()) as {
+        downloadUrl: string;
+      };
+      window.location.assign(downloadUrl);
+    } catch {
+      toast.error("The Excel export could not be generated. Try again.");
+    } finally {
+      isExporting = false;
+    }
   }
 
   async function goToPage(targetPage: number) {
@@ -437,6 +465,20 @@
               <Button variant="outline" size="sm" onclick={resetBrandFilters}
                 >Reset</Button
               >
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isExporting || totalItems === 0}
+                onclick={exportExcel}
+              >
+                {#if isExporting}
+                  <LoaderCircleIcon class="size-4 animate-spin" />
+                {:else}
+                  <DownloadIcon class="size-4" />
+                {/if}
+                Export to Excel
+              </Button>
             </div>
           </div>
 
