@@ -30,6 +30,7 @@ export const statement = {
   urlsToScrape: ["manage"],
   skill: ["manage"],
   release: ["manage"],
+  recipe: ["manage"],
 } as const;
 
 export const ac = createAccessControl(statement);
@@ -40,7 +41,8 @@ export const ac = createAccessControl(statement);
  *
  * - `admin` is a marker role (recognised by `isAdminRole` / `adminRoles` for
  *   the coarse `/admin` gate). It grants no resource permissions EXCEPT
- *   `brand: ["manage"]`, so that admins can reach the brand-assignment tool
+ *   `brand: ["manage"]` and `recipe: ["manage"]` (the /admin/recipes builder,
+ *   also granted to `brandManager`), so that admins can reach the brand-assignment tool
  *   (and the rest of the brand-management section, which shares this
  *   permission), `urlsToScrape: ["manage"]`, and `googleReviews: ["manage"]`
  *   (the `/admin/google-reviews` tools that edit the scraper's source
@@ -88,6 +90,7 @@ export const roles = {
     sales: ["view"],
     forecasts: ["view"],
     skill: ["manage"],
+    recipe: ["manage"],
   }),
   approver: ac.newRole({
     submission: ["approve", "reject"],
@@ -104,6 +107,7 @@ export const roles = {
     urlsToScrape: ["manage"],
     googleReviews: ["view", "manage"],
     skill: ["manage"],
+    recipe: ["manage"],
   }),
   offerEditor: ac.newRole({
     offer: ["edit"],
@@ -143,6 +147,7 @@ export const roles = {
     urlsToScrape: ["manage"],
     skill: ["manage"],
     release: ["manage"],
+    recipe: ["manage"],
   }),
 } satisfies Record<UserRole, Role>;
 

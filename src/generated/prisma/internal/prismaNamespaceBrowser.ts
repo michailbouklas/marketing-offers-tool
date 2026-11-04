@@ -55,6 +55,8 @@ export const ModelName = {
   api_WOLT_lines: 'api_WOLT_lines',
   error_log: 'error_log',
   brand: 'brand',
+  recipe: 'recipe',
+  recipe_line: 'recipe_line',
   user_brand: 'user_brand',
   brand_google_analytics_property: 'brand_google_analytics_property',
   google_analytics_report_cache: 'google_analytics_report_cache',
@@ -192,6 +194,34 @@ export const BrandScalarFieldEnum = {
 } as const
 
 export type BrandScalarFieldEnum = (typeof BrandScalarFieldEnum)[keyof typeof BrandScalarFieldEnum]
+
+
+export const RecipeScalarFieldEnum = {
+  id: 'id',
+  brandId: 'brandId',
+  item_code: 'item_code',
+  item_description: 'item_description',
+  updated_by: 'updated_by',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type RecipeScalarFieldEnum = (typeof RecipeScalarFieldEnum)[keyof typeof RecipeScalarFieldEnum]
+
+
+export const Recipe_lineScalarFieldEnum = {
+  id: 'id',
+  recipeId: 'recipeId',
+  sort_order: 'sort_order',
+  database_id: 'database_id',
+  item_number: 'item_number',
+  item_description: 'item_description',
+  uom: 'uom',
+  quantity: 'quantity',
+  unit_cost_snapshot: 'unit_cost_snapshot'
+} as const
+
+export type Recipe_lineScalarFieldEnum = (typeof Recipe_lineScalarFieldEnum)[keyof typeof Recipe_lineScalarFieldEnum]
 
 
 export const User_brandScalarFieldEnum = {

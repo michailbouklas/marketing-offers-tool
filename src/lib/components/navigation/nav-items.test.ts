@@ -18,6 +18,7 @@ describe("visibleNavItems", () => {
   it("lists only the admin tools a role is permitted", () => {
     const links = adminLinks("brandManager");
     expect(links).toContain("/admin/brands");
+    expect(links).toContain("/admin/recipes");
     expect(links).not.toContain("/admin/users");
     expect(links).not.toContain("/admin/live-monitoring");
   });
@@ -29,7 +30,7 @@ describe("visibleNavItems", () => {
   });
 
   it("gives superUser every admin tool", () => {
-    expect(adminLinks("superUser")).toHaveLength(15);
+    expect(adminLinks("superUser")).toHaveLength(16);
   });
 
   // The command palette uses href as each item's unique value.

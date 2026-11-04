@@ -14,6 +14,7 @@
   import RadioIcon from "@lucide/svelte/icons/radio";
   import SparklesIcon from "@lucide/svelte/icons/sparkles";
   import MegaphoneIcon from "@lucide/svelte/icons/megaphone";
+  import ChefHatIcon from "@lucide/svelte/icons/chef-hat";
   import type { Component } from "svelte";
   import type { PageData } from "./$types";
 
@@ -139,6 +140,14 @@
         "Write SKILL.md instructions the AI assistants load on demand and choose which assistants get each skill.",
       icon: SparklesIcon,
       accessKey: "skills",
+    },
+    {
+      href: "/admin/recipes",
+      title: "Recipes",
+      description:
+        "Build each menu item's recipe from SAP materials and see its live material cost.",
+      icon: ChefHatIcon,
+      accessKey: "recipes",
     },
   ];
 

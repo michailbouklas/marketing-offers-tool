@@ -257,6 +257,11 @@ const adminChildren: NavChild[] = [
     label: "Agent skills",
     permission: { skill: ["manage"] },
   },
+  {
+    href: "/admin/recipes",
+    label: "Recipes",
+    permission: { recipe: ["manage"] },
+  },
 ];
 
 // Browser-side twin of `userHasPermissionById`: Better Auth grants the union
