@@ -56,11 +56,9 @@ export async function listSapCompanies(): Promise<string[]> {
     return companiesCache.names;
   }
   const pool = await getMssqlPool();
-  const result = await pool
-    .request()
-    .query<{
-      companyname: string;
-    }>("SELECT DISTINCT companyname FROM dbo.sapbw_items ORDER BY companyname");
+  const result = await pool.request().query<{
+    companyname: string;
+  }>("SELECT DISTINCT companyname FROM dbo.sapbw_items ORDER BY companyname");
   const names = result.recordset.map((row) => row.companyname.trim());
   companiesCache = { at: Date.now(), names };
   return names;
@@ -131,6 +129,44 @@ export async function searchSapItems(
     ORDER BY item_description`);
 
   return result.recordset.map(toSapItem);
+}
+
+/**
+ * Rows for the given item numbers (inactive included), keyed by upper-cased
+ * item number; limited to `company` when set. One number can hold several
+ * rows when it exists in more than one company.
+ */
+export async function getSapItemsByNumber(
+  numbers: string[],
+  company: string | null,
+): Promise<Map<string, SapItem[]>> {
+  const unique = [...new Set(numbers.map((n) => n.trim()).filter(Boolean))];
+  const items = new Map<string, SapItem[]>();
+  if (unique.length === 0) return items;
+
+  const pool = await getMssqlPool();
+  // One parameter per number (+1 for the company) stays under the 2100 cap.
+  const chunkSize = KEY_CHUNK * 2;
+  for (let start = 0; start < unique.length; start += chunkSize) {
+    const chunk = unique.slice(start, start + chunkSize);
+    const request = pool.request();
+    const params = chunk.map((number, index) => {
+      request.input(`n${index}`, sql.NVarChar(50), number);
+      return `@n${index}`;
+    });
+    if (company) request.input("company", sql.VarChar(37), company);
+    const result = await request.query<SapRow>(
+      `SELECT ${SELECT_COLUMNS} FROM dbo.sapbw_items
+       WHERE item_number IN (${params.join(", ")})
+       ${company ? "AND companyname = @company" : ""}`,
+    );
+    for (const row of result.recordset) {
+      const item = toSapItem(row);
+      const key = item.item_number.toUpperCase();
+      items.set(key, [...(items.get(key) ?? []), item]);
+    }
+  }
+  return items;
 }
 
 /** Exact rows for the given keys (inactive included), keyed by `sapItemKey`. */

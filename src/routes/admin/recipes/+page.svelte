@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import RecipeImportDialog from "$lib/components/recipes/recipe-import-dialog.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
@@ -22,6 +23,7 @@
   ]);
 
   let sortByFoodCost = $state(false);
+  let importOpen = $state(false);
 
   const targetFoodCost = $derived(
     data.brand?.ideal_fc_perc == null ? null : data.brand.ideal_fc_perc * 100,
@@ -133,6 +135,12 @@
         >
           Menu engineering
         </Button>
+        {#if data.brand}
+          <Button variant="outline" onclick={() => (importOpen = true)}>
+            Import
+          </Button>
+          <RecipeImportDialog bind:open={importOpen} brand={data.brand} />
+        {/if}
       </Card.Header>
       <Card.Content>
         <Table.Root>
