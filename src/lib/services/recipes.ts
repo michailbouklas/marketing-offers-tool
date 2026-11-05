@@ -10,6 +10,14 @@ export function exVatPrice(shelfPrice: number) {
   return shelfPrice / VAT_FACTOR;
 }
 
+/** Brand electricity cost as a share of net sales, from the energy platform. */
+export type EnergyCost = {
+  /** Percent (2.1 = 2.1%); null when the brand had no sales in the window. */
+  percent: number | null;
+  from: string;
+  to: string;
+};
+
 /** Labour € an item carries: its ex-VAT price × the brand labour cost %. */
 export function labourCost(shelfPrice: number, labourFraction: number) {
   return exVatPrice(shelfPrice) * labourFraction;
@@ -29,8 +37,14 @@ export function primeCostPercent(
  * Ideal shelf price for a target margin on the ex-VAT price: FC% = 1 − margin,
  * then the app-wide rule `calculateIdealPrice` (cost ÷ FC% × 1.05 × 1.07).
  * `marginPercent` is 0–100; null when the inputs cannot give a price.
+ * `energyFraction` (share of ex-VAT sales) is reserved out of the price too:
+ * cost ÷ (1 − margin − energy).
  */
-export function idealPriceForMargin(cost: number, marginPercent: number) {
+export function idealPriceForMargin(
+  cost: number,
+  marginPercent: number,
+  energyFraction = 0,
+) {
   if (
     !Number.isFinite(marginPercent) ||
     marginPercent < 0 ||
@@ -38,7 +52,11 @@ export function idealPriceForMargin(cost: number, marginPercent: number) {
   ) {
     return null;
   }
-  return calculateIdealPrice(cost, 1 - marginPercent / 100);
+  // Round off float noise (1 − 0.98 − 0.02 ≠ 0) so a share that is really 0
+  // gives null from calculateIdealPrice instead of an astronomic price.
+  const foodShare =
+    Math.round((1 - marginPercent / 100 - energyFraction) * 1e9) / 1e9;
+  return calculateIdealPrice(cost, foodShare);
 }
 
 /** Margin % a shelf price leaves over the cost, on the ex-VAT price. */
