@@ -92,6 +92,7 @@
       <BrandPricingTargetsCard
         brandId={data.brand.id}
         idealFcPercent={data.idealFcPercent}
+        labourPercent={data.labourPercent}
       />
     </Tabs.Content>
 

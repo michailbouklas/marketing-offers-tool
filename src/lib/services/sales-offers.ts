@@ -1,4 +1,4 @@
-import { IDEAL_PRICE_MARKUP_FACTORS } from "./offers-data-quality";
+import { VAT_FACTOR } from "./offers-data-quality";
 import { formatSalesAmount, isIsoDate } from "./sales-dashboard";
 
 /**
@@ -42,11 +42,8 @@ export type OfferValue = OfferValueRow & {
   verdict: OfferVerdict;
 };
 
-/** POS net = gross / (1.05 × 1.07), same factors as the DQ ideal price. */
-export const VAT_DIVISOR = IDEAL_PRICE_MARKUP_FACTORS.reduce(
-  (a, b) => a * b,
-  1,
-);
+/** POS net = gross / VAT. The DQ 1.07 pricing buffer is not a tax. */
+export const VAT_DIVISOR = VAT_FACTOR;
 
 /** Food cost per unit, € ex VAT: fc_eur, else fc_perc of the net selling price. */
 export function unitFoodCost(

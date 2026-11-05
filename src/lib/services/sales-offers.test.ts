@@ -19,7 +19,7 @@ const row: OfferValueRow = {
   category: "BundleDisc",
   fcPerc: 0.5,
   fcEur: null,
-  sellingPrice: 11.235,
+  sellingPrice: 10.5, // 10.00 ex 5% VAT
   firstSale: "2026-01-01",
   lastSale: "2026-11-02",
   daysOnSale: 300,

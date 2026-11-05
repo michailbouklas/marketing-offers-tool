@@ -33,13 +33,14 @@ export const load: PageServerLoad = async (event) => {
       active: true,
       alias: true,
       ideal_fc_perc: true,
+      labour_perc: true,
     },
   });
   if (!brandRecord) {
     error(404, "Brand not found");
   }
 
-  const { ideal_fc_perc, ...brand } = brandRecord;
+  const { ideal_fc_perc, labour_perc, ...brand } = brandRecord;
   // Stored as a fraction (0.3000); the page edits it as a percent (30).
   const idealFcPercent =
     ideal_fc_perc === null
@@ -70,6 +71,10 @@ export const load: PageServerLoad = async (event) => {
   return {
     brand,
     idealFcPercent,
+    labourPercent:
+      labour_perc === null
+        ? null
+        : Math.round(Number(labour_perc.toString()) * 100 * 100) / 100,
     assignments,
     googleAnalytics: {
       properties: googleAnalyticsProperties,

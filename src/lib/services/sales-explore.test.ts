@@ -327,7 +327,9 @@ describe("offer filter", () => {
       combo: "only",
     });
     expect(only.sql).toContain(`${key} IN (`);
-    expect(only.sql).toContain("item_category IN {comboCats:Array(String)}");
+    expect(only.sql).toContain(
+      "(trde_combo_item_pos = -1 OR item_category IN {comboCats:Array(String)})",
+    );
     expect(only.sql).toContain("trde_sub_line = 0");
     expect(only.sql).not.toContain("offerCats");
     expect(only.params.comboCats).toContain("Combo Meals");

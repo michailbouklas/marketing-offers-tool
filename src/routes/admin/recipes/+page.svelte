@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import LabourToggle from "$lib/components/recipes/labour-toggle.svelte";
   import RecipeImportDialog from "$lib/components/recipes/recipe-import-dialog.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
@@ -8,7 +9,7 @@
   import { Input } from "$lib/components/ui/input/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
-  import { foodCostPercent, formatEur } from "$lib/services/recipes";
+  import { formatEur, primeCostPercent } from "$lib/services/recipes";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -25,8 +26,16 @@
   let sortByFoodCost = $state(false);
   let importOpen = $state(false);
 
+  // With labour on, FC % becomes prime cost % (food + labour) and so does the target.
+  let includeLabour = $state(false);
+  const labourFraction = $derived(
+    includeLabour ? (data.brand?.labour_perc ?? 0) : 0,
+  );
+
   const targetFoodCost = $derived(
-    data.brand?.ideal_fc_perc == null ? null : data.brand.ideal_fc_perc * 100,
+    data.brand?.ideal_fc_perc == null
+      ? null
+      : (data.brand.ideal_fc_perc + labourFraction) * 100,
   );
 
   // Only for complete recipes: a partial cost would understate food cost.
@@ -35,7 +44,7 @@
       ...item,
       foodCost:
         item.recipe && item.recipe.missing === 0
-          ? foodCostPercent(item.recipe.total, item.price)
+          ? primeCostPercent(item.recipe.total, item.price, labourFraction)
           : null,
     })),
   );
@@ -56,7 +65,9 @@
       : rows;
   });
 
-  const recipeCount = $derived(data.items.filter((item) => item.recipe).length);
+  const recipeCount = $derived(
+    data.items.filter((item) => item.recipe?.source === "recipe").length,
+  );
 
   function itemHref(itemCode: string) {
     return `/admin/recipes/${encodeURIComponent(data.brand?.alias ?? "")}/${encodeURIComponent(itemCode)}`;
@@ -135,11 +146,21 @@
         >
           Menu engineering
         </Button>
+        <Button
+          variant="outline"
+          href={`/admin/recipes/${encodeURIComponent(data.brand?.alias ?? "")}/combo-items`}
+        >
+          Combo items
+        </Button>
         {#if data.brand}
           <Button variant="outline" onclick={() => (importOpen = true)}>
             Import
           </Button>
           <RecipeImportDialog bind:open={importOpen} brand={data.brand} />
+          <LabourToggle
+            labourPerc={data.brand.labour_perc}
+            bind:checked={includeLabour}
+          />
         {/if}
       </Card.Header>
       <Card.Content>
@@ -157,10 +178,12 @@
                   type="button"
                   class="hover:text-foreground inline-flex items-center gap-1"
                   aria-pressed={sortByFoodCost}
-                  title="Sort by food cost %, highest first"
+                  title="Sort by cost %, highest first"
                   onclick={() => (sortByFoodCost = !sortByFoodCost)}
                 >
-                  FC %{sortByFoodCost ? " ↓" : ""}
+                  {labourFraction ? "Prime %" : "FC %"}{sortByFoodCost
+                    ? " ↓"
+                    : ""}
                 </button>
               </Table.Head>
             </Table.Row>
@@ -195,7 +218,14 @@
                   {formatEur(item.price, 2)}
                 </Table.Cell>
                 <Table.Cell>
-                  {#if item.recipe}
+                  {#if item.recipe?.source === "combo"}
+                    <Badge
+                      variant="outline"
+                      title="Cost from the recipes of the components it is sold with"
+                    >
+                      Combo · {item.recipe.componentCount} components
+                    </Badge>
+                  {:else if item.recipe}
                     <Badge variant="secondary">
                       {item.recipe.lineCount} materials
                     </Badge>
@@ -208,7 +238,10 @@
                     {formatEur(item.recipe.total)}
                     {#if item.recipe.missing > 0}
                       <Badge variant="destructive" class="ml-1">
-                        {item.recipe.missing} no cost
+                        {item.recipe.missing}
+                        {item.recipe.source === "combo"
+                          ? "without recipe"
+                          : "no cost"}
                       </Badge>
                     {/if}
                   {/if}

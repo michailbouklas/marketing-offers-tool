@@ -6,6 +6,8 @@
   import PlusIcon from "@lucide/svelte/icons/plus";
   import SearchIcon from "@lucide/svelte/icons/search";
   import Trash2Icon from "@lucide/svelte/icons/trash-2";
+  import ComboComponentsTable from "$lib/components/recipes/combo-components-table.svelte";
+  import LabourToggle from "$lib/components/recipes/labour-toggle.svelte";
   import SapItemSearchDialog from "$lib/components/sap/sap-item-search-dialog.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
@@ -20,7 +22,9 @@
     foodCostPercent,
     formatEur,
     idealPriceForMargin,
+    labourCost,
     marginOfPrice,
+    primeCostPercent,
     PRICE_POINT_ENDINGS,
     roundUpToPricePoint,
     type PricePointEnding,
@@ -62,13 +66,17 @@
     },
   );
 
+  // A combo without its own recipe is costed from its components.
+  const usingCombo = $derived(data.combo !== null && $form.lines.length === 0);
   const cost = $derived(
-    costRecipe(
-      $form.lines.map((line) => ({
-        quantity: Number(line.quantity),
-        unit_cost: sapInfo[key(line)]?.item_cost ?? null,
-      })),
-    ),
+    usingCombo && data.combo
+      ? { total: data.combo.total, missing: data.combo.missing }
+      : costRecipe(
+          $form.lines.map((line) => ({
+            quantity: Number(line.quantity),
+            unit_cost: sapInfo[key(line)]?.item_cost ?? null,
+          })),
+        ),
   );
 
   // Prefilled from the brand's food-cost target; not saved.
@@ -106,6 +114,23 @@
     data.brand.ideal_fc_perc === null ? null : data.brand.ideal_fc_perc * 100,
   );
 
+  // Labour is a share of ex-VAT sales (brand KPI), applied only when toggled on.
+  let includeLabour = $state(false);
+  const labourPerc = $derived(includeLabour ? data.brand.labour_perc : null);
+  const labour = $derived(
+    labourPerc === null ? 0 : labourCost(menuPrice, labourPerc),
+  );
+  const primeCost = $derived(
+    labourPerc !== null && cost.total > 0
+      ? primeCostPercent(cost.total, menuPrice, labourPerc)
+      : null,
+  );
+  const targetPrimeCost = $derived(
+    labourPerc !== null && targetFoodCost !== null
+      ? targetFoodCost + labourPerc * 100
+      : null,
+  );
+
   // Same recipe re-priced at SAP's last purchase price (0 = no price).
   const latestCost = $derived(
     costRecipe(
@@ -116,7 +141,7 @@
     ),
   );
   const latestChange = $derived(
-    cost.total > 0 && latestCost.missing === 0
+    !usingCombo && cost.total > 0 && latestCost.missing === 0
       ? ((latestCost.total - cost.total) / cost.total) * 100
       : null,
   );
@@ -240,8 +265,14 @@
       <p class="text-3xl font-semibold tabular-nums">{formatEur(cost.total)}</p>
       {#if cost.missing > 0}
         <p class="text-destructive text-xs">
-          Incomplete: {cost.missing} line(s) without a SAP cost
+          Incomplete: {cost.missing}
+          {usingCombo
+            ? "component(s) without a recipe"
+            : "line(s) without a SAP cost"}
         </p>
+      {/if}
+      {#if usingCombo}
+        <p class="text-muted-foreground text-xs">From combo components</p>
       {/if}
       {#if data.menuItem}
         <p class="text-muted-foreground text-xs">
@@ -250,6 +281,30 @@
       {/if}
     </div>
   </div>
+
+  {#if data.combo}
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Combo components</Card.Title>
+        <Card.Description>
+          Sold as a combo in the last {data.comboWindowDays} days (<a
+            class="underline"
+            href={`/admin/recipes/${encodeURIComponent(data.brand.alias)}/combo-items/${encodeURIComponent(data.itemCode)}`}
+            >combo view</a
+          >). Cost = each component's recipe × how many of it come with one
+          combo on average, so drink and side choices are weighted by what
+          guests pick. Adding materials below overrides this. Give ice or free
+          sauces an empty recipe to count them as €0.
+        </Card.Description>
+      </Card.Header>
+      <Card.Content>
+        <ComboComponentsTable
+          brandAlias={data.brand.alias}
+          components={data.combo.components}
+        />
+      </Card.Content>
+    </Card.Root>
+  {/if}
 
   <form method="POST" action="?/save" use:enhance>
     <Card.Root>
@@ -439,8 +494,14 @@
         <Card.Title>Item price vs material cost</Card.Title>
         <Card.Description>
           Item price is the menu price incl. VAT; the difference is on the price
-          ex VAT (÷ 1.05 ÷ 1.07), since material cost carries no VAT.
+          ex VAT (÷ 1.05), since material cost carries no VAT.
         </Card.Description>
+        <Card.Action>
+          <LabourToggle
+            labourPerc={data.brand.labour_perc}
+            bind:checked={includeLabour}
+          />
+        </Card.Action>
       </Card.Header>
       <Card.Content>
         <dl class="grid grid-cols-1 gap-4 sm:grid-cols-4">
@@ -483,43 +544,71 @@
                 incomplete: {cost.missing} line(s) without cost
               </dd>
             {/if}
+            {#if labourPerc !== null}
+              <dd class="text-muted-foreground text-xs tabular-nums">
+                + {formatEur(labour, 2)} labour
+              </dd>
+            {/if}
           </div>
           <div>
-            <dt class="text-muted-foreground text-sm">Difference</dt>
+            <dt class="text-muted-foreground text-sm">
+              {labourPerc === null ? "Difference" : "Difference after labour"}
+            </dt>
             <dd
               class={[
                 "text-2xl font-semibold tabular-nums",
-                priceDifference < 0 && "text-destructive",
+                priceDifference - labour < 0 && "text-destructive",
               ]}
             >
-              {signedEur(priceDifference, 4)}
+              {signedEur(priceDifference - labour, 4)}
             </dd>
             <dd class="text-muted-foreground text-xs tabular-nums">
               {#if currentMargin !== null}
-                {formatPercent(currentMargin)} margin ·
+                {formatPercent(currentMargin)} margin over food ·
               {/if}
               {signedEur(menuPrice - cost.total, 4)} before removing VAT
             </dd>
           </div>
           <div>
-            <dt class="text-muted-foreground text-sm">Food cost %</dt>
-            <dd
-              class={[
-                "text-2xl font-semibold tabular-nums",
-                foodCost !== null &&
-                  targetFoodCost !== null &&
-                  foodCost > targetFoodCost &&
-                  "text-destructive",
-              ]}
-            >
-              {foodCost === null ? "—" : formatPercent(foodCost)}
-            </dd>
-            <dd class="text-muted-foreground text-xs">
-              {#if targetFoodCost !== null}
-                target {formatPercent(targetFoodCost)} ·
-              {/if}
-              cost ÷ price ex VAT
-            </dd>
+            {#if labourPerc === null}
+              <dt class="text-muted-foreground text-sm">Food cost %</dt>
+              <dd
+                class={[
+                  "text-2xl font-semibold tabular-nums",
+                  foodCost !== null &&
+                    targetFoodCost !== null &&
+                    foodCost > targetFoodCost &&
+                    "text-destructive",
+                ]}
+              >
+                {foodCost === null ? "—" : formatPercent(foodCost)}
+              </dd>
+              <dd class="text-muted-foreground text-xs">
+                {#if targetFoodCost !== null}
+                  target {formatPercent(targetFoodCost)} ·
+                {/if}
+                cost ÷ price ex VAT
+              </dd>
+            {:else}
+              <dt class="text-muted-foreground text-sm">Prime cost %</dt>
+              <dd
+                class={[
+                  "text-2xl font-semibold tabular-nums",
+                  primeCost !== null &&
+                    targetPrimeCost !== null &&
+                    primeCost > targetPrimeCost &&
+                    "text-destructive",
+                ]}
+              >
+                {primeCost === null ? "—" : formatPercent(primeCost)}
+              </dd>
+              <dd class="text-muted-foreground text-xs">
+                {#if targetPrimeCost !== null}
+                  target {formatPercent(targetPrimeCost)} ·
+                {/if}
+                (food + labour) ÷ price ex VAT
+              </dd>
+            {/if}
           </div>
         </dl>
       </Card.Content>
@@ -530,8 +619,9 @@
     <Card.Header>
       <Card.Title>Ideal price</Card.Title>
       <Card.Description>
-        Margin on the price ex VAT. Ideal price = cost ÷ (1 − margin) × 1.05 ×
-        1.07, the same rule as the offers data-quality form.
+        Margin on the price ex VAT. Ideal price = cost ÷ (1 − margin) × 1.05 VAT
+        × 1.07 buffer, the same rule as the offers data-quality form; the buffer
+        leaves the actual margin above the target.
       </Card.Description>
     </Card.Header>
     <Card.Content class="grid gap-6 sm:grid-cols-[14rem_1fr]">
@@ -599,6 +689,11 @@
                 margin · {formatPercent(
                   foodCostPercent(cost.total, roundedPrice) ?? 0,
                 )} food cost
+                {#if labourPerc !== null}
+                  · {formatPercent(
+                    primeCostPercent(cost.total, roundedPrice, labourPerc) ?? 0,
+                  )} prime cost
+                {/if}
               </dd>
             {/if}
           </div>
