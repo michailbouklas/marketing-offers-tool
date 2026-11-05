@@ -1,12 +1,28 @@
 import { z } from "zod";
 import {
   calculateIdealPrice,
-  IDEAL_PRICE_MARKUP_FACTORS,
+  VAT_FACTOR,
 } from "$lib/services/offers-data-quality";
+import { parseOfferDateRange } from "$lib/services/sales-offers";
 
-/** Shelf (VAT-inclusive) price → ex-VAT, the inverse of the ideal-price factors. */
+/** Shelf (VAT-inclusive) price → ex-VAT net. Only VAT, never the 1.07 buffer. */
 export function exVatPrice(shelfPrice: number) {
-  return IDEAL_PRICE_MARKUP_FACTORS.reduce((price, f) => price / f, shelfPrice);
+  return shelfPrice / VAT_FACTOR;
+}
+
+/** Labour € an item carries: its ex-VAT price × the brand labour cost %. */
+export function labourCost(shelfPrice: number, labourFraction: number) {
+  return exVatPrice(shelfPrice) * labourFraction;
+}
+
+/** Prime cost % = (food cost + labour) ÷ ex-VAT price × 100. */
+export function primeCostPercent(
+  cost: number,
+  shelfPrice: number,
+  labourFraction: number,
+) {
+  const food = foodCostPercent(cost, shelfPrice);
+  return food === null ? null : food + labourFraction * 100;
 }
 
 /**
@@ -59,28 +75,46 @@ export function roundUpToPricePoint(price: number, ending: PricePointEnding) {
   return candidate / 100;
 }
 
-export type MenuClass = "star" | "plowhorse" | "puzzle" | "dog";
+/** popular / unpopular: rated on sales only, no complete recipe cost. */
+export type MenuClass =
+  | "star"
+  | "plowhorse"
+  | "puzzle"
+  | "dog"
+  | "popular"
+  | "unpopular";
 
 /**
  * Kasavana–Smith menu engineering. Popularity is high when an item sells at
  * least 70% of the average units per item; profitability is high when its
  * contribution margin (CM) is at least the sales-weighted average CM.
  */
-export function menuEngineering(items: { units: number; cm: number }[]) {
+export function menuEngineering(items: { units: number; cm: number | null }[]) {
   const totalUnits = items.reduce((sum, item) => sum + item.units, 0);
   if (items.length === 0 || totalUnits <= 0) {
     return {
-      classes: items.map((): MenuClass => "dog"),
+      classes: items.map(
+        (item): MenuClass => (item.cm === null ? "unpopular" : "dog"),
+      ),
       popularityThreshold: 0,
       averageCm: 0,
     };
   }
+  // Popularity uses the whole menu mix; margin only the items with a known cost,
+  // so uncosted items neither get a quadrant nor skew the average CM.
   const popularityThreshold = (0.7 * totalUnits) / items.length;
-  const averageCm =
-    items.reduce((sum, item) => sum + item.units * item.cm, 0) / totalUnits;
+  let costedUnits = 0;
+  let costedCm = 0;
+  for (const item of items) {
+    if (item.cm === null) continue;
+    costedUnits += item.units;
+    costedCm += item.units * item.cm;
+  }
+  const averageCm = costedUnits > 0 ? costedCm / costedUnits : 0;
 
   const classes = items.map((item): MenuClass => {
     const popular = item.units >= popularityThreshold;
+    if (item.cm === null) return popular ? "popular" : "unpopular";
     const profitable = item.cm >= averageCm;
     if (popular) return profitable ? "star" : "plowhorse";
     return profitable ? "puzzle" : "dog";
@@ -148,6 +182,112 @@ export function costRecipe(lines: CostedLine[]) {
   }
 
   return { total: Math.round(total * 1e6) / 1e6, missing };
+}
+
+/** Default sales window for recognising combos and averaging components. */
+export const COMBO_WINDOW_DAYS = 90;
+
+export type ComboRange = { from: string; to: string };
+
+/** `from`/`to` from the URL (both valid ISO days), else the last 90 days. */
+export function comboRange(
+  params: URLSearchParams,
+  now = new Date(),
+): ComboRange {
+  const parsed = parseOfferDateRange(params);
+  if (parsed) return parsed;
+  const day = (offset: number) =>
+    new Date(now.getTime() - offset * 86_400_000).toISOString().slice(0, 10);
+  return { from: day(COMBO_WINDOW_DAYS), to: day(0) };
+}
+
+/** A component of a POS combo, from sales: average quantity per combo sold. */
+export type ComboComponent = {
+  item_code: string;
+  name: string;
+  perCombo: number;
+  /** Units that went out with the combo in the range. */
+  qty: number;
+  /** Net charged on these lines (paid extras or a split of the combo price). */
+  net: number;
+};
+
+type ItemCost = { total: number; missing: number };
+
+/**
+ * Expected material cost of one combo: Σ component cost × average quantity
+ * per combo. A component without a complete recipe is missing, so the total
+ * is flagged incomplete like a recipe line without a SAP cost.
+ */
+export function costCombo(
+  components: ComboComponent[],
+  costs: Map<string, ItemCost>,
+) {
+  let total = 0;
+  const missingCodes: string[] = [];
+  for (const component of components) {
+    const cost = costs.get(component.item_code);
+    if (!cost || cost.missing > 0) {
+      missingCodes.push(component.item_code);
+      continue;
+    }
+    total += cost.total * component.perCombo;
+  }
+  return {
+    total: Math.round(total * 1e6) / 1e6,
+    missing: missingCodes.length,
+    missingCodes,
+  };
+}
+
+/** `costCombo` plus each component's own recipe cost, for display. */
+export function costComboDetail(
+  components: ComboComponent[],
+  costs: Map<string, ItemCost>,
+) {
+  return {
+    ...costCombo(components, costs),
+    components: components.map((component) => {
+      const cost = costs.get(component.item_code);
+      const unitCost = cost && cost.missing === 0 ? cost.total : null;
+      return {
+        ...component,
+        hasRecipe: Boolean(cost),
+        unitCost,
+        lineCost: unitCost === null ? null : unitCost * component.perCombo,
+      };
+    }),
+  };
+}
+
+export type ComboDetail = ReturnType<typeof costComboDetail>;
+
+/**
+ * Adds a cost for every combo without its own recipe, derived from its
+ * components' recipes. An item's own recipe always wins.
+ */
+export function withComboCosts<T extends ItemCost>(
+  costs: Map<string, T>,
+  combos: Map<string, ComboComponent[]>,
+) {
+  const merged = new Map<
+    string,
+    | (T & { source: "recipe" })
+    | (ItemCost & { source: "combo"; componentCount: number })
+  >();
+  for (const [code, cost] of costs)
+    merged.set(code, { ...cost, source: "recipe" });
+  for (const [code, components] of combos) {
+    if (merged.has(code)) continue;
+    const { total, missing } = costCombo(components, costs);
+    merged.set(code, {
+      total,
+      missing,
+      source: "combo",
+      componentCount: components.length,
+    });
+  }
+  return merged;
 }
 
 export function formatEur(value: number, maximumFractionDigits = 4) {

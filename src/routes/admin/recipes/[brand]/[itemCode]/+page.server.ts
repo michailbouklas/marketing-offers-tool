@@ -2,10 +2,17 @@ import { error, fail } from "@sveltejs/kit";
 import { message, setError, superValidate } from "sveltekit-superforms/server";
 import { zod4 } from "sveltekit-superforms/adapters";
 import { requirePermission } from "$lib/server/auth-guards";
-import { recipeFormSchema } from "$lib/services/recipes";
+import {
+  COMBO_WINDOW_DAYS,
+  comboRange,
+  costComboDetail,
+  recipeFormSchema,
+} from "$lib/services/recipes";
 import {
   getMenuItem,
   getRecipe,
+  listComboComponents,
+  listRecipeCosts,
   requireRecipeBrand,
   saveRecipe,
   validateRecipeLines,
@@ -21,13 +28,23 @@ export const load: PageServerLoad = async (event) => {
   const { brand } = await requireRecipeBrand(event, event.params.brand);
   const itemCode = event.params.itemCode;
 
-  const [menuItem, recipe, lockedCompany] = await Promise.all([
+  const [menuItem, recipe, lockedCompany, combos] = await Promise.all([
     getMenuItem(brand.alias, itemCode),
     getRecipe(brand.id, itemCode),
     resolveSapCompany(brand.sap_company_name),
+    listComboComponents(
+      brand.alias,
+      comboRange(new URLSearchParams()),
+      itemCode,
+    ),
   ]);
   // An item that left the menu stays editable while it still has a recipe.
   if (!menuItem && !recipe) error(404, "Menu item not found");
+
+  const components = combos.get(itemCode);
+  const combo = components
+    ? costComboDetail(components, await listRecipeCosts(brand.id))
+    : null;
 
   const form = await superValidate(
     {
@@ -46,6 +63,8 @@ export const load: PageServerLoad = async (event) => {
     itemCode,
     menuItem,
     recipe,
+    combo,
+    comboWindowDays: COMBO_WINDOW_DAYS,
     form,
     lockedCompany,
     companies: lockedCompany ? [] : await listSapCompanies(),

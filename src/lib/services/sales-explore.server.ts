@@ -98,10 +98,9 @@ export const OFFER_LINE_SQL = `item_category IN {offerCats:Array(String)}
     AND trde_void_time = ''`;
 
 /**
- * POS categories whose lines are meal deals / combos, from a 7-day probe of
- * `transaction_details` (2026-11-02). Category, not structure: the
- * combo-item-analysis skill's `trde_is_master_item` is 1 on every line, every
- * line self-references `trde_combo_item`, and sub-lines are mostly modifiers.
+ * POS meal-deal categories (7-day probe, 2026-11-02). Needed next to the
+ * structural rule in COMBO_LINE_SQL because ~17k meal lines a week in these
+ * categories are rung up without components (`trde_combo_item_pos = -999`).
  * shortcut: hand-maintained like EXPLORE_OFFER_CATEGORIES; a new POS meal
  * category needs a code change. Fasting/Lunch menus and "Deals PAU" left out
  * as ambiguous.
@@ -133,8 +132,15 @@ export const EXPLORE_COMBO_CATEGORIES: string[] = [
   "Bundles WAG",
 ];
 
-/** A meal-deal line: a non-voided header line in a combo category. Needs `{comboCats:Array(String)}`. */
-const COMBO_LINE_SQL = `item_category IN {comboCats:Array(String)}
+/**
+ * A combo / bundle header line, non-voided: either a POS combo header
+ * (`trde_combo_item_pos = -1`; its components are the lines whose
+ * `trde_combo_item` points at it, pos 1..n, usually at €0) or a line in a
+ * meal-deal category. The structural half also catches offer bundles and
+ * sides sold with free condiments (verified 2026-11-05; `trde_is_master_item`
+ * is 1 on every line and useless). Needs `{comboCats:Array(String)}`.
+ */
+const COMBO_LINE_SQL = `(trde_combo_item_pos = -1 OR item_category IN {comboCats:Array(String)})
     AND trde_sub_line = 0
     AND trde_void_time = ''`;
 

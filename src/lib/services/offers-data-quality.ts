@@ -8,11 +8,18 @@ export const missingOfferPricingFields = [
 ] as const;
 
 /**
- * Ideal price = (FC EUR / brand ideal FC %) x 1.05 x 1.07, as specified by
- * marketing. Both factors are applied in order; keep them here so the client
- * preview and the server write use the same numbers.
+ * VAT on menu prices. The only factor between a shelf (VAT-inclusive) price
+ * and ex-VAT net sales; every FC %, margin and CM is measured on ex VAT.
  */
-export const IDEAL_PRICE_MARKUP_FACTORS = [1.05, 1.07] as const;
+export const VAT_FACTOR = 1.05;
+
+/**
+ * Ideal price = (FC EUR / brand ideal FC %) x 1.05 VAT x 1.07 pricing buffer,
+ * as specified by marketing. The buffer is not a tax: never divide a shelf
+ * price by it. Keep them here so the client preview and the server write use
+ * the same numbers.
+ */
+export const IDEAL_PRICE_MARKUP_FACTORS = [VAT_FACTOR, 1.07] as const;
 
 export type MissingOfferPricingField =
   (typeof missingOfferPricingFields)[number];

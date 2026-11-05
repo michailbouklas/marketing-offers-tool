@@ -29,12 +29,14 @@ export type AggregateBrand = {
 export type BrandAvgAggregateOutputType = {
   id: number | null
   ideal_fc_perc: runtime.Decimal | null
+  labour_perc: runtime.Decimal | null
   google_places_brand_id: number | null
 }
 
 export type BrandSumAggregateOutputType = {
   id: number | null
   ideal_fc_perc: runtime.Decimal | null
+  labour_perc: runtime.Decimal | null
   google_places_brand_id: number | null
 }
 
@@ -51,6 +53,7 @@ export type BrandMinAggregateOutputType = {
   sap_brand_alias: string | null
   sap_company_name: string | null
   ideal_fc_perc: runtime.Decimal | null
+  labour_perc: runtime.Decimal | null
   google_places_brand_id: number | null
 }
 
@@ -67,6 +70,7 @@ export type BrandMaxAggregateOutputType = {
   sap_brand_alias: string | null
   sap_company_name: string | null
   ideal_fc_perc: runtime.Decimal | null
+  labour_perc: runtime.Decimal | null
   google_places_brand_id: number | null
 }
 
@@ -83,6 +87,7 @@ export type BrandCountAggregateOutputType = {
   sap_brand_alias: number
   sap_company_name: number
   ideal_fc_perc: number
+  labour_perc: number
   google_places_brand_id: number
   _all: number
 }
@@ -91,12 +96,14 @@ export type BrandCountAggregateOutputType = {
 export type BrandAvgAggregateInputType = {
   id?: true
   ideal_fc_perc?: true
+  labour_perc?: true
   google_places_brand_id?: true
 }
 
 export type BrandSumAggregateInputType = {
   id?: true
   ideal_fc_perc?: true
+  labour_perc?: true
   google_places_brand_id?: true
 }
 
@@ -113,6 +120,7 @@ export type BrandMinAggregateInputType = {
   sap_brand_alias?: true
   sap_company_name?: true
   ideal_fc_perc?: true
+  labour_perc?: true
   google_places_brand_id?: true
 }
 
@@ -129,6 +137,7 @@ export type BrandMaxAggregateInputType = {
   sap_brand_alias?: true
   sap_company_name?: true
   ideal_fc_perc?: true
+  labour_perc?: true
   google_places_brand_id?: true
 }
 
@@ -145,6 +154,7 @@ export type BrandCountAggregateInputType = {
   sap_brand_alias?: true
   sap_company_name?: true
   ideal_fc_perc?: true
+  labour_perc?: true
   google_places_brand_id?: true
   _all?: true
 }
@@ -248,6 +258,7 @@ export type BrandGroupByOutputType = {
   sap_brand_alias: string | null
   sap_company_name: string | null
   ideal_fc_perc: runtime.Decimal | null
+  labour_perc: runtime.Decimal | null
   google_places_brand_id: number | null
   _count: BrandCountAggregateOutputType | null
   _avg: BrandAvgAggregateOutputType | null
@@ -287,6 +298,7 @@ export type brandWhereInput = {
   sap_brand_alias?: Prisma.StringNullableFilter<"brand"> | string | null
   sap_company_name?: Prisma.StringNullableFilter<"brand"> | string | null
   ideal_fc_perc?: Prisma.DecimalNullableFilter<"brand"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.DecimalNullableFilter<"brand"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.IntNullableFilter<"brand"> | number | null
   aggregator_offers?: Prisma.Aggregator_offersListRelationFilter
   user_assignments?: Prisma.User_brandListRelationFilter
@@ -312,6 +324,7 @@ export type brandOrderByWithRelationInput = {
   sap_brand_alias?: Prisma.SortOrderInput | Prisma.SortOrder
   sap_company_name?: Prisma.SortOrderInput | Prisma.SortOrder
   ideal_fc_perc?: Prisma.SortOrderInput | Prisma.SortOrder
+  labour_perc?: Prisma.SortOrderInput | Prisma.SortOrder
   google_places_brand_id?: Prisma.SortOrderInput | Prisma.SortOrder
   aggregator_offers?: Prisma.aggregator_offersOrderByRelationAggregateInput
   user_assignments?: Prisma.user_brandOrderByRelationAggregateInput
@@ -341,6 +354,7 @@ export type brandWhereUniqueInput = Prisma.AtLeast<{
   sap_brand_alias?: Prisma.StringNullableFilter<"brand"> | string | null
   sap_company_name?: Prisma.StringNullableFilter<"brand"> | string | null
   ideal_fc_perc?: Prisma.DecimalNullableFilter<"brand"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.DecimalNullableFilter<"brand"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   aggregator_offers?: Prisma.Aggregator_offersListRelationFilter
   user_assignments?: Prisma.User_brandListRelationFilter
   brand_assets?: Prisma.BrandAssetListRelationFilter
@@ -365,6 +379,7 @@ export type brandOrderByWithAggregationInput = {
   sap_brand_alias?: Prisma.SortOrderInput | Prisma.SortOrder
   sap_company_name?: Prisma.SortOrderInput | Prisma.SortOrder
   ideal_fc_perc?: Prisma.SortOrderInput | Prisma.SortOrder
+  labour_perc?: Prisma.SortOrderInput | Prisma.SortOrder
   google_places_brand_id?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.brandCountOrderByAggregateInput
   _avg?: Prisma.brandAvgOrderByAggregateInput
@@ -389,6 +404,7 @@ export type brandScalarWhereWithAggregatesInput = {
   sap_brand_alias?: Prisma.StringNullableWithAggregatesFilter<"brand"> | string | null
   sap_company_name?: Prisma.StringNullableWithAggregatesFilter<"brand"> | string | null
   ideal_fc_perc?: Prisma.DecimalNullableWithAggregatesFilter<"brand"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.DecimalNullableWithAggregatesFilter<"brand"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.IntNullableWithAggregatesFilter<"brand"> | number | null
 }
 
@@ -404,6 +420,7 @@ export type brandCreateInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
@@ -429,6 +446,7 @@ export type brandUncheckedCreateInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
@@ -453,6 +471,7 @@ export type brandUpdateInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
@@ -478,6 +497,7 @@ export type brandUncheckedUpdateInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
@@ -503,6 +523,7 @@ export type brandCreateManyInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
 }
 
@@ -518,6 +539,7 @@ export type brandUpdateManyMutationInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
@@ -534,6 +556,7 @@ export type brandUncheckedUpdateManyInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
@@ -550,12 +573,14 @@ export type brandCountOrderByAggregateInput = {
   sap_brand_alias?: Prisma.SortOrder
   sap_company_name?: Prisma.SortOrder
   ideal_fc_perc?: Prisma.SortOrder
+  labour_perc?: Prisma.SortOrder
   google_places_brand_id?: Prisma.SortOrder
 }
 
 export type brandAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ideal_fc_perc?: Prisma.SortOrder
+  labour_perc?: Prisma.SortOrder
   google_places_brand_id?: Prisma.SortOrder
 }
 
@@ -572,6 +597,7 @@ export type brandMaxOrderByAggregateInput = {
   sap_brand_alias?: Prisma.SortOrder
   sap_company_name?: Prisma.SortOrder
   ideal_fc_perc?: Prisma.SortOrder
+  labour_perc?: Prisma.SortOrder
   google_places_brand_id?: Prisma.SortOrder
 }
 
@@ -588,12 +614,14 @@ export type brandMinOrderByAggregateInput = {
   sap_brand_alias?: Prisma.SortOrder
   sap_company_name?: Prisma.SortOrder
   ideal_fc_perc?: Prisma.SortOrder
+  labour_perc?: Prisma.SortOrder
   google_places_brand_id?: Prisma.SortOrder
 }
 
 export type brandSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ideal_fc_perc?: Prisma.SortOrder
+  labour_perc?: Prisma.SortOrder
   google_places_brand_id?: Prisma.SortOrder
 }
 
@@ -761,6 +789,7 @@ export type brandCreateWithoutRecipesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
@@ -785,6 +814,7 @@ export type brandUncheckedCreateWithoutRecipesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
@@ -824,6 +854,7 @@ export type brandUpdateWithoutRecipesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
@@ -848,6 +879,7 @@ export type brandUncheckedUpdateWithoutRecipesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
@@ -871,6 +903,7 @@ export type brandCreateWithoutUser_assignmentsInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput
@@ -895,6 +928,7 @@ export type brandUncheckedCreateWithoutUser_assignmentsInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput
@@ -934,6 +968,7 @@ export type brandUpdateWithoutUser_assignmentsInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput
@@ -958,6 +993,7 @@ export type brandUncheckedUpdateWithoutUser_assignmentsInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput
@@ -981,6 +1017,7 @@ export type brandCreateWithoutGoogle_analytics_propertiesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
@@ -1005,6 +1042,7 @@ export type brandUncheckedCreateWithoutGoogle_analytics_propertiesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
@@ -1044,6 +1082,7 @@ export type brandUpdateWithoutGoogle_analytics_propertiesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
@@ -1068,6 +1107,7 @@ export type brandUncheckedUpdateWithoutGoogle_analytics_propertiesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
@@ -1091,6 +1131,7 @@ export type brandCreateWithoutAggregator_offersInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput
@@ -1115,6 +1156,7 @@ export type brandUncheckedCreateWithoutAggregator_offersInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
   brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput
@@ -1154,6 +1196,7 @@ export type brandUpdateWithoutAggregator_offersInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput
@@ -1178,6 +1221,7 @@ export type brandUncheckedUpdateWithoutAggregator_offersInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
   brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput
@@ -1201,6 +1245,7 @@ export type brandCreateWithoutGenerated_imagesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
@@ -1225,6 +1270,7 @@ export type brandUncheckedCreateWithoutGenerated_imagesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
@@ -1264,6 +1310,7 @@ export type brandUpdateWithoutGenerated_imagesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
@@ -1288,6 +1335,7 @@ export type brandUncheckedUpdateWithoutGenerated_imagesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
@@ -1311,6 +1359,7 @@ export type brandCreateWithoutBrand_assetsInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
@@ -1335,6 +1384,7 @@ export type brandUncheckedCreateWithoutBrand_assetsInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
@@ -1374,6 +1424,7 @@ export type brandUpdateWithoutBrand_assetsInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
@@ -1398,6 +1449,7 @@ export type brandUncheckedUpdateWithoutBrand_assetsInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
@@ -1421,6 +1473,7 @@ export type brandCreateWithoutImage_templatesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
@@ -1445,6 +1498,7 @@ export type brandUncheckedCreateWithoutImage_templatesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
@@ -1484,6 +1538,7 @@ export type brandUpdateWithoutImage_templatesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
@@ -1508,6 +1563,7 @@ export type brandUncheckedUpdateWithoutImage_templatesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
@@ -1531,6 +1587,7 @@ export type brandCreateWithoutGenerated_copiesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
@@ -1555,6 +1612,7 @@ export type brandUncheckedCreateWithoutGenerated_copiesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
@@ -1594,6 +1652,7 @@ export type brandUpdateWithoutGenerated_copiesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
@@ -1618,6 +1677,7 @@ export type brandUncheckedUpdateWithoutGenerated_copiesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
@@ -1641,6 +1701,7 @@ export type brandCreateWithoutBrand_entitiesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
@@ -1665,6 +1726,7 @@ export type brandUncheckedCreateWithoutBrand_entitiesInput = {
   sap_brand_alias?: string | null
   sap_company_name?: string | null
   ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
   user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
@@ -1704,6 +1766,7 @@ export type brandUpdateWithoutBrand_entitiesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
@@ -1728,6 +1791,7 @@ export type brandUncheckedUpdateWithoutBrand_entitiesInput = {
   sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
   user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
@@ -1855,6 +1919,7 @@ export type brandSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   sap_brand_alias?: boolean
   sap_company_name?: boolean
   ideal_fc_perc?: boolean
+  labour_perc?: boolean
   google_places_brand_id?: boolean
   aggregator_offers?: boolean | Prisma.brand$aggregator_offersArgs<ExtArgs>
   user_assignments?: boolean | Prisma.brand$user_assignmentsArgs<ExtArgs>
@@ -1881,6 +1946,7 @@ export type brandSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   sap_brand_alias?: boolean
   sap_company_name?: boolean
   ideal_fc_perc?: boolean
+  labour_perc?: boolean
   google_places_brand_id?: boolean
 }, ExtArgs["result"]["brand"]>
 
@@ -1897,6 +1963,7 @@ export type brandSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   sap_brand_alias?: boolean
   sap_company_name?: boolean
   ideal_fc_perc?: boolean
+  labour_perc?: boolean
   google_places_brand_id?: boolean
 }, ExtArgs["result"]["brand"]>
 
@@ -1913,10 +1980,11 @@ export type brandSelectScalar = {
   sap_brand_alias?: boolean
   sap_company_name?: boolean
   ideal_fc_perc?: boolean
+  labour_perc?: boolean
   google_places_brand_id?: boolean
 }
 
-export type brandOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "alias" | "logo" | "slug" | "created_at" | "updated_at" | "description" | "active" | "sap_brand_alias" | "sap_company_name" | "ideal_fc_perc" | "google_places_brand_id", ExtArgs["result"]["brand"]>
+export type brandOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "alias" | "logo" | "slug" | "created_at" | "updated_at" | "description" | "active" | "sap_brand_alias" | "sap_company_name" | "ideal_fc_perc" | "labour_perc" | "google_places_brand_id", ExtArgs["result"]["brand"]>
 export type brandInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   aggregator_offers?: boolean | Prisma.brand$aggregator_offersArgs<ExtArgs>
   user_assignments?: boolean | Prisma.brand$user_assignmentsArgs<ExtArgs>
@@ -1962,6 +2030,11 @@ export type $brandPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
      * offers-data-quality form to calculate ideal_price from fc_eur.
      */
     ideal_fc_perc: runtime.Decimal | null
+    /**
+     * Labour cost target as a fraction of ex-VAT net sales (0.25 = 25%).
+     * Prime cost % = food cost % + labour %.
+     */
+    labour_perc: runtime.Decimal | null
     /**
      * Id of this brand in the Google Reviews scraper API (`GET /brands`).
      * Set by `scripts/sync-google-places-brands.ts`; lets a place's brand
@@ -2412,6 +2485,7 @@ export interface brandFieldRefs {
   readonly sap_brand_alias: Prisma.FieldRef<"brand", 'String'>
   readonly sap_company_name: Prisma.FieldRef<"brand", 'String'>
   readonly ideal_fc_perc: Prisma.FieldRef<"brand", 'Decimal'>
+  readonly labour_perc: Prisma.FieldRef<"brand", 'Decimal'>
   readonly google_places_brand_id: Prisma.FieldRef<"brand", 'Int'>
 }
     

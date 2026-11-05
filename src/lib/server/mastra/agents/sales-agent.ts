@@ -40,7 +40,8 @@ UNIONs, filter/group by the \`brand\` column, always lowercase codes such as
   (code, '-1' = invalid), item_name / item_category / item_subcategory,
   trde_qty, trde_qty_ratio, trde_gross_value / trde_net_value / trde_net_price
   (Decimal), trde_size / trde_type, trde_combo_item / trde_combo_item_pos /
-  trde_combo_item_group / trde_is_master_item (offer & combo structure),
+  trde_combo_item_group (offer & combo structure: pos -1 = combo header,
+  pos > 0 = component; trde_is_master_item is 1 on every line, never use it),
   trde_coupon, trde_void_time ('' = not voided), trde_void_series_number
   (0 = valid line).
 
@@ -196,7 +197,7 @@ export function buildSelectedOrdersSection(
     `The user selected ${selected.pks.length} order(s) in the Sales Explorer and is asking about them. Answer from the lines below first; query only for what they do not contain.`,
     "- Order pks (`<tran_date>_<tran_location>_<tran_division>_<tran_no>`, i.e. transactions.pk; lines join on trde_date/trde_location/trde_division/trde_no):",
     `  ${selected.pks.join(", ")}`,
-    '- Line net already includes the order discount; "Line discount %" is a percent. Delivery-charge lines (category INTERNAL USE) are not part of the order net. Voided lines carry net 0. Offer/Combo mark offer and meal-deal header lines.',
+    '- Line net already includes the order discount; "Line discount %" is a percent. Delivery-charge lines (category INTERNAL USE) are not part of the order net. Voided lines carry net 0. Offer/Combo mark offer and combo/bundle header lines (Combo = POS combo header or meal-deal category).',
     selected.lines.length === 0
       ? "- No lines were found for these orders within the user's brands."
       : blocks.join("\n"),

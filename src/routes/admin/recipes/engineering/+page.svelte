@@ -6,10 +6,12 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
+  import LabourToggle from "$lib/components/recipes/labour-toggle.svelte";
   import {
-    foodCostPercent,
     formatEur,
+    labourCost,
     menuEngineering,
+    primeCostPercent,
     type MenuClass,
   } from "$lib/services/recipes";
   import type { PageData } from "./$types";
@@ -47,18 +49,49 @@
       action: "Unpopular, low margin: remove or rework.",
       variant: "destructive",
     },
+    popular: {
+      label: "Popular, no cost",
+      action: "Sells well but has no complete recipe: build it to rate margin.",
+      variant: "outline",
+    },
+    unpopular: {
+      label: "Unpopular, no cost",
+      action:
+        "Sells little and has no complete recipe: build it to rate margin.",
+      variant: "outline",
+    },
   };
-  const ORDER: MenuClass[] = ["star", "plowhorse", "puzzle", "dog"];
+  const ORDER: MenuClass[] = [
+    "star",
+    "plowhorse",
+    "puzzle",
+    "dog",
+    "popular",
+    "unpopular",
+  ];
 
   const categories = $derived([
     ...new Set(data.items.map((item) => item.category)),
   ]);
 
+  // With labour on, CM is after labour (ex-VAT price × brand labour %) and
+  // FC % becomes prime cost %, so classes can shift toward cheaper items.
+  let includeLabour = $state(false);
+  const labourFraction = $derived(
+    includeLabour ? (data.brand.labour_perc ?? 0) : 0,
+  );
+
   // Classified within the visible set: compare like with like (per category).
   const analysis = $derived.by(() => {
-    const rows = data.items.filter(
-      (item) => !category || item.category === category,
-    );
+    const rows = data.items
+      .filter((item) => !category || item.category === category)
+      .map((item) => ({
+        ...item,
+        cm:
+          item.cm === null
+            ? null
+            : item.cm - labourCost(item.price, labourFraction),
+      }));
     const { classes, popularityThreshold, averageCm } = menuEngineering(rows);
     const totalUnits = rows.reduce((sum, row) => sum + row.units, 0);
     const classified = rows
@@ -66,13 +99,16 @@
         ...row,
         menuClass: classes[index],
         mix: totalUnits > 0 ? (row.units / totalUnits) * 100 : 0,
-        totalCm: row.units * row.cm,
-        foodCost: foodCostPercent(row.cost, row.price),
+        totalCm: row.cm === null ? null : row.units * row.cm,
+        foodCost:
+          row.cost === null
+            ? null
+            : primeCostPercent(row.cost, row.price, labourFraction),
       }))
       .sort(
         (a, b) =>
           ORDER.indexOf(a.menuClass) - ORDER.indexOf(b.menuClass) ||
-          b.totalCm - a.totalCm,
+          (b.totalCm ?? b.units) - (a.totalCm ?? a.units),
       );
     const counts = Object.fromEntries(
       ORDER.map((key) => [
@@ -146,7 +182,7 @@
     </NativeSelect.Root>
   </div>
 
-  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
     {#each ORDER as key (key)}
       <Card.Root>
         <Card.Header>
@@ -172,11 +208,17 @@
         </span>
       </Card.Title>
       <Card.Description>
-        Active items with a complete recipe only. Excluded:
-        {data.excluded.noRecipe} without a recipe,
-        {data.excluded.incomplete} with missing costs or no price. Units are items
+        All active items. Rated on popularity only (no margin, left out of the
+        average): {data.unrated.noRecipe} without a recipe,
+        {data.unrated.incomplete} with missing costs or no price. Units are items
         ordered as menu items in the last {data.days} days (POS head lines).
       </Card.Description>
+      <Card.Action>
+        <LabourToggle
+          labourPerc={data.brand.labour_perc}
+          bind:checked={includeLabour}
+        />
+      </Card.Action>
     </Card.Header>
     <Card.Content>
       <Table.Root>
@@ -188,9 +230,13 @@
             <Table.Head class="text-right">Mix %</Table.Head>
             <Table.Head class="text-right">Price</Table.Head>
             <Table.Head class="text-right">Cost</Table.Head>
-            <Table.Head class="text-right">Margin / unit</Table.Head>
+            <Table.Head class="text-right">
+              {labourFraction ? "Margin after labour" : "Margin / unit"}
+            </Table.Head>
             <Table.Head class="text-right">Total margin</Table.Head>
-            <Table.Head class="text-right">FC %</Table.Head>
+            <Table.Head class="text-right">
+              {labourFraction ? "Prime %" : "FC %"}
+            </Table.Head>
             <Table.Head>Class</Table.Head>
           </Table.Row>
         </Table.Header>
@@ -218,21 +264,21 @@
                 {formatEur(row.price, 2)}
               </Table.Cell>
               <Table.Cell class="text-right tabular-nums">
-                {formatEur(row.cost)}
+                {row.cost === null ? "—" : formatEur(row.cost)}
               </Table.Cell>
               <Table.Cell
                 class={[
                   "text-right tabular-nums",
-                  row.cm < 0 && "text-destructive",
+                  row.cm !== null && row.cm < 0 && "text-destructive",
                 ]}
               >
-                {formatEur(row.cm, 2)}
+                {row.cm === null ? "—" : formatEur(row.cm, 2)}
               </Table.Cell>
               <Table.Cell class="text-right tabular-nums">
-                {formatEur(row.totalCm, 2)}
+                {row.totalCm === null ? "—" : formatEur(row.totalCm, 2)}
               </Table.Cell>
               <Table.Cell class="text-right tabular-nums">
-                {row.foodCost === null ? "" : `${row.foodCost.toFixed(1)}%`}
+                {row.foodCost === null ? "—" : `${row.foodCost.toFixed(1)}%`}
               </Table.Cell>
               <Table.Cell>
                 <Badge
@@ -249,8 +295,7 @@
                 colspan={10}
                 class="text-muted-foreground py-8 text-center"
               >
-                No active items with a complete recipe yet. Build recipes on the
-                menu page first.
+                No active menu items for this brand.
               </Table.Cell>
             </Table.Row>
           {/each}

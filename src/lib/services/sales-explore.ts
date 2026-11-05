@@ -291,7 +291,7 @@ export type ExploreOrderLine = {
   comment: string;
   /** Offer/coupon header line (see OFFER_LINE_SQL). */
   isOffer: boolean;
-  /** Meal-deal header line (see COMBO_LINE_SQL). */
+  /** Combo / bundle header line (see COMBO_LINE_SQL). */
   isCombo: boolean;
 };
 

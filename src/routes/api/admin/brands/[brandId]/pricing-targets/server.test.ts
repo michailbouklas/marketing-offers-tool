@@ -65,7 +65,10 @@ describe("GET /api/admin/brands/[brandId]/pricing-targets", () => {
     const response = await GET(makeEvent({ brandId: "7" }));
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ ideal_fc_perc: 30 });
+    expect(await response.json()).toEqual({
+      ideal_fc_perc: 30,
+      labour_perc: null,
+    });
     expect(requirePermissionMock).toHaveBeenCalledWith(expect.anything(), {
       brand: ["manage"],
     });
@@ -76,7 +79,10 @@ describe("GET /api/admin/brands/[brandId]/pricing-targets", () => {
 
     const response = await GET(makeEvent({ brandId: "7" }));
 
-    expect(await response.json()).toEqual({ ideal_fc_perc: null });
+    expect(await response.json()).toEqual({
+      ideal_fc_perc: null,
+      labour_perc: null,
+    });
   });
 
   it("404s for an unknown brand", async () => {
@@ -100,11 +106,14 @@ describe("PUT /api/admin/brands/[brandId]/pricing-targets", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ ideal_fc_perc: 32.5 });
+    expect(await response.json()).toEqual({
+      ideal_fc_perc: 32.5,
+      labour_perc: null,
+    });
     expect(brandMocks.update).toHaveBeenCalledWith({
       where: { id: 7 },
       data: { ideal_fc_perc: "0.3250" },
-      select: { ideal_fc_perc: true },
+      select: { ideal_fc_perc: true, labour_perc: true },
     });
   });
 
@@ -116,7 +125,10 @@ describe("PUT /api/admin/brands/[brandId]/pricing-targets", () => {
       makeEvent({ brandId: "7" }, jsonRequest({ ideal_fc_perc: null })),
     );
 
-    expect(await response.json()).toEqual({ ideal_fc_perc: null });
+    expect(await response.json()).toEqual({
+      ideal_fc_perc: null,
+      labour_perc: null,
+    });
     expect(brandMocks.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: { ideal_fc_perc: null } }),
     );
@@ -146,5 +158,48 @@ describe("PUT /api/admin/brands/[brandId]/pricing-targets", () => {
         PUT(makeEvent({ brandId: "99" }, jsonRequest({ ideal_fc_perc: 30 }))),
       ),
     ).toBe(404);
+  });
+});
+
+describe("PUT labour_perc", () => {
+  it("stores labour next to the FC target", async () => {
+    brandMocks.findUnique.mockResolvedValue({ id: 7, ideal_fc_perc: null });
+    brandMocks.update.mockResolvedValue({
+      ideal_fc_perc: "0.3000",
+      labour_perc: "0.2500",
+    });
+
+    const response = await PUT(
+      makeEvent(
+        { brandId: "7" },
+        jsonRequest({ ideal_fc_perc: 30, labour_perc: 25 }),
+      ),
+    );
+
+    expect(await response.json()).toEqual({
+      ideal_fc_perc: 30,
+      labour_perc: 25,
+    });
+    expect(brandMocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { ideal_fc_perc: "0.3000", labour_perc: "0.2500" },
+      }),
+    );
+  });
+
+  it("rejects a prime cost (FC % + labour %) above 100", async () => {
+    brandMocks.findUnique.mockResolvedValue({ id: 7, ideal_fc_perc: null });
+
+    expect(
+      await statusOf(
+        PUT(
+          makeEvent(
+            { brandId: "7" },
+            jsonRequest({ ideal_fc_perc: 60, labour_perc: 45 }),
+          ),
+        ),
+      ),
+    ).toBe(400);
+    expect(brandMocks.update).not.toHaveBeenCalled();
   });
 });
