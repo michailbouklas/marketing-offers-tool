@@ -99,6 +99,17 @@ describe("ideal price", () => {
     expect(idealPriceForMargin(3, Number.NaN)).toBeNull();
     expect(marginOfPrice(3, 0)).toBeNull();
   });
+
+  it("reserves the energy share out of the price: €3.00 at 70% + 2.1% energy", () => {
+    // 3 ÷ (0.30 − 0.021) × 1.05 × 1.07 = 12.0807…
+    expect(idealPriceForMargin(3, 70, 0.021)).toBe(12.08);
+    expect(idealPriceForMargin(3, 70, 0)).toBe(idealPriceForMargin(3, 70));
+  });
+
+  it("gives no price when margin + energy leave nothing for food", () => {
+    expect(idealPriceForMargin(3, 98, 0.02)).toBeNull();
+    expect(idealPriceForMargin(3, 98, 0.03)).toBeNull();
+  });
 });
 
 describe("costRecipe", () => {

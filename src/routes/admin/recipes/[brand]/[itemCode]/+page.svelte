@@ -7,6 +7,7 @@
   import SearchIcon from "@lucide/svelte/icons/search";
   import Trash2Icon from "@lucide/svelte/icons/trash-2";
   import ComboComponentsTable from "$lib/components/recipes/combo-components-table.svelte";
+  import EnergyToggle from "$lib/components/recipes/energy-toggle.svelte";
   import LabourToggle from "$lib/components/recipes/labour-toggle.svelte";
   import SapItemSearchDialog from "$lib/components/sap/sap-item-search-dialog.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
@@ -90,9 +91,11 @@
   const marginValid = $derived(
     marginPercent !== null && marginPercent >= 0 && marginPercent < 100,
   );
+  // Energy is a share of ex-VAT sales from the energy platform, null while off.
+  let energyPerc = $state<number | null>(null);
   const idealPrice = $derived(
     marginValid && cost.total > 0
-      ? idealPriceForMargin(cost.total, Number(marginPercent))
+      ? idealPriceForMargin(cost.total, Number(marginPercent), energyPerc ?? 0)
       : null,
   );
   const menuPrice = $derived(data.menuItem?.price ?? 0);
@@ -120,14 +123,28 @@
   const labour = $derived(
     labourPerc === null ? 0 : labourCost(menuPrice, labourPerc),
   );
+  const energy = $derived(
+    energyPerc === null ? 0 : labourCost(menuPrice, energyPerc),
+  );
+  // Labour + energy, both shares of ex-VAT sales; null when neither is on.
+  const overheadPerc = $derived(
+    labourPerc === null && energyPerc === null
+      ? null
+      : (labourPerc ?? 0) + (energyPerc ?? 0),
+  );
+  const overheadLabel = $derived(
+    [labourPerc !== null && "labour", energyPerc !== null && "energy"]
+      .filter(Boolean)
+      .join(" + "),
+  );
   const primeCost = $derived(
-    labourPerc !== null && cost.total > 0
-      ? primeCostPercent(cost.total, menuPrice, labourPerc)
+    overheadPerc !== null && cost.total > 0
+      ? primeCostPercent(cost.total, menuPrice, overheadPerc)
       : null,
   );
   const targetPrimeCost = $derived(
-    labourPerc !== null && targetFoodCost !== null
-      ? targetFoodCost + labourPerc * 100
+    overheadPerc !== null && targetFoodCost !== null
+      ? targetFoodCost + overheadPerc * 100
       : null,
   );
 
@@ -497,10 +514,13 @@
           ex VAT (÷ 1.05), since material cost carries no VAT.
         </Card.Description>
         <Card.Action>
-          <LabourToggle
-            labourPerc={data.brand.labour_perc}
-            bind:checked={includeLabour}
-          />
+          <div class="flex flex-col items-end gap-2">
+            <LabourToggle
+              labourPerc={data.brand.labour_perc}
+              bind:checked={includeLabour}
+            />
+            <EnergyToggle brandAlias={data.brand.alias} bind:energyPerc />
+          </div>
         </Card.Action>
       </Card.Header>
       <Card.Content>
@@ -549,18 +569,25 @@
                 + {formatEur(labour, 2)} labour
               </dd>
             {/if}
+            {#if energyPerc !== null}
+              <dd class="text-muted-foreground text-xs tabular-nums">
+                + {formatEur(energy, 2)} energy
+              </dd>
+            {/if}
           </div>
           <div>
             <dt class="text-muted-foreground text-sm">
-              {labourPerc === null ? "Difference" : "Difference after labour"}
+              {overheadPerc === null
+                ? "Difference"
+                : `Difference after ${overheadLabel}`}
             </dt>
             <dd
               class={[
                 "text-2xl font-semibold tabular-nums",
-                priceDifference - labour < 0 && "text-destructive",
+                priceDifference - labour - energy < 0 && "text-destructive",
               ]}
             >
-              {signedEur(priceDifference - labour, 4)}
+              {signedEur(priceDifference - labour - energy, 4)}
             </dd>
             <dd class="text-muted-foreground text-xs tabular-nums">
               {#if currentMargin !== null}
@@ -570,7 +597,7 @@
             </dd>
           </div>
           <div>
-            {#if labourPerc === null}
+            {#if overheadPerc === null}
               <dt class="text-muted-foreground text-sm">Food cost %</dt>
               <dd
                 class={[
@@ -606,7 +633,7 @@
                 {#if targetPrimeCost !== null}
                   target {formatPercent(targetPrimeCost)} ·
                 {/if}
-                (food + labour) ÷ price ex VAT
+                (food + {overheadLabel}) ÷ price ex VAT
               </dd>
             {/if}
           </div>
@@ -622,6 +649,10 @@
         Margin on the price ex VAT. Ideal price = cost ÷ (1 − margin) × 1.05 VAT
         × 1.07 buffer, the same rule as the offers data-quality form; the buffer
         leaves the actual margin above the target.
+        {#if energyPerc !== null}
+          With energy on, its share of sales is reserved too: cost ÷ (1 − margin
+          − energy).
+        {/if}
       </Card.Description>
     </Card.Header>
     <Card.Content class="grid gap-6 sm:grid-cols-[14rem_1fr]">
@@ -689,9 +720,10 @@
                 margin · {formatPercent(
                   foodCostPercent(cost.total, roundedPrice) ?? 0,
                 )} food cost
-                {#if labourPerc !== null}
+                {#if overheadPerc !== null}
                   · {formatPercent(
-                    primeCostPercent(cost.total, roundedPrice, labourPerc) ?? 0,
+                    primeCostPercent(cost.total, roundedPrice, overheadPerc) ??
+                      0,
                   )} prime cost
                 {/if}
               </dd>
