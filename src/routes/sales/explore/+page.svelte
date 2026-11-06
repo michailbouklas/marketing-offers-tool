@@ -33,6 +33,8 @@
   import TicketPercentIcon from "@lucide/svelte/icons/ticket-percent";
   import XIcon from "@lucide/svelte/icons/x";
   import SparklesIcon from "@lucide/svelte/icons/sparkles";
+  import Maximize2Icon from "@lucide/svelte/icons/maximize-2";
+  import Minimize2Icon from "@lucide/svelte/icons/minimize-2";
   import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import { toast } from "svelte-sonner";
@@ -117,6 +119,7 @@
   }
 
   let grid = $state<ReturnType<typeof ExploreGrid>>();
+  let immersive = $state(false);
   // Before the first fetch, show what was restored from the URL.
   const filterChips = $derived(
     describeExploreFilter(
@@ -327,116 +330,141 @@
       </Card.Content>
     </Card.Root>
   {:else}
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <div class="space-y-2">
-        <span class="text-sm font-medium">Date range</span>
-        <DateRangeFilter
-          from={filters.from}
-          to={filters.to}
-          onApply={applyRange}
+    <!-- Immersive: fixed overlay above sidebar (z-10) and top nav (z-40), below portalled popovers/dialogs (z-50). -->
+    <div
+      class={immersive
+        ? "bg-background fixed inset-0 z-45 flex flex-col gap-3 p-4"
+        : "contents"}
+    >
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div class="space-y-2">
+          <span class="text-sm font-medium">Date range</span>
+          <DateRangeFilter
+            from={filters.from}
+            to={filters.to}
+            onApply={applyRange}
+          />
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <p class="text-muted-foreground text-sm" aria-live="polite">
+            {gridState ? `${formatSalesCount(gridState.totalRows)} orders` : ""}
+            {#if tooManyToExport}
+              <span class="block text-xs">
+                Export takes up to {formatSalesCount(EXPLORE_EXPORT_MAX_ROWS)} orders.
+                Narrow the filters or date range.
+              </span>
+            {/if}
+          </p>
+          <Button
+            variant="outline"
+            aria-pressed={immersive}
+            onclick={() => (immersive = !immersive)}
+          >
+            {#if immersive}
+              <Minimize2Icon class="size-4" />
+              Exit immersive mode
+            {:else}
+              <Maximize2Icon class="size-4" />
+              Immersive mode
+            {/if}
+          </Button>
+          <Button variant="outline" onclick={() => (assistantOpen = true)}>
+            <TicketPercentIcon class="size-4" />
+            Offers Assistant
+          </Button>
+          <Button
+            variant={offerFilter ? "secondary" : "outline"}
+            disabled={!gridState || gridState.totalRows === 0}
+            title={gridState?.totalRows === 0 ? "No orders match" : undefined}
+            onclick={() => {
+              breakdownPks = null;
+              breakdownOpen = true;
+            }}
+          >
+            <ChartPieIcon class="size-4" />
+            Value breakdown
+          </Button>
+          <Button
+            variant="outline"
+            disabled={exporting || !gridState || gridState.totalRows === 0}
+            onclick={exportExcel}
+          >
+            {#if exporting}
+              <LoaderCircleIcon class="size-4 animate-spin" />
+              Working…
+            {:else}
+              <DownloadIcon class="size-4" />
+              Export to Excel
+            {/if}
+          </Button>
+        </div>
+      </div>
+
+      {#if filterChips.length > 0 || offerFilter}
+        <div
+          class="flex flex-wrap items-center gap-2"
+          role="region"
+          aria-label="Applied filters"
+        >
+          <span class="text-muted-foreground text-sm">Filters:</span>
+          {#each filterChips as chip (chip.colId)}
+            <Badge variant="secondary" class="max-w-80 gap-1" title={chip.text}>
+              <span class="truncate">
+                <span class="font-semibold">{chip.label}:</span>
+                {chip.text}
+              </span>
+              <button
+                type="button"
+                class="hover:text-foreground shrink-0 rounded-sm"
+                aria-label={`Remove ${chip.label} filter`}
+                onclick={() => grid?.clearFilter(chip.colId)}
+              >
+                <XIcon class="size-3" />
+              </button>
+            </Badge>
+          {/each}
+          {#if offerFilter}
+            <Badge variant="secondary" class="gap-1">
+              <span>
+                <span class="font-semibold">Offers &amp; combos:</span>
+                {offerSummary}
+              </span>
+              <button
+                type="button"
+                class="hover:text-foreground rounded-sm"
+                aria-label="Remove offers filter"
+                onclick={() => (offerFilter = null)}
+              >
+                <XIcon class="size-3" />
+              </button>
+            </Badge>
+          {/if}
+          <Button variant="ghost" size="sm" onclick={clearAllFilters}>
+            Clear all
+          </Button>
+        </div>
+      {/if}
+
+      <div
+        class={[
+          "overflow-hidden rounded-xl border",
+          immersive ? "min-h-0 flex-1" : "h-[70vh] min-h-96",
+        ]}
+      >
+        <ExploreGrid
+          bind:this={grid}
+          {endpoint}
+          search={page.url.search}
+          {brandNames}
+          offers={offerFilter}
+          columnState={data.columnState}
+          initialFilter={initial.filter}
+          onOpenOrder={openOrder}
+          onOfferMenu={openOfferMenu}
+          onRowsMenu={openRowsMenu}
+          onState={syncUrl}
         />
       </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <p class="text-muted-foreground text-sm" aria-live="polite">
-          {gridState ? `${formatSalesCount(gridState.totalRows)} orders` : ""}
-          {#if tooManyToExport}
-            <span class="block text-xs">
-              Export takes up to {formatSalesCount(EXPLORE_EXPORT_MAX_ROWS)} orders.
-              Narrow the filters or date range.
-            </span>
-          {/if}
-        </p>
-        <Button variant="outline" onclick={() => (assistantOpen = true)}>
-          <TicketPercentIcon class="size-4" />
-          Offers Assistant
-        </Button>
-        <Button
-          variant={offerFilter ? "secondary" : "outline"}
-          disabled={!gridState || gridState.totalRows === 0}
-          title={gridState?.totalRows === 0 ? "No orders match" : undefined}
-          onclick={() => {
-            breakdownPks = null;
-            breakdownOpen = true;
-          }}
-        >
-          <ChartPieIcon class="size-4" />
-          Value breakdown
-        </Button>
-        <Button
-          variant="outline"
-          disabled={exporting || !gridState || gridState.totalRows === 0}
-          onclick={exportExcel}
-        >
-          {#if exporting}
-            <LoaderCircleIcon class="size-4 animate-spin" />
-            Working…
-          {:else}
-            <DownloadIcon class="size-4" />
-            Export to Excel
-          {/if}
-        </Button>
-      </div>
-    </div>
-
-    {#if filterChips.length > 0 || offerFilter}
-      <div
-        class="flex flex-wrap items-center gap-2"
-        role="region"
-        aria-label="Applied filters"
-      >
-        <span class="text-muted-foreground text-sm">Filters:</span>
-        {#each filterChips as chip (chip.colId)}
-          <Badge variant="secondary" class="max-w-80 gap-1" title={chip.text}>
-            <span class="truncate">
-              <span class="font-semibold">{chip.label}:</span>
-              {chip.text}
-            </span>
-            <button
-              type="button"
-              class="hover:text-foreground shrink-0 rounded-sm"
-              aria-label={`Remove ${chip.label} filter`}
-              onclick={() => grid?.clearFilter(chip.colId)}
-            >
-              <XIcon class="size-3" />
-            </button>
-          </Badge>
-        {/each}
-        {#if offerFilter}
-          <Badge variant="secondary" class="gap-1">
-            <span>
-              <span class="font-semibold">Offers &amp; combos:</span>
-              {offerSummary}
-            </span>
-            <button
-              type="button"
-              class="hover:text-foreground rounded-sm"
-              aria-label="Remove offers filter"
-              onclick={() => (offerFilter = null)}
-            >
-              <XIcon class="size-3" />
-            </button>
-          </Badge>
-        {/if}
-        <Button variant="ghost" size="sm" onclick={clearAllFilters}>
-          Clear all
-        </Button>
-      </div>
-    {/if}
-
-    <div class="overflow-hidden rounded-xl border">
-      <ExploreGrid
-        bind:this={grid}
-        {endpoint}
-        search={page.url.search}
-        {brandNames}
-        offers={offerFilter}
-        columnState={data.columnState}
-        initialFilter={initial.filter}
-        onOpenOrder={openOrder}
-        onOfferMenu={openOfferMenu}
-        onRowsMenu={openRowsMenu}
-        onState={syncUrl}
-      />
     </div>
 
     <Popover.Root

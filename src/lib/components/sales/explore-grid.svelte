@@ -486,7 +486,7 @@
 
 <div
   bind:this={container}
-  class="h-[70vh] min-h-96 w-full"
+  class="h-full w-full"
   role="presentation"
   oncontextmenu={openRowsMenu}
 ></div>
