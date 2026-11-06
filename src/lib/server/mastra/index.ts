@@ -18,6 +18,7 @@ import { googleAnalyticsAgent } from "./agents/google-analytics-agent";
 import { googleReviewsAgent } from "./agents/google-reviews-agent";
 import { imageComplianceAgent } from "./agents/image-compliance-agent";
 import { invoicesAgent } from "./agents/invoices-agent";
+import { managementAccountsAgent } from "./agents/management-accounts-agent";
 import { offersDataQualityAgent } from "./agents/offers-data-quality-agent";
 import { salesAgent } from "./agents/sales-agent";
 import { getAiChatEnv, getClickhouseEnv, getDatabaseUrl } from "./env";
@@ -101,6 +102,7 @@ function createMastra(): Mastra {
       "forecasts-agent": forecastsAgent,
       "google-analytics-agent": googleAnalyticsAgent,
       "image-compliance-agent": imageComplianceAgent,
+      "management-accounts-agent": managementAccountsAgent,
     },
     workflows: {
       [IMAGE_COMPLIANCE_WORKFLOW_ID]: imageComplianceWorkflow,

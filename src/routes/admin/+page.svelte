@@ -15,6 +15,7 @@
   import SparklesIcon from "@lucide/svelte/icons/sparkles";
   import MegaphoneIcon from "@lucide/svelte/icons/megaphone";
   import ChefHatIcon from "@lucide/svelte/icons/chef-hat";
+  import Building2Icon from "@lucide/svelte/icons/building-2";
   import type { Component } from "svelte";
   import type { PageData } from "./$types";
 
@@ -67,6 +68,14 @@
       description:
         "Manage brand guidelines, reference assets for the image generator, pricing targets and Google Analytics properties.",
       icon: StoreIcon,
+      accessKey: "brands",
+    },
+    {
+      href: "/admin/companies",
+      title: "Companies",
+      description:
+        "Legal entities, their registration and VAT numbers, and the brands each one operates.",
+      icon: Building2Icon,
       accessKey: "brands",
     },
     {

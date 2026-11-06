@@ -4,6 +4,7 @@ import {
   canAccessAdminSection,
   competitionRoles,
   forecastsRoles,
+  managementAccountsRoles,
   googleAnalyticsRoles,
   googleReviewsRoles,
   hasAnyRole,
@@ -25,6 +26,7 @@ import GaugeIcon from "@lucide/svelte/icons/gauge";
 import ChartColumnIcon from "@lucide/svelte/icons/chart-column";
 import ChartSplineIcon from "@lucide/svelte/icons/chart-spline";
 import ChartLineIcon from "@lucide/svelte/icons/chart-line";
+import LandmarkIcon from "@lucide/svelte/icons/landmark";
 import type { Role } from "better-auth/plugins/access";
 import type { Component } from "svelte";
 
@@ -183,6 +185,19 @@ const allNavItems: NavItem[] = [
     ],
   },
   {
+    href: "/management-accounts/marketing-costs",
+    label: "Management Accounts",
+    icon: LandmarkIcon,
+    roles: managementAccountsRoles,
+    children: [
+      {
+        href: "/management-accounts/marketing-costs",
+        label: "Marketing costs",
+      },
+    ],
+  },
+
+  {
     href: "/forecasts",
     label: "Sales Forecasts",
     icon: ChartSplineIcon,
@@ -216,6 +231,11 @@ const adminChildren: NavChild[] = [
     permission: { release: ["manage"] },
   },
   { href: "/admin/brands", label: "Brands", permission: { brand: ["manage"] } },
+  {
+    href: "/admin/companies",
+    label: "Companies",
+    permission: { brand: ["manage"] },
+  },
   {
     href: "/admin/brand-assignments",
     label: "Store → brand assignments",

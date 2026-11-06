@@ -62,6 +62,16 @@ export type error_log = Prisma.error_logModel
  */
 export type brand = Prisma.brandModel
 /**
+ * Model Company
+ * 
+ */
+export type Company = Prisma.CompanyModel
+/**
+ * Model brand_company
+ * M:N of brands to the companies operating them (a brand can sit under several companies).
+ */
+export type brand_company = Prisma.brand_companyModel
+/**
  * Model recipe
  * 
  */

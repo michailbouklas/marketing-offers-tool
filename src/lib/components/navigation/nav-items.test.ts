@@ -30,7 +30,7 @@ describe("visibleNavItems", () => {
   });
 
   it("gives superUser every admin tool", () => {
-    expect(adminLinks("superUser")).toHaveLength(16);
+    expect(adminLinks("superUser")).toHaveLength(17);
   });
 
   // The command palette uses href as each item's unique value.

@@ -1,0 +1,31 @@
+FromTableName,FromColumnName,ToTableName,ToColumnName,IsActive,Cardinality,CrossFilteringBehavior,FromKeyCount,ToKeyCount,RelyOnReferentialIntegrity
+FACT1_SAP,PostingDate,LocalDateTable_9abded30-ac96-4a61-acbe-a22e42113ffd,Date,1,M:1,Single,3,,0
+FACT1_SAP,Merged BI - Date,FACT5_Intermediary_StoreDates,Merged BI - Date,1,M:1,Single,3,,0
+FACT1_SAP,LastModified,LocalDateTable_4accaba3-bd0e-44f9-8e1b-14bd7e551c9b,Date,1,M:1,Single,3,,0
+FACT1_SAP,UpdatedAt,LocalDateTable_7c03e49a-4628-4c64-be47-62f75e737253,Date,1,M:1,Single,3,,0
+FACT1_SAP,GLAccount,DIM1_Account_Mapping,Level5Code,1,M:1,Single,3,,0
+DIM1_Account_Mapping,Management L4,Sorting_Table_Head_Office_Expenses,Management L4,1,M:1,Single,3,,0
+DIM1_Account_Mapping,Management L4,Sorting_Table_Operating_Expenses,Management Level 4 ,1,M:1,Single,3,,0
+FACT2_BUDGET,Account Code,DIM1_Account_Mapping,Level5Code,1,M:1,Single,3,,0
+FACT2_BUDGET,Date,LocalDateTable_3f7ac187-9b1d-40bc-99b3-76475a76e5d1,Date,1,M:1,Single,3,,0
+FACT2_BUDGET,Merged BI - Date,FACT5_Intermediary_StoreDates,Merged BI - Date,1,M:1,Single,3,,0
+FACT3_FORECAST,Account Code,DIM1_Account_Mapping,Level5Code,1,M:1,Single,3,,0
+FACT3_FORECAST,Date,LocalDateTable_d1875862-3732-476f-a350-52a73cb111f6,Date,1,M:1,Single,3,,0
+FACT3_FORECAST,Merged BI - Date,FACT5_Intermediary_StoreDates,Merged BI - Date,1,M:1,Single,3,,0
+DIM2_Store,Start date,LocalDateTable_0bb28810-b137-411f-a0a4-7df4acd88e88,Date,1,M:1,Single,3,,0
+DIM2_Store,End date,LocalDateTable_cb0e3ed5-c224-43bc-89a3-07ab498b7077,Date,1,M:1,Single,3,,0
+DIM2_Store,District,Sorting_Table_District,District,1,M:1,Both,3,,0
+FACT7_BOY,GLAccount,DIM1_Account_Mapping,Level5Code,1,M:1,Single,3,,0
+FACT7_BOY,Date,LocalDateTable_92be7976-f991-4ce3-80fe-889b86afb1c6,Date,1,M:1,Single,3,,0
+FACT7_BOY,BI unique code,DIM2_Store,BI unique code,1,M:1,Both,3,,0
+FACT6_StoreStatus,Today,LocalDateTable_88208e37-f951-4804-9444-dd3127d3566d,Date,1,M:1,Single,3,,0
+FACT6_StoreStatus,Start date,LocalDateTable_5f0cf172-afc1-4a08-bb9b-2a6fa770b9d1,Date,1,M:1,Single,3,,0
+FACT6_StoreStatus,End date,LocalDateTable_2260d73a-d932-40bb-92c5-75026f77908b,Date,1,M:1,Single,3,,0
+FACT6_StoreStatus,Merged BI - Date,FACT5_Intermediary_StoreDates,Merged BI - Date,1,1:1,Both,3,3.0,0
+FACT6_StoreStatus,First_posting_date,LocalDateTable_62adaacd-b838-4190-b98b-03be2cfedee3,Date,1,M:1,Single,3,,0
+FACT6_StoreStatus,Status,Sorting_table_status,Status,1,M:1,Both,3,,0
+FACT6_StoreStatus,Date,LocalDateTable_56fc13fb-710e-47cf-963e-f3c7ab658327,Date,1,M:1,Single,3,,0
+FACT6_StoreStatus,Max_posting_date,LocalDateTable_bc756331-1fb5-45df-939e-fb62cbc73bf8,Date,1,M:1,Single,3,,0
+FACT5_Intermediary_StoreDates,BI unique code,DIM2_Store,BI unique code,1,M:1,Both,3,,0
+FACT5_Intermediary_StoreDates,Date,DIM0_Calendar Table,Date,1,M:1,Both,3,,0
+Latest Budget Refresh,Latest Budget Refresh,LocalDateTable_81918c4d-bb76-4105-9441-13d43367730e,Date,1,M:1,Single,3,,0

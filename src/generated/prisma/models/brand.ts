@@ -309,6 +309,7 @@ export type brandWhereInput = {
   brand_entities?: Prisma.Brand_entityListRelationFilter
   google_analytics_properties?: Prisma.Brand_google_analytics_propertyListRelationFilter
   recipes?: Prisma.RecipeListRelationFilter
+  companies?: Prisma.Brand_companyListRelationFilter
 }
 
 export type brandOrderByWithRelationInput = {
@@ -335,6 +336,7 @@ export type brandOrderByWithRelationInput = {
   brand_entities?: Prisma.brand_entityOrderByRelationAggregateInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyOrderByRelationAggregateInput
   recipes?: Prisma.recipeOrderByRelationAggregateInput
+  companies?: Prisma.brand_companyOrderByRelationAggregateInput
 }
 
 export type brandWhereUniqueInput = Prisma.AtLeast<{
@@ -364,6 +366,7 @@ export type brandWhereUniqueInput = Prisma.AtLeast<{
   brand_entities?: Prisma.Brand_entityListRelationFilter
   google_analytics_properties?: Prisma.Brand_google_analytics_propertyListRelationFilter
   recipes?: Prisma.RecipeListRelationFilter
+  companies?: Prisma.Brand_companyListRelationFilter
 }, "id" | "google_places_brand_id">
 
 export type brandOrderByWithAggregationInput = {
@@ -431,6 +434,7 @@ export type brandCreateInput = {
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyCreateNestedManyWithoutBrandInput
 }
 
 export type brandUncheckedCreateInput = {
@@ -457,6 +461,7 @@ export type brandUncheckedCreateInput = {
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeUncheckedCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyUncheckedCreateNestedManyWithoutBrandInput
 }
 
 export type brandUpdateInput = {
@@ -482,6 +487,7 @@ export type brandUpdateInput = {
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUpdateManyWithoutBrandNestedInput
 }
 
 export type brandUncheckedUpdateInput = {
@@ -508,6 +514,7 @@ export type brandUncheckedUpdateInput = {
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUncheckedUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUncheckedUpdateManyWithoutBrandNestedInput
 }
 
 export type brandCreateManyInput = {
@@ -647,6 +654,20 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type brandCreateNestedOneWithoutCompaniesInput = {
+  create?: Prisma.XOR<Prisma.brandCreateWithoutCompaniesInput, Prisma.brandUncheckedCreateWithoutCompaniesInput>
+  connectOrCreate?: Prisma.brandCreateOrConnectWithoutCompaniesInput
+  connect?: Prisma.brandWhereUniqueInput
+}
+
+export type brandUpdateOneRequiredWithoutCompaniesNestedInput = {
+  create?: Prisma.XOR<Prisma.brandCreateWithoutCompaniesInput, Prisma.brandUncheckedCreateWithoutCompaniesInput>
+  connectOrCreate?: Prisma.brandCreateOrConnectWithoutCompaniesInput
+  upsert?: Prisma.brandUpsertWithoutCompaniesInput
+  connect?: Prisma.brandWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.brandUpdateToOneWithWhereWithoutCompaniesInput, Prisma.brandUpdateWithoutCompaniesInput>, Prisma.brandUncheckedUpdateWithoutCompaniesInput>
+}
+
 export type brandCreateNestedOneWithoutRecipesInput = {
   create?: Prisma.XOR<Prisma.brandCreateWithoutRecipesInput, Prisma.brandUncheckedCreateWithoutRecipesInput>
   connectOrCreate?: Prisma.brandCreateOrConnectWithoutRecipesInput
@@ -777,6 +798,124 @@ export type brandUpdateOneRequiredWithoutBrand_entitiesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.brandUpdateToOneWithWhereWithoutBrand_entitiesInput, Prisma.brandUpdateWithoutBrand_entitiesInput>, Prisma.brandUncheckedUpdateWithoutBrand_entitiesInput>
 }
 
+export type brandCreateWithoutCompaniesInput = {
+  name: string
+  alias?: string
+  logo?: string
+  slug?: string
+  created_at?: Date | string
+  updated_at: Date | string
+  description?: string | null
+  active?: boolean
+  sap_brand_alias?: string | null
+  sap_company_name?: string | null
+  ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  google_places_brand_id?: number | null
+  aggregator_offers?: Prisma.aggregator_offersCreateNestedManyWithoutBrandInput
+  user_assignments?: Prisma.user_brandCreateNestedManyWithoutBrandInput
+  brand_assets?: Prisma.BrandAssetCreateNestedManyWithoutBrandInput
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutBrandInput
+  image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput
+  brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput
+  recipes?: Prisma.recipeCreateNestedManyWithoutBrandInput
+}
+
+export type brandUncheckedCreateWithoutCompaniesInput = {
+  id?: number
+  name: string
+  alias?: string
+  logo?: string
+  slug?: string
+  created_at?: Date | string
+  updated_at: Date | string
+  description?: string | null
+  active?: boolean
+  sap_brand_alias?: string | null
+  sap_company_name?: string | null
+  ideal_fc_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  google_places_brand_id?: number | null
+  aggregator_offers?: Prisma.aggregator_offersUncheckedCreateNestedManyWithoutBrandInput
+  user_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutBrandInput
+  brand_assets?: Prisma.BrandAssetUncheckedCreateNestedManyWithoutBrandInput
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutBrandInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutBrandInput
+  image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput
+  brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput
+  recipes?: Prisma.recipeUncheckedCreateNestedManyWithoutBrandInput
+}
+
+export type brandCreateOrConnectWithoutCompaniesInput = {
+  where: Prisma.brandWhereUniqueInput
+  create: Prisma.XOR<Prisma.brandCreateWithoutCompaniesInput, Prisma.brandUncheckedCreateWithoutCompaniesInput>
+}
+
+export type brandUpsertWithoutCompaniesInput = {
+  update: Prisma.XOR<Prisma.brandUpdateWithoutCompaniesInput, Prisma.brandUncheckedUpdateWithoutCompaniesInput>
+  create: Prisma.XOR<Prisma.brandCreateWithoutCompaniesInput, Prisma.brandUncheckedCreateWithoutCompaniesInput>
+  where?: Prisma.brandWhereInput
+}
+
+export type brandUpdateToOneWithWhereWithoutCompaniesInput = {
+  where?: Prisma.brandWhereInput
+  data: Prisma.XOR<Prisma.brandUpdateWithoutCompaniesInput, Prisma.brandUncheckedUpdateWithoutCompaniesInput>
+}
+
+export type brandUpdateWithoutCompaniesInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  alias?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  aggregator_offers?: Prisma.aggregator_offersUpdateManyWithoutBrandNestedInput
+  user_assignments?: Prisma.user_brandUpdateManyWithoutBrandNestedInput
+  brand_assets?: Prisma.BrandAssetUpdateManyWithoutBrandNestedInput
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutBrandNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput
+  brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput
+  recipes?: Prisma.recipeUpdateManyWithoutBrandNestedInput
+}
+
+export type brandUncheckedUpdateWithoutCompaniesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  alias?: Prisma.StringFieldUpdateOperationsInput | string
+  logo?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sap_brand_alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sap_company_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ideal_fc_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  labour_perc?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  google_places_brand_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  aggregator_offers?: Prisma.aggregator_offersUncheckedUpdateManyWithoutBrandNestedInput
+  user_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutBrandNestedInput
+  brand_assets?: Prisma.BrandAssetUncheckedUpdateManyWithoutBrandNestedInput
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutBrandNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutBrandNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput
+  brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput
+  google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput
+  recipes?: Prisma.recipeUncheckedUpdateManyWithoutBrandNestedInput
+}
+
 export type brandCreateWithoutRecipesInput = {
   name: string
   alias?: string
@@ -799,6 +938,7 @@ export type brandCreateWithoutRecipesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyCreateNestedManyWithoutBrandInput
 }
 
 export type brandUncheckedCreateWithoutRecipesInput = {
@@ -824,6 +964,7 @@ export type brandUncheckedCreateWithoutRecipesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyUncheckedCreateNestedManyWithoutBrandInput
 }
 
 export type brandCreateOrConnectWithoutRecipesInput = {
@@ -864,6 +1005,7 @@ export type brandUpdateWithoutRecipesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUpdateManyWithoutBrandNestedInput
 }
 
 export type brandUncheckedUpdateWithoutRecipesInput = {
@@ -889,6 +1031,7 @@ export type brandUncheckedUpdateWithoutRecipesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUncheckedUpdateManyWithoutBrandNestedInput
 }
 
 export type brandCreateWithoutUser_assignmentsInput = {
@@ -913,6 +1056,7 @@ export type brandCreateWithoutUser_assignmentsInput = {
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyCreateNestedManyWithoutBrandInput
 }
 
 export type brandUncheckedCreateWithoutUser_assignmentsInput = {
@@ -938,6 +1082,7 @@ export type brandUncheckedCreateWithoutUser_assignmentsInput = {
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeUncheckedCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyUncheckedCreateNestedManyWithoutBrandInput
 }
 
 export type brandCreateOrConnectWithoutUser_assignmentsInput = {
@@ -978,6 +1123,7 @@ export type brandUpdateWithoutUser_assignmentsInput = {
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUpdateManyWithoutBrandNestedInput
 }
 
 export type brandUncheckedUpdateWithoutUser_assignmentsInput = {
@@ -1003,6 +1149,7 @@ export type brandUncheckedUpdateWithoutUser_assignmentsInput = {
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUncheckedUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUncheckedUpdateManyWithoutBrandNestedInput
 }
 
 export type brandCreateWithoutGoogle_analytics_propertiesInput = {
@@ -1027,6 +1174,7 @@ export type brandCreateWithoutGoogle_analytics_propertiesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyCreateNestedManyWithoutBrandInput
 }
 
 export type brandUncheckedCreateWithoutGoogle_analytics_propertiesInput = {
@@ -1052,6 +1200,7 @@ export type brandUncheckedCreateWithoutGoogle_analytics_propertiesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeUncheckedCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyUncheckedCreateNestedManyWithoutBrandInput
 }
 
 export type brandCreateOrConnectWithoutGoogle_analytics_propertiesInput = {
@@ -1092,6 +1241,7 @@ export type brandUpdateWithoutGoogle_analytics_propertiesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUpdateManyWithoutBrandNestedInput
 }
 
 export type brandUncheckedUpdateWithoutGoogle_analytics_propertiesInput = {
@@ -1117,6 +1267,7 @@ export type brandUncheckedUpdateWithoutGoogle_analytics_propertiesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUncheckedUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUncheckedUpdateManyWithoutBrandNestedInput
 }
 
 export type brandCreateWithoutAggregator_offersInput = {
@@ -1141,6 +1292,7 @@ export type brandCreateWithoutAggregator_offersInput = {
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyCreateNestedManyWithoutBrandInput
 }
 
 export type brandUncheckedCreateWithoutAggregator_offersInput = {
@@ -1166,6 +1318,7 @@ export type brandUncheckedCreateWithoutAggregator_offersInput = {
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeUncheckedCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyUncheckedCreateNestedManyWithoutBrandInput
 }
 
 export type brandCreateOrConnectWithoutAggregator_offersInput = {
@@ -1206,6 +1359,7 @@ export type brandUpdateWithoutAggregator_offersInput = {
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUpdateManyWithoutBrandNestedInput
 }
 
 export type brandUncheckedUpdateWithoutAggregator_offersInput = {
@@ -1231,6 +1385,7 @@ export type brandUncheckedUpdateWithoutAggregator_offersInput = {
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUncheckedUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUncheckedUpdateManyWithoutBrandNestedInput
 }
 
 export type brandCreateWithoutGenerated_imagesInput = {
@@ -1255,6 +1410,7 @@ export type brandCreateWithoutGenerated_imagesInput = {
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyCreateNestedManyWithoutBrandInput
 }
 
 export type brandUncheckedCreateWithoutGenerated_imagesInput = {
@@ -1280,6 +1436,7 @@ export type brandUncheckedCreateWithoutGenerated_imagesInput = {
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeUncheckedCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyUncheckedCreateNestedManyWithoutBrandInput
 }
 
 export type brandCreateOrConnectWithoutGenerated_imagesInput = {
@@ -1320,6 +1477,7 @@ export type brandUpdateWithoutGenerated_imagesInput = {
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUpdateManyWithoutBrandNestedInput
 }
 
 export type brandUncheckedUpdateWithoutGenerated_imagesInput = {
@@ -1345,6 +1503,7 @@ export type brandUncheckedUpdateWithoutGenerated_imagesInput = {
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUncheckedUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUncheckedUpdateManyWithoutBrandNestedInput
 }
 
 export type brandCreateWithoutBrand_assetsInput = {
@@ -1369,6 +1528,7 @@ export type brandCreateWithoutBrand_assetsInput = {
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyCreateNestedManyWithoutBrandInput
 }
 
 export type brandUncheckedCreateWithoutBrand_assetsInput = {
@@ -1394,6 +1554,7 @@ export type brandUncheckedCreateWithoutBrand_assetsInput = {
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeUncheckedCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyUncheckedCreateNestedManyWithoutBrandInput
 }
 
 export type brandCreateOrConnectWithoutBrand_assetsInput = {
@@ -1434,6 +1595,7 @@ export type brandUpdateWithoutBrand_assetsInput = {
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUpdateManyWithoutBrandNestedInput
 }
 
 export type brandUncheckedUpdateWithoutBrand_assetsInput = {
@@ -1459,6 +1621,7 @@ export type brandUncheckedUpdateWithoutBrand_assetsInput = {
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUncheckedUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUncheckedUpdateManyWithoutBrandNestedInput
 }
 
 export type brandCreateWithoutImage_templatesInput = {
@@ -1483,6 +1646,7 @@ export type brandCreateWithoutImage_templatesInput = {
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyCreateNestedManyWithoutBrandInput
 }
 
 export type brandUncheckedCreateWithoutImage_templatesInput = {
@@ -1508,6 +1672,7 @@ export type brandUncheckedCreateWithoutImage_templatesInput = {
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeUncheckedCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyUncheckedCreateNestedManyWithoutBrandInput
 }
 
 export type brandCreateOrConnectWithoutImage_templatesInput = {
@@ -1548,6 +1713,7 @@ export type brandUpdateWithoutImage_templatesInput = {
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUpdateManyWithoutBrandNestedInput
 }
 
 export type brandUncheckedUpdateWithoutImage_templatesInput = {
@@ -1573,6 +1739,7 @@ export type brandUncheckedUpdateWithoutImage_templatesInput = {
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUncheckedUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUncheckedUpdateManyWithoutBrandNestedInput
 }
 
 export type brandCreateWithoutGenerated_copiesInput = {
@@ -1597,6 +1764,7 @@ export type brandCreateWithoutGenerated_copiesInput = {
   brand_entities?: Prisma.brand_entityCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyCreateNestedManyWithoutBrandInput
 }
 
 export type brandUncheckedCreateWithoutGenerated_copiesInput = {
@@ -1622,6 +1790,7 @@ export type brandUncheckedCreateWithoutGenerated_copiesInput = {
   brand_entities?: Prisma.brand_entityUncheckedCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeUncheckedCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyUncheckedCreateNestedManyWithoutBrandInput
 }
 
 export type brandCreateOrConnectWithoutGenerated_copiesInput = {
@@ -1662,6 +1831,7 @@ export type brandUpdateWithoutGenerated_copiesInput = {
   brand_entities?: Prisma.brand_entityUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUpdateManyWithoutBrandNestedInput
 }
 
 export type brandUncheckedUpdateWithoutGenerated_copiesInput = {
@@ -1687,6 +1857,7 @@ export type brandUncheckedUpdateWithoutGenerated_copiesInput = {
   brand_entities?: Prisma.brand_entityUncheckedUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUncheckedUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUncheckedUpdateManyWithoutBrandNestedInput
 }
 
 export type brandCreateWithoutBrand_entitiesInput = {
@@ -1711,6 +1882,7 @@ export type brandCreateWithoutBrand_entitiesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyCreateNestedManyWithoutBrandInput
 }
 
 export type brandUncheckedCreateWithoutBrand_entitiesInput = {
@@ -1736,6 +1908,7 @@ export type brandUncheckedCreateWithoutBrand_entitiesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedCreateNestedManyWithoutBrandInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedCreateNestedManyWithoutBrandInput
   recipes?: Prisma.recipeUncheckedCreateNestedManyWithoutBrandInput
+  companies?: Prisma.brand_companyUncheckedCreateNestedManyWithoutBrandInput
 }
 
 export type brandCreateOrConnectWithoutBrand_entitiesInput = {
@@ -1776,6 +1949,7 @@ export type brandUpdateWithoutBrand_entitiesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUpdateManyWithoutBrandNestedInput
 }
 
 export type brandUncheckedUpdateWithoutBrand_entitiesInput = {
@@ -1801,6 +1975,7 @@ export type brandUncheckedUpdateWithoutBrand_entitiesInput = {
   image_templates?: Prisma.ImageGeneratorTemplateBrandUncheckedUpdateManyWithoutBrandNestedInput
   google_analytics_properties?: Prisma.brand_google_analytics_propertyUncheckedUpdateManyWithoutBrandNestedInput
   recipes?: Prisma.recipeUncheckedUpdateManyWithoutBrandNestedInput
+  companies?: Prisma.brand_companyUncheckedUpdateManyWithoutBrandNestedInput
 }
 
 
@@ -1818,6 +1993,7 @@ export type BrandCountOutputType = {
   brand_entities: number
   google_analytics_properties: number
   recipes: number
+  companies: number
 }
 
 export type BrandCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1830,6 +2006,7 @@ export type BrandCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   brand_entities?: boolean | BrandCountOutputTypeCountBrand_entitiesArgs
   google_analytics_properties?: boolean | BrandCountOutputTypeCountGoogle_analytics_propertiesArgs
   recipes?: boolean | BrandCountOutputTypeCountRecipesArgs
+  companies?: boolean | BrandCountOutputTypeCountCompaniesArgs
 }
 
 /**
@@ -1905,6 +2082,13 @@ export type BrandCountOutputTypeCountRecipesArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.recipeWhereInput
 }
 
+/**
+ * BrandCountOutputType without action
+ */
+export type BrandCountOutputTypeCountCompaniesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.brand_companyWhereInput
+}
+
 
 export type brandSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1930,6 +2114,7 @@ export type brandSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   brand_entities?: boolean | Prisma.brand$brand_entitiesArgs<ExtArgs>
   google_analytics_properties?: boolean | Prisma.brand$google_analytics_propertiesArgs<ExtArgs>
   recipes?: boolean | Prisma.brand$recipesArgs<ExtArgs>
+  companies?: boolean | Prisma.brand$companiesArgs<ExtArgs>
   _count?: boolean | Prisma.BrandCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["brand"]>
 
@@ -1995,6 +2180,7 @@ export type brandInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   brand_entities?: boolean | Prisma.brand$brand_entitiesArgs<ExtArgs>
   google_analytics_properties?: boolean | Prisma.brand$google_analytics_propertiesArgs<ExtArgs>
   recipes?: boolean | Prisma.brand$recipesArgs<ExtArgs>
+  companies?: boolean | Prisma.brand$companiesArgs<ExtArgs>
   _count?: boolean | Prisma.BrandCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type brandIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -2012,6 +2198,7 @@ export type $brandPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     brand_entities: Prisma.$brand_entityPayload<ExtArgs>[]
     google_analytics_properties: Prisma.$brand_google_analytics_propertyPayload<ExtArgs>[]
     recipes: Prisma.$recipePayload<ExtArgs>[]
+    companies: Prisma.$brand_companyPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -2444,6 +2631,7 @@ export interface Prisma__brandClient<T, Null = never, ExtArgs extends runtime.Ty
   brand_entities<T extends Prisma.brand$brand_entitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.brand$brand_entitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$brand_entityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   google_analytics_properties<T extends Prisma.brand$google_analytics_propertiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.brand$google_analytics_propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$brand_google_analytics_propertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   recipes<T extends Prisma.brand$recipesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.brand$recipesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$recipePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  companies<T extends Prisma.brand$companiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.brand$companiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$brand_companyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3093,6 +3281,30 @@ export type brand$recipesArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.RecipeScalarFieldEnum | Prisma.RecipeScalarFieldEnum[]
+}
+
+/**
+ * brand.companies
+ */
+export type brand$companiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the brand_company
+   */
+  select?: Prisma.brand_companySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the brand_company
+   */
+  omit?: Prisma.brand_companyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.brand_companyInclude<ExtArgs> | null
+  where?: Prisma.brand_companyWhereInput
+  orderBy?: Prisma.brand_companyOrderByWithRelationInput | Prisma.brand_companyOrderByWithRelationInput[]
+  cursor?: Prisma.brand_companyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Brand_companyScalarFieldEnum | Prisma.Brand_companyScalarFieldEnum[]
 }
 
 /**

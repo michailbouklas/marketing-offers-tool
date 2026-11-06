@@ -132,6 +132,43 @@ export function getDatabaseUrl(): string {
   return url;
 }
 
+export interface AiChatMssqlEnv {
+  server: string;
+  port: number;
+  user: string;
+  password: string;
+  database: string;
+  encrypt: boolean;
+  trustServerCertificate: boolean;
+}
+
+/**
+ * The SAP business warehouse (MSSQL `SAPBW`), same `MS_SQL_*` settings as
+ * src/lib/server/mssql.ts. Returns null when unconfigured so the tool can
+ * fail soft at execute time.
+ */
+export function getMssqlEnv(): AiChatMssqlEnv | null {
+  const server = readEnv("MS_SQL_SERVER");
+  const user = readEnv("MS_SQL_USER");
+  const password = readEnv("MS_SQL_PASSWORD");
+  const database = readEnv("MS_SQL_DB");
+
+  if (!server || !user || !password || !database) {
+    return null;
+  }
+
+  return {
+    server,
+    port: Number(readEnv("MS_SQL_PORT") ?? 1433),
+    user,
+    password,
+    database,
+    encrypt: readEnv("MS_SQL_ENCRYPT") === "true",
+    trustServerCertificate:
+      readEnv("MS_SQL_TRUST_SERVER_CERTIFICATE") !== "false",
+  };
+}
+
 /**
  * Supabase Storage config for the shared object store, mirroring
  * `getStorageEnv()` in src/lib/server/env.ts. When any value is missing the
