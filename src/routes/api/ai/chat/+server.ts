@@ -3,6 +3,7 @@ import { handleChatStream } from "@mastra/ai-sdk";
 import { toAISdkMessages } from "@mastra/ai-sdk/ui";
 import { RequestContext } from "@mastra/core/request-context";
 import { createUIMessageStreamResponse } from "ai";
+import { hasAnyRole } from "$lib/auth/roles";
 import {
   getAuthenticatedUserRole,
   requireApiPermission,
@@ -23,10 +24,12 @@ import {
   FORECAST_PAGE_CONTEXT_RUNTIME_KEY,
   GOOGLE_ANALYTICS_PAGE_CONTEXT_RUNTIME_KEY,
   GOOGLE_ANALYTICS_SCOPE_RUNTIME_KEY,
+  MANAGEMENT_ACCOUNTS_SCOPE_RUNTIME_KEY,
   SALES_SELECTED_ORDERS_RUNTIME_KEY,
   type GoogleAnalyticsScopeEntry,
   type SalesSelectedOrders,
 } from "$lib/server/mastra/chat-registry";
+import { resolveManagementAccountsScope } from "$lib/services/management-accounts.server";
 import { listGoogleAnalyticsBrandsForUser } from "$lib/services/google-analytics/properties.server";
 import {
   ORDER_LINE_HEADER_LABELS,
@@ -70,11 +73,18 @@ async function authorizeAgent(event: RequestEvent, agentId: string) {
 
   // A configured permission gates the agent; when omitted, any authenticated
   // user may talk to it (mirrors the agent's page guard).
-  if (agent.permissions) {
-    return requireApiPermission(event, agent.permissions);
+  const caller = agent.permissions
+    ? await requireApiPermission(event, agent.permissions)
+    : requireAuthenticatedApiUser(event);
+
+  if (
+    agent.roles &&
+    !hasAnyRole(await getAuthenticatedUserRole(event), agent.roles)
+  ) {
+    error(403, "Forbidden");
   }
 
-  return requireAuthenticatedApiUser(event);
+  return caller;
 }
 
 /**
@@ -105,7 +115,8 @@ async function buildAgentRequestContext(
   if (
     !config?.brandScoped &&
     !config?.pageContext &&
-    !config?.googleAnalyticsScoped
+    !config?.googleAnalyticsScoped &&
+    !config?.managementAccountsScoped
   ) {
     return undefined;
   }
@@ -138,6 +149,16 @@ async function buildAgentRequestContext(
     requestContext.set(
       GOOGLE_ANALYTICS_SCOPE_RUNTIME_KEY,
       googleAnalyticsScope,
+    );
+  }
+
+  if (config.managementAccountsScoped) {
+    requestContext.set(
+      MANAGEMENT_ACCOUNTS_SCOPE_RUNTIME_KEY,
+      await resolveManagementAccountsScope({
+        id: userId,
+        role: await getAuthenticatedUserRole(event),
+      }),
     );
   }
 

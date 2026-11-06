@@ -1,0 +1,320 @@
+TableName,ColumnName,PandasDataType
+DIM0_Calendar Table,Date,datetime64[ns]
+DIM0_Calendar Table,DateAsInteger,string
+DIM0_Calendar Table,Year,Int64
+DIM0_Calendar Table,MonthNumber,Int64
+DIM0_Calendar Table,YearMonthNumber,string
+DIM0_Calendar Table,YearMonthShort,string
+DIM0_Calendar Table,MonthNameShort,string
+DIM0_Calendar Table,MonthNameLong,string
+DIM0_Calendar Table,MonthYear,string
+DIM0_Calendar Table,MonthDayNumber,string
+DIM0_Calendar Table,DayOfWeekNumber,Int64
+DIM0_Calendar Table,DayOfWeek,string
+DIM0_Calendar Table,DayOfWeekShort,string
+DIM0_Calendar Table,Quarter,string
+DIM0_Calendar Table,YearQuarter,string
+DIM0_Calendar Table,Current Year/Previous Year,string
+DIM0_Calendar Table,MTD Tag,string
+DIM0_Calendar Table,WTD Tag,string
+DIM0_Calendar Table,Latest Date,datetime64[ns]
+DIM0_Calendar Table,Latest Date - excluding one week,datetime64[ns]
+DIM0_Calendar Table,Today,datetime64[ns]
+DIM0_Calendar Table,YTD Tag,string
+DIM0_Calendar Table,QuarterYear,string
+DIM0_Calendar Table,LastWeek,datetime64[ns]
+DIM0_Calendar Table,WeekNumberMonday,Int64
+DIM0_Calendar Table,WeekYear,string
+DIM0_Calendar Table,YearWeek,Int64
+DIM0_Calendar Table,Month_Week_Number,Int64
+DIM0_Calendar Table,Today Tag,string
+DIM0_Calendar Table,Year(based on week),Int64
+DIM1_Account_Mapping,Level5Code,string
+DIM1_Account_Mapping,Level5Name,string
+DIM1_Account_Mapping,Controllable/Uncontrollable Expenses,string
+DIM1_Account_Mapping,Drivers Cost,string
+DIM1_Account_Mapping,Delivery Service,string
+DIM1_Account_Mapping,Controllable expenses,string
+DIM1_Account_Mapping,Management L5 (Adj. for contrl.),string
+DIM1_Account_Mapping,FOS Overview,string
+DIM1_Account_Mapping,FOS Sort,Int64
+DIM1_Account_Mapping,Management L0,string
+DIM1_Account_Mapping,Management L1,string
+DIM1_Account_Mapping,Management L2,string
+DIM1_Account_Mapping,Management L3,string
+DIM1_Account_Mapping,Management L4,string
+DIM1_Account_Mapping,Management L5,string
+DIM1_Account_Mapping,SAP AccountLevel4,string
+DIM1_Account_Mapping,Management Account,string
+DIM1_Account_Mapping,Level4Code,string
+DIM1_Account_Mapping,Sort,Int64
+DIM1_Account_Mapping,FOS First Breakdown,string
+DIM1_Account_Mapping,FOS First Breakdown Sort,Int64
+DIM2_Store,Country,string
+DIM2_Store,Working,string
+DIM2_Store,Open/Closed,string
+DIM2_Store,BI unique code,string
+DIM2_Store,BI Name,string
+DIM2_Store,SAP Location name,string
+DIM2_Store,SAP Location Code,string
+DIM2_Store,SAP Distribution Code,string
+DIM2_Store,SAP CompanyName,string
+DIM2_Store,Novasero Location Code,string
+DIM2_Store,Address,string
+DIM2_Store,Brand,string
+DIM2_Store,Company,string
+DIM2_Store,Trading Nature,string
+DIM2_Store,District,string
+DIM2_Store,Area Nature Group,string
+DIM2_Store,Mall,bool
+DIM2_Store,Mall name,string
+DIM2_Store,Seasonality,string
+DIM2_Store,Start date,datetime64[ns]
+DIM2_Store,End date,datetime64[ns]
+DIM2_Store,Latitude,Float64
+DIM2_Store,Longitude,Float64
+DIM2_Store,Brand/store check,string
+FACT1_SAP,Actual,string
+FACT1_SAP,Transaction Number,string
+FACT1_SAP,PostingDate,datetime64[ns]
+FACT1_SAP,TransTypeName,string
+FACT1_SAP,OriginalDocNo,string
+FACT1_SAP,HeaderRemarks,string
+FACT1_SAP,AccountName,string
+FACT1_SAP,Debit,Float64
+FACT1_SAP,Credit,Float64
+FACT1_SAP,StoreLocationName,string
+FACT1_SAP,BI unique code,string
+FACT1_SAP,FS Type,string
+FACT1_SAP,Value (EUR),Float64
+FACT1_SAP,Merged BI - Date,string
+FACT1_SAP,CompanyName,string
+FACT1_SAP,LastModified,datetime64[ns]
+FACT1_SAP,UpdatedAt,datetime64[ns]
+FACT1_SAP,CC vs PC check,string
+FACT1_SAP,Check,string
+FACT1_SAP,GLAccount,string
+FACT1_SAP,StoreLocationCode,string
+FACT1_SAP,StoreLocationCode (OLD),string
+FACT1_SAP,CostCenter,string
+FACT1_SAP,CostCenter (OLD),string
+FACT2_BUDGET,Code,string
+FACT2_BUDGET,Name,string
+FACT2_BUDGET,Cost Center,string
+FACT2_BUDGET,Location,string
+FACT2_BUDGET,Account Code,string
+FACT2_BUDGET,Account Name,string
+FACT2_BUDGET,Date,datetime64[ns]
+FACT2_BUDGET,Budget ,Float64
+FACT2_BUDGET,CompanyName,string
+FACT2_BUDGET,BI unique code,string
+FACT2_BUDGET,Merged BI - Date,string
+FACT3_FORECAST,Code,string
+FACT3_FORECAST,Name,string
+FACT3_FORECAST,Cost Center,string
+FACT3_FORECAST,Location,string
+FACT3_FORECAST,Account Code,string
+FACT3_FORECAST,Account Name,string
+FACT3_FORECAST,Date,datetime64[ns]
+FACT3_FORECAST,Forecast ,Float64
+FACT3_FORECAST,CompanyName,string
+FACT3_FORECAST,BI unique code,string
+FACT3_FORECAST,Merged BI - Date,string
+FACT5_Intermediary_StoreDates,Date,datetime64[ns]
+FACT5_Intermediary_StoreDates,Merged BI - Date,string
+FACT5_Intermediary_StoreDates,BI unique code,string
+FACT6_StoreStatus,Today,datetime64[ns]
+FACT6_StoreStatus,Date,datetime64[ns]
+FACT6_StoreStatus,Status,string
+FACT6_StoreStatus,Merged BI - Date,string
+FACT6_StoreStatus,BI unique code,string
+FACT6_StoreStatus,Start date,datetime64[ns]
+FACT6_StoreStatus,End date,datetime64[ns]
+FACT6_StoreStatus,First_posting_date,datetime64[ns]
+FACT6_StoreStatus,Max_posting_date,datetime64[ns]
+FACT7_BOY,Month Name,string
+FACT7_BOY,Actual Value (EUR),Float64
+FACT7_BOY,Budget - January,Float64
+FACT7_BOY,Budget - February,Float64
+FACT7_BOY,Budget - March,Float64
+FACT7_BOY,Budget - April,Float64
+FACT7_BOY,Budget - June,Float64
+FACT7_BOY,Budget - July,Float64
+FACT7_BOY,Budget - August,Float64
+FACT7_BOY,Budget - September,Float64
+FACT7_BOY,Budget - October,Float64
+FACT7_BOY,Budget - November,Float64
+FACT7_BOY,Budget - December,Float64
+FACT7_BOY,Forecast - January,Float64
+FACT7_BOY,Forecast - February,Float64
+FACT7_BOY,Forecast - March,Float64
+FACT7_BOY,Forecast - April,Float64
+FACT7_BOY,Forecast - June,Float64
+FACT7_BOY,Forecast - July,Float64
+FACT7_BOY,Forecast - August,Float64
+FACT7_BOY,Forecast - September,Float64
+FACT7_BOY,Forecast - October,Float64
+FACT7_BOY,Forecast - November,Float64
+FACT7_BOY,Forecast - December,Float64
+FACT7_BOY,Budget - May,Float64
+FACT7_BOY,Forecast - May,Float64
+FACT7_BOY,FS Type,string
+FACT7_BOY,Description - January,string
+FACT7_BOY,Description - February,string
+FACT7_BOY,Description - March,string
+FACT7_BOY,Description - April,string
+FACT7_BOY,Description - May,string
+FACT7_BOY,Description - June,string
+FACT7_BOY,Description - July,string
+FACT7_BOY,Description - August,string
+FACT7_BOY,Description - September,string
+FACT7_BOY,Description - October,string
+FACT7_BOY,Description - November,string
+FACT7_BOY,Description - December,string
+FACT7_BOY,GLAccount,string
+FACT7_BOY,AccountName,string
+FACT7_BOY,BI unique code,string
+FACT7_BOY,Budget Value (EUR),Float64
+FACT7_BOY,Forecast Value (EUR),Float64
+FACT7_BOY,Date,datetime64[ns]
+FACT7_BOY,Month,Int64
+FACT7_BOY,Merged BI - Date ,string
+Latest Budget Refresh,Latest Budget Refresh,datetime64[ns]
+LocalDateTable_0bb28810-b137-411f-a0a4-7df4acd88e88,Date,datetime64[ns]
+LocalDateTable_0bb28810-b137-411f-a0a4-7df4acd88e88,Year,Int64
+LocalDateTable_0bb28810-b137-411f-a0a4-7df4acd88e88,MonthNo,Int64
+LocalDateTable_0bb28810-b137-411f-a0a4-7df4acd88e88,Month,string
+LocalDateTable_0bb28810-b137-411f-a0a4-7df4acd88e88,QuarterNo,Int64
+LocalDateTable_0bb28810-b137-411f-a0a4-7df4acd88e88,Quarter,string
+LocalDateTable_0bb28810-b137-411f-a0a4-7df4acd88e88,Day,Int64
+LocalDateTable_2260d73a-d932-40bb-92c5-75026f77908b,Date,datetime64[ns]
+LocalDateTable_2260d73a-d932-40bb-92c5-75026f77908b,Year,Int64
+LocalDateTable_2260d73a-d932-40bb-92c5-75026f77908b,MonthNo,Int64
+LocalDateTable_2260d73a-d932-40bb-92c5-75026f77908b,Month,string
+LocalDateTable_2260d73a-d932-40bb-92c5-75026f77908b,QuarterNo,Int64
+LocalDateTable_2260d73a-d932-40bb-92c5-75026f77908b,Quarter,string
+LocalDateTable_2260d73a-d932-40bb-92c5-75026f77908b,Day,Int64
+LocalDateTable_3f7ac187-9b1d-40bc-99b3-76475a76e5d1,Date,datetime64[ns]
+LocalDateTable_3f7ac187-9b1d-40bc-99b3-76475a76e5d1,Year,Int64
+LocalDateTable_3f7ac187-9b1d-40bc-99b3-76475a76e5d1,MonthNo,Int64
+LocalDateTable_3f7ac187-9b1d-40bc-99b3-76475a76e5d1,Month,string
+LocalDateTable_3f7ac187-9b1d-40bc-99b3-76475a76e5d1,QuarterNo,Int64
+LocalDateTable_3f7ac187-9b1d-40bc-99b3-76475a76e5d1,Quarter,string
+LocalDateTable_3f7ac187-9b1d-40bc-99b3-76475a76e5d1,Day,Int64
+LocalDateTable_4accaba3-bd0e-44f9-8e1b-14bd7e551c9b,Date,datetime64[ns]
+LocalDateTable_4accaba3-bd0e-44f9-8e1b-14bd7e551c9b,Year,Int64
+LocalDateTable_4accaba3-bd0e-44f9-8e1b-14bd7e551c9b,MonthNo,Int64
+LocalDateTable_4accaba3-bd0e-44f9-8e1b-14bd7e551c9b,Month,string
+LocalDateTable_4accaba3-bd0e-44f9-8e1b-14bd7e551c9b,QuarterNo,Int64
+LocalDateTable_4accaba3-bd0e-44f9-8e1b-14bd7e551c9b,Quarter,string
+LocalDateTable_4accaba3-bd0e-44f9-8e1b-14bd7e551c9b,Day,Int64
+LocalDateTable_56fc13fb-710e-47cf-963e-f3c7ab658327,Date,datetime64[ns]
+LocalDateTable_56fc13fb-710e-47cf-963e-f3c7ab658327,Year,Int64
+LocalDateTable_56fc13fb-710e-47cf-963e-f3c7ab658327,MonthNo,Int64
+LocalDateTable_56fc13fb-710e-47cf-963e-f3c7ab658327,Month,string
+LocalDateTable_56fc13fb-710e-47cf-963e-f3c7ab658327,QuarterNo,Int64
+LocalDateTable_56fc13fb-710e-47cf-963e-f3c7ab658327,Quarter,string
+LocalDateTable_56fc13fb-710e-47cf-963e-f3c7ab658327,Day,Int64
+LocalDateTable_5f0cf172-afc1-4a08-bb9b-2a6fa770b9d1,Date,datetime64[ns]
+LocalDateTable_5f0cf172-afc1-4a08-bb9b-2a6fa770b9d1,Year,Int64
+LocalDateTable_5f0cf172-afc1-4a08-bb9b-2a6fa770b9d1,MonthNo,Int64
+LocalDateTable_5f0cf172-afc1-4a08-bb9b-2a6fa770b9d1,Month,string
+LocalDateTable_5f0cf172-afc1-4a08-bb9b-2a6fa770b9d1,QuarterNo,Int64
+LocalDateTable_5f0cf172-afc1-4a08-bb9b-2a6fa770b9d1,Quarter,string
+LocalDateTable_5f0cf172-afc1-4a08-bb9b-2a6fa770b9d1,Day,Int64
+LocalDateTable_62adaacd-b838-4190-b98b-03be2cfedee3,Date,datetime64[ns]
+LocalDateTable_62adaacd-b838-4190-b98b-03be2cfedee3,Year,Int64
+LocalDateTable_62adaacd-b838-4190-b98b-03be2cfedee3,MonthNo,Int64
+LocalDateTable_62adaacd-b838-4190-b98b-03be2cfedee3,Month,string
+LocalDateTable_62adaacd-b838-4190-b98b-03be2cfedee3,QuarterNo,Int64
+LocalDateTable_62adaacd-b838-4190-b98b-03be2cfedee3,Quarter,string
+LocalDateTable_62adaacd-b838-4190-b98b-03be2cfedee3,Day,Int64
+LocalDateTable_7c03e49a-4628-4c64-be47-62f75e737253,Date,datetime64[ns]
+LocalDateTable_7c03e49a-4628-4c64-be47-62f75e737253,Year,Int64
+LocalDateTable_7c03e49a-4628-4c64-be47-62f75e737253,MonthNo,Int64
+LocalDateTable_7c03e49a-4628-4c64-be47-62f75e737253,Month,string
+LocalDateTable_7c03e49a-4628-4c64-be47-62f75e737253,QuarterNo,Int64
+LocalDateTable_7c03e49a-4628-4c64-be47-62f75e737253,Quarter,string
+LocalDateTable_7c03e49a-4628-4c64-be47-62f75e737253,Day,Int64
+LocalDateTable_81918c4d-bb76-4105-9441-13d43367730e,Date,datetime64[ns]
+LocalDateTable_81918c4d-bb76-4105-9441-13d43367730e,Year,Int64
+LocalDateTable_81918c4d-bb76-4105-9441-13d43367730e,MonthNo,Int64
+LocalDateTable_81918c4d-bb76-4105-9441-13d43367730e,Month,string
+LocalDateTable_81918c4d-bb76-4105-9441-13d43367730e,QuarterNo,Int64
+LocalDateTable_81918c4d-bb76-4105-9441-13d43367730e,Quarter,string
+LocalDateTable_81918c4d-bb76-4105-9441-13d43367730e,Day,Int64
+LocalDateTable_88208e37-f951-4804-9444-dd3127d3566d,Date,datetime64[ns]
+LocalDateTable_88208e37-f951-4804-9444-dd3127d3566d,Year,Int64
+LocalDateTable_88208e37-f951-4804-9444-dd3127d3566d,MonthNo,Int64
+LocalDateTable_88208e37-f951-4804-9444-dd3127d3566d,Month,string
+LocalDateTable_88208e37-f951-4804-9444-dd3127d3566d,QuarterNo,Int64
+LocalDateTable_88208e37-f951-4804-9444-dd3127d3566d,Quarter,string
+LocalDateTable_88208e37-f951-4804-9444-dd3127d3566d,Day,Int64
+LocalDateTable_92be7976-f991-4ce3-80fe-889b86afb1c6,Date,datetime64[ns]
+LocalDateTable_92be7976-f991-4ce3-80fe-889b86afb1c6,Year,Int64
+LocalDateTable_92be7976-f991-4ce3-80fe-889b86afb1c6,MonthNo,Int64
+LocalDateTable_92be7976-f991-4ce3-80fe-889b86afb1c6,Month,string
+LocalDateTable_92be7976-f991-4ce3-80fe-889b86afb1c6,QuarterNo,Int64
+LocalDateTable_92be7976-f991-4ce3-80fe-889b86afb1c6,Quarter,string
+LocalDateTable_92be7976-f991-4ce3-80fe-889b86afb1c6,Day,Int64
+LocalDateTable_9abded30-ac96-4a61-acbe-a22e42113ffd,Date,datetime64[ns]
+LocalDateTable_9abded30-ac96-4a61-acbe-a22e42113ffd,Year,Int64
+LocalDateTable_9abded30-ac96-4a61-acbe-a22e42113ffd,MonthNo,Int64
+LocalDateTable_9abded30-ac96-4a61-acbe-a22e42113ffd,Month,string
+LocalDateTable_9abded30-ac96-4a61-acbe-a22e42113ffd,QuarterNo,Int64
+LocalDateTable_9abded30-ac96-4a61-acbe-a22e42113ffd,Quarter,string
+LocalDateTable_9abded30-ac96-4a61-acbe-a22e42113ffd,Day,Int64
+LocalDateTable_bc756331-1fb5-45df-939e-fb62cbc73bf8,Date,datetime64[ns]
+LocalDateTable_bc756331-1fb5-45df-939e-fb62cbc73bf8,Year,Int64
+LocalDateTable_bc756331-1fb5-45df-939e-fb62cbc73bf8,MonthNo,Int64
+LocalDateTable_bc756331-1fb5-45df-939e-fb62cbc73bf8,Month,string
+LocalDateTable_bc756331-1fb5-45df-939e-fb62cbc73bf8,QuarterNo,Int64
+LocalDateTable_bc756331-1fb5-45df-939e-fb62cbc73bf8,Quarter,string
+LocalDateTable_bc756331-1fb5-45df-939e-fb62cbc73bf8,Day,Int64
+LocalDateTable_cb0e3ed5-c224-43bc-89a3-07ab498b7077,Date,datetime64[ns]
+LocalDateTable_cb0e3ed5-c224-43bc-89a3-07ab498b7077,Year,Int64
+LocalDateTable_cb0e3ed5-c224-43bc-89a3-07ab498b7077,MonthNo,Int64
+LocalDateTable_cb0e3ed5-c224-43bc-89a3-07ab498b7077,Month,string
+LocalDateTable_cb0e3ed5-c224-43bc-89a3-07ab498b7077,QuarterNo,Int64
+LocalDateTable_cb0e3ed5-c224-43bc-89a3-07ab498b7077,Quarter,string
+LocalDateTable_cb0e3ed5-c224-43bc-89a3-07ab498b7077,Day,Int64
+LocalDateTable_d1875862-3732-476f-a350-52a73cb111f6,Date,datetime64[ns]
+LocalDateTable_d1875862-3732-476f-a350-52a73cb111f6,Year,Int64
+LocalDateTable_d1875862-3732-476f-a350-52a73cb111f6,MonthNo,Int64
+LocalDateTable_d1875862-3732-476f-a350-52a73cb111f6,Month,string
+LocalDateTable_d1875862-3732-476f-a350-52a73cb111f6,QuarterNo,Int64
+LocalDateTable_d1875862-3732-476f-a350-52a73cb111f6,Quarter,string
+LocalDateTable_d1875862-3732-476f-a350-52a73cb111f6,Day,Int64
+Ranking option - Company,Ranking option - Company,Int64
+Sorting_Table_District,District,string
+Sorting_Table_District,Sort,Int64
+Sorting_Table_Head_Office_Expenses,Management L4,string
+Sorting_Table_Head_Office_Expenses,Head Operating Expenses,string
+Sorting_Table_Head_Office_Expenses,Sort,Int64
+Sorting_Table_Hours_of_Day,Categories,string
+Sorting_Table_Hours_of_Day,Sort,Int64
+Sorting_Table_Operating_Expenses,Operating Expenses,string
+Sorting_Table_Operating_Expenses,Management Level 4 ,string
+Sorting_table_KPIS,KPI,string
+Sorting_table_KPIS,Sort,Int64
+Sorting_table_Sales_Dashboard,Value1,string
+Sorting_table_Sales_Dashboard,Value2,Int64
+Sorting_table_status,Status,string
+Sorting_table_status,Sort,Int64
+Sorting_table_waterfall,A/B,string
+Sorting_table_waterfall,Sort,Int64
+Sorting_table_waterfall_2,R/E,string
+Sorting_table_waterfall_2,Sort,Int64
+Top Bottom,Value,string
+Z_Change_Table CY_PY_PY2,Column Headers,string
+Z_Change_Table CY_PY_PY2,Sort,Int64
+Z_Change_Table CY_PY_PY2 FPO,Column Headers,string
+Z_Change_Table CY_PY_PY2 FPO,Sort,Int64
+Z_Change_Table CY_PY_PY2 V2,Column Headers,string
+Z_Change_Table CY_PY_PY2 V2,Sort,Int64
+Z_Change_Table CY_PY_PY2 V3,Column Header,string
+Z_Change_Table CY_PY_PY2 V3,Sort,Int64
+Z_Change_Table CY_PY_PY2 V4,Column Header,string
+Z_Change_Table CY_PY_PY2 V4,Sort,Int64
+Z_Change_Table CY_PY_PY2 V5,Column Header,string
+Z_Change_Table CY_PY_PY2 V5,Sort,Int64

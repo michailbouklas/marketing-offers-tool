@@ -1,0 +1,283 @@
+TableName,DisplayFolder,Name
+FACT1_SAP,,Value (EUR) - Actual
+FACT1_SAP,,Refresh Date
+FACT1_SAP,Overview,1.1 Sales
+FACT1_SAP,Overview,1.2 Food Cost
+FACT1_SAP,Overview,1.2.5 Other Cost of sales (Expenses)
+FACT1_SAP,Overview,1.4 Gross Profit
+FACT1_SAP,Overview,1.5 P&R Expenses
+FACT1_SAP,Overview,1.6 Operating Profit
+FACT1_SAP,Overview,1.7 Total HO expenses
+FACT1_SAP,Overview,"1.8 Profit & Loss Before Dep, Am, Div"
+FACT1_SAP,Overview,1.9.4 EBITDA
+FACT1_SAP,Checks,Total store location
+FACT1_SAP,Checks,Total brand
+FACT1_SAP,Overview,1.2.5 Positive Other Cost of sale (Expenses)
+FACT1_SAP,Overview,1.5.1 Positive P&R Expenses
+FACT1_SAP,Overview,1.7.1 Positive Total HO Expenses
+FACT1_SAP,Overview,1.2.1 Positive Food Cost
+FACT1_SAP,Rankings,Ranking Option - Actual Company
+FACT1_SAP,Rankings,Ranking Option - Actual Location Top
+FACT1_SAP,Rankings,Ranking Option - Actual Brand
+FACT1_SAP,Revenue Analysis Card Calculations,PY YTD Sales
+FACT1_SAP,Revenue Analysis Card Calculations,CY YTD Sales
+FACT1_SAP,Revenue Analysis Card Calculations,% Change YTD Sales
+FACT1_SAP,Revenue Analysis Card Calculations,PY Full Year Sales
+FACT1_SAP,Expenses Card Calculations,CY Full Year (Budget)
+FACT1_SAP,Revenue Analysis Card Calculations,Full Year Value (Budget) Card
+FACT1_SAP,Revenue Analysis Card Calculations,% Change FY Sales (Budget)
+FACT1_SAP,Revenue Analysis Measures,Variance Sales A&B
+FACT1_SAP,Dynamic Titles,PY YTD Title
+FACT1_SAP,Dynamic Titles,CY YTD Title
+FACT1_SAP,Revenue Analysis Card Calculations,BOY Value (Budget) CY Sales
+FACT1_SAP,Revenue Analysis Card Calculations,BOYCY (Budget) Sales
+FACT1_SAP,Dynamic Titles,BOY CY Title
+FACT1_SAP,Revenue Analysis Card Calculations,PY # of Stores YTD
+FACT1_SAP,Revenue Analysis Card Calculations,CY # of Stores YTD
+FACT1_SAP,Revenue Analysis Card Calculations,% Change # of Stores YTD
+FACT1_SAP,Expenses Card Calculations,PY YTD
+FACT1_SAP,Dynamic Titles,PY YTD Opex Title
+FACT1_SAP,Expenses Card Calculations,CY YTD
+FACT1_SAP,Dynamic Titles,CY YTD Opex Title
+FACT1_SAP,Expenses Card Calculations,% Change YTD
+FACT1_SAP,Rankings,Ranking Option - Actual Location Bottom
+FACT1_SAP,Overview,1.1.1 Delivery Sales
+FACT1_SAP,Overview,1.1.2 Dine In Sales
+FACT1_SAP,Overview,1.1.3 Drive Through Sales
+FACT1_SAP,Overview,1.1.4 Take Away Sales
+FACT1_SAP,Expenses Card Calculations,PY Full Year
+FACT1_SAP,Expenses Card Calculations,CY Full Year
+FACT1_SAP,Dynamic Titles,PY YTD Head Office Title
+FACT1_SAP,Dynamic Titles,CY YTD Head Office Title
+FACT1_SAP,,Value (EUR) - Actual Expenses
+FACT1_SAP,Expenses Measures,Variance A&B Expenses
+FACT1_SAP,Expenses Measures,Variance % Expenses A&B
+FACT1_SAP,Revenue Analysis Measures,Variance Sales A&B %
+FACT1_SAP,Overview,1.1.5 Sales per Store
+FACT1_SAP,Revenue Analysis Card Calculations,BOY Value (Forecast)  CY Sales
+FACT1_SAP,Revenue Analysis Card Calculations,BOYCY (Forecast) Sales
+FACT1_SAP,Dynamic Titles,Actual vs Budget | Development Timeline Title
+FACT1_SAP,Rankings,Ranking Option - Actual Location Top Opex
+FACT1_SAP,Revenue Analysis Measures,Variance Sales CY-PY
+FACT1_SAP,Rankings,Ranking Option - Actual Location Top CY - PY
+FACT1_SAP,Rankings,Ranking Option - Actual Brand Bottom
+FACT1_SAP,Dynamic Titles,Operating Expenses Title
+FACT1_SAP,Dynamic Titles,Head Office Expenses Title
+FACT1_SAP,Expenses Card Calculations,CY Full Year (Forecast)
+FACT1_SAP,Revenue Analysis Card Calculations,Full Year Value (Forecast) Card
+FACT1_SAP,Revenue Analysis Card Calculations,% Change FY Sales (Forecast)
+FACT1_SAP,Revenue Analysis Measures,Variance Sales A&F
+FACT1_SAP,Revenue Analysis Card Calculations,CY YTD Forecast Sales
+FACT1_SAP,Revenue Analysis Measures,Variance Sales A&B YTD
+FACT1_SAP,Revenue Analysis Measures,Variance Sales A&F YTD
+FACT1_SAP,Revenue Analysis Measures,Variance Sales CY-PY YTD
+FACT1_SAP,Rankings,Ranking Option - Actual Brand CY-PY
+FACT1_SAP,Revenue Analysis Measures,Variance Sales % AF
+FACT1_SAP,Rankings,Ranking Option - Actual Location Top Opex CY-PY
+FACT1_SAP,Expenses Card Calculations,Variance Opex % Budget
+FACT1_SAP,Revenue Analysis Card Calculations,CY YTD Budget Sales
+FACT1_SAP,Expenses Card Calculations,CY YTD Budget Expenses
+FACT1_SAP,,Waterfall value
+FACT1_SAP,Overview,1.6.1 Total operating expenses
+FACT1_SAP,Overview,1.6.2 Positive Operating expenses
+FACT1_SAP,Overview,1.6.3 OpEx account % to total opex
+FACT1_SAP,Overview,1.6.3 OpEx account % to total sales
+FACT1_SAP,Overview,1.6.4 Operating margin
+FACT1_SAP,Overview,1.2.1 Positive Food Cost per Store
+FACT1_SAP,Overview,1.2.5 Positive Other Cost of Sales (Expenses) per Store
+FACT1_SAP,Overview,1.4.1 Gross Profit per Store
+FACT1_SAP,Overview,1.5.2 Positive P&R Expenses per Store
+FACT1_SAP,Overview,1.6.1 Operating Profit per Store
+FACT1_SAP,Overview,1.7.2 Positive Total HO Expenses per Store
+FACT1_SAP,Overview,"1.8.1 Profit & Loss Before Dep, Am, Div per Store"
+FACT1_SAP,Overview,1.9.4.1 EBITDA per Store
+FACT1_SAP,Revenue Analysis Measures,Variance Sales CY-PY %
+FACT1_SAP,Expenses Measures,Variance A&F Expenses
+FACT1_SAP,Expenses Measures,Variance % Expenses A&F
+FACT1_SAP,Expenses Card Calculations,% Change YTD A&B
+FACT1_SAP,Expenses Card Calculations,Variance Expenses % Budget
+FACT1_SAP,Expenses Card Calculations,Variance Expenses % Forecast
+FACT1_SAP,,Value (EUR) - Actual Expenses per Store
+FACT1_SAP,Rankings,Ranking Option - Actual Location Top Opex vs Sales
+FACT1_SAP,Rankings,Ranking Option - Actual Location Top Opex margin
+FACT1_SAP,Profitability Analysis Card Calculations,1.4.2 Gross Profit PY
+FACT1_SAP,Profitability Analysis Card Calculations,1.6.5 Operating Profit PY
+FACT1_SAP,Profitability Analysis Card Calculations,1.4.3 Gross Profit CY
+FACT1_SAP,Profitability Analysis Card Calculations,1.6.5 Operating Profit CY
+FACT1_SAP,Profitability Analysis Card Calculations,1.9.4.2 EBITDA CY
+FACT1_SAP,Profitability Analysis Card Calculations,1.9.4.2 EBITDA PY
+FACT1_SAP,Overview,1.4.4 Gross Profit margin
+FACT1_SAP,Overview,1.9.4 EBITDA margin
+FACT1_SAP,Overview,1.9.5 EBITDA A&B
+FACT1_SAP,Overview,1.9.6 EBITDA A&F
+FACT1_SAP,Overview,Number of Stores
+FACT1_SAP,Expenses Card Calculations,CY YTD Forecast Expenses
+FACT1_SAP,Expenses Card Calculations,% Change YTD A&F
+FACT1_SAP,Dynamic Titles,Sales Dashboard Title
+FACT1_SAP,Profitability Analysis Card Calculations,% change Operating Profit Actual vs Budget
+FACT1_SAP,Profitability Analysis Card Calculations,% change Operating Profit CY-PY
+FACT1_SAP,Profitability Analysis Card Calculations,% change Operating Profit Actual vs Forecast
+FACT1_SAP,Profitability Analysis Card Calculations,% change Gross Profit Actual vs Budget
+FACT1_SAP,Profitability Analysis Card Calculations,% change Gross Profit CY-PY
+FACT1_SAP,Profitability Analysis Card Calculations,% change Gross Profit Actual vs Forecast
+FACT1_SAP,Profitability Analysis Card Calculations,% change EBITDA Actual vs Budget
+FACT1_SAP,Profitability Analysis Card Calculations,% change EBITDA CY-PY
+FACT1_SAP,Profitability Analysis Card Calculations,% change EBITDA Actual vs Forecast
+FACT1_SAP,Revenue Analysis Card Calculations,% Change YTD A&F Sales
+FACT1_SAP,Revenue Analysis Card Calculations,% Change YTD A&B Sales
+FACT1_SAP,Expenses Card Calculations,Variance Opex % Forecast
+FACT1_SAP,Dynamic Titles,Number of Transactions Dashboard Title
+FACT1_SAP,Dynamic Titles,Average Guest Check Dashboard Title
+FACT1_SAP,Dynamic Titles,Date Range Sales Dashboard Title
+FACT1_SAP,Dynamic Titles,Date Range Number of Transactions Dashboard Title
+FACT1_SAP,Dynamic Titles,Date Range Average Guest Check Dashboard Title
+FACT1_SAP,Revenue Analysis Card Calculations,Best Performing Store Ranking
+FACT1_SAP,Revenue Analysis Card Calculations,Worst Performing Store Ranking
+FACT1_SAP,Revenue Analysis Card Calculations,Best Performing Store Ranking YTD
+FACT1_SAP,Revenue Analysis Card Calculations,Worst Performing Store Ranking YTD
+FACT1_SAP,Revenue Analysis Card Calculations,CY Full Year Sales (Budget)
+FACT1_SAP,Revenue Analysis Card Calculations,CY Full Year Sales (Forecast)
+FACT1_SAP,Expenses Card Calculations,BOYCY (Budget)
+FACT1_SAP,Expenses Card Calculations,BOYCY (Forecast)
+FACT1_SAP,Overview,1.2.1 Food Cost to Sales
+FACT1_SAP,Overview,1.3.3 Cost to Sales
+FACT1_SAP,Overview,1.4.5 Gross Profit to Sales
+FACT1_SAP,Overview,1.5.3 P&R Expenses to Sales
+FACT1_SAP,Overview,1.6.6 Operating Profit to Sales
+FACT1_SAP,Overview,1.7.3 Total HO Expenses to Sales
+FACT1_SAP,Overview,"1.8.2 Profit & Loss Before Dep, Am, Div to Sales"
+FACT1_SAP,Overview,1.9.4 EBITDA to Sales
+FACT1_SAP,Revenue Analysis Measures,Actual Sales vs Budget
+FACT1_SAP,Revenue Analysis Measures,Actual Sales vs Forecast
+FACT1_SAP,Overview,1.2.3 Positive Other Expenses
+FACT1_SAP,Overview,1.2.4 Positive Aggregators Commission
+FACT1_SAP,Overview,1.2.2 Labour cost
+FACT1_SAP,Overview,1.2.2.1 Delivery cost labour cost
+FACT1_SAP,Overview,1.2.2.1 Positive Labour Cost
+FACT1_SAP,Overview,1.2.3 Other Expenses
+FACT1_SAP,Overview,1.2.4 Aggregators Commission
+FACT1_SAP,Overview,1.9.2 Dividends received
+FACT1_SAP,Overview,1.9 Depreciation
+FACT1_SAP,Overview,1.9.1 Amortization
+FACT1_SAP,Overview,"1.9.3 Profit/ (Loss) after dep, am, div"
+FACT1_SAP,Overview,1.2.2.1 In store labour cost
+FACT1_SAP,Overview,1.9.5 EBITDA (excl. other income)
+FACT1_SAP,,Value (EUR) - Actual (IFBLANK)
+FACT1_SAP,Overview,1.2.2.2 Positive Labour Cost per Store
+FACT1_SAP,Overview,1.2.3.1 Positive Other Expenses per Store
+FACT1_SAP,Overview,1.2.4.1 Positive Aggregator Commisions per Store
+FACT1_SAP,Expenses Measures,Variance CY-PY
+FACT1_SAP,Expenses Measures,Variance A&B
+FACT1_SAP,Overview,1.1.6 Sales (OpEx Visual)
+DIM0_Calendar Table,,CY Title
+DIM0_Calendar Table,,PY Title
+DIM0_Calendar Table,,Dynamic Month
+DIM0_Calendar Table,,YTD Month
+DIM0_Calendar Table,,SelectedDate1
+DIM0_Calendar Table,,SelectedDate2
+FACT2_BUDGET,,Value (EUR) - Budget
+FACT2_BUDGET,Overview,2.1 Sales
+FACT2_BUDGET,Overview,2.2 Food Cost
+FACT2_BUDGET,Overview,2.2.5 Other Cost of sales (Expenses)
+FACT2_BUDGET,Overview,2.4 Gross Profit
+FACT2_BUDGET,Overview,2.5 P&R Expenses
+FACT2_BUDGET,Overview,2.6 Operating Profit
+FACT2_BUDGET,Overview,2.7 Total HO Expenses
+FACT2_BUDGET,Overview,"2.8 Profit & Loss Before Dep, Am, Div"
+FACT2_BUDGET,Overview,2.9.4 EBITDA
+FACT2_BUDGET,,Value (EUR) - Budget Expenses
+FACT2_BUDGET,Profitability Analysis Cards,2.4.3 Gross Profit CY
+FACT2_BUDGET,Profitability Analysis Cards,2.6.5 Operating Profit CY
+FACT2_BUDGET,Profitability Analysis Cards,2.9.4.2 EBITDA CY
+FACT2_BUDGET,Overview,2.6.1 Total operating expenses
+FACT2_BUDGET,Overview,2.6.2 Positive Total Operating Expenses
+FACT2_BUDGET,Overview,2.2.2 Labour cost
+FACT2_BUDGET,Overview,2.2.3 Other Expenses
+FACT2_BUDGET,Overview,2.2.4 Aggregators Commission
+FACT2_BUDGET,Overview,2.9 Depreciation
+FACT2_BUDGET,Overview,2.9.1 Amortization
+FACT2_BUDGET,Overview,2.9.2 Dividends received
+FACT2_BUDGET,Overview,"2.9.3 Profit/ (Loss) after dep, am, div"
+FACT2_BUDGET,Overview,2.9.5 EBITDA (excl. other income)
+Z_Change_Table CY_PY_PY2,,Value (Change)
+FACT3_FORECAST,,Value (EUR) - Forecast
+FACT3_FORECAST,Overview,3.1 Sales
+FACT3_FORECAST,Overview,3.2 Food Cost
+FACT3_FORECAST,Overview,3.2.5 Other Cost of sales (Expenses)
+FACT3_FORECAST,Overview,3.4 Gross Profit
+FACT3_FORECAST,Overview,3.5 P&R Expenses
+FACT3_FORECAST,Overview,3.6 Operating Profit
+FACT3_FORECAST,Overview,3.7 Total HO Expenses
+FACT3_FORECAST,Overview,"3.8 Profit & Loss Before Dep, Am, Div"
+FACT3_FORECAST,Overview,3.9.4 EBITDA
+FACT3_FORECAST,,Value (EUR) - Forecast Expenses
+FACT3_FORECAST,Overview,3.6.1 Total operating expenses
+FACT3_FORECAST,Overview,3.6.2 Positive Total Operating Expenses
+FACT3_FORECAST,Profitability Analysis Cards,3.4.3 Gross Profit CY
+FACT3_FORECAST,Profitability Analysis Cards,3.6.5 Operating Profit CY
+FACT3_FORECAST,Profitability Analysis Cards,3.9.4.2 EBITDA CY
+FACT3_FORECAST,Overview,3.2.2 Labour cost
+FACT3_FORECAST,Overview,3.2.3 Other Expenses
+FACT3_FORECAST,Overview,3.2.4 Aggregators Commission
+FACT3_FORECAST,Overview,3.9 Depreciation
+FACT3_FORECAST,Overview,3.9.1 Amortization
+FACT3_FORECAST,Overview,3.9.2 Dividends received
+FACT3_FORECAST,Overview,"3.9.3 Profit/ (Loss) after dep, am, div"
+FACT3_FORECAST,Overview,3.9.5 EBITDA (excl. other income)
+Z_Change_Table CY_PY_PY2 V2,,Value (Change) V2
+Z_Change_Table CY_PY_PY2 V3,,Value (Change) V3
+Z_Change_Table CY_PY_PY2 V4,,Value (Change) V5 (Past Year Budget)
+Z_Change_Table CY_PY_PY2 V4,,Full Year Value (Budget)
+Z_Change_Table CY_PY_PY2 V4,,Actual Value
+Z_Change_Table CY_PY_PY2 V4,,BOY Value (Budget)
+Z_Change_Table CY_PY_PY2 V4,,Budget Value
+Z_Change_Table CY_PY_PY2 V4,,Forecast Value
+Z_Change_Table CY_PY_PY2 V4,,Full Year Value (Forecast)
+Z_Change_Table CY_PY_PY2 V4,,BOY Value (Forecast)
+Z_Change_Table CY_PY_PY2 V4,,Value (Change) V5.1 (Past Year Forecast)
+Z_Change_Table CY_PY_PY2 V4,,Value (Change) V5.2 (Current Year Budget)
+Z_Change_Table CY_PY_PY2 V4,,Value (Change) V5.3 (Current Year Forecast)
+Z_Change_Table CY_PY_PY2 V4,,BOY Value (Actual)
+Ranking option - Company,,Ranking option Value - Company
+Ranking option - Company,,1a. TITLE Top N Stores table
+Ranking option - Company,,1b. TITLE Top N Brands table
+Ranking option - Company,,1c. TITLE Top N Companies table
+Ranking option - Company,,1d. TITLE Bottom N Stores table
+Ranking option - Company,,1a.2 TITLE Top N Stores table CY-PY
+Ranking option - Company,,1b.2 TITLE Top N Brands table
+Ranking option - Company,,1e. TITLE Top N Opex table
+Ranking option - Company,,1f. TITLE Top N Opex table
+Ranking option - Company,,1e.1 TITLE Top N Opex per Store table
+Ranking option - Company,,1e.2 TITLE Top N Opex per Store table
+Ranking option - Company,,1e.2 TITLE Top N Sales per Store table
+Ranking option - Company,,1e.3 TITLE Top N Sales per Brand table
+Ranking option - Company,,1g.1 TITLE Top N Sales per Store Trends View
+Ranking option - Company,,1g.2 TITLE Top N Number of Transactions per Store Trends View
+Ranking option - Company,,1g.3 TITLE Top N Average Guest Check per Store Trends View
+Ranking option - Company,,1h.1 TITLE Top N Weeks table
+Ranking option - Company,,1h.2 TITLE Top N Weeks table
+Ranking option - Company,,1h.3 TITLE Top N Weeks table
+Ranking option - Company,,1i.1 TITLE Top N Products table
+Ranking option - Company,,1i.2 TITLE Top N Products table Number of Transactions
+Sorting_table_KPIS,,KPI switch
+Sorting_table_KPIS,,KPI switch per Store
+Sorting_table_KPIS,,Top/Bottom N KPI switch
+Sorting_table_KPIS,,Dynamic KPI Title
+Sorting_table_KPIS,,Bottom 10 stores name
+Sorting_table_KPIS,,Top 10 stores name
+Sorting_table_KPIS,,Dynamic KPI Title per Store
+Sorting_table_waterfall,,Actual/Budget switch
+Sorting_table_waterfall_2,,Revenue/EBITDA switch
+Z_Change_Table CY_PY_PY2 V5,,Actual Value EBITDA
+Z_Change_Table CY_PY_PY2 V5,,BOY Value (Budget) EBITDA
+Z_Change_Table CY_PY_PY2 V5,,BOY Value (Forecast) EBITDA
+Z_Change_Table CY_PY_PY2 V5,,Budget Value EBITDA
+Z_Change_Table CY_PY_PY2 V5,,Forecast Value EBITDA
+Z_Change_Table CY_PY_PY2 V5,,Full Year Value (Budget) EBITDA
+Z_Change_Table CY_PY_PY2 V5,,Full Year Value (Forecast) EBITDA
+Z_Change_Table CY_PY_PY2 V5,,Value (Change) V5 (Past Year Budget) EBITDA
+Z_Change_Table CY_PY_PY2 V5,,Value (Change) V5.1 (Past Year Forecast) EBITDA
+Z_Change_Table CY_PY_PY2 V5,,Value (Change) V5.2 (Current Year Budget) EBITDA
+Z_Change_Table CY_PY_PY2 V5,,Value (Change) V5.3 (Current Year Forecast) EBITDA
+Z_Change_Table CY_PY_PY2 V5,,BOY Actual Value EBITDA
+Z_Change_Table CY_PY_PY2 FPO,,Financial Performance Overview

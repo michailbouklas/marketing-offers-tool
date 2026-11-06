@@ -131,6 +131,15 @@ export const forecastsRoles: UserRole[] = [
   superUserRole,
 ];
 
+/**
+ * Roles that may open `/management-accounts` (group P&L figures from the SAP GL).
+ */
+export const managementAccountsRoles: UserRole[] = [
+  "brandManager",
+  adminUserRole,
+  superUserRole,
+];
+
 export const roleLabels: Record<UserRole, string> = {
   user: "User",
   admin: "Admin",

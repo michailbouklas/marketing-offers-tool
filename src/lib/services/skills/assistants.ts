@@ -15,6 +15,10 @@ export const ASSISTANTS = [
   { id: "sales-agent", label: "Sales Assistant" },
   { id: "forecasts-agent", label: "Forecast Assistant" },
   { id: "google-analytics-agent", label: "Google Analytics Assistant" },
+  {
+    id: "management-accounts-agent",
+    label: "Management Accounts Assistant",
+  },
 ] as const;
 
 export type AssistantId = (typeof ASSISTANTS)[number]["id"];

@@ -1,0 +1,7 @@
+ParameterName,Description,Expression,ModifiedTime
+DirectQuery to AS - Management accounts dashboard,,"let
+    Source = AnalysisServices.Database(""powerbi://api.powerbi.com/v1.0/1593330e-4479-409d-887b-bc481d071d03/Management%20Accounts%20Dashboard"", ""Management accounts dashboard""),
+    Cubes = Table.Combine(Source[Data]),
+    Cube = Cubes{[Id=""Model"", Kind=""Cube""]}[Data]
+in
+    Cube",2026-11-06 08:47:03

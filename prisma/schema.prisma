@@ -83,6 +83,34 @@ model brand {
   brand_entities              brand_entity[]
   google_analytics_properties brand_google_analytics_property[]
   recipes                     recipe[]
+  companies                   brand_company[]
+}
+
+// --- Companies (/admin/companies) --------------------------------------------
+// Legal entities operating brands; model + initial data copied from energy-platform.
+model Company {
+  id                 Int             @id @default(autoincrement())
+  name               String          @unique
+  registrationNumber String?
+  vatNumber          String?
+  /// SAP warehouse `databaseId` (dbo.sapbw_gl); scopes management accounts per user.
+  sapDatabaseId      String?         @unique
+  active             Boolean         @default(true)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  brands             brand_company[]
+}
+
+/// M:N of brands to the companies operating them (a brand can sit under several companies).
+model brand_company {
+  brandId   Int
+  companyId Int
+  createdAt DateTime @default(now())
+  brand     brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([brandId, companyId])
+  @@index([companyId])
 }
 
 // --- Recipes (/admin/recipes) ------------------------------------------------

@@ -55,6 +55,8 @@ export const ModelName = {
   api_WOLT_lines: 'api_WOLT_lines',
   error_log: 'error_log',
   brand: 'brand',
+  Company: 'Company',
+  brand_company: 'brand_company',
   recipe: 'recipe',
   recipe_line: 'recipe_line',
   user_brand: 'user_brand',
@@ -195,6 +197,29 @@ export const BrandScalarFieldEnum = {
 } as const
 
 export type BrandScalarFieldEnum = (typeof BrandScalarFieldEnum)[keyof typeof BrandScalarFieldEnum]
+
+
+export const CompanyScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  registrationNumber: 'registrationNumber',
+  vatNumber: 'vatNumber',
+  sapDatabaseId: 'sapDatabaseId',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CompanyScalarFieldEnum = (typeof CompanyScalarFieldEnum)[keyof typeof CompanyScalarFieldEnum]
+
+
+export const Brand_companyScalarFieldEnum = {
+  brandId: 'brandId',
+  companyId: 'companyId',
+  createdAt: 'createdAt'
+} as const
+
+export type Brand_companyScalarFieldEnum = (typeof Brand_companyScalarFieldEnum)[keyof typeof Brand_companyScalarFieldEnum]
 
 
 export const RecipeScalarFieldEnum = {

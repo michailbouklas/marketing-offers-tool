@@ -1,4 +1,5 @@
 import type { AppPermissions } from "$lib/auth/permissions";
+import { managementAccountsRoles, type UserRole } from "$lib/auth/roles";
 
 /**
  * Config for a chat agent the API is allowed to route to.
@@ -14,6 +15,12 @@ import type { AppPermissions } from "$lib/auth/permissions";
  */
 export type ChatAgentConfig = {
   permissions?: AppPermissions;
+  /**
+   * Role allowlist, for agents whose page is gated by role rather than a
+   * capability permission (e.g. `/management-accounts`). Checked in addition
+   * to `permissions` when both are set.
+   */
+  roles?: UserRole[];
   brandScoped?: boolean;
   /**
    * When true, the chat endpoint accepts an optional `context` object from
@@ -32,7 +39,26 @@ export type ChatAgentConfig = {
    * property, and the assistant must see exactly what the page shows.
    */
   googleAnalyticsScoped?: boolean;
+  /**
+   * When true, the chat endpoint publishes the GL companies the caller may
+   * query under `MANAGEMENT_ACCOUNTS_SCOPE_RUNTIME_KEY` (the same scope as the
+   * `/management-accounts` pages); the SAP SQL tool enforces it.
+   */
+  managementAccountsScoped?: boolean;
 };
+
+/** RequestContext key carrying the caller's `ManagementAccountsScope`. */
+export const MANAGEMENT_ACCOUNTS_SCOPE_RUNTIME_KEY = "managementAccountsScope";
+
+/** A SAP warehouse company: `dbo.sapbw_gl.databaseId` + its `companyName`. */
+export type GlCompany = { databaseId: string; companyName: string };
+
+/**
+ * GL companies a user may see. `all` = admin roles, no filter; otherwise
+ * `companies` are those whose `Company.sapDatabaseId` operates one of the
+ * user's assigned brands (may be empty).
+ */
+export type ManagementAccountsScope = { all: boolean; companies: GlCompany[] };
 
 /**
  * RuntimeContext key under which the chat endpoint publishes the caller's
@@ -172,5 +198,11 @@ export const chatAgents: Record<string, ChatAgentConfig> = {
     permissions: { googleAnalytics: ["view"] },
     googleAnalyticsScoped: true,
     pageContext: true,
+  },
+  // Management Accounts Assistant on /management-accounts: same role gate as
+  // the page, limited to the companies operating the caller's brands.
+  "management-accounts-agent": {
+    roles: managementAccountsRoles,
+    managementAccountsScoped: true,
   },
 };
