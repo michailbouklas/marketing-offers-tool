@@ -198,10 +198,15 @@ export function compareWinner(metric: CompareMetric): "a" | "b" | null {
 const DAY_MS = 86_400_000;
 
 /**
- * Units per week since the offer's first sale in `rows` (index 0 = launch
- * week). Weeks without sales inside the run are 0, so pauses stay visible.
+ * Units (or orders / net) per week since the offer's first sale in `rows`
+ * (index 0 = launch week). Weeks without sales inside the run are 0, so pauses
+ * stay visible.
  */
-export function weeklyCurve(rows: OfferDailyRow[], code: string): number[] {
+export function weeklyCurve(
+  rows: OfferDailyRow[],
+  code: string,
+  metric: "units" | "orders" | "net" = "units",
+): number[] {
   const own = rows.filter((row) => row.code === code);
   if (own.length === 0) return [];
   const first = Math.min(...own.map((row) => Date.parse(row.day)));
@@ -209,9 +214,36 @@ export function weeklyCurve(rows: OfferDailyRow[], code: string): number[] {
   for (const row of own) {
     const week = Math.floor((Date.parse(row.day) - first) / DAY_MS / 7);
     while (weeks.length <= week) weeks.push(0);
-    weeks[week] += row.units;
+    weeks[week] += row[metric];
   }
   return weeks;
+}
+
+export type OfferWeek = {
+  /** ISO date the week starts on: first sale in the rows + 7·n days. */
+  weekStart: string;
+  units: number;
+  orders: number;
+  net: number;
+  /** Avg net paid per unit; null in weeks without sales. */
+  price: number | null;
+};
+
+/** Weekly totals of one offer, for the detail dialog chart and its export. */
+export function offerWeeks(rows: OfferDailyRow[], code: string): OfferWeek[] {
+  const own = rows.filter((row) => row.code === code);
+  if (own.length === 0) return [];
+  // weeklyCurve counts from the same earliest day.
+  const start = Math.min(...own.map((row) => Date.parse(row.day)));
+  const net = weeklyCurve(own, code, "net");
+  const orders = weeklyCurve(own, code, "orders");
+  return weeklyCurve(own, code).map((units, i) => ({
+    weekStart: new Date(start + i * 7 * DAY_MS).toISOString().slice(0, 10),
+    units,
+    orders: orders[i],
+    net: net[i],
+    price: units > 0 ? net[i] / units : null,
+  }));
 }
 
 /** Share of the offer's units sold on each weekday, Monday first. */

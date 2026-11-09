@@ -1,7 +1,16 @@
 <script lang="ts">
   import { Badge } from "$lib/components/ui/badge/index.js";
+  import * as Chart from "$lib/components/ui/chart/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import { Skeleton } from "$lib/components/ui/skeleton/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
+  import { reasonColor } from "$lib/services/aggregator-kpis/reason-palette";
+  import { scaleUtc } from "d3-scale";
+  import { LineChart, Spline } from "layerchart";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import DownloadIcon from "@lucide/svelte/icons/download";
+  import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
+  import { toast } from "svelte-sonner";
   import {
     formatSalesAmount,
     formatSalesCount,
@@ -11,6 +20,9 @@
     VAT_DIVISOR,
     offerReason,
     unitFoodCost,
+    offerWeeks,
+    type OfferDailyRow,
+    type OfferDateRange,
     type OfferValue,
     type OfferVerdict,
   } from "$lib/services/sales-offers";
@@ -18,11 +30,16 @@
   let {
     open = $bindable(false),
     offer,
+    brand,
+    range = null,
     idealFcPerc,
     verdictVariant,
   }: {
     open: boolean;
     offer: OfferValue | null;
+    brand: string;
+    /** Table date range; null = all time. */
+    range?: OfferDateRange | null;
     idealFcPerc: number | null;
     verdictVariant: Record<
       OfferVerdict,
@@ -31,6 +48,89 @@
   } = $props();
 
   const pct = (value: number) => `${(value * 100).toFixed(1)}%`;
+
+  let daily = $state<OfferDailyRow[] | null>(null);
+  let failed = $state(false);
+
+  // Same endpoint and stale guard as Offer VS, with one code.
+  $effect(() => {
+    if (!open || !offer) return;
+    const codes = [offer.code];
+    let stale = false;
+    daily = null;
+    failed = false;
+    fetch("/sales/offers/compare", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ brand, codes, range }),
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(await response.text());
+        const rows: OfferDailyRow[] = await response.json();
+        if (!stale) daily = rows;
+      })
+      .catch(() => {
+        if (!stale) failed = true;
+      });
+    return () => {
+      stale = true;
+    };
+  });
+
+  /** One point per week since the first sale: units and avg net price paid per unit. */
+  const weeks = $derived.by(() => {
+    if (!offer || !daily) return [];
+    const catalogue = offer.sellingPrice
+      ? offer.sellingPrice / VAT_DIVISOR
+      : null;
+    return offerWeeks(daily, offer.code).map((week) => ({
+      week: new Date(week.weekStart),
+      units: week.units,
+      price: week.price,
+      catalogue,
+    }));
+  });
+
+  let exporting = $state(false);
+
+  /** Server rebuilds the .xlsx for this offer from brand + code + range. */
+  async function exportExcel() {
+    if (!offer) return;
+    exporting = true;
+    try {
+      const params = new URLSearchParams({ brands: brand, code: offer.code });
+      if (range) {
+        params.set("from", range.from);
+        params.set("to", range.to);
+      }
+      const response = await fetch(`/sales/offers/export/offer?${params}`);
+      if (!response.ok) throw new Error(`Export failed (${response.status})`);
+      const { downloadUrl } = (await response.json()) as {
+        downloadUrl: string;
+      };
+      window.location.assign(downloadUrl);
+    } catch {
+      toast.error("The Excel export could not be generated. Try again.");
+    } finally {
+      exporting = false;
+    }
+  }
+
+  const chartConfig = {
+    units: { label: "Units", color: reasonColor(5) },
+    price: { label: "Avg price paid", color: reasonColor(1) },
+    catalogue: {
+      label: "Today's catalogue price",
+      color: "var(--muted-foreground)",
+    },
+  } satisfies Chart.ChartConfig;
+
+  const weekLabel = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "2-digit",
+    timeZone: "UTC",
+  });
 
   type Step = { label: string; how: string; amount: number; total?: boolean };
 
@@ -119,9 +219,25 @@
       </Dialog.Header>
 
       <div class="space-y-2">
-        <Badge variant={verdictVariant[offer.verdict]}>
-          {OFFER_VERDICT_LABELS[offer.verdict]}
-        </Badge>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <Badge variant={verdictVariant[offer.verdict]}>
+            {OFFER_VERDICT_LABELS[offer.verdict]}
+          </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={exporting}
+            title="Breakdown, weekly and daily sales of this offer"
+            onclick={exportExcel}
+          >
+            {#if exporting}
+              <LoaderCircleIcon class="animate-spin" aria-hidden="true" />
+            {:else}
+              <DownloadIcon aria-hidden="true" />
+            {/if}
+            Export to Excel
+          </Button>
+        </div>
         <p class="text-sm leading-6">{offerReason(offer, idealFcPerc)}</p>
       </div>
 
@@ -146,6 +262,105 @@
       {#if priceNote}
         <p class="text-muted-foreground text-sm">{priceNote}</p>
       {/if}
+
+      <section class="space-y-3">
+        <div class="space-y-1">
+          <h3 class="text-sm font-medium">Weekly sales over its life</h3>
+          <p class="text-muted-foreground text-xs">
+            Each point is one week from the first sale{range
+              ? " in the chosen dates"
+              : ""}. Margin is not charted over time because the offers
+            catalogue only holds today's food cost.
+          </p>
+        </div>
+        {#if failed}
+          <p class="text-destructive text-sm">
+            Could not load the weekly sales of this offer. Close and try again.
+          </p>
+        {:else if !daily}
+          <Skeleton class="h-80 w-full" aria-busy="true" />
+        {:else if weeks.length < 2}
+          <p class="text-muted-foreground text-sm">
+            Sold for less than two weeks; no curve to draw.
+          </p>
+        {:else}
+          <Chart.Container config={chartConfig} class="h-40 w-full">
+            <LineChart
+              data={weeks}
+              x="week"
+              xScale={scaleUtc()}
+              yPadding={[0, 16]}
+              axis
+              grid
+              series={[
+                { key: "units", label: "Units", color: "var(--color-units)" },
+              ]}
+              props={{
+                xAxis: { format: (v: Date) => weekLabel.format(v) },
+                yAxis: { format: (v: number) => formatSalesCount(v) },
+              }}
+            >
+              {#snippet tooltip()}
+                <Chart.Tooltip
+                  indicator="dot"
+                  labelFormatter={(v: Date) => `Week of ${weekLabel.format(v)}`}
+                />
+              {/snippet}
+            </LineChart>
+          </Chart.Container>
+          <Chart.Container config={chartConfig} class="h-40 w-full">
+            <LineChart
+              data={weeks}
+              x="week"
+              xScale={scaleUtc()}
+              yPadding={[16, 16]}
+              axis
+              grid
+              legend
+              series={[
+                {
+                  key: "price",
+                  label: "Avg price paid / unit",
+                  color: "var(--color-price)",
+                },
+                ...(weeks[0].catalogue === null
+                  ? []
+                  : [
+                      {
+                        key: "catalogue",
+                        label: "Today's catalogue price",
+                        color: "var(--color-catalogue)",
+                      },
+                    ]),
+              ]}
+              props={{
+                xAxis: { format: (v: Date) => weekLabel.format(v) },
+                // Whole euros: "€10.00" ticks clip at the chart's left edge.
+                yAxis: { format: (v: number) => `€${v.toFixed(0)}` },
+              }}
+            >
+              {#snippet marks({ context })}
+                {#each context.series.visibleSeries as s (s.key)}
+                  <Spline
+                    seriesKey={s.key}
+                    class={s.key === "catalogue"
+                      ? "stroke-1 [stroke-dasharray:4_4]"
+                      : "stroke-2"}
+                    stroke={s.color}
+                    defined={(d: Record<string, unknown>) => d[s.key] !== null}
+                  />
+                {/each}
+              {/snippet}
+              {#snippet tooltip()}
+                <Chart.Tooltip
+                  indicator="dot"
+                  labelFormatter={(v: Date) => `Week of ${weekLabel.format(v)}`}
+                />
+              {/snippet}
+            </LineChart>
+          </Chart.Container>
+        {/if}
+      </section>
       <p class="text-muted-foreground text-xs leading-5">
         Not counted: full-price sales the offer may have replaced, and
         aggregator (Wolt, Bolt, Foody) commission. Both would lower the real

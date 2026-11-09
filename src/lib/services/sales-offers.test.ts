@@ -8,6 +8,7 @@ import {
   valueOffer,
   weekdayMix,
   weeklyCurve,
+  offerWeeks,
   type OfferDailyRow,
   type OfferValueRow,
 } from "./sales-offers";
@@ -133,6 +134,27 @@ describe("weekly curve and weekday mix", () => {
     expect(weeklyCurve(daily, "A")).toEqual([5, 0, 0, 5]);
     expect(weeklyCurve(daily, "B")).toEqual([7]);
     expect(weeklyCurve(daily, "C")).toEqual([]);
+    expect(weeklyCurve(daily, "A", "net")).toEqual([50, 0, 0, 50]);
+    expect(weeklyCurve(daily, "B", "orders")).toEqual([7]);
+  });
+
+  it("dates each week from the first sale, null price in empty weeks", () => {
+    const weeks = offerWeeks(daily, "A");
+    expect(weeks.map((w) => w.weekStart)).toEqual([
+      "2026-11-02",
+      "2026-11-09",
+      "2026-11-16",
+      "2026-11-23",
+    ]);
+    expect(weeks[0]).toEqual({
+      weekStart: "2026-11-02",
+      units: 5,
+      orders: 5,
+      net: 50,
+      price: 10,
+    });
+    expect(weeks[1].price).toBeNull();
+    expect(offerWeeks(daily, "C")).toEqual([]);
   });
   it("splits units by weekday, Monday first, summing to 1", () => {
     const mix = weekdayMix(daily, "A");
