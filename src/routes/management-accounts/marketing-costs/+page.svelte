@@ -217,7 +217,16 @@
           immersive ? "min-h-0 flex-1" : "h-[70vh] min-h-96",
         ]}
       >
-        <MarketingCostsGrid bind:this={grid} {table} />
+        <MarketingCostsGrid
+          bind:this={grid}
+          {table}
+          onOpenAccount={(code) => {
+            const account = table.groups
+              .flatMap((group) => group.accounts)
+              .find((line) => line.code === code);
+            if (account) openAccount(account);
+          }}
+        />
       </div>
     {/if}
   </div>
