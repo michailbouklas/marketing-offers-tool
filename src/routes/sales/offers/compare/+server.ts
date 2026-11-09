@@ -9,12 +9,13 @@ const isoDate = z.string().refine(isIsoDate, "Invalid date");
 
 const compareSchema = z.object({
   brand: z.string().trim().toLowerCase(),
-  codes: z.array(z.string().trim().min(1)).length(2),
+  // One offer for the offer detail dialog, two for Offer VS.
+  codes: z.array(z.string().trim().min(1)).min(1).max(2),
   // Same range as the table, so the curve adds up to its totals.
   range: z.object({ from: isoDate, to: isoDate }).nullable().default(null),
 });
 
-/** Offer VS dialog: daily sales of the two picked offers. */
+/** Daily sales of one offer (detail dialog) or the two picked offers (Offer VS). */
 export const POST: RequestHandler = async (event) => {
   const { scope, body } = await requireExploreRequest(event, compareSchema);
   if (!scope.brands.some((brand) => brand.alias === body.brand)) {

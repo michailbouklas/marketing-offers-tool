@@ -26,6 +26,7 @@
   import ArrowUpDownIcon from "@lucide/svelte/icons/arrow-up-down";
   import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import RefreshCwIcon from "@lucide/svelte/icons/refresh-cw";
+  import DownloadIcon from "@lucide/svelte/icons/download";
   import { cn } from "$lib/utils.js";
   import { toast } from "svelte-sonner";
   import type { PageData } from "./$types";
@@ -44,6 +45,26 @@
     | "marginPct";
 
   let refreshing = $state(false);
+  let exporting = $state(false);
+
+  /** Server rebuilds the .xlsx from the URL's brand + range (same as the sales dashboard export). */
+  async function exportExcel() {
+    exporting = true;
+    try {
+      const response = await fetch(
+        `${page.url.pathname}/export${page.url.search}`,
+      );
+      if (!response.ok) throw new Error(`Export failed (${response.status})`);
+      const { downloadUrl } = (await response.json()) as {
+        downloadUrl: string;
+      };
+      window.location.assign(downloadUrl);
+    } catch {
+      toast.error("The Excel export could not be generated. Try again.");
+    } finally {
+      exporting = false;
+    }
+  }
   let selected = $state<OfferValue | null>(null);
   let dialogOpen = $state(false);
   let verdictFilter = $state<OfferVerdict | null>(null); // ignored when its verdict has no rows (e.g. after switching brand)
@@ -293,6 +314,20 @@
         >
           Offer VS{picked.length > 0 ? ` (${picked.length})` : ""}
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={exporting || offers.length === 0}
+          title="All offers of this brand and dates, ignoring the filter and search below"
+          onclick={exportExcel}
+        >
+          {#if exporting}
+            <LoaderCircleIcon class="animate-spin" aria-hidden="true" />
+          {:else}
+            <DownloadIcon aria-hidden="true" />
+          {/if}
+          Export to Excel
+        </Button>
       </div>
       {#if offers.length === 0}
         <Card.Root>
@@ -475,6 +510,8 @@
       <OfferValueDialog
         bind:open={dialogOpen}
         offer={selected}
+        brand={brand.alias}
+        {range}
         idealFcPerc={cached?.idealFcPerc ?? null}
         verdictVariant={VERDICT_VARIANT}
       />
