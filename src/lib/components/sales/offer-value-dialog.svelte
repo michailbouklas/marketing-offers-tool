@@ -34,6 +34,7 @@
     range = null,
     idealFcPerc,
     verdictVariant,
+    channels,
   }: {
     open: boolean;
     offer: OfferValue | null;
@@ -45,6 +46,8 @@
       OfferVerdict,
       "default" | "secondary" | "destructive" | "outline"
     >;
+    /** Only orders on these channels (/sales/delivery/offers); omitted = all. */
+    channels?: string[];
   } = $props();
 
   const pct = (value: number) => `${(value * 100).toFixed(1)}%`;
@@ -62,7 +65,7 @@
     fetch("/sales/offers/compare", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ brand, codes, range }),
+      body: JSON.stringify({ brand, codes, range, channels }),
     })
       .then(async (response) => {
         if (!response.ok) throw new Error(await response.text());
@@ -103,6 +106,7 @@
         params.set("from", range.from);
         params.set("to", range.to);
       }
+      if (channels) params.set("channels", channels.join(","));
       const response = await fetch(`/sales/offers/export/offer?${params}`);
       if (!response.ok) throw new Error(`Export failed (${response.status})`);
       const { downloadUrl } = (await response.json()) as {
@@ -215,6 +219,9 @@
           → {offer.lastSale} ({formatSalesCount(offer.daysOnSale)} days), {formatSalesCount(
             Math.round(offer.units),
           )} units in {formatSalesCount(offer.orders)} orders
+          {#if channels}
+            · on {channels.join(", ")} only
+          {/if}
         </Dialog.Description>
       </Dialog.Header>
 

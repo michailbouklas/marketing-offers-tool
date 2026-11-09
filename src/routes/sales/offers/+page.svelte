@@ -19,6 +19,7 @@
   } from "$lib/services/sales-dashboard";
   import {
     OFFER_VERDICT_LABELS,
+    OFFER_VERDICT_VARIANT as VERDICT_VARIANT,
     type OfferValue,
     type OfferVerdict,
   } from "$lib/services/sales-offers";
@@ -142,16 +143,6 @@
       null,
   );
 
-  const VERDICT_VARIANT: Record<
-    OfferVerdict,
-    "default" | "secondary" | "destructive" | "outline"
-  > = {
-    positive: "default",
-    below_target: "secondary",
-    loss: "destructive",
-    no_cost: "outline",
-    no_target: "outline",
-  };
   const VERDICTS = Object.keys(OFFER_VERDICT_LABELS) as OfferVerdict[];
 
   const pct = new Intl.NumberFormat("en-GB", {

@@ -107,6 +107,18 @@ export const OFFER_VERDICT_LABELS: Record<OfferVerdict, string> = {
   no_target: "No brand target",
 };
 
+/** Badge variant per verdict (shared by /sales/offers and /sales/delivery/offers). */
+export const OFFER_VERDICT_VARIANT: Record<
+  OfferVerdict,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
+  positive: "default",
+  below_target: "secondary",
+  loss: "destructive",
+  no_cost: "outline",
+  no_target: "outline",
+};
+
 export type OfferDateRange = { from: string; to: string };
 
 /**

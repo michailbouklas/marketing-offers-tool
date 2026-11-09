@@ -3,6 +3,7 @@ import { requireApiPermission } from "$lib/server/auth-guards";
 import { generateExcelFile } from "$lib/server/mastra/tools/generate-excel";
 import { withSingleBrand } from "$lib/services/sales-dashboard";
 import { resolveSalesDashboardScope } from "$lib/services/sales-dashboard.server";
+import { DELIVERY_CHANNELS } from "$lib/services/sales-delivery";
 import {
   OFFER_VERDICT_LABELS,
   offerReason,
@@ -36,9 +37,16 @@ export const GET: RequestHandler = async (event) => {
 
   const brand = withSingleBrand(scope.filters).brands[0];
   const range = parseOfferDateRange(event.url.searchParams);
+  // /sales/delivery/offers: only orders on these channels; unknown names are dropped.
+  const channels = (event.url.searchParams.get("channels") ?? "")
+    .split(",")
+    .filter((channel) => DELIVERY_CHANNELS.includes(channel));
+  const scoped = range && channels.length > 0 ? channels : undefined;
   const [values, daily] = await Promise.all([
-    range ? getOfferValuesForRange(brand, range) : getCachedOfferValues(brand),
-    getOfferDailyRows(brand, [code], range),
+    range
+      ? getOfferValuesForRange(brand, range, scoped)
+      : getCachedOfferValues(brand),
+    getOfferDailyRows(brand, [code], range, scoped),
   ]);
   const offer = values?.offers.find((item) => item.code === code);
   if (!values || !offer) error(404, "Offer not found for this brand");
@@ -50,6 +58,7 @@ export const GET: RequestHandler = async (event) => {
     ["Channel", offer.channel],
     ["Category", offer.category],
     ["Period", range ? `${range.from} to ${range.to}` : "All time"],
+    ["Sales channels", scoped ? scoped.join(", ") : "All"],
     ["First sale", offer.firstSale],
     ["Last sale", offer.lastSale],
     ["Days on sale", offer.daysOnSale],

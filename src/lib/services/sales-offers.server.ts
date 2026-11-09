@@ -4,7 +4,10 @@ import {
   getBrandPricingTargetByAlias,
   listBrands,
 } from "$lib/services/brands.server";
-import { toNumber } from "$lib/services/forecasts/forecast-series.server";
+import {
+  salesTransactionsTable,
+  toNumber,
+} from "$lib/services/forecasts/forecast-series.server";
 import {
   detailsTable,
   EXPLORE_OFFER_CATEGORIES,
@@ -21,14 +24,26 @@ import {
 /** The offer a line belongs to: its combo head, or itself when unlinked. */
 const CODE_SQL = "if(trde_combo_item = '', trde_item, trde_combo_item)";
 
-/** SQL + params limiting `trde_date` to a range; empty for all time. */
-function rangeFilter(range: OfferDateRange | null) {
-  return range
-    ? {
-        sql: "AND trde_date BETWEEN {from:Date} AND {to:Date}",
-        params: { from: range.from, to: range.to },
-      }
-    : { sql: "", params: {} };
+/**
+ * SQL + params limiting `trde_date` to a range; empty for all time. `channels`
+ * keeps only orders rung on those `trim(dim_division_group_channel)` values:
+ * lines carry no channel, so it comes from the order header.
+ */
+function rangeFilter(range: OfferDateRange | null, channels?: string[]) {
+  if (!range) return { sql: "", params: {} };
+  const dates = "AND trde_date BETWEEN {from:Date} AND {to:Date}";
+  const params = { from: range.from, to: range.to };
+  if (!channels) return { sql: dates, params };
+  return {
+    sql: `${dates}
+            AND (trde_date, trde_location, trde_division, trde_no) IN (
+              SELECT tran_date, tran_location, tran_division, tran_no
+              FROM ${salesTransactionsTable()}
+              WHERE lower(brand) = {brand:String}
+                AND tran_date BETWEEN {from:Date} AND {to:Date}
+                AND trim(dim_division_group_channel) IN {channels:Array(String)})`,
+    params: { ...params, channels },
+  };
 }
 
 /**
@@ -40,9 +55,10 @@ function rangeFilter(range: OfferDateRange | null) {
 async function queryOfferRows(
   brand: string,
   range: OfferDateRange | null = null,
+  channels?: string[],
 ): Promise<OfferValueRow[]> {
   const details = detailsTable();
-  const dates = rangeFilter(range);
+  const dates = rangeFilter(range, channels);
   const result = await clickhouse.query({
     query: `
         WITH codes AS (
@@ -155,8 +171,10 @@ export async function getOfferDailyRows(
   brand: string,
   codes: string[],
   range: OfferDateRange | null = null,
+  /** Only orders on these channels (needs a range). */
+  channels?: string[],
 ): Promise<OfferDailyRow[]> {
-  const dates = rangeFilter(range);
+  const dates = rangeFilter(range, channels);
   const result = await clickhouse.query({
     query: `
         SELECT ${CODE_SQL} AS code,
@@ -252,9 +270,11 @@ export async function getCachedOfferValues(
 export async function getOfferValuesForRange(
   brand: string,
   range: OfferDateRange,
+  /** Only orders on these channels (trimmed `dim_division_group_channel`). */
+  channels?: string[],
 ): Promise<CachedOfferValues> {
   const [rows, target] = await Promise.all([
-    queryOfferRows(brand, range),
+    queryOfferRows(brand, range, channels),
     getBrandPricingTargetByAlias(brand),
   ]);
   const idealFcPerc = target?.ideal_fc_perc ?? null;
