@@ -74,8 +74,9 @@ async function queryOfferRows(
           d.channel AS channel,
           d.category AS category,
           d.fc_perc AS fcPerc,
-          d.fc_eur AS fcEur,
+          d.offer_fc_eur AS fcEur,
           d.selling_price AS sellingPrice,
+          d.list_discount AS listDiscount,
           toString(l.first_day) AS firstSale,
           toString(l.last_day) AS lastSale,
           l.days AS daysOnSale,
@@ -123,8 +124,13 @@ async function queryOfferRows(
             any(channel) AS channel,
             any(category) AS category,
             any(toFloat64(fc_perc)) AS fc_perc,
-            any(toFloat64(fc_eur)) AS fc_eur,
-            any(toFloat64(selling_price)) AS selling_price
+            any(toFloat64(fc_eur)) AS offer_fc_eur,
+            any(toFloat64(selling_price)) AS selling_price,
+            -- discount_amount = ideal_price − selling_price. ideal_price is the
+            -- list price on legacy rows but an FC-based target on rows from the
+            -- Offers data quality form (those carry fc_eur), so skip them.
+            any(if(ifNull(fc_eur, 0) > 0, NULL,
+              nullIf(toFloat64(discount_amount), 0))) AS list_discount
           FROM dim_offers
           WHERE coalesce(lower(brand), {brand:String}) = {brand:String}
           GROUP BY item_code
@@ -153,6 +159,7 @@ async function queryOfferRows(
     fcPerc: nullable(row.fcPerc),
     fcEur: nullable(row.fcEur),
     sellingPrice: nullable(row.sellingPrice),
+    listDiscount: nullable(row.listDiscount ?? null),
     firstSale: String(row.firstSale),
     lastSale: String(row.lastSale),
     daysOnSale: toNumber(row.daysOnSale),

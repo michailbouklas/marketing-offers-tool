@@ -61,6 +61,17 @@ describe("valueOffer", () => {
       valueOffer({ ...row, offerNet: 100, addonNet: 0 }, 0.3).verdict,
     ).toBe("loss");
   });
+  it("prices the discount given ex VAT per unit sold, null when unknown", () => {
+    // 2.10 off incl. 5% VAT = 2.00 ex VAT × 100 units
+    expect(
+      valueOffer({ ...row, listDiscount: 2.1 }, 0.3).discountGiven,
+    ).toBeCloseTo(200);
+    expect(
+      valueOffer({ ...row, listDiscount: 2.1, fcPerc: null }, null)
+        .discountGiven,
+    ).toBeCloseTo(200);
+    expect(valueOffer(row, 0.3).discountGiven).toBeNull();
+  });
   it("needs cost data and a brand target", () => {
     expect(valueOffer({ ...row, fcPerc: null }, 0.3).verdict).toBe("no_cost");
     expect(valueOffer(row, null).verdict).toBe("no_target");

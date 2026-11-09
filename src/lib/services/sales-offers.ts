@@ -23,6 +23,13 @@ export type OfferValueRow = {
   orders: number;
   offerNet: number;
   addonNet: number;
+  /**
+   * Catalogue list price − selling price per unit, € incl. VAT
+   * (dim_offers.discount_amount). Null when unknown or when ideal_price is the
+   * FC-based target from Offers data quality, not a list price. Optional:
+   * cache rows built before it existed lack it.
+   */
+  listDiscount?: number | null;
 };
 
 export type OfferVerdict =
@@ -40,6 +47,8 @@ export type OfferValue = OfferValueRow & {
   /** contribution / (offer net + add-on net). */
   marginPct: number | null;
   verdict: OfferVerdict;
+  /** Price given up vs the catalogue list price, € ex VAT: list discount × units. */
+  discountGiven: number | null;
 };
 
 /** POS net = gross / VAT. The DQ 1.07 pricing buffer is not a tax. */
@@ -65,10 +74,14 @@ export function valueOffer(
 ): OfferValue {
   const unitCost = unitFoodCost(row);
   const foodCost = unitCost === null ? null : unitCost * row.units;
+  const discountGiven = row.listDiscount
+    ? (row.listDiscount / VAT_DIVISOR) * row.units
+    : null;
 
   if (foodCost === null) {
     return {
       ...row,
+      discountGiven,
       foodCost,
       contribution: null,
       marginPct: null,
@@ -78,6 +91,7 @@ export function valueOffer(
   if (idealFcPerc === null) {
     return {
       ...row,
+      discountGiven,
       foodCost,
       contribution: null,
       marginPct: null,
@@ -96,7 +110,7 @@ export function valueOffer(
         ? "positive"
         : "below_target";
 
-  return { ...row, foodCost, contribution, marginPct, verdict };
+  return { ...row, discountGiven, foodCost, contribution, marginPct, verdict };
 }
 
 export const OFFER_VERDICT_LABELS: Record<OfferVerdict, string> = {

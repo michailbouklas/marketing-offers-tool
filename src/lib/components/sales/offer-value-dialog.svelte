@@ -266,6 +266,15 @@
         </Table.Body>
       </Table.Root>
 
+      {#if offer.discountGiven !== null && offer.listDiscount}
+        <p class="text-muted-foreground text-sm">
+          Discount given: {formatSalesAmount(offer.discountGiven)} excl. VAT ({formatSalesAmount(
+            offer.listDiscount,
+          )} off the catalogue list price per unit, incl. VAT). Already left out of
+          the sales above, not an extra cost.
+        </p>
+      {/if}
+
       {#if priceNote}
         <p class="text-muted-foreground text-sm">{priceNote}</p>
       {/if}

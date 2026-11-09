@@ -65,6 +65,10 @@ export const GET: RequestHandler = async (event) => {
     ["Units", Math.round(offer.units)],
     ["Orders", offer.orders],
     ["Offer net sales (EUR, excl. VAT)", money(offer.offerNet)],
+    [
+      "Discount given vs list price (EUR, excl. VAT)",
+      money(offer.discountGiven),
+    ],
     ["Food cost (EUR)", money(offer.foodCost)],
     [
       "Offer margin (EUR)",

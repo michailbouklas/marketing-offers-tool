@@ -40,6 +40,7 @@
     | "daysOnSale"
     | "units"
     | "offerNet"
+    | "discountGiven"
     | "foodCost"
     | "addonPerOrder"
     | "contribution"
@@ -185,6 +186,7 @@
     { key: "daysOnSale", label: "Days on sale", numeric: true },
     { key: "units", label: "Units", numeric: true },
     { key: "offerNet", label: "Offer net", numeric: true },
+    { key: "discountGiven", label: "Discount given", numeric: true },
     { key: "foodCost", label: "Food cost", numeric: true },
     { key: "addonPerOrder", label: "Add-on / order", numeric: true },
     { key: "contribution", label: "Contribution", numeric: true },
@@ -208,7 +210,8 @@
       dates you pick. Contribution is the offer's net sales (excl. VAT) minus
       its food cost, plus the margin on everything else bought in the same
       orders (costed at the brand's ideal FC %). An offer is positive when that
-      margin meets the brand target.
+      margin meets the brand target. Discount given is the catalogue list price
+      minus the offer price, excl. VAT, for every unit sold.
     </p>
   </section>
 
@@ -462,6 +465,12 @@
                     </Table.Cell>
                     <Table.Cell class="text-right tabular-nums">
                       {money(offer.offerNet)}
+                    </Table.Cell>
+                    <Table.Cell
+                      class="text-right tabular-nums"
+                      title="List price minus offer price (catalogue), excl. VAT, × units"
+                    >
+                      {money(offer.discountGiven)}
                     </Table.Cell>
                     <Table.Cell class="text-right tabular-nums">
                       {money(offer.foodCost)}
