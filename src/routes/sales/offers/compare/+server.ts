@@ -1,6 +1,7 @@
 import { error, json } from "@sveltejs/kit";
 import { z } from "zod";
 import { isIsoDate } from "$lib/services/sales-dashboard";
+import { DELIVERY_CHANNELS } from "$lib/services/sales-delivery";
 import { requireExploreRequest } from "$lib/services/sales-explore.server";
 import { getOfferDailyRows } from "$lib/services/sales-offers.server";
 import type { RequestHandler } from "./$types";
@@ -13,6 +14,11 @@ const compareSchema = z.object({
   codes: z.array(z.string().trim().min(1)).min(1).max(2),
   // Same range as the table, so the curve adds up to its totals.
   range: z.object({ from: isoDate, to: isoDate }).nullable().default(null),
+  // /sales/delivery/offers: only orders on these channels (needs a range).
+  channels: z
+    .array(z.enum(DELIVERY_CHANNELS as [string, ...string[]]))
+    .min(1)
+    .optional(),
 });
 
 /** Daily sales of one offer (detail dialog) or the two picked offers (Offer VS). */
@@ -21,5 +27,7 @@ export const POST: RequestHandler = async (event) => {
   if (!scope.brands.some((brand) => brand.alias === body.brand)) {
     error(403, "Brand not in your scope");
   }
-  return json(await getOfferDailyRows(body.brand, body.codes, body.range));
+  return json(
+    await getOfferDailyRows(body.brand, body.codes, body.range, body.channels),
+  );
 };

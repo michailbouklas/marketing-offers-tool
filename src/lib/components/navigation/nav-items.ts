@@ -180,6 +180,7 @@ const allNavItems: NavItem[] = [
       { href: "/sales/dashboard", label: "Dashboard" },
       { href: "/sales/explore", label: "Explore" },
       { href: "/sales/hours", label: "Busy & dead hours" },
+      { href: "/sales/delivery", label: "Delivery" },
       { href: "/sales/offers", label: "Offers" },
       { href: "/sales/chat", label: "Chat" },
     ],
