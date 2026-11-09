@@ -1,6 +1,6 @@
 <script lang="ts">
   import "@gp-grid/vue/dist/styles.css";
-  import type { GpGridProps, GridCore } from "@gp-grid/vue";
+  import type { CellRendererParams, GpGridProps, GridCore } from "@gp-grid/vue";
   import { mode } from "mode-watcher";
   import { onMount, untrack } from "svelte";
   import {
@@ -8,7 +8,14 @@
     type MarketingCostTable,
   } from "$lib/services/management-accounts";
 
-  let { table }: { table: MarketingCostTable } = $props();
+  let {
+    table,
+    onOpenAccount,
+  }: {
+    table: MarketingCostTable;
+    /** Account cell click: open the drill-down for this GL account code. */
+    onOpenAccount?: (code: string) => void;
+  } = $props();
 
   type Row = Record<string, string | number>;
 
@@ -78,6 +85,22 @@
             headerName: "Account",
             width: 300,
             cellDataType: "text" as const,
+            cellRenderer: (params: CellRendererParams<Row>) =>
+              vue.h(
+                "button",
+                {
+                  type: "button",
+                  class:
+                    "w-full truncate text-left underline-offset-4 hover:underline",
+                  "aria-haspopup": "dialog",
+                  title: "Explore this account",
+                  onClick: () => {
+                    const code = params.rowData?.code;
+                    if (code !== undefined) onOpenAccount?.(String(code));
+                  },
+                },
+                String(params.value ?? ""),
+              ),
           },
           ...table.years.map((year) => ({
             field: `y${year}`,
