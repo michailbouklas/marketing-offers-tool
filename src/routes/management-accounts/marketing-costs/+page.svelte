@@ -10,12 +10,16 @@
   import Maximize2Icon from "@lucide/svelte/icons/maximize-2";
   import Minimize2Icon from "@lucide/svelte/icons/minimize-2";
   import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
+  import MarketingAccountDialog from "$lib/components/management-accounts/marketing-account-dialog.svelte";
   import MarketingCostsGrid from "$lib/components/management-accounts/marketing-costs-grid.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
-  import { formatAccounting } from "$lib/services/management-accounts";
+  import {
+    formatAccounting,
+    type MarketingCostLine,
+  } from "$lib/services/management-accounts";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -26,6 +30,13 @@
   let immersive = $state(false);
   let exporting = $state(false);
   let grid = $state<ReturnType<typeof MarketingCostsGrid>>();
+  let detailOpen = $state(false);
+  let detailAccount = $state<MarketingCostLine | null>(null);
+
+  function openAccount(account: MarketingCostLine) {
+    detailAccount = account;
+    detailOpen = true;
+  }
 
   /** Excel of the grid's filtered + sorted rows; the server re-reads the numbers. */
   async function exportExcel() {
@@ -262,8 +273,16 @@
                 {#each group.accounts as account (account.code)}
                   <Table.Row class="text-muted-foreground text-sm">
                     <Table.Cell class="pl-12">
-                      <span class="font-mono text-xs">{account.code}</span>
-                      {account.name}
+                      <button
+                        type="button"
+                        class="hover:text-foreground text-left underline-offset-4 hover:underline"
+                        aria-haspopup="dialog"
+                        title="Explore this account"
+                        onclick={() => openAccount(account)}
+                      >
+                        <span class="font-mono text-xs">{account.code}</span>
+                        {account.name}
+                      </button>
                     </Table.Cell>
                     {#each account.values as value, index (index)}
                       <Table.Cell class="text-right tabular-nums">
@@ -294,6 +313,15 @@
       </Card.Footer>
     </Card.Root>
   {/if}
+
+  <MarketingAccountDialog
+    bind:open={detailOpen}
+    account={detailAccount}
+    years={table.years}
+    company={data.company}
+    month={data.month}
+    basePath={page.url.pathname}
+  />
 
   <ChatWidget
     agentId="management-accounts-agent"

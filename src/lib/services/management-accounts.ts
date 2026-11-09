@@ -150,3 +150,114 @@ export function marketingCostCsv(
     lines.map((line) => line.map(csvField).join(",")).join("\r\n") + "\r\n"
   );
 }
+
+/** One group of an account's lines for the selected year (server-side GROUP BY). */
+export type AccountBreakdownRow = {
+  company: string;
+  brand: string;
+  store: string;
+  type: string;
+  /** Empty when the document has no single business partner (most journal entries). */
+  supplier: string;
+  value: number;
+  lines: number;
+};
+
+export type AccountPosting = {
+  date: string;
+  transId: number;
+  docNo: string;
+  type: string;
+  company: string;
+  brand: string;
+  store: string;
+  supplier: string;
+  remarks: string;
+  value: number;
+};
+
+/** Everything the account drill-down dialog shows; amounts are Credit − Debit (costs negative). */
+export type MarketingAccountDetail = {
+  code: string;
+  name: string;
+  group: string;
+  year: number;
+  years: number[];
+  /** `monthly[yearIndex][monthIndex]`, all companies in scope, ignoring the page's month filter. */
+  monthly: number[][];
+  breakdown: AccountBreakdownRow[];
+  /** Largest lines by absolute value, capped; `postingCount` is the uncapped total. */
+  postings: AccountPosting[];
+  postingCount: number;
+  /** Companies with a budget row for this account and year; budget vs actual covers only them. */
+  budgetCompanies: string[];
+  budget: number[];
+  budgetActual: number[];
+};
+
+export type BreakdownKey = "company" | "brand" | "store" | "type" | "supplier";
+
+export type BreakdownItem = {
+  label: string;
+  value: number;
+  lines: number;
+  /** Fraction of the total, 0–1 (0 when the total is 0). */
+  share: number;
+};
+
+/**
+ * Groups breakdown rows by one dimension, largest spend first; beyond `limit`
+ * the rest is folded into "Other" so the items always sum to the total.
+ */
+export function summariseBreakdown(
+  rows: AccountBreakdownRow[],
+  key: BreakdownKey,
+  limit = 15,
+): BreakdownItem[] {
+  const sums = new Map<string, { value: number; lines: number }>();
+  let total = 0;
+  for (const row of rows) {
+    const label = row[key] || "(none)";
+    const sum = sums.get(label) ?? { value: 0, lines: 0 };
+    sum.value += row.value;
+    sum.lines += row.lines;
+    sums.set(label, sum);
+    total += row.value;
+  }
+  // Costs are negative: ascending value = largest spend first.
+  const sorted = [...sums].sort((a, b) => a[1].value - b[1].value);
+  const top = sorted.slice(0, limit);
+  const rest = sorted.slice(limit);
+  if (rest.length > 0) {
+    top.push([
+      `Other (${rest.length})`,
+      rest.reduce(
+        (sum, [, item]) => ({
+          value: sum.value + item.value,
+          lines: sum.lines + item.lines,
+        }),
+        { value: 0, lines: 0 },
+      ),
+    ]);
+  }
+  return top.map(([label, item]) => ({
+    label,
+    ...item,
+    share: total === 0 ? 0 : item.value / total,
+  }));
+}
+
+/** `{year, month, value}` rows → `matrix[yearIndex][month - 1]`, zero-filled. */
+export function monthlyMatrix(
+  rows: { year: number; month: number; value: number }[],
+  years: number[],
+): number[][] {
+  const matrix = years.map(() => Array<number>(12).fill(0));
+  for (const row of rows) {
+    const index = years.indexOf(row.year);
+    if (index >= 0 && row.month >= 1 && row.month <= 12) {
+      matrix[index][row.month - 1] += row.value;
+    }
+  }
+  return matrix;
+}

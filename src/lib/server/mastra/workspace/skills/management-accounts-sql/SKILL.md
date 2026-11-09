@@ -250,11 +250,15 @@ LEFT JOIN (
   FROM dbo.sapbw_gl
   WHERE BPName <> '' AND PostingDate >= '2025-01-01' AND PostingDate < '2026-01-01'
   GROUP BY databaseId, TransId
+  HAVING COUNT(DISTINCT BPName) = 1
 ) s ON s.databaseId = m.databaseId AND s.TransId = m.TransId
 GROUP BY ISNULL(s.supplier, '(journal entry, no supplier)')
 ORDER BY spend DESC
 ```
 
+`HAVING COUNT(DISTINCT BPName) = 1` matters: AP invoices always have exactly
+one partner, but most journal entries carry many (13.5k of 15.2k marketing
+JEs in 2025), so `MAX(BPName)` alone would pin them on an arbitrary partner.
 Journal entries (accruals, recharges, provisions) are a large share of
 marketing value and have no supplier — the `LineRemarks` text usually names
 the counterparty instead.
