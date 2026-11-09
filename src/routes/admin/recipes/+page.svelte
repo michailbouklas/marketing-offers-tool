@@ -54,7 +54,11 @@
     const rows = withFoodCost.filter(
       (item) =>
         (!category || item.category === category) &&
-        (!onlyWithRecipe || item.recipe) &&
+        // A combo counts only when at least one component has a recipe.
+        (!onlyWithRecipe ||
+          (item.recipe &&
+            (item.recipe.source === "recipe" ||
+              item.recipe.missing < item.recipe.componentCount))) &&
         (!onlyActive || item.active) &&
         (!term ||
           item.item_code.toLowerCase().includes(term) ||
