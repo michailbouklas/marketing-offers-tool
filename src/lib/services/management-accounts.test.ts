@@ -4,6 +4,9 @@ import {
   formatAccounting,
   marketingCostCsv,
   marketingCostYears,
+  monthlyMatrix,
+  summariseBreakdown,
+  type AccountBreakdownRow,
   parseMonth,
   type MarketingCostRow,
 } from "./management-accounts";
@@ -89,5 +92,78 @@ describe("marketingCostCsv", () => {
         'TV,200," =HYPERLINK(""x"")",-5\r\n' +
         '"Agency, Fees",100,Account 100,-1234.57\r\n',
     );
+  });
+});
+
+describe("summariseBreakdown", () => {
+  const row = (
+    company: string,
+    supplier: string,
+    value: number,
+  ): AccountBreakdownRow => ({
+    company,
+    brand: "B",
+    store: "S",
+    type: "APInvoice",
+    supplier,
+    value,
+    lines: 1,
+  });
+  const rows = [
+    row("A", "Wolt", -100),
+    row("A", "", -50),
+    row("B", "Bolt", -300),
+    row("C", "Wolt", 20),
+  ];
+
+  it("groups, sorts by spend and keeps the total", () => {
+    const items = summariseBreakdown(rows, "company");
+    expect(items.map((item) => [item.label, item.value, item.lines])).toEqual([
+      ["B", -300, 1],
+      ["A", -150, 2],
+      ["C", 20, 1],
+    ]);
+    const total = items.reduce((sum, item) => sum + item.value, 0);
+    expect(total).toBe(-430);
+    expect(items[0].share).toBeCloseTo(300 / 430);
+  });
+
+  it("folds the tail into Other and labels blanks", () => {
+    const items = summariseBreakdown(rows, "supplier", 1);
+    expect(items.map((item) => [item.label, item.value])).toEqual([
+      ["Bolt", -300],
+      ["Other (2)", -130],
+    ]);
+    expect(
+      summariseBreakdown(rows, "supplier").map((item) => item.label),
+    ).toContain("(none)");
+  });
+
+  it("handles no rows and a zero total", () => {
+    expect(summariseBreakdown([], "brand")).toEqual([]);
+    const items = summariseBreakdown(
+      [row("A", "", 5), row("B", "", -5)],
+      "company",
+    );
+    expect(items.every((item) => item.share === 0)).toBe(true);
+  });
+});
+
+describe("monthlyMatrix", () => {
+  it("places values by year and month and ignores unknown years", () => {
+    expect(
+      monthlyMatrix(
+        [
+          { year: 2025, month: 1, value: -10 },
+          { year: 2025, month: 1, value: -5 },
+          { year: 2026, month: 12, value: 3 },
+          { year: 2019, month: 4, value: 99 },
+        ],
+        [2025, 2026],
+      ),
+    ).toEqual([
+      [-15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3],
+    ]);
   });
 });
