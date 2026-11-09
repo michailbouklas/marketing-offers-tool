@@ -105,6 +105,12 @@
       best: null,
     },
     {
+      label: "Discount rate (of net)",
+      value: (r) => r.discountRateNet,
+      format: pct,
+      best: null,
+    },
+    {
       label: "Month-to-date net",
       value: (r) => r.mtdNet,
       format: maybeMoney,

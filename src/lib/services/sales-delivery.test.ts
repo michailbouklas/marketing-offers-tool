@@ -96,6 +96,7 @@ describe("buildChannelVs", () => {
       share: 300 / 450,
     });
     expect(vs.table[1].discountRate).toBeCloseTo(10 / 60);
+    expect(vs.table[1].discountRateNet).toBeCloseTo(10 / 50);
     expect(vs.weeks).toEqual([
       { week: "2026-11-02", net: [300, 50], atv: [30, 10] },
     ]);

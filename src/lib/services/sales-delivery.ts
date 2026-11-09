@@ -209,6 +209,7 @@ export function buildChannelVs(input: {
       ...range,
       share: allNet === 0 ? 0 : range.net / allNet,
       discountRate: range.gross === 0 ? null : range.discount / range.gross,
+      discountRateNet: range.net === 0 ? null : range.discount / range.net,
       mtdNet: mtd.net,
     };
   });
