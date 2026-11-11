@@ -53,6 +53,9 @@ export type GapQueuePageQuery = {
   sortDir: GapListSortDirection;
   page: number;
   pageSize: number;
+  /** Case-insensitive contains-match; `undefined` = no filter. */
+  itemName?: string;
+  itemCode?: string;
 };
 
 const ACTIVE_STATUSES: Array<GapListItem["status"]> = ["open", "submitted"];
@@ -93,6 +96,24 @@ function buildBrandClause(brandAliases: string[] | undefined): Prisma.Sql {
   return Prisma.sql`brand_aliases && ${aliases}::text[]`;
 }
 
+function toContainsPattern(term: string): string {
+  return `%${term.replace(/[\\%_]/g, "\\$&")}%`;
+}
+
+function buildSearchClause(
+  itemName: string | undefined,
+  itemCode: string | undefined,
+): Prisma.Sql {
+  const nameClause = itemName
+    ? Prisma.sql`item_name ILIKE ${toContainsPattern(itemName)} ESCAPE '\\'`
+    : Prisma.sql`TRUE`;
+  const codeClause = itemCode
+    ? Prisma.sql`trde_item ILIKE ${toContainsPattern(itemCode)} ESCAPE '\\'`
+    : Prisma.sql`TRUE`;
+
+  return Prisma.sql`${nameClause} AND ${codeClause}`;
+}
+
 function buildStatusClause(statuses: Array<GapListItem["status"]>): Prisma.Sql {
   return Prisma.sql`status = ANY(${statuses}::text[]::"DqGapStatus"[])`;
 }
@@ -103,13 +124,14 @@ export async function queryGapQueuePage(
   const statuses = query.statuses?.length ? query.statuses : ACTIVE_STATUSES;
   const brandClause = buildBrandClause(query.brandAliases);
   const statusClause = buildStatusClause(statuses);
+  const searchClause = buildSearchClause(query.itemName, query.itemCode);
 
   const [counts] = await prisma.$queryRaw<CountRow[]>`
     SELECT
       count(*) FILTER (WHERE ${statusClause})::int AS total_items,
       count(*) FILTER (WHERE status = 'submitted')::int AS submitted_count
     FROM dq_gap_queue_snapshot
-    WHERE ${brandClause}
+    WHERE ${brandClause} AND ${searchClause}
   `;
 
   const totalItems = counts?.total_items ?? 0;
@@ -129,7 +151,7 @@ export async function queryGapQueuePage(
           SELECT dq_id, trde_item, item_name, brand, item_category,
                  detected_at, status, missing_fields
           FROM dq_gap_queue_snapshot
-          WHERE ${brandClause} AND ${statusClause}
+          WHERE ${brandClause} AND ${statusClause} AND ${searchClause}
           ORDER BY ${sortExpression} ${direction},
                    lower(brand) ASC, detected_at DESC, lower(item_name) ASC, trde_item ASC
           LIMIT ${pageSize} OFFSET ${offset}

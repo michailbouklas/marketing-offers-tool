@@ -18,6 +18,8 @@ const searchParamsSchema = z.object({
   sortBy: z.enum(gapListSortFields).default("brand"),
   sortDir: z.enum(gapListSortDirections).default("asc"),
   status: z.enum(["submitted"]).optional(),
+  itemName: z.string().trim().max(100).optional(),
+  itemCode: z.string().trim().max(100).optional(),
 });
 
 /**
@@ -32,8 +34,10 @@ export const GET: RequestHandler = async (event) => {
     sortBy: params.get("sortBy") ?? undefined,
     sortDir: params.get("sortDir") ?? undefined,
     status: params.get("status") ?? undefined,
+    itemName: params.get("itemName") ?? undefined,
+    itemCode: params.get("itemCode") ?? undefined,
   });
-  const { sortBy, sortDir, status } = parsed.success
+  const { sortBy, sortDir, status, itemName, itemCode } = parsed.success
     ? parsed.data
     : searchParamsSchema.parse({});
 
@@ -46,6 +50,8 @@ export const GET: RequestHandler = async (event) => {
     sortBy,
     sortDir,
     statuses: status ? [status] : undefined,
+    itemName,
+    itemCode,
   });
 
   const result = await generateExcelFile({

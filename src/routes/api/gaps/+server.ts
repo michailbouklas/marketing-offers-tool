@@ -17,6 +17,8 @@ const searchParamsSchema = z.object({
   sortBy: z.enum(gapListSortFields).default("brand"),
   sortDir: z.enum(gapListSortDirections).default("asc"),
   status: z.enum(["submitted"]).optional(),
+  itemName: z.string().trim().max(100).optional(),
+  itemCode: z.string().trim().max(100).optional(),
 });
 
 export const GET: RequestHandler = async (event) => {
@@ -31,6 +33,8 @@ export const GET: RequestHandler = async (event) => {
     sortBy: event.url.searchParams.get("sortBy") ?? undefined,
     sortDir: event.url.searchParams.get("sortDir") ?? undefined,
     status: event.url.searchParams.get("status") ?? undefined,
+    itemName: event.url.searchParams.get("itemName") ?? undefined,
+    itemCode: event.url.searchParams.get("itemCode") ?? undefined,
   });
   const page = parseResult.success ? parseResult.data.page : 1;
   const sortBy = parseResult.success ? parseResult.data.sortBy : "brand";
@@ -46,6 +50,8 @@ export const GET: RequestHandler = async (event) => {
     sortBy,
     sortDir,
     statuses: status ? [status] : undefined,
+    itemName: parseResult.data?.itemName,
+    itemCode: parseResult.data?.itemCode,
   });
 
   return json({

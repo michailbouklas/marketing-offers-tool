@@ -643,6 +643,27 @@ describe("offers-data-quality orchestration", () => {
     ).not.toHaveBeenCalled();
   });
 
+  it("trims search terms, drops empty ones and keys the cache on them", async () => {
+    serviceDeps.queryGapQueuePage.mockResolvedValue(buildPage());
+
+    await orchestration.getOpenGapList(1, 50, {
+      itemName: "  burger ",
+      itemCode: "   ",
+    });
+
+    expect(serviceDeps.queryGapQueuePage).toHaveBeenLastCalledWith(
+      expect.objectContaining({ itemName: "burger", itemCode: undefined }),
+    );
+
+    await orchestration.getOpenGapList(1, 50, { itemName: "burger" });
+
+    expect(serviceDeps.queryGapQueuePage).toHaveBeenCalledTimes(1);
+
+    await orchestration.getOpenGapList(1, 50, { itemName: "pizza" });
+
+    expect(serviceDeps.queryGapQueuePage).toHaveBeenCalledTimes(2);
+  });
+
   it("falls back to the default sort when the requested field is unknown", async () => {
     serviceDeps.queryGapQueuePage.mockResolvedValue(buildPage());
 

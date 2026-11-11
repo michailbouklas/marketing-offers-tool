@@ -64,6 +64,8 @@ type GetOpenGapListOptions = {
   sortBy?: GapListSortField;
   sortDir?: GapListSortDirection;
   statuses?: Array<GapListItem["status"]>;
+  itemName?: string;
+  itemCode?: string;
 };
 
 export type GapQueueStatus = {
@@ -357,6 +359,8 @@ export async function getOpenGapList(
       : "asc";
   const brandAliases = options.brandAliases?.map(normalizeBrandAlias);
   const statuses = options.statuses?.length ? options.statuses : undefined;
+  const itemName = options.itemName?.trim() || undefined;
+  const itemCode = options.itemCode?.trim() || undefined;
 
   await ensureGapQueueSnapshotBuilt();
 
@@ -367,6 +371,8 @@ export async function getOpenGapList(
     sortDir,
     page,
     pageSize,
+    itemName,
+    itemCode,
   });
 
   return withGapQueueCache(
@@ -380,6 +386,8 @@ export async function getOpenGapList(
         sortDir,
         page,
         pageSize,
+        itemName,
+        itemCode,
       }),
   );
 }
