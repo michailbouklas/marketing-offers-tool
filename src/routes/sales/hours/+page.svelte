@@ -22,6 +22,7 @@
     isDateView,
     isGroupedByDay,
     WEEKDAY_LABELS,
+    type ChannelValue,
     type HeatCell,
   } from "$lib/services/sales-hours";
   import { formatCompactMoney } from "$lib/services/forecasts/forecast-narrative";
@@ -35,6 +36,8 @@
   const byDay = $derived(isGroupedByDay(page.url.searchParams));
   const dateView = $derived(isDateView(page.url.searchParams));
   const calendar = $derived(data.calendar ?? null);
+  const breakdown = $derived(data.breakdown ?? null);
+  const channelVs = $derived(breakdown !== null);
 
   const filters = $derived(data.scope?.filters ?? null);
   const allBrands = $derived(data.scope?.brands ?? []);
@@ -58,24 +61,59 @@
       timeZone: "UTC",
     });
 
-  /** Same page, new filters; `by=day` / `view=dates` survive unless overridden. */
+  type ViewMode = { grouped: boolean; dates: boolean; vs: boolean };
+
+  /** Same page, new filters; view toggles survive unless overridden. VS drops with a channel filter. */
   function href(
     next: Partial<SalesDashboardFilters>,
-    grouped: boolean = byDay,
-    dates: boolean = dateView,
+    mode: Partial<ViewMode> = {},
   ): string {
     if (!filters) return page.url.pathname;
+    const merged = { ...filters, ...next };
+    const { grouped, dates, vs } = {
+      grouped: byDay,
+      dates: dateView,
+      vs: channelVs,
+      ...mode,
+    };
     const search = new URLSearchParams(
-      salesDashboardSearch({ ...filters, ...next }, { allBrands: false }),
+      salesDashboardSearch(merged, { allBrands: false }),
     );
     if (grouped) search.set("by", "day");
     if (grouped && dates) search.set("view", "dates");
+    if (vs && merged.channels.length === 0) search.set("vs", "1");
     return `${page.url.pathname}?${search}`;
   }
 
-  function navigate(next: Partial<SalesDashboardFilters>, grouped = byDay) {
-    goto(href(next, grouped), { keepFocus: true, noScroll: true });
+  function navigate(
+    next: Partial<SalesDashboardFilters>,
+    mode: Partial<ViewMode> = {},
+  ) {
+    goto(href(next, mode), { keepFocus: true, noScroll: true });
   }
+
+  const metricOf = (value: ChannelValue) =>
+    metric === "net" ? value.net : value.txns;
+  const formatMetric = (value: number) =>
+    metric === "net"
+      ? formatCompactMoney(value)
+      : formatSalesCount(Math.round(value));
+
+  /** Green = biggest channel in the cell, red = smallest; nothing when they tie. */
+  function channelTone(values: ChannelValue[], value: ChannelValue): string {
+    const all = values.map(metricOf);
+    const max = Math.max(...all);
+    const min = Math.min(...all);
+    if (max === min) return "";
+    if (metricOf(value) === max) return "bg-emerald-600 text-white";
+    if (metricOf(value) === min) return "bg-red-600 text-white";
+    return "";
+  }
+
+  const channelTitle = (values: ChannelValue[] | undefined) =>
+    values
+      ? `\n${values.map((v) => `${v.channel}: ${money(v.net)} net, ${v.txns.toFixed(1)} orders`).join("\n")}`
+      : "";
 
   /** Server rebuilds the grid from the same URL, then we follow the download URL. */
   async function exportExcel() {
@@ -114,6 +152,21 @@
     return value === "" ? null : value;
   }
 </script>
+
+{#snippet channelLines(values: ChannelValue[] | undefined)}
+  {#if values?.length}
+    <div class="flex w-full flex-col gap-px text-[10px] leading-tight">
+      {#each values as value (value.channel)}
+        <div
+          class={`flex justify-between gap-1 rounded-sm px-1 ${channelTone(values, value)}`}
+        >
+          <span class="truncate">{value.channel}</span>
+          <span>{formatMetric(metricOf(value))}</span>
+        </div>
+      {/each}
+    </div>
+  {/if}
+{/snippet}
 
 <svelte:head>
   <title>Busy & Dead Hours | Aggregator Offers Tool</title>
@@ -164,26 +217,38 @@
 
     <div class="space-y-2">
       <span class="text-sm font-medium" id="channel-label">Channel</span>
-      <ButtonGroup.Root aria-labelledby="channel-label" class="flex-wrap">
-        <Button
-          href={href({ channels: [] })}
-          variant={filters.channels.length === 0 ? "default" : "outline"}
-          aria-current={filters.channels.length === 0 ? "page" : undefined}
-        >
-          All channels
-        </Button>
-        {#each data.channels ?? [] as channel (channel)}
-          {@const active =
-            filters.channels.length === 1 && filters.channels[0] === channel}
+      <div class="flex flex-wrap items-center gap-3">
+        <ButtonGroup.Root aria-labelledby="channel-label" class="flex-wrap">
           <Button
-            href={href({ channels: [channel] })}
-            variant={active ? "default" : "outline"}
-            aria-current={active ? "page" : undefined}
+            href={href({ channels: [] })}
+            variant={filters.channels.length === 0 ? "default" : "outline"}
+            aria-current={filters.channels.length === 0 ? "page" : undefined}
           >
-            {channel}
+            All channels
           </Button>
-        {/each}
-      </ButtonGroup.Root>
+          {#each data.channels ?? [] as channel (channel)}
+            {@const active =
+              filters.channels.length === 1 && filters.channels[0] === channel}
+            <Button
+              href={href({ channels: [channel] })}
+              variant={active ? "default" : "outline"}
+              aria-current={active ? "page" : undefined}
+            >
+              {channel}
+            </Button>
+          {/each}
+        </ButtonGroup.Root>
+        {#if filters.channels.length === 0}
+          <div class="flex items-center gap-2">
+            <Switch
+              id="channel-vs"
+              checked={channelVs}
+              onCheckedChange={(checked) => navigate({}, { vs: checked })}
+            />
+            <Label for="channel-vs">VS</Label>
+          </div>
+        {/if}
+      </div>
     </div>
 
     <div class="flex flex-wrap items-end gap-3">
@@ -255,7 +320,7 @@
         <Switch
           id="group-by-day"
           checked={byDay}
-          onCheckedChange={(checked) => navigate({}, checked)}
+          onCheckedChange={(checked) => navigate({}, { grouped: checked })}
         />
         <Label for="group-by-day">Group by day</Label>
       </div>
@@ -302,7 +367,7 @@
             <ButtonGroup.Root aria-label="Day grouping">
               <Button
                 size="sm"
-                href={href({}, true, false)}
+                href={href({}, { dates: false })}
                 variant={dateView ? "outline" : "default"}
                 aria-current={dateView ? undefined : "page"}
               >
@@ -310,7 +375,7 @@
               </Button>
               <Button
                 size="sm"
-                href={href({}, true, true)}
+                href={href({}, { dates: true })}
                 variant={dateView ? "default" : "outline"}
                 aria-current={dateView ? "page" : undefined}
               >
@@ -369,10 +434,10 @@
                   {/each}
                   {#each month.cells as cell (cell.date)}
                     <div
-                      class={`relative flex h-14 items-center justify-center rounded text-sm tabular-nums ${cell.inRange ? "" : "opacity-30"} ${cell.intensity > 0.55 ? "text-primary-foreground" : ""}`}
+                      class={`relative flex min-h-14 items-center justify-center rounded text-sm tabular-nums ${breakdown ? "px-1 pt-5 pb-1" : ""} ${cell.inRange ? "" : "opacity-30"} ${cell.intensity > 0.55 ? "text-primary-foreground" : ""}`}
                       style={`background-color: color-mix(in oklch, var(--primary) ${Math.round(cell.intensity * 100)}%, transparent)`}
                       title={cell.inRange
-                        ? `${dateLabel(cell.date)}: ${money(cell.net)} net, ${cell.txns} orders, ATV ${cell.atv === null ? "–" : money(cell.atv)}`
+                        ? `${dateLabel(cell.date)}: ${money(cell.net)} net, ${cell.txns} orders, ATV ${cell.atv === null ? "–" : money(cell.atv)}${channelTitle(breakdown?.[cell.date])}`
                         : `${dateLabel(cell.date)}: outside the date range`}
                     >
                       <span
@@ -380,7 +445,11 @@
                       >
                         {cell.day}
                       </span>
-                      {#if cell.net > 0}
+                      {#if breakdown}
+                        {@render channelLines(
+                          cell.inRange ? breakdown[cell.date] : undefined,
+                        )}
+                      {:else if cell.net > 0}
                         {metric === "net"
                           ? formatCompactMoney(cell.net)
                           : formatSalesCount(cell.txns)}
@@ -410,11 +479,15 @@
                 <tr>
                   {#each grid.weekdays as cell, index (index)}
                     <td
-                      class={`h-14 min-w-16 rounded px-1 text-center text-sm tabular-nums ${cell.intensity > 0.55 ? "text-primary-foreground" : ""}`}
+                      class={`h-14 min-w-16 rounded px-1 text-center text-sm tabular-nums ${breakdown ? "py-1" : ""} ${cell.intensity > 0.55 ? "text-primary-foreground" : ""}`}
                       style={`background-color: color-mix(in oklch, var(--primary) ${Math.round(cell.intensity * 100)}%, transparent)`}
-                      title={`${WEEKDAY_LABELS[index]}: ${money(cell.avgNet)} net, ${cell.avgTxns.toFixed(1)} orders, ATV ${cell.atv === null ? "–" : money(cell.atv)}`}
+                      title={`${WEEKDAY_LABELS[index]}: ${money(cell.avgNet)} net, ${cell.avgTxns.toFixed(1)} orders, ATV ${cell.atv === null ? "–" : money(cell.atv)}${channelTitle(breakdown?.[`${index + 1}`])}`}
                     >
-                      {cell.avgNet > 0 ? cellValue(cell) : ""}
+                      {#if breakdown}
+                        {@render channelLines(breakdown[`${index + 1}`])}
+                      {:else}
+                        {cell.avgNet > 0 ? cellValue(cell) : ""}
+                      {/if}
                     </td>
                   {/each}
                 </tr>
@@ -445,11 +518,17 @@
                     </th>
                     {#each row as cell, column (grid.hours[column])}
                       <td
-                        class={`h-10 min-w-11 rounded px-1 text-center tabular-nums ${cell.dead ? "ring-2 ring-amber-500 ring-inset" : ""} ${cell.intensity > 0.55 ? "text-primary-foreground" : ""}`}
+                        class={`h-10 rounded px-1 text-center tabular-nums ${breakdown ? "min-w-24 py-1" : "min-w-11"} ${cell.dead ? "ring-2 ring-amber-500 ring-inset" : ""} ${cell.intensity > 0.55 ? "text-primary-foreground" : ""}`}
                         style={`background-color: color-mix(in oklch, var(--primary) ${Math.round(cell.intensity * 100)}%, transparent)`}
-                        title={`${WEEKDAY_LABELS[index]} ${hourLabel(grid.hours[column])}: ${money(cell.avgNet)} net, ${cell.avgTxns.toFixed(1)} orders, ATV ${cell.atv === null ? "–" : money(cell.atv)}${cell.dead ? " (dead hour)" : ""}`}
+                        title={`${WEEKDAY_LABELS[index]} ${hourLabel(grid.hours[column])}: ${money(cell.avgNet)} net, ${cell.avgTxns.toFixed(1)} orders, ATV ${cell.atv === null ? "–" : money(cell.atv)}${cell.dead ? " (dead hour)" : ""}${channelTitle(breakdown?.[`${index + 1}|${grid.hours[column]}`])}`}
                       >
-                        {cell.avgNet > 0 ? cellValue(cell) : ""}
+                        {#if breakdown}
+                          {@render channelLines(
+                            breakdown[`${index + 1}|${grid.hours[column]}`],
+                          )}
+                        {:else}
+                          {cell.avgNet > 0 ? cellValue(cell) : ""}
+                        {/if}
                       </td>
                     {/each}
                   </tr>

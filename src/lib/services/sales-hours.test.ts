@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildChannelBreakdown,
   buildSalesCalendar,
   buildSalesHoursGrid,
+  isChannelVs,
   isDateView,
   weekdayCounts,
 } from "./sales-hours";
@@ -49,6 +51,45 @@ describe("buildSalesCalendar", () => {
       atv: 20,
     });
     expect(calendar.months[1].cells[1]).toMatchObject({ intensity: 0.25 });
+  });
+
+  it("splits channels per view: weekday×hour avg, weekday avg, date totals", () => {
+    // Two Mondays in range (2026-11-02, 2026-11-09).
+    const rows = [
+      { day: "2026-11-02", hour: 13, channel: "Wolt", net: 100, txns: 4 },
+      { day: "2026-11-09", hour: 13, channel: "Wolt", net: 300, txns: 6 },
+      { day: "2026-11-02", hour: 20, channel: "Wolt", net: 50, txns: 2 },
+      { day: "2026-11-02", hour: 13, channel: "Bolt", net: 40, txns: 2 },
+    ];
+    const hour = buildChannelBreakdown(
+      rows,
+      "2026-11-02",
+      "2026-11-15",
+      "hour",
+    );
+    expect(hour["1|13"]).toEqual([
+      { channel: "Bolt", net: 20, txns: 1 },
+      { channel: "Wolt", net: 200, txns: 5 },
+    ]);
+    const weekday = buildChannelBreakdown(
+      rows,
+      "2026-11-02",
+      "2026-11-15",
+      "weekday",
+    );
+    expect(weekday["1"]).toContainEqual({ channel: "Wolt", net: 225, txns: 6 });
+    const date = buildChannelBreakdown(
+      rows,
+      "2026-11-02",
+      "2026-11-15",
+      "date",
+    );
+    expect(date["2026-11-02"]).toContainEqual({
+      channel: "Wolt",
+      net: 150,
+      txns: 6,
+    });
+    expect(isChannelVs(new URLSearchParams("vs=1"))).toBe(true);
   });
 
   it("only applies the date view when grouped by day", () => {
