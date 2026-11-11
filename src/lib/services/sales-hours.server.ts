@@ -5,7 +5,7 @@ import {
 } from "$lib/services/forecasts/forecast-series.server";
 import { filterClause } from "$lib/services/sales-dashboard.server";
 import type { SalesDashboardFilters } from "$lib/services/sales-dashboard";
-import type { SalesHourCell } from "$lib/services/sales-hours";
+import type { SalesDayCell, SalesHourCell } from "$lib/services/sales-hours";
 
 /**
  * Net and orders per weekday × hour for /sales/hours. Weekday is the POS
@@ -44,6 +44,39 @@ export async function getSalesHourCells(
   return rows.map((row) => ({
     weekday: toNumber(row.weekday),
     hour: toNumber(row.hour),
+    net: toNumber(row.net),
+    txns: toNumber(row.txns),
+  }));
+}
+
+/** Net and orders per POS business day (`tran_date`) for the "By date" calendar. */
+export async function getSalesDayTotals(
+  filters: SalesDashboardFilters,
+): Promise<SalesDayCell[]> {
+  const extra = filterClause(filters);
+  const result = await clickhouse.query({
+    query: `
+      SELECT toString(tran_date) AS day,
+             sum(tran_net) AS net,
+             count() AS txns
+      FROM ${salesTransactionsTable()}
+      WHERE tran_date BETWEEN {from:Date} AND {to:Date}
+        AND lower(brand) IN {brands:Array(String)}
+        AND tran_sales_factor = 1
+        ${extra.sql}
+      GROUP BY day
+    `,
+    query_params: extra.params,
+    format: "JSONEachRow",
+  });
+  const rows = await result.json<{
+    day: string;
+    net: number | string;
+    txns: number | string;
+  }>();
+
+  return rows.map((row) => ({
+    day: row.day,
     net: toNumber(row.net),
     txns: toNumber(row.txns),
   }));
