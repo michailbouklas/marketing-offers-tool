@@ -5,8 +5,15 @@ import {
   resolveSalesDashboardScope,
 } from "$lib/services/sales-dashboard.server";
 import { withSingleBrand } from "$lib/services/sales-dashboard";
-import { buildSalesHoursGrid } from "$lib/services/sales-hours";
-import { getSalesHourCells } from "$lib/services/sales-hours.server";
+import {
+  buildSalesCalendar,
+  buildSalesHoursGrid,
+  isDateView,
+} from "$lib/services/sales-hours";
+import {
+  getSalesDayTotals,
+  getSalesHourCells,
+} from "$lib/services/sales-hours.server";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
@@ -19,15 +26,18 @@ export const load: PageServerLoad = async (event) => {
   }
 
   const filters = withSingleBrand(scope.filters);
-  const [cells, options] = await Promise.all([
+  const [cells, options, days] = await Promise.all([
     getSalesHourCells(filters),
     getSalesDashboardOptions(filters),
+    isDateView(event.url.searchParams) ? getSalesDayTotals(filters) : null,
   ]);
 
   return {
     scope: { brands: scope.brands, filters },
     grid: buildSalesHoursGrid(cells, filters.from, filters.to),
+    calendar: days && buildSalesCalendar(days, filters.from, filters.to),
     locations: options.locations,
     divisions: options.divisions,
+    channels: options.channels,
   };
 };

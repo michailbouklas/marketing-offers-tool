@@ -111,7 +111,9 @@ export function filterClause(filters: SalesDashboardFilters) {
     params.division = filters.divisionName;
   }
   if (filters.channels.length > 0) {
-    clauses.push("AND dim_division_group_channel IN {channels:Array(String)}");
+    clauses.push(
+      "AND trim(dim_division_group_channel) IN {channels:Array(String)}",
+    );
     params.channels = filters.channels;
   }
 
@@ -237,7 +239,7 @@ export async function getSalesDashboardOptions(
     }),
     clickhouse.query({
       query: `
-        SELECT DISTINCT dim_division_group_channel AS channel
+        SELECT DISTINCT trim(dim_division_group_channel) AS channel
         ${where}
         ORDER BY channel`,
       query_params: params,
