@@ -60,6 +60,78 @@ export const isGroupedByDay = (params: URLSearchParams) =>
 export const isDateView = (params: URLSearchParams) =>
   isGroupedByDay(params) && params.get("view") === "dates";
 
+/** `?vs=1`: split every calendar cell by channel (only with no channel filter). */
+export const isChannelVs = (params: URLSearchParams) =>
+  params.get("vs") === "1";
+
+/** One date × hour × channel, summed. */
+export type SalesChannelRow = {
+  day: string;
+  hour: number;
+  channel: string;
+  net: number;
+  txns: number;
+};
+export type ChannelValue = { channel: string; net: number; txns: number };
+/** Keyed like the cells on screen: `weekday|hour`, `weekday`, or the ISO date. */
+export type ChannelBreakdown = Record<string, ChannelValue[]>;
+
+/**
+ * Per-channel values for the current view, averaged per calendar day the same
+ * way as the totals (hour/weekday views) or raw totals (date view). Channels
+ * inside a cell are alphabetical so they line up from cell to cell.
+ */
+export function buildChannelBreakdown(
+  rows: SalesChannelRow[],
+  from: string,
+  to: string,
+  view: "hour" | "weekday" | "date",
+): ChannelBreakdown {
+  const days = weekdayCounts(from, to);
+  const sums = new Map<
+    string,
+    { divisor: number; byChannel: Map<string, ChannelValue> }
+  >();
+  for (const row of rows) {
+    const weekday =
+      ((new Date(`${row.day}T00:00:00Z`).getUTCDay() + 6) % 7) + 1;
+    const key =
+      view === "date"
+        ? row.day
+        : view === "weekday"
+          ? `${weekday}`
+          : `${weekday}|${row.hour}`;
+    let entry = sums.get(key);
+    if (!entry) {
+      entry = {
+        divisor: view === "date" ? 1 : days[weekday - 1] || 1,
+        byChannel: new Map(),
+      };
+      sums.set(key, entry);
+    }
+    const value = entry.byChannel.get(row.channel) ?? {
+      channel: row.channel,
+      net: 0,
+      txns: 0,
+    };
+    value.net += row.net;
+    value.txns += row.txns;
+    entry.byChannel.set(row.channel, value);
+  }
+  return Object.fromEntries(
+    [...sums].map(([key, { divisor, byChannel }]) => [
+      key,
+      [...byChannel.values()]
+        .map((value) => ({
+          channel: value.channel,
+          net: value.net / divisor,
+          txns: value.txns / divisor,
+        }))
+        .sort((a, b) => a.channel.localeCompare(b.channel)),
+    ]),
+  );
+}
+
 /** One POS business day (`tran_date`, YYYY-MM-DD) summed. */
 export type SalesDayCell = { day: string; net: number; txns: number };
 

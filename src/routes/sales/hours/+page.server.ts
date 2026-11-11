@@ -6,11 +6,15 @@ import {
 } from "$lib/services/sales-dashboard.server";
 import { withSingleBrand } from "$lib/services/sales-dashboard";
 import {
+  buildChannelBreakdown,
   buildSalesCalendar,
   buildSalesHoursGrid,
+  isChannelVs,
   isDateView,
+  isGroupedByDay,
 } from "$lib/services/sales-hours";
 import {
+  getSalesChannelRows,
   getSalesDayTotals,
   getSalesHourCells,
 } from "$lib/services/sales-hours.server";
@@ -26,16 +30,32 @@ export const load: PageServerLoad = async (event) => {
   }
 
   const filters = withSingleBrand(scope.filters);
-  const [cells, options, days] = await Promise.all([
+  const params = event.url.searchParams;
+  // VS only makes sense across channels, so a channel filter switches it off.
+  const vs = isChannelVs(params) && filters.channels.length === 0;
+  const [cells, options, days, channelRows] = await Promise.all([
     getSalesHourCells(filters),
     getSalesDashboardOptions(filters),
-    isDateView(event.url.searchParams) ? getSalesDayTotals(filters) : null,
+    isDateView(params) ? getSalesDayTotals(filters) : null,
+    vs ? getSalesChannelRows(filters) : null,
   ]);
 
   return {
     scope: { brands: scope.brands, filters },
     grid: buildSalesHoursGrid(cells, filters.from, filters.to),
     calendar: days && buildSalesCalendar(days, filters.from, filters.to),
+    breakdown:
+      channelRows &&
+      buildChannelBreakdown(
+        channelRows,
+        filters.from,
+        filters.to,
+        isDateView(params)
+          ? "date"
+          : isGroupedByDay(params)
+            ? "weekday"
+            : "hour",
+      ),
     locations: options.locations,
     divisions: options.divisions,
     channels: options.channels,
