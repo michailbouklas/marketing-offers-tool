@@ -35,7 +35,7 @@ export type TrackedGapRecord = {
   item_category: string;
   missing_fields: string;
   detected_at: Date;
-  status: "open" | "submitted" | "resolved";
+  status: "open" | "submitted" | "resolved" | "dismissed";
 };
 
 export type GapQueueSnapshotRowInput = {

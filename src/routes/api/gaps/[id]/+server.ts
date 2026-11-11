@@ -10,6 +10,7 @@ import {
   validateCategorySubcategoryPair,
 } from "$lib/services/offers-data-quality-postgres.server";
 import {
+  calculateFcPerc,
   calculateIdealPrice,
   formatFractionalDecimal,
   formatPricingDecimal,
@@ -169,11 +170,21 @@ export const POST: RequestHandler = async (event) => {
     );
   }
 
-  if (payloadResult.data.selling_price > idealPrice) {
+  // Selling above ideal is allowed: the stored row (selling > ideal) is what
+  // flags it on /offers-data-quality/flagged and in the approval queue.
+
+  // FC % is never taken from the client either: FC EUR / (selling / 1.05 / 1.07).
+  const fcPerc = calculateFcPerc(
+    payloadResult.data.fc_eur,
+    payloadResult.data.selling_price,
+  );
+
+  if (fcPerc === null || fcPerc >= 10) {
     return json(
       {
         errors: {
-          selling_price: "Selling price cannot exceed ideal price",
+          selling_price:
+            "FC % cannot be derived from this FC EUR and selling price",
         },
       },
       { status: 400 },
@@ -188,7 +199,7 @@ export const POST: RequestHandler = async (event) => {
     subcategory: payloadResult.data.subcategory,
     ideal_price: formatPricingDecimal(idealPrice)!,
     selling_price: formatPricingDecimal(payloadResult.data.selling_price)!,
-    fc_perc: formatFractionalDecimal(payloadResult.data.fc_perc),
+    fc_perc: formatFractionalDecimal(fcPerc),
     fc_eur: formatPricingDecimal(payloadResult.data.fc_eur)!,
     brand_ideal_fc_perc: formatFractionalDecimal(brandTarget.ideal_fc_perc),
     mktg_spend: formatPricingDecimal(payloadResult.data.mktg_spend),

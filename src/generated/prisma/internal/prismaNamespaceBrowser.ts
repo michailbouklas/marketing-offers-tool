@@ -442,7 +442,8 @@ export const Dq_missing_offers_pricingScalarFieldEnum = {
   missing_fields: 'missing_fields',
   detected_at: 'detected_at',
   status: 'status',
-  resolved_at: 'resolved_at'
+  resolved_at: 'resolved_at',
+  dismissed_by: 'dismissed_by'
 } as const
 
 export type Dq_missing_offers_pricingScalarFieldEnum = (typeof Dq_missing_offers_pricingScalarFieldEnum)[keyof typeof Dq_missing_offers_pricingScalarFieldEnum]

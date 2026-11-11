@@ -102,6 +102,9 @@
             <div class="space-y-1">
               <p class="font-medium tracking-[-0.01em]">
                 {submission.item_name}
+                {#if submission.flagged}
+                  <Badge variant="destructive" class="ml-1">Flagged</Badge>
+                {/if}
               </p>
               <p class="text-muted-foreground font-mono text-xs">
                 {submission.item_code}

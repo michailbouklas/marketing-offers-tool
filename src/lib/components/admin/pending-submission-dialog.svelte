@@ -128,6 +128,9 @@
             <span>{submission.item_category}</span>
           </Badge>
           <Badge variant="secondary">Pending</Badge>
+          {#if submission.flagged}
+            <Badge variant="destructive">Flagged: selling above ideal</Badge>
+          {/if}
         </div>
 
         <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">

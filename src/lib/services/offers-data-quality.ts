@@ -95,6 +95,8 @@ export type PendingGapSubmission = {
   submitted_by: string;
   submitted_at: string;
   status: "pending";
+  /** Selling price above ideal price. */
+  flagged: boolean;
 };
 
 export type PendingSubmissionQueueItem = PendingGapSubmission & {
@@ -200,7 +202,6 @@ export type SubmitGapPricingPayload = {
   subcategory: string;
   fc_eur: number;
   selling_price: number;
-  fc_perc: number;
   mktg_spend: number | null;
   notes: string;
 };
@@ -216,75 +217,66 @@ export const categorySearchParamsSchema = z.object({
 const numericInput = z.coerce.number();
 const optionalText = z.string().trim().default("");
 
-export const gapPricingFormSchema = z
-  .object({
-    channel: z.string().trim().min(1, "Channel is required"),
-    category: z.string().trim().min(1, "Category is required"),
-    subcategory: z.string().trim().min(1, "Subcategory is required"),
-    ideal_price: z
-      .union([z.string(), z.number(), z.undefined()])
-      .transform((value) =>
-        value === undefined ? "" : normalizeNumericTextInput(value),
-      ),
-    fc_eur: z
-      .union([z.string(), z.number()])
-      .transform(normalizeNumericTextInput)
-      .refine((value) => (parseOptionalNumberString(value) ?? 0) > 0, {
-        message: "FC EUR must be greater than 0",
-      }),
-    brand_ideal_fc_perc: z
-      .union([z.string(), z.number()])
-      .transform(normalizeNumericTextInput)
-      .refine((value) => {
-        const parsed = parseOptionalNumberString(value);
+export const gapPricingFormSchema = z.object({
+  channel: z.string().trim().min(1, "Channel is required"),
+  category: z.string().trim().min(1, "Category is required"),
+  subcategory: z.string().trim().min(1, "Subcategory is required"),
+  ideal_price: z
+    .union([z.string(), z.number(), z.undefined()])
+    .transform((value) =>
+      value === undefined ? "" : normalizeNumericTextInput(value),
+    ),
+  fc_eur: z
+    .union([z.string(), z.number()])
+    .transform(normalizeNumericTextInput)
+    .refine((value) => (parseOptionalNumberString(value) ?? 0) > 0, {
+      message: "FC EUR must be greater than 0",
+    }),
+  brand_ideal_fc_perc: z
+    .union([z.string(), z.number()])
+    .transform(normalizeNumericTextInput)
+    .refine((value) => {
+      const parsed = parseOptionalNumberString(value);
 
-        return parsed !== null && parsed > 0 && parsed <= 100;
-      }, "No Brand Ideal FC % is set for this brand. Ask an admin to set it on the brand page."),
-    selling_price: z
-      .union([z.string(), z.number()])
-      .transform(normalizeNumericTextInput)
-      .refine((value) => (parseOptionalNumberString(value) ?? -1) >= 0, {
-        message: "Selling price must be greater than or equal to 0",
-      }),
-    fc_perc: z
-      .union([z.string(), z.number()])
-      .transform(normalizeNumericTextInput)
-      .refine((value) => {
-        const parsed = parseOptionalNumberString(value);
+      return parsed !== null && parsed > 0 && parsed <= 100;
+    }, "No Brand Ideal FC % is set for this brand. Ask an admin to set it on the brand page."),
+  selling_price: z
+    .union([z.string(), z.number()])
+    .transform(normalizeNumericTextInput)
+    .refine((value) => (parseOptionalNumberString(value) ?? 0) > 0, {
+      message: "Selling price must be greater than 0 (FC % is derived from it)",
+    }),
+  // Derived from fc_eur + selling_price; deep discounts legitimately exceed 100%.
+  fc_perc: z
+    .union([z.string(), z.number()])
+    .transform(normalizeNumericTextInput)
+    .refine((value) => {
+      const parsed = parseOptionalNumberString(value);
 
-        return parsed !== null && parsed >= 0 && parsed <= 100;
-      }, "Food cost % must be between 0 and 100"),
-    mktg_spend: z
-      .union([z.string(), z.number(), z.undefined()])
-      .transform((value) =>
-        value === undefined ? "" : normalizeNumericTextInput(value),
-      )
-      .refine(
-        (value) =>
-          value === "" || (parseOptionalNumberString(value) ?? -1) >= 0,
-        "Marketing spend cannot be negative",
-      ),
-    notes: z.string().max(500, "Notes cannot exceed 500 characters"),
-  })
-  .refine(
-    (data) => {
-      const idealPrice = calculateIdealPriceFromFormValues(
-        data.fc_eur,
-        data.brand_ideal_fc_perc,
-      );
-      const sellingPrice = parseOptionalNumberString(data.selling_price);
+      return parsed !== null && parsed > 0 && parsed < 1000;
+    }, "FC % is derived from FC € and Selling price"),
+  mktg_spend: z
+    .union([z.string(), z.number(), z.undefined()])
+    .transform((value) =>
+      value === undefined ? "" : normalizeNumericTextInput(value),
+    )
+    .refine(
+      (value) => value === "" || (parseOptionalNumberString(value) ?? -1) >= 0,
+      "Marketing spend cannot be negative",
+    ),
+  notes: z.string().max(500, "Notes cannot exceed 500 characters"),
+});
 
-      if (idealPrice === null || sellingPrice === null) {
-        return true;
-      }
+/** Selling above ideal is allowed but flags the submission for review. */
+export function isPriceAboveIdeal(
+  sellingPriceText: string,
+  idealPriceText: string,
+): boolean {
+  const selling = parseOptionalNumberString(sellingPriceText);
+  const ideal = parseOptionalNumberString(idealPriceText);
 
-      return sellingPrice <= idealPrice;
-    },
-    {
-      message: "Selling price cannot exceed ideal price",
-      path: ["selling_price"],
-    },
-  );
+  return selling !== null && ideal !== null && selling > ideal;
+}
 
 /**
  * Server payload. `ideal_price` is deliberately absent: the API derives it
@@ -297,13 +289,7 @@ export const submitGapPricingSchema = z.object({
   category: z.string().trim().min(1, "Category is required"),
   subcategory: z.string().trim().min(1, "Subcategory is required"),
   fc_eur: numericInput.gt(0, "FC EUR must be greater than 0"),
-  selling_price: numericInput.gte(
-    0,
-    "Selling price must be greater than or equal to 0",
-  ),
-  fc_perc: numericInput
-    .gte(0, "Food cost % must be between 0 and 100")
-    .lte(1, "Food cost % must be between 0 and 100"),
+  selling_price: numericInput.gt(0, "Selling price must be greater than 0"),
   mktg_spend: z.preprocess((value) => {
     if (value === null || value === undefined) {
       return null;
@@ -372,6 +358,49 @@ export function calculateIdealPriceFromFormValues(
   return calculateIdealPrice(fcEur, brandIdealFcPercent / 100);
 }
 
+/**
+ * FC fraction = FC EUR / (selling price / 1.05 / 1.07), rounded to 4 dp (the
+ * Decimal(5,4) column). At selling = ideal price it equals the brand target.
+ * Null when either input is missing or not positive.
+ */
+export function calculateFcPerc(
+  fcEur: number | null | undefined,
+  sellingPrice: number | null | undefined,
+): number | null {
+  if (
+    fcEur === null ||
+    fcEur === undefined ||
+    sellingPrice === null ||
+    sellingPrice === undefined ||
+    !Number.isFinite(fcEur) ||
+    !Number.isFinite(sellingPrice) ||
+    fcEur <= 0 ||
+    sellingPrice <= 0
+  ) {
+    return null;
+  }
+
+  const netPrice = IDEAL_PRICE_MARKUP_FACTORS.reduce(
+    (price, factor) => price / factor,
+    sellingPrice,
+  );
+
+  return Math.round(Math.round((fcEur / netPrice) * 1e8) / 1e4) / 1e4;
+}
+
+/** Form-text variant: "" when it cannot be evaluated, otherwise percent "30.00". */
+export function formatFcPercInput(
+  fcEurText: string,
+  sellingPriceText: string,
+): string {
+  const fcPerc = calculateFcPerc(
+    parseOptionalNumberString(fcEurText),
+    parseOptionalNumberString(sellingPriceText),
+  );
+
+  return fcPerc === null ? "" : (fcPerc * 100).toFixed(2);
+}
+
 /** "" when the formula cannot be evaluated, otherwise "12.34". */
 export function formatIdealPriceInput(
   fcEurText: string,
@@ -431,6 +460,9 @@ export function mapGapLoadResponseToGapPricingFormData(
   const fcEur = missingFields.has("fc_eur")
     ? ""
     : formatInputNumber(response.current_dim_offers.fc_eur);
+  const sellingPrice = missingFields.has("selling_price")
+    ? ""
+    : formatInputNumber(response.current_dim_offers.selling_price);
   const brandIdealFcPerc = formatInputNumber(
     response.brand_target?.ideal_fc_perc ?? null,
     100,
@@ -443,12 +475,9 @@ export function mapGapLoadResponseToGapPricingFormData(
     // Always derived: a stored ideal_price that disagrees with the formula is
     // replaced on the next submission anyway.
     ideal_price: formatIdealPriceInput(fcEur, brandIdealFcPerc),
-    selling_price: missingFields.has("selling_price")
-      ? ""
-      : formatInputNumber(response.current_dim_offers.selling_price),
-    fc_perc: missingFields.has("fc_perc")
-      ? ""
-      : formatInputNumber(response.current_dim_offers.fc_perc, 100),
+    selling_price: sellingPrice,
+    // Always derived, like ideal_price.
+    fc_perc: formatFcPercInput(fcEur, sellingPrice),
     fc_eur: fcEur,
     brand_ideal_fc_perc: brandIdealFcPerc,
     mktg_spend: formatInputNumber(response.current_dim_offers.mktg_spend),
@@ -465,7 +494,6 @@ export function mapGapPricingFormToPayload(
     subcategory: formData.subcategory,
     fc_eur: Number.parseFloat(formData.fc_eur),
     selling_price: Number.parseFloat(formData.selling_price),
-    fc_perc: Number.parseFloat(formData.fc_perc) / 100,
     mktg_spend:
       formData.mktg_spend.trim() === ""
         ? null

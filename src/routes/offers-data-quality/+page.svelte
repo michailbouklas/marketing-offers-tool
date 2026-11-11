@@ -1,17 +1,22 @@
 <script lang="ts">
+  import ArchiveIcon from "@lucide/svelte/icons/archive";
   import ArrowDownIcon from "@lucide/svelte/icons/arrow-down";
   import ArrowUpIcon from "@lucide/svelte/icons/arrow-up";
+  import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import ChevronsLeftRightEllipsisIcon from "@lucide/svelte/icons/chevrons-left-right-ellipsis";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
   import DownloadIcon from "@lucide/svelte/icons/download";
   import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
+  import Trash2Icon from "@lucide/svelte/icons/trash-2";
   import XIcon from "@lucide/svelte/icons/x";
   import { toast } from "svelte-sonner";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
@@ -43,6 +48,9 @@
   let currentSortDir = $state<GapListSortDirection>("asc");
   let isRefreshing = $state(false);
   let isExporting = $state(false);
+  let selectedIds = $state<number[]>([]);
+  let confirmRemoveOpen = $state(false);
+  let isRemoving = $state(false);
   let latestRefreshRequestId = 0;
 
   const gaps = $derived(queuePage.items);
@@ -56,6 +64,15 @@
   const submittedCount = $derived(queuePage.submittedCount);
   const selectedBrandAliases = $derived(new Set(selectedAliases));
   const appliedBrandAliases = $derived(new Set(appliedAliases));
+  // Rows without a gap record yet (dq_id <= 0) have nothing to act on.
+  const selectableIds = $derived(
+    gaps.filter((gap) => gap.dq_id > 0).map((gap) => gap.dq_id),
+  );
+  const selectedIdSet = $derived(new Set(selectedIds));
+  const allSelected = $derived(
+    selectableIds.length > 0 &&
+      selectableIds.every((id) => selectedIdSet.has(id)),
+  );
 
   const sortableColumns: Array<{
     label: string;
@@ -74,6 +91,7 @@
     selectedAliases = [...data.selectedBrandAliases];
     appliedAliases = [...data.selectedBrandAliases];
     queuePage = data.gapsPage;
+    selectedIds = [];
     currentSortBy = data.sortBy;
     currentSortDir = data.sortDir;
     onlySubmitted = data.statusFilter === "submitted";
@@ -143,6 +161,8 @@
       }
 
       queuePage = result.gapsPage;
+      // Never act on rows the user can no longer see.
+      selectedIds = [];
       appliedAliases = [...result.selectedBrandAliases];
       selectedAliases = [...result.selectedBrandAliases];
       currentSortBy = result.sortBy;
@@ -246,6 +266,50 @@
       toast.error("The Excel export could not be generated. Try again.");
     } finally {
       isExporting = false;
+    }
+  }
+
+  function toggleAllRows() {
+    selectedIds = allSelected ? [] : [...selectableIds];
+  }
+
+  function toggleRow(dqId: number, checked: boolean) {
+    selectedIds = checked
+      ? [...selectedIds, dqId]
+      : selectedIds.filter((id) => id !== dqId);
+  }
+
+  async function removeSelected() {
+    isRemoving = true;
+    try {
+      const response = await fetch("/api/gaps/dismiss", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds }),
+      });
+      if (!response.ok) {
+        throw new Error(`Remove failed (${response.status})`);
+      }
+      const result = (await response.json()) as {
+        processedIds: number[];
+        failed: Array<{ id: number; error: string }>;
+      };
+      if (result.processedIds.length > 0) {
+        toast.success(
+          `Removed ${result.processedIds.length} gap${result.processedIds.length === 1 ? "" : "s"} from the list.`,
+        );
+      }
+      if (result.failed.length > 0) {
+        toast.error(
+          `${result.failed.length} not removed: ${result.failed[0].error}.`,
+        );
+      }
+      confirmRemoveOpen = false;
+      await refreshQueue();
+    } catch {
+      toast.error("The selected gaps could not be removed. Try again.");
+    } finally {
+      isRemoving = false;
     }
   }
 
@@ -479,6 +543,44 @@
                 {/if}
                 Export to Excel
               </Button>
+
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger
+                  class={buttonVariants({ variant: "outline", size: "sm" })}
+                  disabled={!data.canDismiss || selectedIds.length === 0}
+                  title={data.canDismiss
+                    ? undefined
+                    : "Only approvers can run bulk actions"}
+                >
+                  Actions
+                  {#if selectedIds.length > 0}
+                    <Badge variant="secondary" class="px-1.5">
+                      {selectedIds.length}
+                    </Badge>
+                  {/if}
+                  <ChevronDownIcon class="size-4 opacity-60" />
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content align="end" class="w-52">
+                  <DropdownMenu.Item
+                    variant="destructive"
+                    onSelect={() => (confirmRemoveOpen = true)}
+                  >
+                    <Trash2Icon />
+                    Remove from list
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+
+              {#if data.canDismiss}
+                <Button
+                  href="/offers-data-quality/flagged"
+                  variant="outline"
+                  size="sm"
+                >
+                  <ArchiveIcon class="size-4" />
+                  Flagged offers
+                </Button>
+              {/if}
             </div>
           </div>
 
@@ -508,6 +610,15 @@
         <Table.Root>
           <Table.Header>
             <Table.Row>
+              <Table.Head class="w-10">
+                <Checkbox
+                  checked={allSelected}
+                  indeterminate={selectedIds.length > 0 && !allSelected}
+                  disabled={selectableIds.length === 0}
+                  onCheckedChange={toggleAllRows}
+                  aria-label="Select all gaps on this page"
+                />
+              </Table.Head>
               {#each sortableColumns as sortableColumn (sortableColumn.column)}
                 <Table.Head class={sortableColumn.className}>
                   <button
@@ -535,7 +646,7 @@
             {#if gaps.length === 0}
               <Table.Row>
                 <Table.Cell
-                  colspan={7}
+                  colspan={8}
                   class="text-muted-foreground py-10 text-center"
                 >
                   No open pricing gaps found.
@@ -543,7 +654,21 @@
               </Table.Row>
             {:else}
               {#each gaps as gap, index (getGapRowKey(gap, index))}
-                <Table.Row>
+                <Table.Row
+                  data-state={selectedIdSet.has(gap.dq_id)
+                    ? "selected"
+                    : undefined}
+                >
+                  <Table.Cell>
+                    {#if gap.dq_id > 0}
+                      <Checkbox
+                        checked={selectedIdSet.has(gap.dq_id)}
+                        onCheckedChange={(checked) =>
+                          toggleRow(gap.dq_id, checked === true)}
+                        aria-label={`Select ${gap.item_name}`}
+                      />
+                    {/if}
+                  </Table.Cell>
                   <Table.Cell>
                     <div class="space-y-1">
                       <p class="font-medium">{gap.item_name}</p>
@@ -627,6 +752,35 @@
         {/if}
       </Card.Content>
     </Card.Root>
+
+    <AlertDialog.Root bind:open={confirmRemoveOpen}>
+      <AlertDialog.Content>
+        <AlertDialog.Header>
+          <AlertDialog.Title>
+            Remove {selectedIds.length} gap{selectedIds.length === 1 ? "" : "s"} from
+            the list?
+          </AlertDialog.Title>
+          <AlertDialog.Description>
+            Use this for invalid or outdated offers. Removed items will not come
+            back after the nightly refresh. Gaps awaiting approval are skipped;
+            reject those instead.
+          </AlertDialog.Description>
+        </AlertDialog.Header>
+        <AlertDialog.Footer>
+          <AlertDialog.Cancel disabled={isRemoving}>Cancel</AlertDialog.Cancel>
+          <Button
+            variant="destructive"
+            disabled={isRemoving}
+            onclick={removeSelected}
+          >
+            {#if isRemoving}
+              <LoaderCircleIcon class="size-4 animate-spin" />
+            {/if}
+            Remove from list
+          </Button>
+        </AlertDialog.Footer>
+      </AlertDialog.Content>
+    </AlertDialog.Root>
 
     <ChatWidget
       agentId="offers-data-quality-agent"

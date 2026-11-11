@@ -44,6 +44,7 @@ export type Dq_missing_offers_pricingMinAggregateOutputType = {
   detected_at: Date | null
   status: $Enums.DqGapStatus | null
   resolved_at: Date | null
+  dismissed_by: string | null
 }
 
 export type Dq_missing_offers_pricingMaxAggregateOutputType = {
@@ -56,6 +57,7 @@ export type Dq_missing_offers_pricingMaxAggregateOutputType = {
   detected_at: Date | null
   status: $Enums.DqGapStatus | null
   resolved_at: Date | null
+  dismissed_by: string | null
 }
 
 export type Dq_missing_offers_pricingCountAggregateOutputType = {
@@ -68,6 +70,7 @@ export type Dq_missing_offers_pricingCountAggregateOutputType = {
   detected_at: number
   status: number
   resolved_at: number
+  dismissed_by: number
   _all: number
 }
 
@@ -90,6 +93,7 @@ export type Dq_missing_offers_pricingMinAggregateInputType = {
   detected_at?: true
   status?: true
   resolved_at?: true
+  dismissed_by?: true
 }
 
 export type Dq_missing_offers_pricingMaxAggregateInputType = {
@@ -102,6 +106,7 @@ export type Dq_missing_offers_pricingMaxAggregateInputType = {
   detected_at?: true
   status?: true
   resolved_at?: true
+  dismissed_by?: true
 }
 
 export type Dq_missing_offers_pricingCountAggregateInputType = {
@@ -114,6 +119,7 @@ export type Dq_missing_offers_pricingCountAggregateInputType = {
   detected_at?: true
   status?: true
   resolved_at?: true
+  dismissed_by?: true
   _all?: true
 }
 
@@ -213,6 +219,7 @@ export type Dq_missing_offers_pricingGroupByOutputType = {
   detected_at: Date
   status: $Enums.DqGapStatus
   resolved_at: Date | null
+  dismissed_by: string | null
   _count: Dq_missing_offers_pricingCountAggregateOutputType | null
   _avg: Dq_missing_offers_pricingAvgAggregateOutputType | null
   _sum: Dq_missing_offers_pricingSumAggregateOutputType | null
@@ -248,6 +255,7 @@ export type dq_missing_offers_pricingWhereInput = {
   detected_at?: Prisma.DateTimeFilter<"dq_missing_offers_pricing"> | Date | string
   status?: Prisma.EnumDqGapStatusFilter<"dq_missing_offers_pricing"> | $Enums.DqGapStatus
   resolved_at?: Prisma.DateTimeNullableFilter<"dq_missing_offers_pricing"> | Date | string | null
+  dismissed_by?: Prisma.StringNullableFilter<"dq_missing_offers_pricing"> | string | null
   audit_records?: Prisma.Dim_offers_auditListRelationFilter
   staging_records?: Prisma.Dim_offers_stagingListRelationFilter
   snapshot_row?: Prisma.XOR<Prisma.Dq_gap_queue_snapshotNullableScalarRelationFilter, Prisma.dq_gap_queue_snapshotWhereInput> | null
@@ -263,6 +271,7 @@ export type dq_missing_offers_pricingOrderByWithRelationInput = {
   detected_at?: Prisma.SortOrder
   status?: Prisma.SortOrder
   resolved_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  dismissed_by?: Prisma.SortOrderInput | Prisma.SortOrder
   audit_records?: Prisma.dim_offers_auditOrderByRelationAggregateInput
   staging_records?: Prisma.dim_offers_stagingOrderByRelationAggregateInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotOrderByWithRelationInput
@@ -281,6 +290,7 @@ export type dq_missing_offers_pricingWhereUniqueInput = Prisma.AtLeast<{
   detected_at?: Prisma.DateTimeFilter<"dq_missing_offers_pricing"> | Date | string
   status?: Prisma.EnumDqGapStatusFilter<"dq_missing_offers_pricing"> | $Enums.DqGapStatus
   resolved_at?: Prisma.DateTimeNullableFilter<"dq_missing_offers_pricing"> | Date | string | null
+  dismissed_by?: Prisma.StringNullableFilter<"dq_missing_offers_pricing"> | string | null
   audit_records?: Prisma.Dim_offers_auditListRelationFilter
   staging_records?: Prisma.Dim_offers_stagingListRelationFilter
   snapshot_row?: Prisma.XOR<Prisma.Dq_gap_queue_snapshotNullableScalarRelationFilter, Prisma.dq_gap_queue_snapshotWhereInput> | null
@@ -296,6 +306,7 @@ export type dq_missing_offers_pricingOrderByWithAggregationInput = {
   detected_at?: Prisma.SortOrder
   status?: Prisma.SortOrder
   resolved_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  dismissed_by?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.dq_missing_offers_pricingCountOrderByAggregateInput
   _avg?: Prisma.dq_missing_offers_pricingAvgOrderByAggregateInput
   _max?: Prisma.dq_missing_offers_pricingMaxOrderByAggregateInput
@@ -316,6 +327,7 @@ export type dq_missing_offers_pricingScalarWhereWithAggregatesInput = {
   detected_at?: Prisma.DateTimeWithAggregatesFilter<"dq_missing_offers_pricing"> | Date | string
   status?: Prisma.EnumDqGapStatusWithAggregatesFilter<"dq_missing_offers_pricing"> | $Enums.DqGapStatus
   resolved_at?: Prisma.DateTimeNullableWithAggregatesFilter<"dq_missing_offers_pricing"> | Date | string | null
+  dismissed_by?: Prisma.StringNullableWithAggregatesFilter<"dq_missing_offers_pricing"> | string | null
 }
 
 export type dq_missing_offers_pricingCreateInput = {
@@ -327,6 +339,7 @@ export type dq_missing_offers_pricingCreateInput = {
   detected_at?: Date | string
   status?: $Enums.DqGapStatus
   resolved_at?: Date | string | null
+  dismissed_by?: string | null
   audit_records?: Prisma.dim_offers_auditCreateNestedManyWithoutGap_recordInput
   staging_records?: Prisma.dim_offers_stagingCreateNestedManyWithoutGap_recordInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotCreateNestedOneWithoutGap_recordInput
@@ -342,6 +355,7 @@ export type dq_missing_offers_pricingUncheckedCreateInput = {
   detected_at?: Date | string
   status?: $Enums.DqGapStatus
   resolved_at?: Date | string | null
+  dismissed_by?: string | null
   audit_records?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutGap_recordInput
   staging_records?: Prisma.dim_offers_stagingUncheckedCreateNestedManyWithoutGap_recordInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedCreateNestedOneWithoutGap_recordInput
@@ -356,6 +370,7 @@ export type dq_missing_offers_pricingUpdateInput = {
   detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
   resolved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dismissed_by?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audit_records?: Prisma.dim_offers_auditUpdateManyWithoutGap_recordNestedInput
   staging_records?: Prisma.dim_offers_stagingUpdateManyWithoutGap_recordNestedInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotUpdateOneWithoutGap_recordNestedInput
@@ -371,6 +386,7 @@ export type dq_missing_offers_pricingUncheckedUpdateInput = {
   detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
   resolved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dismissed_by?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audit_records?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutGap_recordNestedInput
   staging_records?: Prisma.dim_offers_stagingUncheckedUpdateManyWithoutGap_recordNestedInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedUpdateOneWithoutGap_recordNestedInput
@@ -386,6 +402,7 @@ export type dq_missing_offers_pricingCreateManyInput = {
   detected_at?: Date | string
   status?: $Enums.DqGapStatus
   resolved_at?: Date | string | null
+  dismissed_by?: string | null
 }
 
 export type dq_missing_offers_pricingUpdateManyMutationInput = {
@@ -397,6 +414,7 @@ export type dq_missing_offers_pricingUpdateManyMutationInput = {
   detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
   resolved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dismissed_by?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type dq_missing_offers_pricingUncheckedUpdateManyInput = {
@@ -409,6 +427,7 @@ export type dq_missing_offers_pricingUncheckedUpdateManyInput = {
   detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
   resolved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dismissed_by?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type dq_missing_offers_pricingCountOrderByAggregateInput = {
@@ -421,6 +440,7 @@ export type dq_missing_offers_pricingCountOrderByAggregateInput = {
   detected_at?: Prisma.SortOrder
   status?: Prisma.SortOrder
   resolved_at?: Prisma.SortOrder
+  dismissed_by?: Prisma.SortOrder
 }
 
 export type dq_missing_offers_pricingAvgOrderByAggregateInput = {
@@ -437,6 +457,7 @@ export type dq_missing_offers_pricingMaxOrderByAggregateInput = {
   detected_at?: Prisma.SortOrder
   status?: Prisma.SortOrder
   resolved_at?: Prisma.SortOrder
+  dismissed_by?: Prisma.SortOrder
 }
 
 export type dq_missing_offers_pricingMinOrderByAggregateInput = {
@@ -449,6 +470,7 @@ export type dq_missing_offers_pricingMinOrderByAggregateInput = {
   detected_at?: Prisma.SortOrder
   status?: Prisma.SortOrder
   resolved_at?: Prisma.SortOrder
+  dismissed_by?: Prisma.SortOrder
 }
 
 export type dq_missing_offers_pricingSumOrderByAggregateInput = {
@@ -522,6 +544,7 @@ export type dq_missing_offers_pricingCreateWithoutSnapshot_rowInput = {
   detected_at?: Date | string
   status?: $Enums.DqGapStatus
   resolved_at?: Date | string | null
+  dismissed_by?: string | null
   audit_records?: Prisma.dim_offers_auditCreateNestedManyWithoutGap_recordInput
   staging_records?: Prisma.dim_offers_stagingCreateNestedManyWithoutGap_recordInput
 }
@@ -536,6 +559,7 @@ export type dq_missing_offers_pricingUncheckedCreateWithoutSnapshot_rowInput = {
   detected_at?: Date | string
   status?: $Enums.DqGapStatus
   resolved_at?: Date | string | null
+  dismissed_by?: string | null
   audit_records?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutGap_recordInput
   staging_records?: Prisma.dim_offers_stagingUncheckedCreateNestedManyWithoutGap_recordInput
 }
@@ -565,6 +589,7 @@ export type dq_missing_offers_pricingUpdateWithoutSnapshot_rowInput = {
   detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
   resolved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dismissed_by?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audit_records?: Prisma.dim_offers_auditUpdateManyWithoutGap_recordNestedInput
   staging_records?: Prisma.dim_offers_stagingUpdateManyWithoutGap_recordNestedInput
 }
@@ -579,6 +604,7 @@ export type dq_missing_offers_pricingUncheckedUpdateWithoutSnapshot_rowInput = {
   detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
   resolved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dismissed_by?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audit_records?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutGap_recordNestedInput
   staging_records?: Prisma.dim_offers_stagingUncheckedUpdateManyWithoutGap_recordNestedInput
 }
@@ -592,6 +618,7 @@ export type dq_missing_offers_pricingCreateWithoutStaging_recordsInput = {
   detected_at?: Date | string
   status?: $Enums.DqGapStatus
   resolved_at?: Date | string | null
+  dismissed_by?: string | null
   audit_records?: Prisma.dim_offers_auditCreateNestedManyWithoutGap_recordInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotCreateNestedOneWithoutGap_recordInput
 }
@@ -606,6 +633,7 @@ export type dq_missing_offers_pricingUncheckedCreateWithoutStaging_recordsInput 
   detected_at?: Date | string
   status?: $Enums.DqGapStatus
   resolved_at?: Date | string | null
+  dismissed_by?: string | null
   audit_records?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutGap_recordInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedCreateNestedOneWithoutGap_recordInput
 }
@@ -635,6 +663,7 @@ export type dq_missing_offers_pricingUpdateWithoutStaging_recordsInput = {
   detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
   resolved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dismissed_by?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audit_records?: Prisma.dim_offers_auditUpdateManyWithoutGap_recordNestedInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotUpdateOneWithoutGap_recordNestedInput
 }
@@ -649,6 +678,7 @@ export type dq_missing_offers_pricingUncheckedUpdateWithoutStaging_recordsInput 
   detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
   resolved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dismissed_by?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   audit_records?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutGap_recordNestedInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedUpdateOneWithoutGap_recordNestedInput
 }
@@ -662,6 +692,7 @@ export type dq_missing_offers_pricingCreateWithoutAudit_recordsInput = {
   detected_at?: Date | string
   status?: $Enums.DqGapStatus
   resolved_at?: Date | string | null
+  dismissed_by?: string | null
   staging_records?: Prisma.dim_offers_stagingCreateNestedManyWithoutGap_recordInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotCreateNestedOneWithoutGap_recordInput
 }
@@ -676,6 +707,7 @@ export type dq_missing_offers_pricingUncheckedCreateWithoutAudit_recordsInput = 
   detected_at?: Date | string
   status?: $Enums.DqGapStatus
   resolved_at?: Date | string | null
+  dismissed_by?: string | null
   staging_records?: Prisma.dim_offers_stagingUncheckedCreateNestedManyWithoutGap_recordInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedCreateNestedOneWithoutGap_recordInput
 }
@@ -705,6 +737,7 @@ export type dq_missing_offers_pricingUpdateWithoutAudit_recordsInput = {
   detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
   resolved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dismissed_by?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   staging_records?: Prisma.dim_offers_stagingUpdateManyWithoutGap_recordNestedInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotUpdateOneWithoutGap_recordNestedInput
 }
@@ -719,6 +752,7 @@ export type dq_missing_offers_pricingUncheckedUpdateWithoutAudit_recordsInput = 
   detected_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
   resolved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dismissed_by?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   staging_records?: Prisma.dim_offers_stagingUncheckedUpdateManyWithoutGap_recordNestedInput
   snapshot_row?: Prisma.dq_gap_queue_snapshotUncheckedUpdateOneWithoutGap_recordNestedInput
 }
@@ -773,6 +807,7 @@ export type dq_missing_offers_pricingSelect<ExtArgs extends runtime.Types.Extens
   detected_at?: boolean
   status?: boolean
   resolved_at?: boolean
+  dismissed_by?: boolean
   audit_records?: boolean | Prisma.dq_missing_offers_pricing$audit_recordsArgs<ExtArgs>
   staging_records?: boolean | Prisma.dq_missing_offers_pricing$staging_recordsArgs<ExtArgs>
   snapshot_row?: boolean | Prisma.dq_missing_offers_pricing$snapshot_rowArgs<ExtArgs>
@@ -789,6 +824,7 @@ export type dq_missing_offers_pricingSelectCreateManyAndReturn<ExtArgs extends r
   detected_at?: boolean
   status?: boolean
   resolved_at?: boolean
+  dismissed_by?: boolean
 }, ExtArgs["result"]["dq_missing_offers_pricing"]>
 
 export type dq_missing_offers_pricingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -801,6 +837,7 @@ export type dq_missing_offers_pricingSelectUpdateManyAndReturn<ExtArgs extends r
   detected_at?: boolean
   status?: boolean
   resolved_at?: boolean
+  dismissed_by?: boolean
 }, ExtArgs["result"]["dq_missing_offers_pricing"]>
 
 export type dq_missing_offers_pricingSelectScalar = {
@@ -813,9 +850,10 @@ export type dq_missing_offers_pricingSelectScalar = {
   detected_at?: boolean
   status?: boolean
   resolved_at?: boolean
+  dismissed_by?: boolean
 }
 
-export type dq_missing_offers_pricingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"dq_id" | "trde_item" | "item_name" | "brand" | "item_category" | "missing_fields" | "detected_at" | "status" | "resolved_at", ExtArgs["result"]["dq_missing_offers_pricing"]>
+export type dq_missing_offers_pricingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"dq_id" | "trde_item" | "item_name" | "brand" | "item_category" | "missing_fields" | "detected_at" | "status" | "resolved_at" | "dismissed_by", ExtArgs["result"]["dq_missing_offers_pricing"]>
 export type dq_missing_offers_pricingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   audit_records?: boolean | Prisma.dq_missing_offers_pricing$audit_recordsArgs<ExtArgs>
   staging_records?: boolean | Prisma.dq_missing_offers_pricing$staging_recordsArgs<ExtArgs>
@@ -842,6 +880,10 @@ export type $dq_missing_offers_pricingPayload<ExtArgs extends runtime.Types.Exte
     detected_at: Date
     status: $Enums.DqGapStatus
     resolved_at: Date | null
+    /**
+     * User id that removed the gap from the queue (status = dismissed).
+     */
+    dismissed_by: string | null
   }, ExtArgs["result"]["dq_missing_offers_pricing"]>
   composites: {}
 }
@@ -1277,6 +1319,7 @@ export interface dq_missing_offers_pricingFieldRefs {
   readonly detected_at: Prisma.FieldRef<"dq_missing_offers_pricing", 'DateTime'>
   readonly status: Prisma.FieldRef<"dq_missing_offers_pricing", 'DqGapStatus'>
   readonly resolved_at: Prisma.FieldRef<"dq_missing_offers_pricing", 'DateTime'>
+  readonly dismissed_by: Prisma.FieldRef<"dq_missing_offers_pricing", 'String'>
 }
     
 

@@ -8,6 +8,7 @@ import {
   listTransactedOfferItems,
 } from "$lib/services/offers-data-quality-clickhouse.server";
 import {
+  listDismissedItemCodes,
   listGapRecords,
   listRecentlyResolvedItemCodes,
 } from "$lib/services/offers-data-quality-postgres.server";
@@ -138,13 +139,19 @@ export async function rebuildGapQueueSnapshot(options: {
 
   try {
     const graceHours = getDataQualityEnv().DQ_SNAPSHOT_RESOLVED_GRACE_HOURS;
-    const [eligibleItems, transactedItems, trackedGaps, recentlyResolved] =
-      await Promise.all([
-        listOfferEligibleItems(),
-        listTransactedOfferItems(),
-        listGapRecords({ statuses: ["open", "submitted"] }),
-        listRecentlyResolvedItemCodes(graceHours),
-      ]);
+    const [
+      eligibleItems,
+      transactedItems,
+      trackedGaps,
+      recentlyResolved,
+      dismissed,
+    ] = await Promise.all([
+      listOfferEligibleItems(),
+      listTransactedOfferItems(),
+      listGapRecords({ statuses: ["open", "submitted"] }),
+      listRecentlyResolvedItemCodes(graceHours),
+      listDismissedItemCodes(),
+    ]);
     const itemCodes = [
       ...new Set([
         ...transactedItems.map((item) => item.trde_item),
@@ -157,7 +164,8 @@ export async function rebuildGapQueueSnapshot(options: {
       transactedItems,
       dimOffers,
       trackedGaps,
-      recentlyResolvedItemCodes: recentlyResolved,
+      // Dismissed items are skipped exactly like just-approved ones, minus the expiry.
+      recentlyResolvedItemCodes: new Set([...recentlyResolved, ...dismissed]),
     });
     const toCreate = merge.rows.filter((row) => row.dq_id === null);
     const now = new Date();
@@ -230,14 +238,14 @@ export async function rebuildGapQueueSnapshot(options: {
             SET status = g.status
             FROM dq_missing_offers_pricing AS g
             WHERE g.dq_id = s.dq_id
-              AND g.status <> 'resolved'
+              AND g.status NOT IN ('resolved', 'dismissed')
               AND g.status <> s.status
           `;
           await tx.$executeRaw`
             DELETE FROM dq_gap_queue_snapshot AS s
             USING dq_missing_offers_pricing AS g
             WHERE g.dq_id = s.dq_id
-              AND g.status = 'resolved'
+              AND g.status IN ('resolved', 'dismissed')
           `;
         },
         { timeout: TRANSACTION_TIMEOUT_MS, maxWait: 10_000 },

@@ -18,12 +18,13 @@
   import { Textarea } from "$lib/components/ui/textarea/index.js";
   import {
     applyGapPricingLookupDefaults,
+    formatFcPercInput,
     formatIdealPriceInput,
+    isPriceAboveIdeal,
     gapPricingFormSchema,
     IDEAL_PRICE_MARKUP_FACTORS,
     mapGapPricingFormToPayload,
     normalizeMoneyInput,
-    normalizePercentInput,
     type GapPricingFormData,
     type LookupOption,
   } from "$lib/services/offers-data-quality";
@@ -168,6 +169,15 @@
 
     if ($form.ideal_price !== nextIdealPrice) {
       $form.ideal_price = nextIdealPrice;
+    }
+  });
+
+  // FC % is never typed: FC € ÷ (Selling price ÷ 1.05 ÷ 1.07).
+  $effect(() => {
+    const nextFcPerc = formatFcPercInput($form.fc_eur, $form.selling_price);
+
+    if ($form.fc_perc !== nextFcPerc) {
+      $form.fc_perc = nextFcPerc;
     }
   });
 
@@ -417,10 +427,6 @@
     $form[field] = normalizeMoneyInput($form[field]);
   }
 
-  function normalizePercentFieldOnBlur() {
-    $form.fc_perc = normalizePercentInput($form.fc_perc);
-  }
-
   function moneyDisplay(value: number | null) {
     return value === null ? "-" : `EUR ${value.toFixed(2)}`;
   }
@@ -578,7 +584,12 @@
                     ClickHouse transaction data.</Card.Description
                   >
                 </div>
-                <Badge variant="secondary">Review mode</Badge>
+                <div class="flex gap-2">
+                  {#if reviewSubmission.flagged}
+                    <Badge variant="destructive">Flagged</Badge>
+                  {/if}
+                  <Badge variant="secondary">Review mode</Badge>
+                </div>
               </div>
             </Card.Header>
             <Card.Content class="space-y-5 p-6">
@@ -1101,8 +1112,14 @@
                     />
                   </div>
                   <p class="text-muted-foreground text-xs">
-                    Can be zero, but cannot exceed ideal price.
+                    Must be above 0. Above ideal price is allowed but flags the
+                    offer.
                   </p>
+                  {#if isPriceAboveIdeal($form.selling_price, $form.ideal_price)}
+                    <p class="text-sm text-amber-600 dark:text-amber-400">
+                      Above ideal price: this offer will be flagged for review.
+                    </p>
+                  {/if}
                   {#if $errors.selling_price}
                     <p class="text-destructive text-sm">
                       {$errors.selling_price}
@@ -1122,15 +1139,11 @@
                       id="gap-fc-perc"
                       name="fc_perc"
                       type="number"
-                      step="0.1"
-                      min="0"
-                      max="100"
                       class={`pr-10 ${missingFields.has("fc_perc") ? "border-destructive/60 ring-destructive/8 bg-destructive/5" : ""}`}
-                      bind:value={$form.fc_perc}
-                      onblur={normalizePercentFieldOnBlur}
-                      aria-required="true"
+                      value={$form.fc_perc}
+                      readonly
+                      disabled
                       aria-invalid={!!$errors.fc_perc}
-                      {...$constraints.fc_perc}
                     />
                     <span
                       class="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm"
@@ -1138,7 +1151,7 @@
                     >
                   </div>
                   <p class="text-muted-foreground text-xs">
-                    Shown as a percentage. The API stores it as a fraction.
+                    Derived: FC € ÷ (Selling price ÷ 1.05 ÷ 1.07).
                   </p>
                   {#if $errors.fc_perc}
                     <p class="text-destructive text-sm">{$errors.fc_perc}</p>

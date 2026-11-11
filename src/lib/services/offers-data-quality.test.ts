@@ -140,7 +140,8 @@ describe("offers-data-quality helpers", () => {
       // (3 / 0.30) x 1.05 x 1.07 = 11.235 -> 11.24, regardless of the stored 0
       ideal_price: "11.24",
       selling_price: "5.99",
-      fc_perc: "",
+      // 3 / (5.99 / 1.05 / 1.07) = 0.5627, ignoring the stored 0
+      fc_perc: "56.27",
       fc_eur: "3",
       brand_ideal_fc_perc: "30",
       mktg_spend: "",
@@ -174,7 +175,7 @@ describe("offers-data-quality helpers", () => {
       ideal_price: "",
       fc_eur: "",
       brand_ideal_fc_perc: "",
-      fc_perc: "30",
+      fc_perc: "",
     });
   });
 
@@ -192,6 +193,17 @@ describe("offers-data-quality helpers", () => {
     expect(helpers.calculateIdealPriceFromFormValues("", "30")).toBeNull();
     expect(helpers.formatIdealPriceInput("3", "30")).toBe("11.24");
     expect(helpers.formatIdealPriceInput("3", "")).toBe("");
+  });
+
+  it("derives fc_perc as fc_eur / (selling / 1.05 / 1.07)", () => {
+    expect(helpers.calculateFcPerc(3, 11.235)).toBe(0.3);
+    expect(helpers.calculateFcPerc(3, 5.99)).toBe(0.5627);
+    expect(helpers.calculateFcPerc(3, 2)).toBe(1.6853);
+    expect(helpers.calculateFcPerc(3, 0)).toBeNull();
+    expect(helpers.calculateFcPerc(0, 5)).toBeNull();
+    expect(helpers.calculateFcPerc(null, 5)).toBeNull();
+    expect(helpers.formatFcPercInput("3", "11.24")).toBe("29.99");
+    expect(helpers.formatFcPercInput("3", "")).toBe("");
   });
 
   it("maps form data to submit payload and converts fc_perc", () => {
@@ -217,7 +229,6 @@ describe("offers-data-quality helpers", () => {
       subcategory: "% Disc",
       fc_eur: 2.4,
       selling_price: 0,
-      fc_perc: 0.32,
       mktg_spend: 1.25,
       notes: "hello",
     });
@@ -252,7 +263,7 @@ describe("offers-data-quality helpers", () => {
     });
   });
 
-  it("rejects a selling price above the calculated ideal price", () => {
+  it("accepts a selling price above the ideal price (flagged, not blocked)", () => {
     const result = helpers.gapPricingFormSchema.safeParse({
       channel: "Wolt Only",
       category: "ONEPLUSX",
@@ -265,15 +276,10 @@ describe("offers-data-quality helpers", () => {
       notes: "",
     });
 
-    expect(result.success).toBe(false);
-
-    if (result.success) {
-      return;
-    }
-
-    expect(helpers.getZodFieldErrors(result.error)).toMatchObject({
-      selling_price: "Selling price cannot exceed ideal price",
-    });
+    expect(result.success).toBe(true);
+    expect(helpers.isPriceAboveIdeal("11.25", "11.24")).toBe(true);
+    expect(helpers.isPriceAboveIdeal("11.24", "11.24")).toBe(false);
+    expect(helpers.isPriceAboveIdeal("11.25", "")).toBe(false);
   });
 
   it("flags a missing brand target on the client", () => {
@@ -506,6 +512,36 @@ describe("offers-data-quality orchestration", () => {
           selling_price: "0.00",
           discount_amount: "4.00",
         }),
+      }),
+    );
+  });
+
+  it("writes a zero discount when a flagged offer sells above ideal", async () => {
+    serviceDeps.getStagingRecordById.mockResolvedValue({
+      id: 12,
+      dq_id: 7,
+      item_code: "ITM-12",
+      channel: "Bolt Only",
+      category: "DiscValue",
+      subcategory: "LTO",
+      ideal_price: { toString: () => "4", toFixed: () => "4.00" },
+      selling_price: { toString: () => "5", toFixed: () => "5.00" },
+      fc_perc: { toFixed: () => "0.2500", valueOf: () => 0.25 },
+      mktg_spend: null,
+      status: "pending",
+    });
+    serviceDeps.getGapRecordById.mockResolvedValue({
+      dq_id: 7,
+      item_name: "Promo bucket",
+      brand: "bk",
+    });
+    serviceDeps.getDimOfferAuditSnapshot.mockResolvedValue(null);
+
+    await orchestration.approveGapSubmission(12, "user-2");
+
+    expect(serviceDeps.createDimOffersAuditRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        afterValues: expect.objectContaining({ discount_amount: "0.00" }),
       }),
     );
   });
@@ -815,5 +851,67 @@ describe("offers-data-quality orchestration", () => {
       "ITM-ORPHAN",
     ]);
     expect(serviceDeps.getTransactionItemContext).not.toHaveBeenCalled();
+  });
+});
+
+describe("dismissGaps", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("dismisses only open gaps of the user's brands", async () => {
+    const rows = new Map([
+      [1, { dq_id: 1, status: "open", brand_aliases: ["kfc"] }],
+      [2, { dq_id: 2, status: "submitted", brand_aliases: ["kfc"] }],
+      [3, { dq_id: 3, status: "open", brand_aliases: ["phc"] }],
+    ]);
+    serviceDeps.getSnapshotRowByGapId.mockImplementation(
+      async (id: number) => rows.get(id) ?? null,
+    );
+
+    const result = await orchestration.dismissGaps(
+      [1, 1, 2, 3, 4],
+      [" KFC "],
+      "user-1",
+    );
+
+    expect(result.processedIds).toEqual([1]);
+    expect(result.failed.map((failure) => failure.id)).toEqual([2, 3, 4]);
+    expect(serviceDeps.updateGapRecordStatus).toHaveBeenCalledTimes(1);
+    expect(serviceDeps.updateGapRecordStatus).toHaveBeenCalledWith(
+      1,
+      "dismissed",
+      "user-1",
+    );
+  });
+
+  it("does not revive a dismissed gap from an old open-form link", async () => {
+    serviceDeps.getSnapshotRowByItemCode.mockResolvedValue(null);
+    serviceDeps.getGapRecordByItemCode.mockResolvedValue({
+      dq_id: 5,
+      trde_item: "ITM-5",
+      status: "dismissed",
+    });
+
+    await expect(
+      orchestration.ensureGapRecordForItemCode("ITM-5"),
+    ).resolves.toBeNull();
+    expect(serviceDeps.upsertSnapshotRow).not.toHaveBeenCalled();
+    expect(serviceDeps.createGapRecord).not.toHaveBeenCalled();
+  });
+
+  it("restores only dismissed gaps of the user's brands", async () => {
+    serviceDeps.getGapRecordsByIds.mockResolvedValue([
+      { dq_id: 1, status: "dismissed", brand: "KFC " },
+      { dq_id: 2, status: "open", brand: "KFC" },
+      { dq_id: 3, status: "dismissed", brand: "PHC" },
+    ]);
+
+    const result = await orchestration.restoreGaps([1, 2, 3, 4], ["kfc"]);
+
+    expect(result.processedIds).toEqual([1]);
+    expect(result.failed.map((failure) => failure.id)).toEqual([2, 3, 4]);
+    expect(serviceDeps.updateGapRecordStatus).toHaveBeenCalledTimes(1);
+    expect(serviceDeps.updateGapRecordStatus).toHaveBeenCalledWith(1, "open");
   });
 });

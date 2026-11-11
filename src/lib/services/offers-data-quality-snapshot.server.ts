@@ -30,7 +30,7 @@ export type GapQueueSnapshotRow = {
   brand_aliases: string[];
   item_category: string;
   missing_fields: string;
-  status: "open" | "submitted" | "resolved";
+  status: "open" | "submitted" | "resolved" | "dismissed";
   detected_at: Date;
   channel: string | null;
   category: string | null;
