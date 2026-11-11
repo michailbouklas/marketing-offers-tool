@@ -10,6 +10,8 @@ type FetchGapQueueInput = {
   sortBy: GapListSortField;
   sortDir: GapListSortDirection;
   status?: "submitted";
+  itemName?: string;
+  itemCode?: string;
 };
 
 export async function fetchGapQueue(
@@ -36,6 +38,14 @@ export async function fetchGapQueue(
 
   if (input.status) {
     params.set("status", input.status);
+  }
+
+  if (input.itemName?.trim()) {
+    params.set("itemName", input.itemName.trim());
+  }
+
+  if (input.itemCode?.trim()) {
+    params.set("itemCode", input.itemCode.trim());
   }
 
   const response = await fetchFn(`/api/gaps?${params.toString()}`);

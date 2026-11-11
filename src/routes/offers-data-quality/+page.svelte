@@ -17,6 +17,8 @@
   import * as Card from "$lib/components/ui/card/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
@@ -52,6 +54,16 @@
   let confirmRemoveOpen = $state(false);
   let isRemoving = $state(false);
   let latestRefreshRequestId = 0;
+  let itemNameSearch = $state("");
+  let itemCodeSearch = $state("");
+  let searchTimer: ReturnType<typeof setTimeout> | undefined;
+
+  $effect(() => () => clearTimeout(searchTimer));
+
+  function scheduleSearch() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => refreshQueue({ nextPage: 1 }), 500);
+  }
 
   const gaps = $derived(queuePage.items);
   const brands = $derived(data.brands);
@@ -154,6 +166,8 @@
         sortBy: nextSortBy,
         sortDir: nextSortDir,
         status: nextOnlySubmitted ? "submitted" : undefined,
+        itemName: itemNameSearch,
+        itemCode: itemCodeSearch,
       });
 
       if (requestId !== latestRefreshRequestId) {
@@ -253,6 +267,12 @@
       }
       if (onlySubmitted) {
         params.set("status", "submitted");
+      }
+      if (itemNameSearch.trim()) {
+        params.set("itemName", itemNameSearch.trim());
+      }
+      if (itemCodeSearch.trim()) {
+        params.set("itemCode", itemCodeSearch.trim());
       }
       const response = await fetch(`/offers-data-quality/export?${params}`);
       if (!response.ok) {
@@ -581,6 +601,31 @@
                   Flagged offers
                 </Button>
               {/if}
+            </div>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div class="space-y-1.5">
+              <Label for="gap-search-name">Offer name</Label>
+              <Input
+                id="gap-search-name"
+                type="search"
+                placeholder="Search by offer name"
+                maxlength={100}
+                bind:value={itemNameSearch}
+                oninput={scheduleSearch}
+              />
+            </div>
+            <div class="space-y-1.5">
+              <Label for="gap-search-code">Item code</Label>
+              <Input
+                id="gap-search-code"
+                type="search"
+                placeholder="Search by item code"
+                maxlength={100}
+                bind:value={itemCodeSearch}
+                oninput={scheduleSearch}
+              />
             </div>
           </div>
 

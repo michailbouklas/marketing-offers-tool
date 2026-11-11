@@ -42,6 +42,8 @@ export type GapQueueCacheKeyInput = {
   sortDir: string;
   page: number;
   pageSize: number;
+  itemName?: string;
+  itemCode?: string;
 };
 
 export function buildGapQueueCacheKey(input: GapQueueCacheKeyInput): string {
@@ -52,6 +54,8 @@ export function buildGapQueueCacheKey(input: GapQueueCacheKeyInput): string {
     sortDir: input.sortDir,
     page: input.page,
     pageSize: input.pageSize,
+    itemName: input.itemName ?? null,
+    itemCode: input.itemCode ?? null,
   });
 }
 
