@@ -119,7 +119,8 @@ describe("POST /api/gaps/[id]", () => {
       // (3 / 0.30) x 1.05 x 1.07 = 11.235 -> 11.24
       ideal_price: "11.24",
       selling_price: "9.00",
-      fc_perc: "0.3000",
+      // derived server-side: 3 / (9 / 1.05 / 1.07); the client fc_perc is ignored
+      fc_perc: "0.3745",
       fc_eur: "3.00",
       brand_ideal_fc_perc: "0.3000",
       mktg_spend: null,
@@ -171,16 +172,15 @@ describe("POST /api/gaps/[id]", () => {
     expect(postgresMocks.createDimOffersStagingRecord).not.toHaveBeenCalled();
   });
 
-  it("rejects a selling price above the derived ideal price", async () => {
+  it("stages a selling price above the derived ideal price (flagged)", async () => {
     const response = await POST(
       makeEvent({ ...validPayload, selling_price: 11.25 }),
     );
 
-    expect(response.status).toBe(400);
-    expect(await response.json()).toEqual({
-      errors: { selling_price: "Selling price cannot exceed ideal price" },
-    });
-    expect(postgresMocks.createDimOffersStagingRecord).not.toHaveBeenCalled();
+    expect(response.status).toBe(201);
+    expect(postgresMocks.createDimOffersStagingRecord).toHaveBeenCalledWith(
+      expect.objectContaining({ ideal_price: "11.24", selling_price: "11.25" }),
+    );
   });
 
   it("requires a positive fc_eur", async () => {

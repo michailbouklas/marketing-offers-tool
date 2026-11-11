@@ -374,6 +374,8 @@ model dq_missing_offers_pricing {
   detected_at     DateTime               @default(now())
   status          DqGapStatus            @default(open)
   resolved_at     DateTime?
+  /// User id that removed the gap from the queue (status = dismissed).
+  dismissed_by    String?                @db.VarChar
   audit_records   dim_offers_audit[]
   staging_records dim_offers_staging[]
   snapshot_row    dq_gap_queue_snapshot?
@@ -517,6 +519,8 @@ enum DqGapStatus {
   open
   submitted
   resolved
+  /// Removed from the queue by a user (invalid / too old); never re-detected.
+  dismissed
 }
 
 enum DimOffersStagingStatus {

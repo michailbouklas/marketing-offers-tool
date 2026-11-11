@@ -32,7 +32,8 @@ export type Aggregator = (typeof Aggregator)[keyof typeof Aggregator]
 export const DqGapStatus = {
   open: 'open',
   submitted: 'submitted',
-  resolved: 'resolved'
+  resolved: 'resolved',
+  dismissed: 'dismissed'
 } as const
 
 export type DqGapStatus = (typeof DqGapStatus)[keyof typeof DqGapStatus]

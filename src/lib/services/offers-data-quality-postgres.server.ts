@@ -18,6 +18,11 @@ export type GapRecord = {
   resolved_at: Date | null;
 };
 
+/** Closed gaps (approved or dismissed) have no queue snapshot row. */
+export function isClosedGapStatus(status: DqGapStatus): boolean {
+  return status === "resolved" || status === "dismissed";
+}
+
 export type ListGapRecordsFilters = {
   statuses?: DqGapStatus[];
 };
@@ -251,13 +256,70 @@ export async function listRecentlyResolvedItemCodes(
 }
 
 /**
+ * Item codes a user removed from the queue. The rebuild skips them forever;
+ * reopening a gap (status back to open) makes it tracked again.
+ */
+export async function listDismissedItemCodes(): Promise<Set<string>> {
+  const rows = await prisma.dq_missing_offers_pricing.findMany({
+    where: { status: "dismissed" },
+    select: { trde_item: true },
+    distinct: ["trde_item"],
+  });
+
+  return new Set(rows.map((row) => row.trde_item));
+}
+
+/** Gaps users removed from the queue, most recently removed first. */
+export async function listDismissedGapRecords() {
+  return prisma.dq_missing_offers_pricing.findMany({
+    where: { status: "dismissed" },
+    orderBy: [{ resolved_at: "desc" }, { dq_id: "desc" }],
+  });
+}
+
+/** Submissions priced above their ideal price (any status), newest first. */
+export async function listPriceFlaggedStagingRecords() {
+  return prisma.dim_offers_staging.findMany({
+    where: {
+      selling_price: { gt: prisma.dim_offers_staging.fields.ideal_price },
+    },
+    include: {
+      gap_record: {
+        select: { trde_item: true, item_name: true, brand: true },
+      },
+    },
+    orderBy: [{ submitted_at: "desc" }, { id: "desc" }],
+  });
+}
+
+/** Display names for user ids (dismissed_by etc.), one query. */
+export async function getUserNamesByIds(
+  ids: string[],
+): Promise<Map<string, string>> {
+  if (ids.length === 0) {
+    return new Map();
+  }
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, name: true, email: true },
+  });
+
+  return new Map(users.map((user) => [user.id, user.name || user.email]));
+}
+
+/**
  * Single choke point for every gap status transition (submit, approve, reject,
  * bulk). Updates the main table and the queue snapshot in one transaction —
- * `resolved` removes the snapshot row, any other status patches it (or inserts
+ * `resolved`/`dismissed` remove the snapshot row, any other status patches it (or inserts
  * it when the gap was opened on demand and has no row yet) — then busts the
  * page cache.
  */
-export async function updateGapRecordStatus(id: number, status: DqGapStatus) {
+export async function updateGapRecordStatus(
+  id: number,
+  status: DqGapStatus,
+  changedBy?: string,
+) {
   const gapRecord = await prisma.$transaction(async (tx) => {
     const updated = await tx.dq_missing_offers_pricing.update({
       where: {
@@ -265,11 +327,12 @@ export async function updateGapRecordStatus(id: number, status: DqGapStatus) {
       },
       data: {
         status,
-        resolved_at: status === "resolved" ? new Date() : null,
+        resolved_at: isClosedGapStatus(status) ? new Date() : null,
+        dismissed_by: status === "dismissed" ? (changedBy ?? null) : null,
       },
     });
 
-    if (status === "resolved") {
+    if (isClosedGapStatus(status)) {
       await tx.dq_gap_queue_snapshot.deleteMany({
         where: {
           dq_id: id,

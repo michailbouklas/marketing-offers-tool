@@ -1,5 +1,8 @@
 import { listBrandsForUser } from "$lib/services/brands.server";
-import { requireAuthenticatedUser } from "$lib/server/auth-guards";
+import {
+  hasPermission,
+  requireAuthenticatedUser,
+} from "$lib/server/auth-guards";
 import {
   getGapQueueStatus,
   getOpenGapList,
@@ -52,7 +55,10 @@ export const load: PageServerLoad = async (event) => {
     sortDir,
     statuses: statusFilter ? [statusFilter] : undefined,
   });
-  const queueStatus = await getGapQueueStatus();
+  const [queueStatus, canDismiss] = await Promise.all([
+    getGapQueueStatus(),
+    hasPermission(event, { submission: ["reject"] }),
+  ]);
 
   return {
     gapsPage,
@@ -62,5 +68,6 @@ export const load: PageServerLoad = async (event) => {
     sortDir,
     statusFilter,
     snapshotRefreshedAt: queueStatus.refreshedAt,
+    canDismiss,
   };
 };

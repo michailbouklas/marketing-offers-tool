@@ -24,7 +24,10 @@ import {
   getGapRecordsByIds,
   getPendingStagingRecordByItemCode,
   getStagingRecordById,
+  getUserNamesByIds,
+  listDismissedGapRecords,
   listPendingStagingRecords,
+  listPriceFlaggedStagingRecords,
   countPendingStagingRecords,
   updateDimOffersStagingStatus,
   updateGapRecordStatus,
@@ -108,6 +111,9 @@ function mapPendingSubmission(stagingRecord: {
     submitted_by: stagingRecord.submitted_by,
     submitted_at: stagingRecord.submitted_at.toISOString(),
     status: "pending",
+    flagged:
+      Number(stagingRecord.selling_price.toFixed(2)) >
+      Number(stagingRecord.ideal_price.toFixed(2)),
   };
 }
 
@@ -233,6 +239,11 @@ export async function ensureGapRecordForItemCode(
   }
 
   const latestGap = await getGapRecordByItemCode(itemCode);
+
+  // Removed from the list on purpose; an old shared link must not revive it.
+  if (latestGap?.status === "dismissed") {
+    return null;
+  }
 
   if (latestGap && latestGap.status !== "resolved") {
     if (!snapshotRow) {
@@ -393,9 +404,11 @@ export async function approveGapSubmission(
     throw new Error("Gap record not found for staging submission");
   }
 
-  const discountAmount = (
+  // Flagged offers (selling > ideal) carry no discount rather than a negative one.
+  const discountAmount = Math.max(
+    0,
     Number.parseFloat(stagingRecord.ideal_price.toString()) -
-    Number.parseFloat(stagingRecord.selling_price.toString())
+      Number.parseFloat(stagingRecord.selling_price.toString()),
   ).toFixed(2);
 
   const upsertPayload = {
@@ -452,6 +465,181 @@ export async function approveGapSubmission(
   await updateGapRecordStatus(stagingRecord.dq_id, "resolved");
 
   return stagingRecord;
+}
+
+/**
+ * "Remove from list": permanently drop open gaps the user owns (by brand) from
+ * the queue. Submitted gaps are refused so their pending staging record is
+ * not orphaned; they go through reject instead.
+ */
+export async function dismissGaps(
+  dqIds: number[],
+  allowedBrandAliases: string[],
+  userId: string,
+): Promise<{
+  processedIds: number[];
+  failed: Array<{ id: number; error: string }>;
+}> {
+  const allowed = new Set(allowedBrandAliases.map(normalizeBrandAlias));
+  const result = {
+    processedIds: [] as number[],
+    failed: [] as Array<{ id: number; error: string }>,
+  };
+
+  for (const dqId of new Set(dqIds)) {
+    const row = await getSnapshotRowByGapId(dqId);
+
+    if (!row || !row.brand_aliases.some((alias) => allowed.has(alias))) {
+      result.failed.push({ id: dqId, error: "Gap not found in your queue" });
+      continue;
+    }
+
+    if (row.status !== "open") {
+      result.failed.push({
+        id: dqId,
+        error: "Awaiting approval; reject the submission instead",
+      });
+      continue;
+    }
+
+    try {
+      await updateGapRecordStatus(dqId, "dismissed", userId);
+      result.processedIds.push(dqId);
+    } catch (error) {
+      result.failed.push({
+        id: dqId,
+        error: error instanceof Error ? error.message : "Unable to remove gap",
+      });
+    }
+  }
+
+  return result;
+}
+
+export type FlaggedGap = {
+  dq_id: number;
+  trde_item: string;
+  item_name: string;
+  brand: string;
+  item_category: string;
+  missing_fields: string[];
+  detected_at: string;
+  dismissed_at: string | null;
+  dismissed_by_name: string | null;
+};
+
+/** Gaps removed from the queue, limited to the user's brands. */
+export async function listFlaggedGaps(
+  allowedBrandAliases: string[],
+): Promise<FlaggedGap[]> {
+  const allowed = new Set(allowedBrandAliases.map(normalizeBrandAlias));
+  const gaps = (await listDismissedGapRecords()).filter((gap) =>
+    allowed.has(normalizeBrandAlias(gap.brand)),
+  );
+  const names = await getUserNamesByIds([
+    ...new Set(
+      gaps.flatMap((gap) => (gap.dismissed_by ? [gap.dismissed_by] : [])),
+    ),
+  ]);
+
+  return gaps.map((gap) => ({
+    dq_id: gap.dq_id,
+    trde_item: gap.trde_item,
+    item_name: gap.item_name,
+    brand: gap.brand.trim().toUpperCase(),
+    item_category: gap.item_category,
+    missing_fields: parseMissingFields(gap.missing_fields),
+    detected_at: gap.detected_at.toISOString(),
+    dismissed_at: gap.resolved_at?.toISOString() ?? null,
+    dismissed_by_name: gap.dismissed_by
+      ? (names.get(gap.dismissed_by) ?? gap.dismissed_by)
+      : null,
+  }));
+}
+
+export type PriceFlaggedSubmission = {
+  id: number;
+  dq_id: number;
+  trde_item: string;
+  item_name: string;
+  brand: string;
+  selling_price: string;
+  ideal_price: string;
+  over_by: string;
+  status: "pending" | "approved" | "rejected";
+  submitted_at: string;
+  submitted_by_name: string;
+};
+
+/** Submissions with selling > ideal price, limited to the user's brands. */
+export async function listPriceFlaggedSubmissions(
+  allowedBrandAliases: string[],
+): Promise<PriceFlaggedSubmission[]> {
+  const allowed = new Set(allowedBrandAliases.map(normalizeBrandAlias));
+  const records = (await listPriceFlaggedStagingRecords()).filter((record) =>
+    allowed.has(normalizeBrandAlias(record.gap_record.brand)),
+  );
+  const names = await getUserNamesByIds([
+    ...new Set(records.map((record) => record.submitted_by)),
+  ]);
+
+  return records.map((record) => ({
+    id: record.id,
+    dq_id: record.dq_id,
+    trde_item: record.gap_record.trde_item,
+    item_name: record.gap_record.item_name,
+    brand: record.gap_record.brand.trim().toUpperCase(),
+    selling_price: record.selling_price.toFixed(2),
+    ideal_price: record.ideal_price.toFixed(2),
+    over_by: record.selling_price.minus(record.ideal_price).toFixed(2),
+    status: record.status,
+    submitted_at: record.submitted_at.toISOString(),
+    submitted_by_name: names.get(record.submitted_by) ?? record.submitted_by,
+  }));
+}
+
+/** Put removed gaps back into the queue as open. */
+export async function restoreGaps(
+  dqIds: number[],
+  allowedBrandAliases: string[],
+): Promise<{
+  processedIds: number[];
+  failed: Array<{ id: number; error: string }>;
+}> {
+  const allowed = new Set(allowedBrandAliases.map(normalizeBrandAlias));
+  const uniqueIds = [...new Set(dqIds)];
+  const gapById = new Map(
+    (await getGapRecordsByIds(uniqueIds)).map((gap) => [gap.dq_id, gap]),
+  );
+  const result = {
+    processedIds: [] as number[],
+    failed: [] as Array<{ id: number; error: string }>,
+  };
+
+  for (const dqId of uniqueIds) {
+    const gap = gapById.get(dqId);
+
+    if (
+      !gap ||
+      gap.status !== "dismissed" ||
+      !allowed.has(normalizeBrandAlias(gap.brand))
+    ) {
+      result.failed.push({ id: dqId, error: "Removed gap not found" });
+      continue;
+    }
+
+    try {
+      await updateGapRecordStatus(dqId, "open");
+      result.processedIds.push(dqId);
+    } catch (error) {
+      result.failed.push({
+        id: dqId,
+        error: error instanceof Error ? error.message : "Unable to restore gap",
+      });
+    }
+  }
+
+  return result;
 }
 
 export async function rejectGapSubmission(stagingId: number) {
