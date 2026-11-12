@@ -8,10 +8,12 @@ import {
   offerReason,
   offerWeeks,
   parseOfferDateRange,
+  parseOfferLocations,
 } from "$lib/services/sales-offers";
 import {
   getCachedOfferValues,
   getOfferDailyRows,
+  getOfferFilterOptions,
   getOfferValuesForRange,
 } from "$lib/services/sales-offers.server";
 import type { RequestHandler } from "./$types";
@@ -34,17 +36,25 @@ export const GET: RequestHandler = async (event) => {
   const code = event.url.searchParams.get("code")?.trim();
   if (!code) error(400, "Missing offer code");
 
-  const { brands, channels } = withSingleBrand(scope.filters);
+  const filters = withSingleBrand(scope.filters);
+  const { brands, channels } = filters;
   const brand = brands[0];
   const range = parseOfferDateRange(event.url.searchParams);
   // Only orders on these channels (?channels=, parsed by the scope).
   const scoped = channels.length > 0 ? channels : undefined;
-  const [values, daily] = await Promise.all([
-    range || scoped
-      ? getOfferValuesForRange(brand, range, scoped)
+  const locations = parseOfferLocations(event.url.searchParams);
+  const [values, daily, options] = await Promise.all([
+    range || scoped || locations.length > 0
+      ? getOfferValuesForRange(brand, range, scoped, locations)
       : getCachedOfferValues(brand),
-    getOfferDailyRows(brand, [code], range, scoped),
+    getOfferDailyRows(brand, [code], range, scoped, locations),
+    locations.length > 0 ? getOfferFilterOptions(filters, range) : null,
   ]);
+  const locationNames = locations.map(
+    (id) =>
+      options?.locations.find((item) => item.id === id)?.name ??
+      `Location ${id}`,
+  );
   const offer = values?.offers.find((item) => item.code === code);
   if (!values || !offer) error(404, "Offer not found for this brand");
 
@@ -56,6 +66,7 @@ export const GET: RequestHandler = async (event) => {
     ["Category", offer.category],
     ["Period", range ? `${range.from} to ${range.to}` : "All time"],
     ["Sales channels", scoped ? scoped.join(", ") : "All"],
+    ["Locations", locationNames.length > 0 ? locationNames.join(", ") : "All"],
     ["First sale", offer.firstSale],
     ["Last sale", offer.lastSale],
     ["Days on sale", offer.daysOnSale],

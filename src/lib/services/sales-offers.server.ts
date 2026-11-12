@@ -13,6 +13,8 @@ import {
   EXPLORE_OFFER_CATEGORIES,
   OFFER_LINE_SQL,
 } from "./sales-explore.server";
+import { getSalesDashboardOptions } from "./sales-dashboard.server";
+import type { SalesDashboardFilters } from "./sales-dashboard";
 import {
   valueOffer,
   type OfferCalendarRow,
@@ -24,17 +26,45 @@ import {
   type OfferValueRow,
 } from "./sales-offers";
 
+/**
+ * Channel + location picker options of the page's brand: inside the range, or
+ * over the brand's whole history on all time (so closed stores still show).
+ */
+export async function getOfferFilterOptions(
+  filters: SalesDashboardFilters,
+  range: OfferDateRange | null,
+) {
+  // Unbounded on purpose: ~0.3 s for phcy over all history (2026-11-12).
+  const window = range ?? { from: "2000-01-01", to: filters.to };
+  const { channels, locations } = await getSalesDashboardOptions({
+    ...filters,
+    ...window,
+  });
+  return { channels, locations };
+}
+
 /** The offer a line belongs to: its combo head, or itself when unlinked. */
 const CODE_SQL = "if(trde_combo_item = '', trde_item, trde_combo_item)";
 
 /**
  * SQL + params limiting `trde_date` to a range; empty for all time. `channels`
  * keeps only orders rung on those `trim(dim_division_group_channel)` values:
- * lines carry no channel, so it comes from the order header.
+ * lines carry no channel, so it comes from the order header. `locations`
+ * keeps only lines rung at those POS `trde_location` ids.
  */
-function rangeFilter(range: OfferDateRange | null, channels?: string[]) {
-  const dates = range ? "AND trde_date BETWEEN {from:Date} AND {to:Date}" : "";
-  const params = range ? { from: range.from, to: range.to } : {};
+function rangeFilter(
+  range: OfferDateRange | null,
+  channels?: string[],
+  locations?: number[],
+) {
+  const where = range ? "AND trde_date BETWEEN {from:Date} AND {to:Date}" : "";
+  const dates = locations?.length
+    ? `${where} AND trde_location IN {locations:Array(Int16)}`
+    : where;
+  const params = {
+    ...(range ? { from: range.from, to: range.to } : {}),
+    ...(locations?.length ? { locations } : {}),
+  };
   if (!channels?.length) return { sql: dates, params };
   return {
     sql: `${dates}
@@ -62,8 +92,12 @@ const offerCodesCte = () => `codes AS (
  * time, so it comes from the header's `trans_order_time` (already Cyprus local
  * time: never toTimeZone it). Lines whose order has no header row drop out.
  */
-function offerLinesWithHour(range: OfferDateRange, channels?: string[]) {
-  const dates = rangeFilter(range, channels);
+function offerLinesWithHour(
+  range: OfferDateRange,
+  channels?: string[],
+  locations?: number[],
+) {
+  const dates = rangeFilter(range, channels, locations);
   return {
     sql: `
         FROM ${detailsTable()} AS d
@@ -88,8 +122,9 @@ export async function getOfferCalendarRows(
   brand: string,
   range: OfferDateRange,
   channels?: string[],
+  locations?: number[],
 ): Promise<OfferCalendarRow[]> {
-  const lines = offerLinesWithHour(range, channels);
+  const lines = offerLinesWithHour(range, channels, locations);
   const result = await clickhouse.query({
     query: `
         WITH ${offerCodesCte()}
@@ -121,8 +156,9 @@ export async function getOfferSlotSales(
   range: OfferDateRange,
   channels: string[] | undefined,
   slot: OfferSlot,
+  locations?: number[],
 ): Promise<OfferSlotSale[]> {
-  const lines = offerLinesWithHour(range, channels);
+  const lines = offerLinesWithHour(range, channels, locations);
   const where = [
     slot.date ? "AND trde_date = {date:Date}" : "",
     slot.weekday ? "AND toDayOfWeek(trde_date) = {weekday:UInt8}" : "",
@@ -183,9 +219,10 @@ async function queryOfferRows(
   brand: string,
   range: OfferDateRange | null = null,
   channels?: string[],
+  locations?: number[],
 ): Promise<OfferValueRow[]> {
   const details = detailsTable();
-  const dates = rangeFilter(range, channels);
+  const dates = rangeFilter(range, channels, locations);
   const result = await clickhouse.query({
     query: `
         WITH ${offerCodesCte()}
@@ -301,8 +338,10 @@ export async function getOfferDailyRows(
   range: OfferDateRange | null = null,
   /** Only orders on these channels; empty/omitted = all. */
   channels?: string[],
+  /** Only lines at these POS locations; empty/omitted = all. */
+  locations?: number[],
 ): Promise<OfferDailyRow[]> {
-  const dates = rangeFilter(range, channels);
+  const dates = rangeFilter(range, channels, locations);
   const result = await clickhouse.query({
     query: `
         SELECT ${CODE_SQL} AS code,
@@ -400,9 +439,10 @@ export async function getOfferValuesForRange(
   range: OfferDateRange | null,
   /** Only orders on these channels (trimmed `dim_division_group_channel`). */
   channels?: string[],
+  locations?: number[],
 ): Promise<CachedOfferValues> {
   const [rows, target] = await Promise.all([
-    queryOfferRows(brand, range, channels),
+    queryOfferRows(brand, range, channels, locations),
     getBrandPricingTargetByAlias(brand),
   ]);
   const idealFcPerc = target?.ideal_fc_perc ?? null;

@@ -19,6 +19,12 @@ const compareSchema = z.object({
     .min(1)
     .max(20)
     .optional(),
+  // POS location ids (bound params; ids of another brand match nothing).
+  locations: z
+    .array(z.number().int().min(1).max(32_767))
+    .min(1)
+    .max(200)
+    .optional(),
 });
 
 /** Daily sales of one offer (detail dialog) or the two picked offers (Offer VS). */
@@ -28,6 +34,12 @@ export const POST: RequestHandler = async (event) => {
     error(403, "Brand not in your scope");
   }
   return json(
-    await getOfferDailyRows(body.brand, body.codes, body.range, body.channels),
+    await getOfferDailyRows(
+      body.brand,
+      body.codes,
+      body.range,
+      body.channels,
+      body.locations,
+    ),
   );
 };

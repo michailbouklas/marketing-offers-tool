@@ -15,6 +15,12 @@ const slotSchema = z.object({
     .min(1)
     .max(20)
     .optional(),
+  // POS location ids (bound params; ids of another brand match nothing).
+  locations: z
+    .array(z.number().int().min(1).max(32_767))
+    .min(1)
+    .max(200)
+    .optional(),
   // A date (By date), a weekday (Group by day) or a weekday × hour (hour grid).
   slot: z.union([
     z.object({ date: isoDate }).strict(),
@@ -34,6 +40,12 @@ export const POST: RequestHandler = async (event) => {
     error(403, "Brand not in your scope");
   }
   return json(
-    await getOfferSlotSales(body.brand, body.range, body.channels, body.slot),
+    await getOfferSlotSales(
+      body.brand,
+      body.range,
+      body.channels,
+      body.slot,
+      body.locations,
+    ),
   );
 };

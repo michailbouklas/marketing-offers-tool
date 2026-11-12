@@ -30,6 +30,7 @@
     brand,
     range,
     channels,
+    locations,
     allTime,
   }: {
     calendar: ReturnType<typeof buildOfferCalendar>;
@@ -37,6 +38,8 @@
     /** Range the calendar covers (the scope default when the page is on all time). */
     range: OfferDateRange;
     channels?: string[];
+    /** Only lines at these POS locations; omitted = all. */
+    locations?: number[];
     /** The page has no range, so the calendar fell back to the default window. */
     allTime: boolean;
   } = $props();
@@ -287,4 +290,5 @@
   {brand}
   {range}
   {channels}
+  {locations}
 />

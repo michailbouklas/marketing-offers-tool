@@ -4,12 +4,11 @@
   import DateRangeFilter from "$lib/components/date-range-filter.svelte";
   import SalesCompareCard from "$lib/components/sales/sales-compare-card.svelte";
   import SalesLineChart from "$lib/components/sales/sales-line-chart.svelte";
-  import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
+  import MultiSelectFilter from "$lib/components/sales/multi-select-filter.svelte";
+  import { Button } from "$lib/components/ui/button/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
-  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
-  import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import { formatCompactMoney } from "$lib/services/forecasts/forecast-narrative";
   import {
@@ -21,7 +20,6 @@
     type SalesDashboardFilters,
     type SalesMetricCompare,
   } from "$lib/services/sales-dashboard";
-  import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
   import DownloadIcon from "@lucide/svelte/icons/download";
   import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import { toast } from "svelte-sonner";
@@ -29,8 +27,6 @@
 
   let { data }: { data: PageData } = $props();
 
-  let channelFilterOpen = $state(false);
-  let selectedChannels = $state<string[]>([]);
   let exporting = $state(false);
 
   const filters = $derived(data.scope?.filters ?? null);
@@ -120,33 +116,6 @@
       divisionGroup: null,
       divisionName: null,
     });
-
-  function openChannelFilter(open: boolean) {
-    if (open && filters) {
-      selectedChannels = [...filters.channels];
-    }
-    channelFilterOpen = open;
-  }
-
-  function toggleChannel(channel: string) {
-    selectedChannels = selectedChannels.includes(channel)
-      ? selectedChannels.filter((value) => value !== channel)
-      : [...selectedChannels, channel];
-  }
-
-  function applyChannels() {
-    channelFilterOpen = false;
-    // Every channel ticked is the same as no filter; keep the URL short.
-    const all = selectedChannels.length === (data.channels ?? []).length;
-    navigate({ channels: all ? [] : selectedChannels });
-  }
-
-  function channelSummary(): string {
-    const channels = filters?.channels ?? [];
-    if (channels.length === 0) return "All channels";
-    if (channels.length === 1) return channels[0];
-    return `${channels.length} channels`;
-  }
 
   function selectValue(event: Event): string | null {
     const value = (event.currentTarget as HTMLSelectElement).value;
@@ -277,63 +246,16 @@
         </NativeSelect.Root>
       </div>
 
-      <div class="space-y-2">
-        <span class="text-sm font-medium">Channel</span>
-        <Popover.Root open={channelFilterOpen} onOpenChange={openChannelFilter}>
-          <Popover.Trigger
-            class={`${buttonVariants({ variant: "outline" })} flex min-w-44 justify-between`}
-          >
-            <span class="truncate">{channelSummary()}</span>
-            <ChevronsUpDownIcon class="size-4 opacity-60" />
-          </Popover.Trigger>
-          <Popover.Content align="start" class="w-64 p-0">
-            <div
-              class="flex items-center justify-between gap-2 border-b px-4 py-2"
-            >
-              <button
-                type="button"
-                class="text-sm font-medium underline-offset-4 hover:underline"
-                onclick={() => (selectedChannels = [...(data.channels ?? [])])}
-              >
-                Select all
-              </button>
-              <button
-                type="button"
-                class="text-muted-foreground hover:text-foreground text-sm font-medium underline-offset-4 hover:underline"
-                onclick={() => (selectedChannels = [])}
-              >
-                Select none
-              </button>
-            </div>
-            <div class="max-h-72 overflow-y-auto p-2">
-              {#each data.channels ?? [] as channel (channel)}
-                <button
-                  type="button"
-                  class="hover:bg-accent/50 flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm"
-                  onclick={() => toggleChannel(channel)}
-                >
-                  <Checkbox
-                    checked={selectedChannels.includes(channel)}
-                    class="pointer-events-none"
-                  />
-                  {channel}
-                </button>
-              {/each}
-            </div>
-            <div
-              class="flex items-center justify-between gap-2 border-t px-4 py-3"
-            >
-              <p class="text-muted-foreground text-xs">
-                {selectedChannels.length || "All"} / {(data.channels ?? [])
-                  .length} selected
-              </p>
-              <Button type="button" size="sm" onclick={applyChannels}>
-                Apply
-              </Button>
-            </div>
-          </Popover.Content>
-        </Popover.Root>
-      </div>
+      <MultiSelectFilter
+        label="Channel"
+        options={(data.channels ?? []).map((value) => ({
+          value,
+          label: value,
+        }))}
+        noun="channels"
+        selected={filters.channels}
+        onApply={(channels) => navigate({ channels })}
+      />
 
       <div class="space-y-2">
         <span class="text-sm font-medium">Date range</span>

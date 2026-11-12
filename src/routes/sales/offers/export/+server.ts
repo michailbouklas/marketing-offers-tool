@@ -6,6 +6,7 @@ import { resolveSalesDashboardScope } from "$lib/services/sales-dashboard.server
 import {
   OFFER_VERDICT_LABELS,
   parseOfferDateRange,
+  parseOfferLocations,
 } from "$lib/services/sales-offers";
 import {
   getCachedOfferValues,
@@ -31,14 +32,15 @@ export const GET: RequestHandler = async (event) => {
   const { brands, channels } = withSingleBrand(scope.filters);
   const brand = brands[0];
   const range = parseOfferDateRange(event.url.searchParams);
+  const locations = parseOfferLocations(event.url.searchParams);
   const values =
-    range || channels.length > 0
-      ? await getOfferValuesForRange(brand, range, channels)
+    range || channels.length > 0 || locations.length > 0
+      ? await getOfferValuesForRange(brand, range, channels, locations)
       : await getCachedOfferValues(brand);
   if (!values) error(404, "This brand's offers have not been computed yet");
 
   const result = await generateExcelFile({
-    filename: `offers-${brand}-${range ? `${range.from}-to-${range.to}` : "all-time"}${channels.length > 0 ? `-${channels.join("-")}` : ""}`,
+    filename: `offers-${brand}-${range ? `${range.from}-to-${range.to}` : "all-time"}${channels.length > 0 ? `-${channels.join("-")}` : ""}${locations.length > 0 ? `-${locations.length}-locations` : ""}`,
     sheets: [
       {
         name: "Offers",

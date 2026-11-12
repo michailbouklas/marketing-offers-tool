@@ -5,6 +5,7 @@ import {
   offerCompareMetrics,
   offerReason,
   parseOfferDateRange,
+  parseOfferLocations,
   unitFoodCost,
   valueOffer,
   weekdayMix,
@@ -215,5 +216,25 @@ describe("buildOfferCalendar", () => {
     const at13 = grid.rows[0][grid.hours.indexOf(13)];
     expect(at13).toMatchObject({ avgNet: 30, avgTxns: 3 });
     expect(grid.weekdays[0]).toMatchObject({ avgNet: 32.5, avgTxns: 3.5 });
+  });
+});
+
+describe("parseOfferLocations", () => {
+  const parse = (value: string | null) =>
+    parseOfferLocations(
+      new URLSearchParams(value === null ? "" : `locations=${value}`),
+    );
+
+  it("is empty (all locations) when missing or blank", () => {
+    expect(parse(null)).toEqual([]);
+    expect(parse("")).toEqual([]);
+  });
+
+  it("keeps valid Int16 ids once, in order", () => {
+    expect(parse("4, 1,4,32767")).toEqual([4, 1, 32767]);
+  });
+
+  it("drops junk, zero, negatives, decimals and overflow", () => {
+    expect(parse("abc,0,-3,2.5,32768,7")).toEqual([7]);
   });
 });
