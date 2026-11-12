@@ -95,6 +95,8 @@ export type Dq_gap_queue_snapshotCountAggregateOutputType = {
   item_name: number
   brand: number
   brand_aliases: number
+  store_bi_names: number
+  sales_channels: number
   item_category: number
   missing_fields: number
   status: number
@@ -179,6 +181,8 @@ export type Dq_gap_queue_snapshotCountAggregateInputType = {
   item_name?: true
   brand?: true
   brand_aliases?: true
+  store_bi_names?: true
+  sales_channels?: true
   item_category?: true
   missing_fields?: true
   status?: true
@@ -288,6 +292,8 @@ export type Dq_gap_queue_snapshotGroupByOutputType = {
   item_name: string
   brand: string
   brand_aliases: string[]
+  store_bi_names: string[]
+  sales_channels: string[]
   item_category: string
   missing_fields: string
   status: $Enums.DqGapStatus
@@ -333,6 +339,8 @@ export type dq_gap_queue_snapshotWhereInput = {
   item_name?: Prisma.StringFilter<"dq_gap_queue_snapshot"> | string
   brand?: Prisma.StringFilter<"dq_gap_queue_snapshot"> | string
   brand_aliases?: Prisma.StringNullableListFilter<"dq_gap_queue_snapshot">
+  store_bi_names?: Prisma.StringNullableListFilter<"dq_gap_queue_snapshot">
+  sales_channels?: Prisma.StringNullableListFilter<"dq_gap_queue_snapshot">
   item_category?: Prisma.StringFilter<"dq_gap_queue_snapshot"> | string
   missing_fields?: Prisma.StringFilter<"dq_gap_queue_snapshot"> | string
   status?: Prisma.EnumDqGapStatusFilter<"dq_gap_queue_snapshot"> | $Enums.DqGapStatus
@@ -356,6 +364,8 @@ export type dq_gap_queue_snapshotOrderByWithRelationInput = {
   item_name?: Prisma.SortOrder
   brand?: Prisma.SortOrder
   brand_aliases?: Prisma.SortOrder
+  store_bi_names?: Prisma.SortOrder
+  sales_channels?: Prisma.SortOrder
   item_category?: Prisma.SortOrder
   missing_fields?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -382,6 +392,8 @@ export type dq_gap_queue_snapshotWhereUniqueInput = Prisma.AtLeast<{
   item_name?: Prisma.StringFilter<"dq_gap_queue_snapshot"> | string
   brand?: Prisma.StringFilter<"dq_gap_queue_snapshot"> | string
   brand_aliases?: Prisma.StringNullableListFilter<"dq_gap_queue_snapshot">
+  store_bi_names?: Prisma.StringNullableListFilter<"dq_gap_queue_snapshot">
+  sales_channels?: Prisma.StringNullableListFilter<"dq_gap_queue_snapshot">
   item_category?: Prisma.StringFilter<"dq_gap_queue_snapshot"> | string
   missing_fields?: Prisma.StringFilter<"dq_gap_queue_snapshot"> | string
   status?: Prisma.EnumDqGapStatusFilter<"dq_gap_queue_snapshot"> | $Enums.DqGapStatus
@@ -405,6 +417,8 @@ export type dq_gap_queue_snapshotOrderByWithAggregationInput = {
   item_name?: Prisma.SortOrder
   brand?: Prisma.SortOrder
   brand_aliases?: Prisma.SortOrder
+  store_bi_names?: Prisma.SortOrder
+  sales_channels?: Prisma.SortOrder
   item_category?: Prisma.SortOrder
   missing_fields?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -435,6 +449,8 @@ export type dq_gap_queue_snapshotScalarWhereWithAggregatesInput = {
   item_name?: Prisma.StringWithAggregatesFilter<"dq_gap_queue_snapshot"> | string
   brand?: Prisma.StringWithAggregatesFilter<"dq_gap_queue_snapshot"> | string
   brand_aliases?: Prisma.StringNullableListFilter<"dq_gap_queue_snapshot">
+  store_bi_names?: Prisma.StringNullableListFilter<"dq_gap_queue_snapshot">
+  sales_channels?: Prisma.StringNullableListFilter<"dq_gap_queue_snapshot">
   item_category?: Prisma.StringWithAggregatesFilter<"dq_gap_queue_snapshot"> | string
   missing_fields?: Prisma.StringWithAggregatesFilter<"dq_gap_queue_snapshot"> | string
   status?: Prisma.EnumDqGapStatusWithAggregatesFilter<"dq_gap_queue_snapshot"> | $Enums.DqGapStatus
@@ -456,6 +472,8 @@ export type dq_gap_queue_snapshotCreateInput = {
   item_name: string
   brand: string
   brand_aliases?: Prisma.dq_gap_queue_snapshotCreatebrand_aliasesInput | string[]
+  store_bi_names?: Prisma.dq_gap_queue_snapshotCreatestore_bi_namesInput | string[]
+  sales_channels?: Prisma.dq_gap_queue_snapshotCreatesales_channelsInput | string[]
   item_category: string
   missing_fields: string
   status?: $Enums.DqGapStatus
@@ -479,6 +497,8 @@ export type dq_gap_queue_snapshotUncheckedCreateInput = {
   item_name: string
   brand: string
   brand_aliases?: Prisma.dq_gap_queue_snapshotCreatebrand_aliasesInput | string[]
+  store_bi_names?: Prisma.dq_gap_queue_snapshotCreatestore_bi_namesInput | string[]
+  sales_channels?: Prisma.dq_gap_queue_snapshotCreatesales_channelsInput | string[]
   item_category: string
   missing_fields: string
   status?: $Enums.DqGapStatus
@@ -500,6 +520,8 @@ export type dq_gap_queue_snapshotUpdateInput = {
   item_name?: Prisma.StringFieldUpdateOperationsInput | string
   brand?: Prisma.StringFieldUpdateOperationsInput | string
   brand_aliases?: Prisma.dq_gap_queue_snapshotUpdatebrand_aliasesInput | string[]
+  store_bi_names?: Prisma.dq_gap_queue_snapshotUpdatestore_bi_namesInput | string[]
+  sales_channels?: Prisma.dq_gap_queue_snapshotUpdatesales_channelsInput | string[]
   item_category?: Prisma.StringFieldUpdateOperationsInput | string
   missing_fields?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
@@ -523,6 +545,8 @@ export type dq_gap_queue_snapshotUncheckedUpdateInput = {
   item_name?: Prisma.StringFieldUpdateOperationsInput | string
   brand?: Prisma.StringFieldUpdateOperationsInput | string
   brand_aliases?: Prisma.dq_gap_queue_snapshotUpdatebrand_aliasesInput | string[]
+  store_bi_names?: Prisma.dq_gap_queue_snapshotUpdatestore_bi_namesInput | string[]
+  sales_channels?: Prisma.dq_gap_queue_snapshotUpdatesales_channelsInput | string[]
   item_category?: Prisma.StringFieldUpdateOperationsInput | string
   missing_fields?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
@@ -545,6 +569,8 @@ export type dq_gap_queue_snapshotCreateManyInput = {
   item_name: string
   brand: string
   brand_aliases?: Prisma.dq_gap_queue_snapshotCreatebrand_aliasesInput | string[]
+  store_bi_names?: Prisma.dq_gap_queue_snapshotCreatestore_bi_namesInput | string[]
+  sales_channels?: Prisma.dq_gap_queue_snapshotCreatesales_channelsInput | string[]
   item_category: string
   missing_fields: string
   status?: $Enums.DqGapStatus
@@ -566,6 +592,8 @@ export type dq_gap_queue_snapshotUpdateManyMutationInput = {
   item_name?: Prisma.StringFieldUpdateOperationsInput | string
   brand?: Prisma.StringFieldUpdateOperationsInput | string
   brand_aliases?: Prisma.dq_gap_queue_snapshotUpdatebrand_aliasesInput | string[]
+  store_bi_names?: Prisma.dq_gap_queue_snapshotUpdatestore_bi_namesInput | string[]
+  sales_channels?: Prisma.dq_gap_queue_snapshotUpdatesales_channelsInput | string[]
   item_category?: Prisma.StringFieldUpdateOperationsInput | string
   missing_fields?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
@@ -588,6 +616,8 @@ export type dq_gap_queue_snapshotUncheckedUpdateManyInput = {
   item_name?: Prisma.StringFieldUpdateOperationsInput | string
   brand?: Prisma.StringFieldUpdateOperationsInput | string
   brand_aliases?: Prisma.dq_gap_queue_snapshotUpdatebrand_aliasesInput | string[]
+  store_bi_names?: Prisma.dq_gap_queue_snapshotUpdatestore_bi_namesInput | string[]
+  sales_channels?: Prisma.dq_gap_queue_snapshotUpdatesales_channelsInput | string[]
   item_category?: Prisma.StringFieldUpdateOperationsInput | string
   missing_fields?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
@@ -615,6 +645,8 @@ export type dq_gap_queue_snapshotCountOrderByAggregateInput = {
   item_name?: Prisma.SortOrder
   brand?: Prisma.SortOrder
   brand_aliases?: Prisma.SortOrder
+  store_bi_names?: Prisma.SortOrder
+  sales_channels?: Prisma.SortOrder
   item_category?: Prisma.SortOrder
   missing_fields?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -727,7 +759,25 @@ export type dq_gap_queue_snapshotCreatebrand_aliasesInput = {
   set: string[]
 }
 
+export type dq_gap_queue_snapshotCreatestore_bi_namesInput = {
+  set: string[]
+}
+
+export type dq_gap_queue_snapshotCreatesales_channelsInput = {
+  set: string[]
+}
+
 export type dq_gap_queue_snapshotUpdatebrand_aliasesInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type dq_gap_queue_snapshotUpdatestore_bi_namesInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type dq_gap_queue_snapshotUpdatesales_channelsInput = {
   set?: string[]
   push?: string | string[]
 }
@@ -745,6 +795,8 @@ export type dq_gap_queue_snapshotCreateWithoutGap_recordInput = {
   item_name: string
   brand: string
   brand_aliases?: Prisma.dq_gap_queue_snapshotCreatebrand_aliasesInput | string[]
+  store_bi_names?: Prisma.dq_gap_queue_snapshotCreatestore_bi_namesInput | string[]
+  sales_channels?: Prisma.dq_gap_queue_snapshotCreatesales_channelsInput | string[]
   item_category: string
   missing_fields: string
   status?: $Enums.DqGapStatus
@@ -766,6 +818,8 @@ export type dq_gap_queue_snapshotUncheckedCreateWithoutGap_recordInput = {
   item_name: string
   brand: string
   brand_aliases?: Prisma.dq_gap_queue_snapshotCreatebrand_aliasesInput | string[]
+  store_bi_names?: Prisma.dq_gap_queue_snapshotCreatestore_bi_namesInput | string[]
+  sales_channels?: Prisma.dq_gap_queue_snapshotCreatesales_channelsInput | string[]
   item_category: string
   missing_fields: string
   status?: $Enums.DqGapStatus
@@ -803,6 +857,8 @@ export type dq_gap_queue_snapshotUpdateWithoutGap_recordInput = {
   item_name?: Prisma.StringFieldUpdateOperationsInput | string
   brand?: Prisma.StringFieldUpdateOperationsInput | string
   brand_aliases?: Prisma.dq_gap_queue_snapshotUpdatebrand_aliasesInput | string[]
+  store_bi_names?: Prisma.dq_gap_queue_snapshotUpdatestore_bi_namesInput | string[]
+  sales_channels?: Prisma.dq_gap_queue_snapshotUpdatesales_channelsInput | string[]
   item_category?: Prisma.StringFieldUpdateOperationsInput | string
   missing_fields?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
@@ -824,6 +880,8 @@ export type dq_gap_queue_snapshotUncheckedUpdateWithoutGap_recordInput = {
   item_name?: Prisma.StringFieldUpdateOperationsInput | string
   brand?: Prisma.StringFieldUpdateOperationsInput | string
   brand_aliases?: Prisma.dq_gap_queue_snapshotUpdatebrand_aliasesInput | string[]
+  store_bi_names?: Prisma.dq_gap_queue_snapshotUpdatestore_bi_namesInput | string[]
+  sales_channels?: Prisma.dq_gap_queue_snapshotUpdatesales_channelsInput | string[]
   item_category?: Prisma.StringFieldUpdateOperationsInput | string
   missing_fields?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDqGapStatusFieldUpdateOperationsInput | $Enums.DqGapStatus
@@ -848,6 +906,8 @@ export type dq_gap_queue_snapshotSelect<ExtArgs extends runtime.Types.Extensions
   item_name?: boolean
   brand?: boolean
   brand_aliases?: boolean
+  store_bi_names?: boolean
+  sales_channels?: boolean
   item_category?: boolean
   missing_fields?: boolean
   status?: boolean
@@ -871,6 +931,8 @@ export type dq_gap_queue_snapshotSelectCreateManyAndReturn<ExtArgs extends runti
   item_name?: boolean
   brand?: boolean
   brand_aliases?: boolean
+  store_bi_names?: boolean
+  sales_channels?: boolean
   item_category?: boolean
   missing_fields?: boolean
   status?: boolean
@@ -894,6 +956,8 @@ export type dq_gap_queue_snapshotSelectUpdateManyAndReturn<ExtArgs extends runti
   item_name?: boolean
   brand?: boolean
   brand_aliases?: boolean
+  store_bi_names?: boolean
+  sales_channels?: boolean
   item_category?: boolean
   missing_fields?: boolean
   status?: boolean
@@ -917,6 +981,8 @@ export type dq_gap_queue_snapshotSelectScalar = {
   item_name?: boolean
   brand?: boolean
   brand_aliases?: boolean
+  store_bi_names?: boolean
+  sales_channels?: boolean
   item_category?: boolean
   missing_fields?: boolean
   status?: boolean
@@ -933,7 +999,7 @@ export type dq_gap_queue_snapshotSelectScalar = {
   refreshed_at?: boolean
 }
 
-export type dq_gap_queue_snapshotOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"trde_item" | "dq_id" | "item_name" | "brand" | "brand_aliases" | "item_category" | "missing_fields" | "status" | "detected_at" | "channel" | "category" | "subcategory" | "ideal_price" | "selling_price" | "fc_perc" | "fc_eur" | "mktg_spend" | "source" | "refreshed_at", ExtArgs["result"]["dq_gap_queue_snapshot"]>
+export type dq_gap_queue_snapshotOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"trde_item" | "dq_id" | "item_name" | "brand" | "brand_aliases" | "store_bi_names" | "sales_channels" | "item_category" | "missing_fields" | "status" | "detected_at" | "channel" | "category" | "subcategory" | "ideal_price" | "selling_price" | "fc_perc" | "fc_eur" | "mktg_spend" | "source" | "refreshed_at", ExtArgs["result"]["dq_gap_queue_snapshot"]>
 export type dq_gap_queue_snapshotInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   gap_record?: boolean | Prisma.dq_missing_offers_pricingDefaultArgs<ExtArgs>
 }
@@ -955,6 +1021,14 @@ export type $dq_gap_queue_snapshotPayload<ExtArgs extends runtime.Types.Extensio
     item_name: string
     brand: string
     brand_aliases: string[]
+    /**
+     * Every store (`store_bi_name`) the item sold at since the detection cut-off.
+     */
+    store_bi_names: string[]
+    /**
+     * Every sales channel (dim_division_group_channel) the item sold through.
+     */
+    sales_channels: string[]
     item_category: string
     missing_fields: string
     status: $Enums.DqGapStatus
@@ -1398,6 +1472,8 @@ export interface dq_gap_queue_snapshotFieldRefs {
   readonly item_name: Prisma.FieldRef<"dq_gap_queue_snapshot", 'String'>
   readonly brand: Prisma.FieldRef<"dq_gap_queue_snapshot", 'String'>
   readonly brand_aliases: Prisma.FieldRef<"dq_gap_queue_snapshot", 'String[]'>
+  readonly store_bi_names: Prisma.FieldRef<"dq_gap_queue_snapshot", 'String[]'>
+  readonly sales_channels: Prisma.FieldRef<"dq_gap_queue_snapshot", 'String[]'>
   readonly item_category: Prisma.FieldRef<"dq_gap_queue_snapshot", 'String'>
   readonly missing_fields: Prisma.FieldRef<"dq_gap_queue_snapshot", 'String'>
   readonly status: Prisma.FieldRef<"dq_gap_queue_snapshot", 'DqGapStatus'>

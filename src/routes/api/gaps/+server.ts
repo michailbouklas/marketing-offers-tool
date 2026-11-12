@@ -1,11 +1,15 @@
 import { json } from "@sveltejs/kit";
 import { requireAuthenticatedUser } from "$lib/server/auth-guards";
 import { listBrandsForUser } from "$lib/services/brands.server";
-import { getOpenGapList } from "$lib/services/offers-data-quality.server";
+import {
+  getGapQueueFilterOptionsForBrands,
+  getOpenGapList,
+} from "$lib/services/offers-data-quality.server";
 import {
   gapListSortDirections,
   gapListSortFields,
   getSelectedBrandAliases,
+  parseGapQueueFilters,
 } from "$lib/services/offers-data-quality";
 import { z } from "zod";
 import type { RequestHandler } from "./$types";
@@ -45,19 +49,25 @@ export const GET: RequestHandler = async (event) => {
     event.url.searchParams.getAll("brandAlias"),
     brands,
   );
-  const gapsPage = await getOpenGapList(page, PAGE_SIZE, {
-    brandAliases: selectedBrandAliases,
-    sortBy,
-    sortDir,
-    statuses: status ? [status] : undefined,
-    itemName: parseResult.data?.itemName,
-    itemCode: parseResult.data?.itemCode,
-  });
+  // Options follow the selected brands so City / Location / Channel chain off Brand.
+  const [gapsPage, filterOptions] = await Promise.all([
+    getOpenGapList(page, PAGE_SIZE, {
+      brandAliases: selectedBrandAliases,
+      sortBy,
+      sortDir,
+      statuses: status ? [status] : undefined,
+      itemName: parseResult.data?.itemName,
+      itemCode: parseResult.data?.itemCode,
+      ...parseGapQueueFilters(event.url.searchParams),
+    }),
+    getGapQueueFilterOptionsForBrands(selectedBrandAliases),
+  ]);
 
   return json({
     gapsPage,
     selectedBrandAliases,
     sortBy,
     sortDir,
+    filterOptions,
   });
 };

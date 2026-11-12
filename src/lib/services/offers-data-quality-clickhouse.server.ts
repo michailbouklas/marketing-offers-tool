@@ -1,5 +1,7 @@
 import { env } from "$env/dynamic/private";
 import { clickhouse } from "$lib/server/clickhouse";
+import { salesTransactionsTable } from "$lib/services/forecasts/forecast-series.server";
+import { STORE_DIM } from "$lib/services/sales-consolidated.server";
 import type { CurrentDimOffersValues } from "$lib/services/offers-data-quality";
 
 type TransactionContextRow = {
@@ -72,6 +74,8 @@ export type TransactedOfferItem = {
   trde_item: string;
   brand: string;
   brand_aliases: string[];
+  store_bi_names: string[];
+  sales_channels: string[];
 };
 
 const DEFAULT_LOOKBACK_DAYS = 90;
@@ -441,6 +445,84 @@ export async function listOfferEligibleItems(): Promise<
 }
 
 /**
+ * POS location number -> store_bi_name. transaction_details only carries
+ * `trde_location`; mapping it here (~120 rows) keeps the rebuild from joining
+ * the transactions fact table. Each location maps to exactly one store.
+ */
+async function getStoreByLocation(): Promise<Map<number, string>> {
+  const result = await clickhouse.query({
+    query: `
+      SELECT tran_location AS location, any(trim(store_bi_name)) AS store
+      FROM ${salesTransactionsTable()}
+      WHERE tran_date >= {since_date:Date} AND trim(store_bi_name) != ''
+      GROUP BY tran_location
+    `,
+    query_params: { since_date: getMissingOffersSinceDate() },
+    format: "JSONEachRow",
+  });
+  const rows = await result.json<{ location: number; store: string }>();
+
+  return new Map(rows.map((row) => [Number(row.location), row.store]));
+}
+
+/**
+ * Offer item -> every sales channel (`dim_division_group_channel`: Wolt,
+ * Foody, Walk In, ...) it sold through. Channel lives only on the
+ * transactions header, and location + division does not map to one channel,
+ * so this joins the header, pre-filtered to transactions holding offer items.
+ * Kept apart from the item scan so a header gap only empties the channels.
+ */
+async function getSalesChannelsByItem(): Promise<Map<string, string[]>> {
+  const result = await clickhouse.query({
+    query: `
+      WITH offer_lines AS (
+        SELECT transactionid, trde_item
+        FROM transaction_details
+        WHERE trde_date >= {since_date:Date}
+          AND trde_item != '-1'
+          AND trde_item IN (
+            SELECT item_code
+            FROM apidata_replica.dim_items
+            WHERE item_active = 1
+              AND item_category IN ({offer_categories:Array(String)})
+          )
+      )
+      SELECT l.trde_item AS trde_item,
+             groupUniqArray(trim(t.dim_division_group_channel)) AS channels
+      FROM offer_lines AS l
+      INNER JOIN (
+        SELECT pk, dim_division_group_channel
+        FROM ${salesTransactionsTable()}
+        WHERE tran_date >= {since_date:Date}
+          AND pk IN (SELECT transactionid FROM offer_lines)
+      ) AS t ON t.pk = l.transactionid
+      GROUP BY l.trde_item
+    `,
+    query_params: {
+      since_date: getMissingOffersSinceDate(),
+      offer_categories: [...OFFER_ITEM_CATEGORIES],
+    },
+    format: "JSONEachRow",
+  });
+  const rows = await result.json<{ trde_item: string; channels: string[] }>();
+
+  return new Map(
+    rows.map((row) => [row.trde_item, row.channels.filter(Boolean).sort()]),
+  );
+}
+
+/** store_bi_name -> city (dim_store `district`), the sales report's mapping. */
+export async function getStoreCities(): Promise<Map<string, string>> {
+  const result = await clickhouse.query({
+    query: `SELECT store, city FROM (${STORE_DIM}) WHERE city != ''`,
+    format: "JSONEachRow",
+  });
+  const rows = await result.json<{ store: string; city: string }>();
+
+  return new Map(rows.map((row) => [row.store.trim(), row.city.trim()]));
+}
+
+/**
  * Snapshot rebuild, query 2 of 3 — the only heavy scan. Distinct offer items
  * sold since `CLICKHOUSE_MISSING_OFFERS_SINCE`, pre-filtered by the offer
  * item set so the fact table is never joined, with the latest brand for
@@ -454,7 +536,8 @@ export async function listTransactedOfferItems(): Promise<
       SELECT
         trde_item,
         argMax(brand, trde_date) AS latest_brand,
-        groupUniqArray(lower(brand)) AS brand_aliases
+        groupUniqArray(lower(brand)) AS brand_aliases,
+        groupUniqArray(trde_location) AS locations
       FROM transaction_details
       WHERE trde_date >= {since_date:Date}
         AND trde_item != '-1'
@@ -475,16 +558,29 @@ export async function listTransactedOfferItems(): Promise<
 
   // "AS latest_brand" rather than "AS brand": ClickHouse would otherwise
   // substitute the alias into groupUniqArray(lower(brand)) and nest aggregates.
-  const rows = await result.json<{
-    trde_item: string;
-    latest_brand: string;
-    brand_aliases: string[];
-  }>();
+  const [rows, storeByLocation, channelsByItem] = await Promise.all([
+    result.json<{
+      trde_item: string;
+      latest_brand: string;
+      brand_aliases: string[];
+      locations: number[];
+    }>(),
+    getStoreByLocation(),
+    getSalesChannelsByItem(),
+  ]);
 
   return rows.map((row) => ({
     trde_item: row.trde_item,
     brand: row.latest_brand,
     brand_aliases: row.brand_aliases,
+    sales_channels: channelsByItem.get(row.trde_item) ?? [],
+    store_bi_names: [
+      ...new Set(
+        row.locations
+          .map((location) => storeByLocation.get(location))
+          .filter((store): store is string => Boolean(store)),
+      ),
+    ],
   }));
 }
 

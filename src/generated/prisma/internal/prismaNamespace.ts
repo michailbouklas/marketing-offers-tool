@@ -5270,6 +5270,8 @@ export const Dq_gap_queue_snapshotScalarFieldEnum = {
   item_name: 'item_name',
   brand: 'brand',
   brand_aliases: 'brand_aliases',
+  store_bi_names: 'store_bi_names',
+  sales_channels: 'sales_channels',
   item_category: 'item_category',
   missing_fields: 'missing_fields',
   status: 'status',

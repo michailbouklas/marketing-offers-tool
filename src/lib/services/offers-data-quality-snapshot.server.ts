@@ -28,6 +28,8 @@ export type GapQueueSnapshotRow = {
   item_name: string;
   brand: string;
   brand_aliases: string[];
+  store_bi_names: string[];
+  sales_channels: string[];
   item_category: string;
   missing_fields: string;
   status: "open" | "submitted" | "resolved" | "dismissed";
@@ -56,6 +58,13 @@ export type GapQueuePageQuery = {
   /** Case-insensitive contains-match; `undefined` = no filter. */
   itemName?: string;
   itemCode?: string;
+  /** Sales channels the item sold through; `undefined` or `[]` = no filter. */
+  channels?: string[];
+  /** Stores the item sold at; `undefined` = no filter, `[]` = nothing. */
+  stores?: string[];
+  /** Inclusive ISO dates (YYYY-MM-DD) on `detected_at`. */
+  detectedFrom?: string;
+  detectedTo?: string;
 };
 
 const ACTIVE_STATUSES: Array<GapListItem["status"]> = ["open", "submitted"];
@@ -114,6 +123,30 @@ function buildSearchClause(
   return Prisma.sql`${nameClause} AND ${codeClause}`;
 }
 
+function buildFilterClause(query: GapQueuePageQuery): Prisma.Sql {
+  const clauses: Prisma.Sql[] = [Prisma.sql`TRUE`];
+
+  if (query.channels?.length) {
+    clauses.push(Prisma.sql`sales_channels && ${query.channels}::text[]`);
+  }
+
+  if (query.stores !== undefined) {
+    clauses.push(Prisma.sql`store_bi_names && ${query.stores}::text[]`);
+  }
+
+  if (query.detectedFrom) {
+    clauses.push(Prisma.sql`detected_at >= ${query.detectedFrom}::date`);
+  }
+
+  if (query.detectedTo) {
+    clauses.push(
+      Prisma.sql`detected_at < ${query.detectedTo}::date + interval '1 day'`,
+    );
+  }
+
+  return Prisma.join(clauses, " AND ");
+}
+
 function buildStatusClause(statuses: Array<GapListItem["status"]>): Prisma.Sql {
   return Prisma.sql`status = ANY(${statuses}::text[]::"DqGapStatus"[])`;
 }
@@ -124,7 +157,7 @@ export async function queryGapQueuePage(
   const statuses = query.statuses?.length ? query.statuses : ACTIVE_STATUSES;
   const brandClause = buildBrandClause(query.brandAliases);
   const statusClause = buildStatusClause(statuses);
-  const searchClause = buildSearchClause(query.itemName, query.itemCode);
+  const searchClause = Prisma.sql`${buildSearchClause(query.itemName, query.itemCode)} AND ${buildFilterClause(query)}`;
 
   const [counts] = await prisma.$queryRaw<CountRow[]>`
     SELECT
@@ -173,6 +206,30 @@ export async function queryGapQueuePage(
     page,
     pageSize,
     totalPages,
+  };
+}
+
+/** Channel and store options for the queue filters, limited to `brandAliases`. */
+export async function getGapQueueFilterOptions(
+  brandAliases: string[],
+): Promise<{ channels: string[]; stores: string[] }> {
+  const brandClause = buildBrandClause(brandAliases);
+  const [channels, stores] = await Promise.all([
+    prisma.$queryRaw<Array<{ value: string }>>`
+      SELECT DISTINCT unnest(sales_channels) AS value FROM dq_gap_queue_snapshot
+      WHERE ${brandClause}
+      ORDER BY value
+    `,
+    prisma.$queryRaw<Array<{ value: string }>>`
+      SELECT DISTINCT unnest(store_bi_names) AS value FROM dq_gap_queue_snapshot
+      WHERE ${brandClause}
+      ORDER BY value
+    `,
+  ]);
+
+  return {
+    channels: channels.map((row) => row.value),
+    stores: stores.map((row) => row.value),
   };
 }
 
@@ -227,6 +284,9 @@ export async function upsertSnapshotRow(
     },
     create: {
       trde_item: row.trde_item,
+      // Create only: on-demand callers do not know the stores, so an update keeps the rebuild's.
+      store_bi_names: row.store_bi_names,
+      sales_channels: row.sales_channels,
       ...data,
     },
     update: data,

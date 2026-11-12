@@ -19,7 +19,7 @@ import { filterClause } from "./sales-dashboard.server";
  * duplicate store rows, so it is always read collapsed to one row per store.
  */
 
-const STORE_DIM = `
+export const STORE_DIM = `
   SELECT assumeNotNull(\`BI Name\`) AS store,
          ifNull(any(\`SAP CompanyName\`), '') AS company_label,
          ifNull(any(district), '') AS city

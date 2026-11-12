@@ -394,6 +394,10 @@ model dq_gap_queue_snapshot {
   item_name      String                    @db.VarChar
   brand          String                    @db.VarChar
   brand_aliases  String[]
+  /// Every store (`store_bi_name`) the item sold at since the detection cut-off.
+  store_bi_names String[]                  @default([])
+  /// Every sales channel (dim_division_group_channel) the item sold through.
+  sales_channels String[]                  @default([])
   item_category  String                    @db.VarChar
   missing_fields String                    @db.VarChar
   status         DqGapStatus               @default(open)
@@ -415,6 +419,8 @@ model dq_gap_queue_snapshot {
   @@index([item_name])
   @@index([detected_at])
   @@index([brand_aliases], type: Gin)
+  @@index([store_bi_names], type: Gin)
+  @@index([sales_channels], type: Gin)
 }
 
 /// One row per snapshot rebuild run (cron, manual, CLI or cold start) so the

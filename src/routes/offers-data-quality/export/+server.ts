@@ -7,6 +7,7 @@ import {
   gapListSortDirections,
   gapListSortFields,
   getSelectedBrandAliases,
+  parseGapQueueFilters,
 } from "$lib/services/offers-data-quality";
 import { z } from "zod";
 import type { RequestHandler } from "./$types";
@@ -52,6 +53,7 @@ export const GET: RequestHandler = async (event) => {
     statuses: status ? [status] : undefined,
     itemName,
     itemCode,
+    ...parseGapQueueFilters(params),
   });
 
   const result = await generateExcelFile({

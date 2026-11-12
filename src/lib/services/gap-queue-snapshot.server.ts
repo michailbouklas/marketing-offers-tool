@@ -90,6 +90,8 @@ function toSnapshotCreateInput(
     item_name: row.item_name,
     brand: row.brand,
     brand_aliases: row.brand_aliases,
+    store_bi_names: row.store_bi_names,
+    sales_channels: row.sales_channels,
     item_category: row.item_category,
     missing_fields: row.missing_fields,
     status: row.status,

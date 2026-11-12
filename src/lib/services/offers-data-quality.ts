@@ -168,6 +168,11 @@ export const gapQueueResponseSchema = z.object({
   selectedBrandAliases: z.array(z.string()),
   sortBy: z.enum(gapListSortFields),
   sortDir: z.enum(gapListSortDirections),
+  filterOptions: z.object({
+    channels: z.array(z.string()),
+    stores: z.array(z.object({ store: z.string(), city: z.string() })),
+    cities: z.array(z.string()),
+  }),
 });
 
 export type GapQueueResponse = z.infer<typeof gapQueueResponseSchema>;
@@ -559,6 +564,56 @@ export function getSelectedBrandAliases(
   );
 
   return selectedAliases.length > 0 ? selectedAliases : allowedAliases;
+}
+
+/** Queue filters beyond brand; every list empty / date unset = no filter. */
+export type GapQueueFilters = {
+  channels: string[];
+  stores: string[];
+  cities: string[];
+  detectedFrom?: string;
+  detectedTo?: string;
+};
+
+const isoDateSchema = z.iso.date();
+const MAX_FILTER_VALUES = 200;
+
+function listParam(params: URLSearchParams, key: string): string[] {
+  return [
+    ...new Set(
+      params
+        .getAll(key)
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0 && value.length <= 200),
+    ),
+  ].slice(0, MAX_FILTER_VALUES);
+}
+
+function dateParam(params: URLSearchParams, key: string): string | undefined {
+  const parsed = isoDateSchema.safeParse(params.get(key) ?? undefined);
+  return parsed.success ? parsed.data : undefined;
+}
+
+/** Reads `channel` / `store` / `city` (repeatable) and `from` / `to`. Invalid values are dropped. */
+export function parseGapQueueFilters(params: URLSearchParams): GapQueueFilters {
+  return {
+    channels: listParam(params, "channel"),
+    stores: listParam(params, "store"),
+    cities: listParam(params, "city"),
+    detectedFrom: dateParam(params, "from"),
+    detectedTo: dateParam(params, "to"),
+  };
+}
+
+export function appendGapQueueFilters(
+  params: URLSearchParams,
+  filters: GapQueueFilters,
+) {
+  for (const channel of filters.channels) params.append("channel", channel);
+  for (const store of filters.stores) params.append("store", store);
+  for (const city of filters.cities) params.append("city", city);
+  if (filters.detectedFrom) params.set("from", filters.detectedFrom);
+  if (filters.detectedTo) params.set("to", filters.detectedTo);
 }
 
 export function formatPricingDecimal(value: number | null | undefined) {

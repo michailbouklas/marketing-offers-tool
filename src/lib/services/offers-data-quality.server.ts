@@ -10,6 +10,7 @@ import {
   getDimOfferAuditSnapshot,
   getDimOffersByItemCodes,
   getOfferEligibleItemCodes,
+  getStoreCities,
   getTransactionItemContext,
   getTransactionItemContexts,
   insertDimOffer,
@@ -36,6 +37,7 @@ import {
 import {
   getLatestSuccessfulSnapshotRefresh,
   getSnapshotRowByGapId,
+  getGapQueueFilterOptions,
   getSnapshotRowByItemCode,
   queryGapQueuePage,
   upsertSnapshotRow,
@@ -66,6 +68,17 @@ type GetOpenGapListOptions = {
   statuses?: Array<GapListItem["status"]>;
   itemName?: string;
   itemCode?: string;
+  channels?: string[];
+  stores?: string[];
+  cities?: string[];
+  detectedFrom?: string;
+  detectedTo?: string;
+};
+
+export type GapQueueFilterOptions = {
+  channels: string[];
+  stores: Array<{ store: string; city: string }>;
+  cities: string[];
 };
 
 export type GapQueueStatus = {
@@ -255,6 +268,8 @@ export async function ensureGapRecordForItemCode(
         item_name: latestGap.item_name,
         brand: latestGap.brand,
         brand_aliases: [normalizeBrandAlias(latestGap.brand)],
+        store_bi_names: [],
+        sales_channels: [],
         item_category: latestGap.item_category,
         missing_fields: latestGap.missing_fields,
         status: latestGap.status,
@@ -302,6 +317,8 @@ export async function ensureGapRecordForItemCode(
     item_name: createdGap.item_name,
     brand: createdGap.brand,
     brand_aliases: [normalizeBrandAlias(createdGap.brand)],
+    store_bi_names: [],
+    sales_channels: [],
     item_category: createdGap.item_category,
     missing_fields: createdGap.missing_fields,
     status: "open",
@@ -361,6 +378,12 @@ export async function getOpenGapList(
   const statuses = options.statuses?.length ? options.statuses : undefined;
   const itemName = options.itemName?.trim() || undefined;
   const itemCode = options.itemCode?.trim() || undefined;
+  const filters = {
+    channels: options.channels?.length ? options.channels : undefined,
+    stores: await resolveStoreFilter(options.stores, options.cities),
+    detectedFrom: options.detectedFrom || undefined,
+    detectedTo: options.detectedTo || undefined,
+  };
 
   await ensureGapQueueSnapshotBuilt();
 
@@ -373,6 +396,7 @@ export async function getOpenGapList(
     pageSize,
     itemName,
     itemCode,
+    filters,
   });
 
   return withGapQueueCache(
@@ -388,8 +412,60 @@ export async function getOpenGapList(
         pageSize,
         itemName,
         itemCode,
+        ...filters,
       }),
   );
+}
+
+/**
+ * Location + city picks -> the store set to match, or `undefined` for no
+ * filter. Cities expand to their stores; with both set, a store must be in
+ * the picked locations and in a picked city.
+ */
+async function resolveStoreFilter(
+  stores: string[] | undefined,
+  cities: string[] | undefined,
+): Promise<string[] | undefined> {
+  if (!cities?.length) {
+    return stores?.length ? stores : undefined;
+  }
+
+  const storeCities = await getStoreCities();
+  const picked = new Set(cities);
+  const inCities = [...storeCities]
+    .filter(([, city]) => picked.has(city))
+    .map(([store]) => store);
+
+  return stores?.length
+    ? inCities.filter((store) => stores.includes(store))
+    : inCities;
+}
+
+/**
+ * Filter dropdown options for the queue: channels and stores present in the
+ * snapshot for the user's brands, with dim_store cities. ClickHouse being
+ * down only loses the city labels; the page still loads.
+ */
+export async function getGapQueueFilterOptionsForBrands(
+  brandAliases: string[],
+): Promise<GapQueueFilterOptions> {
+  const [options, storeCities] = await Promise.all([
+    getGapQueueFilterOptions(brandAliases.map(normalizeBrandAlias)),
+    getStoreCities().catch((error: unknown) => {
+      console.error("[offers-data-quality] store cities lookup failed", error);
+      return new Map<string, string>();
+    }),
+  ]);
+  const stores = options.stores.map((store) => ({
+    store,
+    city: storeCities.get(store) ?? "",
+  }));
+
+  return {
+    channels: options.channels,
+    stores,
+    cities: [...new Set(stores.map((row) => row.city).filter(Boolean))].sort(),
+  };
 }
 
 export async function approveGapSubmission(
