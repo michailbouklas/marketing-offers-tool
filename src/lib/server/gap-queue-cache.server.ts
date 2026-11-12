@@ -44,6 +44,8 @@ export type GapQueueCacheKeyInput = {
   pageSize: number;
   itemName?: string;
   itemCode?: string;
+  /** Channel / store / date filters; serialised as given. */
+  filters?: Record<string, unknown>;
 };
 
 export function buildGapQueueCacheKey(input: GapQueueCacheKeyInput): string {
@@ -56,6 +58,7 @@ export function buildGapQueueCacheKey(input: GapQueueCacheKeyInput): string {
     pageSize: input.pageSize,
     itemName: input.itemName ?? null,
     itemCode: input.itemCode ?? null,
+    filters: input.filters ?? null,
   });
 }
 

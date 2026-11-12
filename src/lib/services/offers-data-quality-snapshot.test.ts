@@ -87,11 +87,19 @@ describe("buildGapQueueSnapshotRows", () => {
           ],
         ]),
         transactedItems: [
-          { trde_item: "ITM-7", brand: "kfc", brand_aliases: ["kfc"] },
+          {
+            trde_item: "ITM-7",
+            brand: "kfc",
+            brand_aliases: ["kfc"],
+            store_bi_names: ["KFC LARNACA"],
+            sales_channels: [],
+          },
           {
             trde_item: "ITM-8",
             brand: "bk",
             brand_aliases: ["bk", "bk online"],
+            store_bi_names: ["BK MALL", "BK MARINA"],
+            sales_channels: [],
           },
         ],
         dimOffers: new Map([["ITM-7", unpriced]]),
@@ -106,6 +114,8 @@ describe("buildGapQueueSnapshotRows", () => {
       status: "submitted",
       missing_fields: "ideal_price,fc_perc",
       detected_at: new Date("2026-03-26T10:00:00.000Z"),
+      store_bi_names: ["KFC LARNACA"],
+      sales_channels: [],
       source: "transactions",
     });
     expect(result.rows.find((row) => row.trde_item === "ITM-8")).toMatchObject({
@@ -115,6 +125,8 @@ describe("buildGapQueueSnapshotRows", () => {
       missing_fields: "ideal_price,selling_price,fc_perc,fc_eur",
       brand: "bk",
       brand_aliases: ["bk", "bk online"],
+      store_bi_names: ["BK MALL", "BK MARINA"],
+      sales_channels: [],
     });
   });
 
@@ -122,7 +134,13 @@ describe("buildGapQueueSnapshotRows", () => {
     const result = buildGapQueueSnapshotRows(
       input({
         transactedItems: [
-          { trde_item: "ITM-X", brand: "kfc", brand_aliases: ["kfc"] },
+          {
+            trde_item: "ITM-X",
+            brand: "kfc",
+            brand_aliases: ["kfc"],
+            store_bi_names: [],
+            sales_channels: [],
+          },
         ],
       }),
     );
@@ -148,6 +166,8 @@ describe("buildGapQueueSnapshotRows", () => {
             trde_item: "ITM-JUST-APPROVED",
             brand: "kfc",
             brand_aliases: ["kfc"],
+            store_bi_names: [],
+            sales_channels: [],
           },
         ],
         recentlyResolvedItemCodes: new Set(["ITM-JUST-APPROVED"]),
@@ -179,8 +199,20 @@ describe("buildGapQueueSnapshotRows", () => {
           ],
         ]),
         transactedItems: [
-          { trde_item: "ITM-7", brand: "kfc", brand_aliases: ["kfc"] },
-          { trde_item: "ITM-9", brand: "kfc", brand_aliases: ["kfc"] },
+          {
+            trde_item: "ITM-7",
+            brand: "kfc",
+            brand_aliases: ["kfc"],
+            store_bi_names: [],
+            sales_channels: [],
+          },
+          {
+            trde_item: "ITM-9",
+            brand: "kfc",
+            brand_aliases: ["kfc"],
+            store_bi_names: [],
+            sales_channels: [],
+          },
         ],
         dimOffers: new Map([
           ["ITM-7", priced],
@@ -247,6 +279,8 @@ describe("buildGapQueueSnapshotRows", () => {
       status: "submitted",
       missing_fields: "ideal_price,selling_price",
       brand_aliases: ["kfc"],
+      store_bi_names: [],
+      sales_channels: [],
       source: "tracked",
     });
     expect(result.gapContextUpdates).toEqual([]);
@@ -270,6 +304,8 @@ describe("buildGapQueueSnapshotRows", () => {
             trde_item: "ITM-7",
             brand: "KFC",
             brand_aliases: ["kfc", "kfc delivery"],
+            store_bi_names: [],
+            sales_channels: [],
           },
         ],
         trackedGaps: [tracked({ status: "open" })],

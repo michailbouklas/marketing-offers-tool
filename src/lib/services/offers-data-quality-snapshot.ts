@@ -25,6 +25,9 @@ export type TransactedOfferItem = {
   brand: string;
   /** Every lower-cased brand the item was sold under (filtering). */
   brand_aliases: string[];
+  /** Every store (store_bi_name) the item was sold at (filtering). */
+  store_bi_names: string[];
+  sales_channels: string[];
 };
 
 export type TrackedGapRecord = {
@@ -45,6 +48,8 @@ export type GapQueueSnapshotRowInput = {
   item_name: string;
   brand: string;
   brand_aliases: string[];
+  store_bi_names: string[];
+  sales_channels: string[];
   item_category: string;
   missing_fields: string;
   status: "open" | "submitted";
@@ -161,6 +166,8 @@ export function buildGapQueueSnapshotRows(
             item_name: eligible.item_name,
             brand: transacted.brand,
             brand_aliases: transacted.brand_aliases,
+            store_bi_names: transacted.store_bi_names,
+            sales_channels: transacted.sales_channels,
             item_category: eligible.item_category,
             dimOffer,
             source: "transactions",
@@ -187,6 +194,8 @@ export function buildGapQueueSnapshotRows(
           item_name: eligible.item_name,
           brand: transacted.brand,
           brand_aliases: transacted.brand_aliases,
+          store_bi_names: transacted.store_bi_names,
+          sales_channels: transacted.sales_channels,
           item_category: eligible.item_category,
           dimOffer,
           source: "transactions",
@@ -211,6 +220,8 @@ export function buildGapQueueSnapshotRows(
         ...transacted.brand_aliases,
         transacted.brand,
       ]),
+      store_bi_names: transacted.store_bi_names,
+      sales_channels: transacted.sales_channels,
       item_category: eligible.item_category,
       missing_fields:
         getMissingFieldsFromCurrentValues(currentValues).join(","),
@@ -242,6 +253,8 @@ export function buildGapQueueSnapshotRows(
           item_name: eligible?.item_name ?? tracked.item_name,
           brand: tracked.brand,
           brand_aliases: [tracked.brand],
+          store_bi_names: [],
+          sales_channels: [],
           item_category: eligible?.item_category ?? tracked.item_category,
           dimOffer,
           source: "tracked",
@@ -267,6 +280,8 @@ function buildTrackedRow(
     item_name: string;
     brand: string;
     brand_aliases: string[];
+    store_bi_names: string[];
+    sales_channels: string[];
     item_category: string;
     dimOffer: CurrentDimOffersValues | undefined;
     source: GapQueueSnapshotSource;
@@ -282,6 +297,8 @@ function buildTrackedRow(
       context.brand,
       tracked.brand,
     ]),
+    store_bi_names: context.store_bi_names,
+    sales_channels: context.sales_channels,
     item_category: context.item_category,
     missing_fields: tracked.missing_fields,
     status: tracked.status === "submitted" ? "submitted" : "open",

@@ -171,6 +171,8 @@ use `dq_missing_offers_pricing` for history.
 | item_name                | varchar   | Current item description from ClickHouse                   |
 | brand                    | varchar   | Brand of the most recent sale (display)                    |
 | brand_aliases            | text[]    | Every lower-cased brand the item sold under (filtering)    |
+| store_bi_names           | text[]    | Every store (store_bi_name) the item sold at (filtering)   |
+| sales_channels           | text[]    | Every sales channel (Wolt, Foody, Walk In...) it sold via  |
 | item_category            | varchar   | Current item category                                      |
 | missing_fields           | varchar   | Same csv encoding as the main table                        |
 | status                   | enum      | `open` or `submitted`                                      |

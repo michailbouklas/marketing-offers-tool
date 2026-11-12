@@ -9,8 +9,9 @@
   import DownloadIcon from "@lucide/svelte/icons/download";
   import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import Trash2Icon from "@lucide/svelte/icons/trash-2";
-  import XIcon from "@lucide/svelte/icons/x";
   import { toast } from "svelte-sonner";
+  import DateRangeFilter from "$lib/components/date-range-filter.svelte";
+  import MultiSelectFilter from "$lib/components/sales/multi-select-filter.svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
@@ -19,13 +20,14 @@
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
-  import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import { fetchGapQueue } from "$lib/services/offers-data-quality-list";
-  import type {
-    GapListItem,
-    GapListPage,
+  import {
+    appendGapQueueFilters,
+    type GapListItem,
+    type GapListPage,
+    type GapQueueFilters,
   } from "$lib/services/offers-data-quality";
   import type {
     GapListSortDirection,
@@ -34,9 +36,18 @@
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
-  let brandFilterOpen = $state(false);
-  let selectedAliases = $state<string[]>([]);
   let appliedAliases = $state<string[]>([]);
+  let filters = $state<GapQueueFilters>({
+    channels: [],
+    stores: [],
+    cities: [],
+  });
+  // Recomputed by the server for the selected brands on every refresh.
+  let filterOptions = $state<PageData["filterOptions"]>({
+    channels: [],
+    stores: [],
+    cities: [],
+  });
   let queuePage = $state<GapListPage>({
     items: [],
     totalItems: 0,
@@ -74,8 +85,28 @@
   const sortBy = $derived(currentSortBy);
   const sortDir = $derived(currentSortDir);
   const submittedCount = $derived(queuePage.submittedCount);
-  const selectedBrandAliases = $derived(new Set(selectedAliases));
-  const appliedBrandAliases = $derived(new Set(appliedAliases));
+  const isAllBrands = $derived(appliedAliases.length === brands.length);
+  const brandOptions = $derived(
+    brands.map((brand) => ({ value: brand.alias, label: brand.name })),
+  );
+  const channelOptions = $derived(
+    filterOptions.channels.map((channel) => ({
+      value: channel,
+      label: channel,
+    })),
+  );
+  const cityOptions = $derived(
+    filterOptions.cities.map((city) => ({ value: city, label: city })),
+  );
+  // Picking cities narrows the location list to those cities.
+  const storeOptions = $derived(
+    filterOptions.stores
+      .filter(
+        (option) =>
+          filters.cities.length === 0 || filters.cities.includes(option.city),
+      )
+      .map((option) => ({ value: option.store, label: option.store })),
+  );
   // Rows without a gap record yet (dq_id <= 0) have nothing to act on.
   const selectableIds = $derived(
     gaps.filter((gap) => gap.dq_id > 0).map((gap) => gap.dq_id),
@@ -100,8 +131,9 @@
   ];
 
   $effect(() => {
-    selectedAliases = [...data.selectedBrandAliases];
     appliedAliases = [...data.selectedBrandAliases];
+    filters = { ...data.filters };
+    filterOptions = data.filterOptions;
     queuePage = data.gapsPage;
     selectedIds = [];
     currentSortBy = data.sortBy;
@@ -109,37 +141,19 @@
     onlySubmitted = data.statusFilter === "submitted";
   });
 
-  function getBrandFilterSummary() {
-    if (appliedAliases.length === brands.length) {
-      return "All your assigned brands";
-    }
-
-    if (appliedAliases.length === 0) {
-      return "No brands selected";
-    }
-
-    return `${appliedAliases.length} brands selected`;
+  // Empty brand pick means "all assigned brands", like the sales report.
+  function applyBrands(values: string[]) {
+    // Locations and cities belong to brands, so a brand change clears them.
+    filters = { ...filters, stores: [], cities: [] };
+    refreshQueue({
+      aliases: values.length === 0 ? brands.map((b) => b.alias) : values,
+      nextPage: 1,
+    });
   }
 
-  function isBrandSelected(alias: string) {
-    return selectedBrandAliases.has(alias);
-  }
-
-  function toggleBrand(alias: string) {
-    if (isBrandSelected(alias)) {
-      selectedAliases = selectedAliases.filter((value) => value !== alias);
-      return;
-    }
-
-    selectedAliases = [...selectedAliases, alias];
-  }
-
-  function selectAllBrands() {
-    selectedAliases = brands.map((brand) => brand.alias);
-  }
-
-  function clearAllBrands() {
-    selectedAliases = [];
+  function applyFilters(next: Partial<GapQueueFilters>) {
+    filters = { ...filters, ...next };
+    refreshQueue({ nextPage: 1 });
   }
 
   async function refreshQueue({
@@ -168,6 +182,7 @@
         status: nextOnlySubmitted ? "submitted" : undefined,
         itemName: itemNameSearch,
         itemCode: itemCodeSearch,
+        filters,
       });
 
       if (requestId !== latestRefreshRequestId) {
@@ -178,7 +193,7 @@
       // Never act on rows the user can no longer see.
       selectedIds = [];
       appliedAliases = [...result.selectedBrandAliases];
-      selectedAliases = [...result.selectedBrandAliases];
+      filterOptions = result.filterOptions;
       currentSortBy = result.sortBy;
       currentSortDir = result.sortDir;
       onlySubmitted = nextOnlySubmitted;
@@ -195,29 +210,6 @@
         isRefreshing = false;
       }
     }
-  }
-
-  async function dismissBrand(alias: string) {
-    const nextAliases = appliedAliases.filter((value) => value !== alias);
-
-    selectedAliases = nextAliases;
-    appliedAliases = nextAliases;
-    await refreshQueue({ aliases: nextAliases, nextPage: 1 });
-  }
-
-  async function applyBrandFilters() {
-    brandFilterOpen = false;
-    appliedAliases = [...selectedAliases];
-    await refreshQueue({ aliases: selectedAliases, nextPage: 1 });
-  }
-
-  async function resetBrandFilters() {
-    const allAliases = brands.map((brand) => brand.alias);
-
-    brandFilterOpen = false;
-    selectedAliases = allAliases;
-    appliedAliases = allAliases;
-    await refreshQueue({ aliases: allAliases, nextPage: 1 });
   }
 
   async function toggleOnlySubmitted() {
@@ -274,6 +266,7 @@
       if (itemCodeSearch.trim()) {
         params.set("itemCode", itemCodeSearch.trim());
       }
+      appendGapQueueFilters(params, filters);
       const response = await fetch(`/offers-data-quality/export?${params}`);
       if (!response.ok) {
         throw new Error(`Export failed (${response.status})`);
@@ -427,181 +420,117 @@
         <div
           class="mb-6 flex flex-col gap-3 rounded-2xl border border-dashed px-4 py-4 sm:px-5"
         >
-          <div
-            class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div>
-              <p class="text-sm font-medium">Brand filter</p>
-              <p class="text-muted-foreground text-sm">
-                {getBrandFilterSummary()}
-              </p>
+          <div class="flex flex-wrap items-end gap-3">
+            <MultiSelectFilter
+              label="Brand"
+              noun="brands"
+              options={brandOptions}
+              selected={isAllBrands ? [] : appliedAliases}
+              onApply={applyBrands}
+            />
+            <MultiSelectFilter
+              label="Channel"
+              noun="channels"
+              options={channelOptions}
+              selected={filters.channels}
+              onApply={(channels) => applyFilters({ channels })}
+            />
+            <MultiSelectFilter
+              label="City"
+              noun="cities"
+              options={cityOptions}
+              selected={filters.cities}
+              onApply={(cities) => applyFilters({ cities, stores: [] })}
+            />
+            <MultiSelectFilter
+              label="Location"
+              noun="locations"
+              options={storeOptions}
+              selected={filters.stores}
+              onApply={(stores) => applyFilters({ stores })}
+            />
+            <div class="space-y-2">
+              <span class="text-sm font-medium">Detected</span>
+              <DateRangeFilter
+                from={filters.detectedFrom}
+                to={filters.detectedTo}
+                onApply={(range) =>
+                  applyFilters({
+                    detectedFrom: range.from,
+                    detectedTo: range.to,
+                  })}
+              />
             </div>
+          </div>
 
-            <div class="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant={onlySubmitted ? "default" : "outline"}
-                size="sm"
-                aria-pressed={onlySubmitted}
-                onclick={toggleOnlySubmitted}
+          <div class="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant={onlySubmitted ? "default" : "outline"}
+              size="sm"
+              aria-pressed={onlySubmitted}
+              onclick={toggleOnlySubmitted}
+            >
+              Awaiting approval
+              <Badge
+                variant={onlySubmitted ? "secondary" : "outline"}
+                class="ml-1.5 px-1.5"
               >
-                Awaiting approval
-                <Badge
-                  variant={onlySubmitted ? "secondary" : "outline"}
-                  class="ml-1.5 px-1.5"
-                >
-                  {submittedCount}
-                </Badge>
-              </Button>
+                {submittedCount}
+              </Badge>
+            </Button>
 
-              <Popover.Root bind:open={brandFilterOpen}>
-                <Popover.Trigger
-                  class={`${buttonVariants({ variant: "outline" })} min-w-52 justify-between`}
-                >
-                  <span class="truncate">{getBrandFilterSummary()}</span>
-                  <ChevronsUpDownIcon class="size-4 opacity-60" />
-                </Popover.Trigger>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isExporting || totalItems === 0}
+              onclick={exportExcel}
+            >
+              {#if isExporting}
+                <LoaderCircleIcon class="size-4 animate-spin" />
+              {:else}
+                <DownloadIcon class="size-4" />
+              {/if}
+              Export to Excel
+            </Button>
 
-                <Popover.Content align="end" class="w-[22rem] p-0">
-                  <div class="flex flex-col">
-                    <div class="border-b px-4 py-3">
-                      <p class="text-sm font-medium">Choose brands</p>
-                      <p class="text-muted-foreground mt-1 text-xs">
-                        Only your assigned brands appear here.
-                      </p>
-                    </div>
-
-                    <div
-                      class="flex items-center justify-between gap-2 border-b px-4 py-2"
-                    >
-                      <button
-                        type="button"
-                        class="text-sm font-medium underline-offset-4 hover:underline"
-                        onclick={selectAllBrands}
-                      >
-                        Select all
-                      </button>
-                      <button
-                        type="button"
-                        class="text-muted-foreground hover:text-foreground text-sm font-medium underline-offset-4 hover:underline"
-                        onclick={clearAllBrands}
-                      >
-                        Select none
-                      </button>
-                    </div>
-
-                    <div class="max-h-72 overflow-y-auto px-2 py-2">
-                      {#each brands as brand (brand.id)}
-                        <button
-                          type="button"
-                          class="hover:bg-accent/50 flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors"
-                          onclick={() => toggleBrand(brand.alias)}
-                        >
-                          <Checkbox
-                            checked={isBrandSelected(brand.alias)}
-                            class="pointer-events-none mt-0.5"
-                          />
-                          <div class="min-w-0 space-y-1">
-                            <p class="text-sm leading-none font-medium">
-                              {brand.name}
-                            </p>
-                            <p
-                              class="text-muted-foreground truncate text-xs uppercase"
-                            >
-                              {brand.alias}
-                            </p>
-                          </div>
-                        </button>
-                      {/each}
-                    </div>
-
-                    <div
-                      class="flex items-center justify-between gap-2 border-t px-4 py-3"
-                    >
-                      <p class="text-muted-foreground text-xs">
-                        {selectedAliases.length} / {brands.length} selected
-                      </p>
-                      <div class="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onclick={() => {
-                            selectedAliases = [...appliedAliases];
-                            brandFilterOpen = false;
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          onclick={applyBrandFilters}
-                        >
-                          Done
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </Popover.Content>
-              </Popover.Root>
-
-              <Button variant="outline" size="sm" onclick={resetBrandFilters}
-                >Reset</Button
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger
+                class={buttonVariants({ variant: "outline", size: "sm" })}
+                disabled={!data.canDismiss || selectedIds.length === 0}
+                title={data.canDismiss
+                  ? undefined
+                  : "Only approvers can run bulk actions"}
               >
+                Actions
+                {#if selectedIds.length > 0}
+                  <Badge variant="secondary" class="px-1.5">
+                    {selectedIds.length}
+                  </Badge>
+                {/if}
+                <ChevronDownIcon class="size-4 opacity-60" />
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content align="end" class="w-52">
+                <DropdownMenu.Item
+                  variant="destructive"
+                  onSelect={() => (confirmRemoveOpen = true)}
+                >
+                  <Trash2Icon />
+                  Remove from list
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
 
+            {#if data.canDismiss}
               <Button
+                href="/offers-data-quality/flagged"
                 variant="outline"
                 size="sm"
-                disabled={isExporting || totalItems === 0}
-                onclick={exportExcel}
               >
-                {#if isExporting}
-                  <LoaderCircleIcon class="size-4 animate-spin" />
-                {:else}
-                  <DownloadIcon class="size-4" />
-                {/if}
-                Export to Excel
+                <ArchiveIcon class="size-4" />
+                Flagged offers
               </Button>
-
-              <DropdownMenu.Root>
-                <DropdownMenu.Trigger
-                  class={buttonVariants({ variant: "outline", size: "sm" })}
-                  disabled={!data.canDismiss || selectedIds.length === 0}
-                  title={data.canDismiss
-                    ? undefined
-                    : "Only approvers can run bulk actions"}
-                >
-                  Actions
-                  {#if selectedIds.length > 0}
-                    <Badge variant="secondary" class="px-1.5">
-                      {selectedIds.length}
-                    </Badge>
-                  {/if}
-                  <ChevronDownIcon class="size-4 opacity-60" />
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Content align="end" class="w-52">
-                  <DropdownMenu.Item
-                    variant="destructive"
-                    onSelect={() => (confirmRemoveOpen = true)}
-                  >
-                    <Trash2Icon />
-                    Remove from list
-                  </DropdownMenu.Item>
-                </DropdownMenu.Content>
-              </DropdownMenu.Root>
-
-              {#if data.canDismiss}
-                <Button
-                  href="/offers-data-quality/flagged"
-                  variant="outline"
-                  size="sm"
-                >
-                  <ArchiveIcon class="size-4" />
-                  Flagged offers
-                </Button>
-              {/if}
-            </div>
+            {/if}
           </div>
 
           <div class="grid gap-3 sm:grid-cols-2">
@@ -627,28 +556,6 @@
                 oninput={scheduleSearch}
               />
             </div>
-          </div>
-
-          <div class="flex flex-wrap gap-2">
-            {#each brands.filter( (brand) => appliedBrandAliases.has(brand.alias), ) as brand (brand.id)}
-              <Badge variant="outline" class="gap-1.5 px-2.5 py-1">
-                <span>{brand.name}</span>
-                <button
-                  type="button"
-                  class="hover:bg-accent hover:text-accent-foreground inline-flex size-4 items-center justify-center rounded-full transition-colors"
-                  aria-label={`Remove ${brand.name} from the filter`}
-                  onclick={() => dismissBrand(brand.alias)}
-                >
-                  <XIcon class="size-3" />
-                </button>
-              </Badge>
-            {/each}
-
-            {#if appliedAliases.length === 0}
-              <span class="text-muted-foreground text-sm">
-                No brands selected. Apply to view an empty queue.
-              </span>
-            {/if}
           </div>
         </div>
 

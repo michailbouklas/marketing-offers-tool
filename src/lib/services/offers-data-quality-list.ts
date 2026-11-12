@@ -1,7 +1,9 @@
 import {
+  appendGapQueueFilters,
   gapQueueResponseSchema,
   type GapListSortDirection,
   type GapListSortField,
+  type GapQueueFilters,
 } from "$lib/services/offers-data-quality";
 
 type FetchGapQueueInput = {
@@ -12,6 +14,7 @@ type FetchGapQueueInput = {
   status?: "submitted";
   itemName?: string;
   itemCode?: string;
+  filters: GapQueueFilters;
 };
 
 export async function fetchGapQueue(
@@ -47,6 +50,8 @@ export async function fetchGapQueue(
   if (input.itemCode?.trim()) {
     params.set("itemCode", input.itemCode.trim());
   }
+
+  appendGapQueueFilters(params, input.filters);
 
   const response = await fetchFn(`/api/gaps?${params.toString()}`);
 

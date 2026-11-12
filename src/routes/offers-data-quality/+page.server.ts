@@ -4,6 +4,7 @@ import {
   requireAuthenticatedUser,
 } from "$lib/server/auth-guards";
 import {
+  getGapQueueFilterOptionsForBrands,
   getGapQueueStatus,
   getOpenGapList,
 } from "$lib/services/offers-data-quality.server";
@@ -11,6 +12,7 @@ import {
   gapListSortDirections,
   gapListSortFields,
   getSelectedBrandAliases,
+  parseGapQueueFilters,
 } from "$lib/services/offers-data-quality";
 import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
@@ -49,21 +51,26 @@ export const load: PageServerLoad = async (event) => {
     event.url.searchParams.getAll("brandAlias"),
     userBrands,
   );
+  const filters = parseGapQueueFilters(event.url.searchParams);
   const gapsPage = await getOpenGapList(page, PAGE_SIZE, {
     brandAliases: selectedBrandAliases,
     sortBy,
     sortDir,
     statuses: statusFilter ? [statusFilter] : undefined,
+    ...filters,
   });
-  const [queueStatus, canDismiss] = await Promise.all([
+  const [queueStatus, canDismiss, filterOptions] = await Promise.all([
     getGapQueueStatus(),
     hasPermission(event, { submission: ["reject"] }),
+    getGapQueueFilterOptionsForBrands(selectedBrandAliases),
   ]);
 
   return {
     gapsPage,
     brands: userBrands,
     selectedBrandAliases,
+    filters,
+    filterOptions,
     sortBy,
     sortDir,
     statusFilter,
