@@ -15,7 +15,10 @@ import {
 } from "./sales-explore.server";
 import {
   valueOffer,
+  type OfferCalendarRow,
   type OfferDailyRow,
+  type OfferSlot,
+  type OfferSlotSale,
   type OfferDateRange,
   type OfferValue,
   type OfferValueRow,
@@ -30,20 +33,144 @@ const CODE_SQL = "if(trde_combo_item = '', trde_item, trde_combo_item)";
  * lines carry no channel, so it comes from the order header.
  */
 function rangeFilter(range: OfferDateRange | null, channels?: string[]) {
-  if (!range) return { sql: "", params: {} };
-  const dates = "AND trde_date BETWEEN {from:Date} AND {to:Date}";
-  const params = { from: range.from, to: range.to };
-  if (!channels) return { sql: dates, params };
+  const dates = range ? "AND trde_date BETWEEN {from:Date} AND {to:Date}" : "";
+  const params = range ? { from: range.from, to: range.to } : {};
+  if (!channels?.length) return { sql: dates, params };
   return {
     sql: `${dates}
             AND (trde_date, trde_location, trde_division, trde_no) IN (
               SELECT tran_date, tran_location, tran_division, tran_no
               FROM ${salesTransactionsTable()}
               WHERE lower(brand) = {brand:String}
-                AND tran_date BETWEEN {from:Date} AND {to:Date}
+                ${range ? "AND tran_date BETWEEN {from:Date} AND {to:Date}" : ""}
                 AND trim(dim_division_group_channel) IN {channels:Array(String)})`,
     params: { ...params, channels },
   };
+}
+
+/** `codes` CTE: offer header codes (offer POS categories + the brand's dim_offers). Needs {brand} and {offerCats}. */
+const offerCodesCte = () => `codes AS (
+          SELECT DISTINCT trde_item FROM ${detailsTable()}
+          WHERE lower(brand) = {brand:String} AND trde_item != '-1'
+            AND ${OFFER_LINE_SQL}
+          UNION DISTINCT
+          SELECT item_code FROM dim_offers WHERE lower(brand) = {brand:String}
+        )`;
+
+/**
+ * Offer lines of one brand in a range with their order's hour. Lines carry no
+ * time, so it comes from the header's `trans_order_time` (already Cyprus local
+ * time: never toTimeZone it). Lines whose order has no header row drop out.
+ */
+function offerLinesWithHour(range: OfferDateRange, channels?: string[]) {
+  const dates = rangeFilter(range, channels);
+  return {
+    sql: `
+        FROM ${detailsTable()} AS d
+        INNER JOIN (
+          SELECT tran_date, tran_location, tran_division, tran_no,
+            any(toHour(trans_order_time)) AS hour
+          FROM ${salesTransactionsTable()}
+          WHERE lower(brand) = {brand:String}
+            AND tran_date BETWEEN {from:Date} AND {to:Date}
+          GROUP BY tran_date, tran_location, tran_division, tran_no
+        ) AS h ON d.trde_date = h.tran_date AND d.trde_location = h.tran_location
+          AND d.trde_division = h.tran_division AND d.trde_no = h.tran_no
+        WHERE lower(d.brand) = {brand:String} AND trde_void_time = ''
+          AND trde_item != '-1' AND ${CODE_SQL} IN codes
+          ${dates.sql}`,
+    params: { offerCats: EXPLORE_OFFER_CATEGORIES, ...dates.params },
+  };
+}
+
+/** Offer units + offer net per business day × order hour, for the offers calendar. */
+export async function getOfferCalendarRows(
+  brand: string,
+  range: OfferDateRange,
+  channels?: string[],
+): Promise<OfferCalendarRow[]> {
+  const lines = offerLinesWithHour(range, channels);
+  const result = await clickhouse.query({
+    query: `
+        WITH ${offerCodesCte()}
+        SELECT toString(trde_date) AS day,
+          toDayOfWeek(trde_date) AS weekday,
+          h.hour AS hour,
+          sumIf(toFloat64(trde_qty), trde_item = ${CODE_SQL}) AS units,
+          sum(toFloat64(trde_net_value)) AS net
+        ${lines.sql}
+        GROUP BY day, weekday, hour
+      `,
+    query_params: { brand, ...lines.params },
+    format: "JSONEachRow",
+  });
+  const rows =
+    await result.json<Record<keyof OfferCalendarRow, string | number>>();
+  return rows.map((row) => ({
+    day: String(row.day),
+    weekday: toNumber(row.weekday),
+    hour: toNumber(row.hour),
+    units: toNumber(row.units),
+    net: toNumber(row.net),
+  }));
+}
+
+/** Per-offer totals inside one calendar cell (a date, a weekday, or a weekday × hour), best net first. */
+export async function getOfferSlotSales(
+  brand: string,
+  range: OfferDateRange,
+  channels: string[] | undefined,
+  slot: OfferSlot,
+): Promise<OfferSlotSale[]> {
+  const lines = offerLinesWithHour(range, channels);
+  const where = [
+    slot.date ? "AND trde_date = {date:Date}" : "",
+    slot.weekday ? "AND toDayOfWeek(trde_date) = {weekday:UInt8}" : "",
+    slot.hour === undefined ? "" : "AND h.hour = {hour:UInt8}",
+  ].join(" ");
+  const result = await clickhouse.query({
+    query: `
+        WITH ${offerCodesCte()}
+        SELECT l.code AS code, coalesce(o.product_desc, l.pos_name) AS name,
+          l.units AS units, l.orders AS orders, l.net AS net
+        FROM (
+          SELECT ${CODE_SQL} AS code,
+            argMax(item_name, trde_date) AS pos_name,
+            sumIf(toFloat64(trde_qty), trde_item = code) AS units,
+            uniqExactIf((trde_date, trde_location, trde_division, trde_no),
+              trde_item = code) AS orders,
+            sum(toFloat64(trde_net_value)) AS net
+          ${lines.sql}
+          ${where}
+          GROUP BY code
+        ) AS l
+        LEFT JOIN (
+          SELECT item_code, any(product_desc) AS product_desc FROM dim_offers
+          WHERE coalesce(lower(brand), {brand:String}) = {brand:String}
+          GROUP BY item_code
+        ) AS o ON o.item_code = l.code
+        ORDER BY net DESC
+        SETTINGS join_use_nulls = 1
+      `,
+    // Only the slot keys that are set: the client rejects undefined params.
+    query_params: {
+      brand,
+      ...lines.params,
+      ...Object.fromEntries(
+        Object.entries(slot).filter(([, value]) => value !== undefined),
+      ),
+    },
+    format: "JSONEachRow",
+  });
+  const rows =
+    await result.json<Record<keyof OfferSlotSale, string | number>>();
+  return rows.map((row) => ({
+    code: String(row.code),
+    name: String(row.name ?? row.code),
+    units: toNumber(row.units),
+    orders: toNumber(row.orders),
+    net: toNumber(row.net),
+  }));
 }
 
 /**
@@ -61,13 +188,7 @@ async function queryOfferRows(
   const dates = rangeFilter(range, channels);
   const result = await clickhouse.query({
     query: `
-        WITH codes AS (
-          SELECT DISTINCT trde_item FROM ${details}
-          WHERE lower(brand) = {brand:String} AND trde_item != '-1'
-            AND ${OFFER_LINE_SQL}
-          UNION DISTINCT
-          SELECT item_code FROM dim_offers WHERE lower(brand) = {brand:String}
-        )
+        WITH ${offerCodesCte()}
         SELECT
           l.code AS code,
           coalesce(d.product_desc, l.pos_name) AS name,
@@ -178,7 +299,7 @@ export async function getOfferDailyRows(
   brand: string,
   codes: string[],
   range: OfferDateRange | null = null,
-  /** Only orders on these channels (needs a range). */
+  /** Only orders on these channels; empty/omitted = all. */
   channels?: string[],
 ): Promise<OfferDailyRow[]> {
   const dates = rangeFilter(range, channels);
@@ -273,10 +394,10 @@ export async function getCachedOfferValues(
   };
 }
 
-/** Offers measured inside a date range, live from ClickHouse (not cached). */
+/** Offers measured live from ClickHouse (not cached); null range = all time. */
 export async function getOfferValuesForRange(
   brand: string,
-  range: OfferDateRange,
+  range: OfferDateRange | null,
   /** Only orders on these channels (trimmed `dim_division_group_channel`). */
   channels?: string[],
 ): Promise<CachedOfferValues> {

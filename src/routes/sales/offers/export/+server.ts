@@ -28,15 +28,17 @@ export const GET: RequestHandler = async (event) => {
   const scope = await resolveSalesDashboardScope(event, user.id);
   if (!scope) error(403, "No brands assigned");
 
-  const brand = withSingleBrand(scope.filters).brands[0];
+  const { brands, channels } = withSingleBrand(scope.filters);
+  const brand = brands[0];
   const range = parseOfferDateRange(event.url.searchParams);
-  const values = range
-    ? await getOfferValuesForRange(brand, range)
-    : await getCachedOfferValues(brand);
+  const values =
+    range || channels.length > 0
+      ? await getOfferValuesForRange(brand, range, channels)
+      : await getCachedOfferValues(brand);
   if (!values) error(404, "This brand's offers have not been computed yet");
 
   const result = await generateExcelFile({
-    filename: `offers-${brand}-${range ? `${range.from}-to-${range.to}` : "all-time"}`,
+    filename: `offers-${brand}-${range ? `${range.from}-to-${range.to}` : "all-time"}${channels.length > 0 ? `-${channels.join("-")}` : ""}`,
     sheets: [
       {
         name: "Offers",

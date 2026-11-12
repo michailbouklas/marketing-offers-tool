@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildOfferCalendar,
   compareWinner,
   offerCompareMetrics,
   offerReason,
@@ -190,5 +191,29 @@ describe("parseOfferDateRange", () => {
       from: "2026-01-01",
       to: "2026-03-01",
     });
+  });
+});
+
+describe("buildOfferCalendar", () => {
+  // 2026-11-02 is a Monday.
+  const rows = [
+    { day: "2026-11-02", weekday: 1, hour: 13, units: 2, net: 20 },
+    { day: "2026-11-02", weekday: 1, hour: 20, units: 1, net: 5 },
+    { day: "2026-11-09", weekday: 1, hour: 13, units: 4, net: 40 },
+  ];
+
+  it("sums days into the date calendar", () => {
+    const { dates } = buildOfferCalendar(rows, "2026-11-01", "2026-11-09");
+    const cells = dates.months.flatMap((month) => month.cells);
+    const day = cells.find((cell) => cell.date === "2026-11-02");
+    expect(day).toMatchObject({ net: 25, txns: 3 });
+    expect(dates.peak).toEqual({ date: "2026-11-09", net: 40 });
+  });
+
+  it("averages weekday x hour over the Mondays in range, units as txns", () => {
+    const { grid } = buildOfferCalendar(rows, "2026-11-01", "2026-11-09");
+    const at13 = grid.rows[0][grid.hours.indexOf(13)];
+    expect(at13).toMatchObject({ avgNet: 30, avgTxns: 3 });
+    expect(grid.weekdays[0]).toMatchObject({ avgNet: 32.5, avgTxns: 3.5 });
   });
 });

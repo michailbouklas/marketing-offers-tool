@@ -31,6 +31,7 @@
     offers,
     brand,
     range = null,
+    channels,
     verdictVariant,
   }: {
     open: boolean;
@@ -39,6 +40,8 @@
     brand: string;
     /** Table date range; null = all time. */
     range?: OfferDateRange | null;
+    /** Only orders on these channels; omitted = all. */
+    channels?: string[];
     verdictVariant: Record<
       OfferVerdict,
       "default" | "secondary" | "destructive" | "outline"
@@ -60,7 +63,7 @@
     fetch("/sales/offers/compare", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ brand, codes, range }),
+      body: JSON.stringify({ brand, codes, range, channels }),
     })
       .then(async (response) => {
         if (!response.ok) throw new Error(await response.text());
