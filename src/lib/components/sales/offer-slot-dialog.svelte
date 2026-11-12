@@ -19,6 +19,7 @@
     brand,
     range,
     channels,
+    locations,
   }: {
     open: boolean;
     slot: OfferSlot | null;
@@ -27,6 +28,8 @@
     range: OfferDateRange;
     /** Only orders on these channels; omitted = all. */
     channels?: string[];
+    /** Only lines at these POS locations; omitted = all. */
+    locations?: number[];
   } = $props();
 
   let sales = $state<OfferSlotSale[] | null>(null);
@@ -41,7 +44,7 @@
     fetch("/sales/offers/slot", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ brand, range, channels, slot }),
+      body: JSON.stringify({ brand, range, channels, locations, slot }),
     })
       .then(async (response) => {
         if (!response.ok) throw new Error(await response.text());
@@ -71,6 +74,8 @@
       <Dialog.Description>
         Offers sold, totals for this cell between {range.from} and {range.to}{channels
           ? ` on ${channels.join(", ")}`
+          : ""}{locations
+          ? ` at ${locations.length} location${locations.length === 1 ? "" : "s"}`
           : ""}. Net excl. VAT.
       </Dialog.Description>
     </Dialog.Header>

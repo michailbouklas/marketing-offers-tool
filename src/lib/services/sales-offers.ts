@@ -154,6 +154,15 @@ export function parseOfferDateRange(
   return from <= to ? { from, to } : { from: to, to: from };
 }
 
+/** `?locations=1,4,7` (POS `trde_location` ids); empty = all. Junk ids are dropped. */
+export function parseOfferLocations(params: URLSearchParams): number[] {
+  const ids = (params.get("locations") ?? "")
+    .split(",")
+    .map((value) => Number(value.trim()))
+    .filter((id) => Number.isInteger(id) && id > 0 && id <= 32_767);
+  return [...new Set(ids)];
+}
+
 /** One offer's POS totals on one business day, for the Offer VS dialog. */
 export type OfferDailyRow = {
   code: string;

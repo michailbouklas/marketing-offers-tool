@@ -1,17 +1,16 @@
 import { redirect } from "@sveltejs/kit";
 import { requirePermission } from "$lib/server/auth-guards";
-import {
-  getSalesDashboardOptions,
-  resolveSalesDashboardScope,
-} from "$lib/services/sales-dashboard.server";
+import { resolveSalesDashboardScope } from "$lib/services/sales-dashboard.server";
 import { withSingleBrand } from "$lib/services/sales-dashboard";
 import {
   buildOfferCalendar,
   parseOfferDateRange,
+  parseOfferLocations,
 } from "$lib/services/sales-offers";
 import {
   getCachedOfferValues,
   getOfferCalendarRows,
+  getOfferFilterOptions,
   getOfferValuesForRange,
   refreshOfferValues,
 } from "$lib/services/sales-offers.server";
@@ -30,21 +29,33 @@ export const load: PageServerLoad = async (event) => {
   const brand = filters.brands[0];
   // The scope defaults to the last 30 days; this page defaults to all time.
   const range = parseOfferDateRange(event.url.searchParams);
-  // shortcut: channel buttons list the scope window (range or last 30 days); widen if old channels go missing.
-  const { channels } = await getSalesDashboardOptions(filters);
+  const { channels, locations: locationOptions } = await getOfferFilterOptions(
+    filters,
+    range,
+  );
+  // Only the brand's own stores: another brand's ids (stale URL) are dropped.
+  const locations = parseOfferLocations(event.url.searchParams).filter((id) =>
+    locationOptions.some((option) => option.id === id),
+  );
+  const base = {
+    scope: { brands: scope.brands, filters },
+    range,
+    channels,
+    locationOptions,
+    locations,
+  };
 
   if (event.url.searchParams.get("tab") === "calendar") {
     // A calendar over all time is unreadable, so no range = the scope default (last 30 days).
     const calendarRange = range ?? { from: filters.from, to: filters.to };
     return {
-      scope: { brands: scope.brands, filters },
-      range,
-      channels,
+      ...base,
       calendarRange,
       calendar: getOfferCalendarRows(
         brand,
         calendarRange,
         filters.channels,
+        locations,
       ).then((rows) =>
         buildOfferCalendar(rows, calendarRange.from, calendarRange.to),
       ),
@@ -52,22 +63,18 @@ export const load: PageServerLoad = async (event) => {
     };
   }
 
-  // The cache holds all channels over all time only; anything else is live.
-  if (range || filters.channels.length > 0) {
+  // The cache holds all channels and locations over all time only; anything else is live.
+  if (range || filters.channels.length > 0 || locations.length > 0) {
     return {
-      scope: { brands: scope.brands, filters },
-      range,
-      channels,
-      offers: getOfferValuesForRange(brand, range, filters.channels),
+      ...base,
+      offers: getOfferValuesForRange(brand, range, filters.channels, locations),
     };
   }
 
   const cached = await getCachedOfferValues(brand);
 
   return {
-    scope: { brands: scope.brands, filters },
-    range,
-    channels,
+    ...base,
     // Cache miss (never computed): stream the first build; it takes seconds.
     offers:
       cached ??

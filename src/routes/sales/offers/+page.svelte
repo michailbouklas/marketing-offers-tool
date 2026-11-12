@@ -14,6 +14,7 @@
   import OfferCompareDialog from "$lib/components/sales/offer-compare-dialog.svelte";
   import OfferValueDialog from "$lib/components/sales/offer-value-dialog.svelte";
   import OfferCalendar from "$lib/components/sales/offer-calendar.svelte";
+  import MultiSelectFilter from "$lib/components/sales/multi-select-filter.svelte";
   import {
     formatSalesAmount,
     formatSalesCount,
@@ -92,6 +93,7 @@
     alias: string,
     range: { from?: string; to?: string },
     channels: string[] = [],
+    locations: number[] = [],
   ) {
     const params = new URLSearchParams({ brands: alias });
     if (range.from && range.to) {
@@ -99,6 +101,7 @@
       params.set("to", range.to);
     }
     if (channels.length > 0) params.set("channels", channels.join(","));
+    if (locations.length > 0) params.set("locations", locations.join(","));
     // Table / Calendar tab and the calendar's view toggles survive filter changes.
     for (const key of ["tab", "by", "view"]) {
       const value = page.url.searchParams.get(key);
@@ -256,6 +259,15 @@
     {@const range = data.range ?? null}
     {@const channels = data.scope.filters.channels}
     {@const scopedChannels = channels.length > 0 ? channels : undefined}
+    {@const locations = data.locations ?? []}
+    {@const scopedLocations = locations.length > 0 ? locations : undefined}
+    {@const locationOptions = (data.locationOptions ?? []).map((item) => ({
+      value: String(item.id),
+      label: item.name,
+    }))}
+    {@const atLocations = scopedLocations
+      ? ` at ${locations.length === 1 ? (locationOptions.find((item) => item.value === String(locations[0]))?.label ?? "1 location") : `${locations.length} locations`}`
+      : ""}
     <div class="flex flex-wrap items-end gap-6">
       <div class="space-y-2">
         <span class="text-sm font-medium" id="brand-label">Brand</span>
@@ -278,35 +290,42 @@
           from={range?.from}
           to={range?.to}
           onApply={(next) =>
-            goto(offersHref(brand.alias, next, channels), {
+            goto(offersHref(brand.alias, next, channels, locations), {
               keepFocus: true,
               noScroll: true,
             })}
         />
       </div>
 
-      <div class="space-y-2">
-        <span class="text-sm font-medium" id="channel-label">Channel</span>
-        <ButtonGroup.Root aria-labelledby="channel-label" class="flex-wrap">
-          <Button
-            href={offersHref(brand.alias, range ?? {})}
-            variant={channels.length === 0 ? "default" : "outline"}
-            aria-current={channels.length === 0 ? "page" : undefined}
-          >
-            All channels
-          </Button>
-          {#each data.channels ?? [] as channel (channel)}
-            {@const active = channels.length === 1 && channels[0] === channel}
-            <Button
-              href={offersHref(brand.alias, range ?? {}, [channel])}
-              variant={active ? "default" : "outline"}
-              aria-current={active ? "page" : undefined}
-            >
-              {channel}
-            </Button>
-          {/each}
-        </ButtonGroup.Root>
-      </div>
+      <MultiSelectFilter
+        label="Channel"
+        options={(data.channels ?? []).map((value) => ({
+          value,
+          label: value,
+        }))}
+        noun="channels"
+        selected={channels}
+        onApply={(next) =>
+          goto(offersHref(brand.alias, range ?? {}, next, locations), {
+            keepFocus: true,
+            noScroll: true,
+          })}
+      />
+
+      <MultiSelectFilter
+        label="Location"
+        options={locationOptions}
+        noun="locations"
+        selected={locations.map(String)}
+        onApply={(next) =>
+          goto(
+            offersHref(brand.alias, range ?? {}, channels, next.map(Number)),
+            {
+              keepFocus: true,
+              noScroll: true,
+            },
+          )}
+      />
 
       <div class="space-y-2">
         <span class="text-sm font-medium" id="view-label">View</span>
@@ -346,6 +365,7 @@
           brand={brand.alias}
           range={data.calendarRange}
           channels={scopedChannels}
+          locations={scopedLocations}
           allTime={!range}
         />
       {:catch}
@@ -363,8 +383,8 @@
             <p class="text-muted-foreground text-sm">
               {range
                 ? `Adding up ${brand.name}'s sales from ${range.from} to ${range.to}.`
-                : scopedChannels
-                  ? `Adding up ${brand.name}'s full sales history on ${channels.join(", ")}.`
+                : scopedChannels || scopedLocations
+                  ? `Adding up ${brand.name}'s full sales history${scopedChannels ? ` on ${channels.join(", ")}` : ""}${atLocations}.`
                   : `First visit for ${brand.name}: adding up its full sales history. Later visits load instantly from the daily cache.`}
             </p>
             {#each { length: 8 } as _, index (index)}
@@ -378,13 +398,13 @@
           compareCodes.includes(offer.code),
         )}
         <div class="flex flex-wrap items-center gap-3 text-sm">
-          {#if range || scopedChannels}
+          {#if range || scopedChannels || scopedLocations}
             <span class="text-muted-foreground">
               {range
                 ? `Sales from ${range.from} to ${range.to}`
                 : "All time"}{scopedChannels
                 ? ` on ${channels.join(", ")}`
-                : ""}, computed live
+                : ""}{atLocations}, computed live
             </span>
           {:else}
             <span class="text-muted-foreground">
@@ -437,7 +457,9 @@
             <Card.Content class="text-muted-foreground py-8 text-sm">
               No offers found for {brand.name}{range
                 ? " in these dates"
-                : ""}{scopedChannels ? ` on ${channels.join(", ")}` : ""}.
+                : ""}{scopedChannels
+                ? ` on ${channels.join(", ")}`
+                : ""}{atLocations}.
             </Card.Content>
           </Card.Root>
         {:else}
@@ -633,6 +655,7 @@
           brand={brand.alias}
           {range}
           channels={scopedChannels}
+          locations={scopedLocations}
           idealFcPerc={cached?.idealFcPerc ?? null}
           verdictVariant={VERDICT_VARIANT}
         />
@@ -642,6 +665,7 @@
           brand={brand.alias}
           {range}
           channels={scopedChannels}
+          locations={scopedLocations}
           verdictVariant={VERDICT_VARIANT}
         />
         <AlertDialog.Root bind:open={tooManyOpen}>

@@ -35,6 +35,7 @@
     idealFcPerc,
     verdictVariant,
     channels,
+    locations,
   }: {
     open: boolean;
     offer: OfferValue | null;
@@ -48,6 +49,8 @@
     >;
     /** Only orders on these channels (/sales/delivery/offers); omitted = all. */
     channels?: string[];
+    /** Only lines at these POS locations; omitted = all. */
+    locations?: number[];
   } = $props();
 
   const pct = (value: number) => `${(value * 100).toFixed(1)}%`;
@@ -65,7 +68,7 @@
     fetch("/sales/offers/compare", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ brand, codes, range, channels }),
+      body: JSON.stringify({ brand, codes, range, channels, locations }),
     })
       .then(async (response) => {
         if (!response.ok) throw new Error(await response.text());
@@ -107,6 +110,7 @@
         params.set("to", range.to);
       }
       if (channels) params.set("channels", channels.join(","));
+      if (locations) params.set("locations", locations.join(","));
       const response = await fetch(`/sales/offers/export/offer?${params}`);
       if (!response.ok) throw new Error(`Export failed (${response.status})`);
       const { downloadUrl } = (await response.json()) as {
@@ -221,6 +225,10 @@
           )} units in {formatSalesCount(offer.orders)} orders
           {#if channels}
             · on {channels.join(", ")} only
+          {/if}
+          {#if locations}
+            · at {locations.length}
+            {locations.length === 1 ? "location" : "locations"} only
           {/if}
         </Dialog.Description>
       </Dialog.Header>
