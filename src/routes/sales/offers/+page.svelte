@@ -13,6 +13,7 @@
   import * as Table from "$lib/components/ui/table/index.js";
   import OfferCompareDialog from "$lib/components/sales/offer-compare-dialog.svelte";
   import OfferValueDialog from "$lib/components/sales/offer-value-dialog.svelte";
+  import OfferCalendar from "$lib/components/sales/offer-calendar.svelte";
   import {
     formatSalesAmount,
     formatSalesCount,
@@ -39,6 +40,7 @@
     | "lastSale"
     | "daysOnSale"
     | "units"
+    | "qtyPerOrder"
     | "offerNet"
     | "discountGiven"
     | "foodCost"
@@ -77,12 +79,30 @@
   let tooManyOpen = $state(false);
   let search = $state("");
 
-  /** Same page with another brand and/or range; omitted range = all time. */
-  function offersHref(alias: string, range: { from?: string; to?: string }) {
+  /** Same page and filters on the table or the calendar tab. */
+  function tabHref(tab: "table" | "calendar") {
+    const params = new URLSearchParams(page.url.searchParams);
+    if (tab === "calendar") params.set("tab", "calendar");
+    else params.delete("tab");
+    return `${page.url.pathname}?${params}`;
+  }
+
+  /** Same page with another brand, range and/or channel; omitted = all time / all channels. */
+  function offersHref(
+    alias: string,
+    range: { from?: string; to?: string },
+    channels: string[] = [],
+  ) {
     const params = new URLSearchParams({ brands: alias });
     if (range.from && range.to) {
       params.set("from", range.from);
       params.set("to", range.to);
+    }
+    if (channels.length > 0) params.set("channels", channels.join(","));
+    // Table / Calendar tab and the calendar's view toggles survive filter changes.
+    for (const key of ["tab", "by", "view"]) {
+      const value = page.url.searchParams.get(key);
+      if (value) params.set(key, value);
     }
     return `${page.url.pathname}?${params}`;
   }
@@ -154,9 +174,18 @@
     value === null ? "–" : formatSalesAmount(value);
   const addonPerOrder = (offer: OfferValue) =>
     offer.orders > 0 ? offer.addonNet / offer.orders : 0;
+  /** Offer units per order that contains the offer. */
+  const qtyPerOrder = (offer: OfferValue) =>
+    offer.orders > 0 ? offer.units / offer.orders : null;
+  const qty = new Intl.NumberFormat("en-GB", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   function sortValue(offer: OfferValue, key: SortKey): string | number {
     if (key === "addonPerOrder") return addonPerOrder(offer);
+    if (key === "qtyPerOrder")
+      return qtyPerOrder(offer) ?? (sort.desc ? -Infinity : Infinity);
     // Unknown values sink to the bottom either way.
     return offer[key] ?? (sort.desc ? -Infinity : Infinity);
   }
@@ -185,6 +214,7 @@
     { key: "lastSale", label: "On sale", numeric: false },
     { key: "daysOnSale", label: "Days on sale", numeric: true },
     { key: "units", label: "Units", numeric: true },
+    { key: "qtyPerOrder", label: "Qty / txn", numeric: true },
     { key: "offerNet", label: "Offer net", numeric: true },
     { key: "discountGiven", label: "Discount given", numeric: true },
     { key: "foodCost", label: "Food cost", numeric: true },
@@ -224,6 +254,8 @@
     </Card.Root>
   {:else}
     {@const range = data.range ?? null}
+    {@const channels = data.scope.filters.channels}
+    {@const scopedChannels = channels.length > 0 ? channels : undefined}
     <div class="flex flex-wrap items-end gap-6">
       <div class="space-y-2">
         <span class="text-sm font-medium" id="brand-label">Brand</span>
@@ -246,304 +278,395 @@
           from={range?.from}
           to={range?.to}
           onApply={(next) =>
-            goto(offersHref(brand.alias, next), {
+            goto(offersHref(brand.alias, next, channels), {
               keepFocus: true,
               noScroll: true,
             })}
         />
       </div>
+
+      <div class="space-y-2">
+        <span class="text-sm font-medium" id="channel-label">Channel</span>
+        <ButtonGroup.Root aria-labelledby="channel-label" class="flex-wrap">
+          <Button
+            href={offersHref(brand.alias, range ?? {})}
+            variant={channels.length === 0 ? "default" : "outline"}
+            aria-current={channels.length === 0 ? "page" : undefined}
+          >
+            All channels
+          </Button>
+          {#each data.channels ?? [] as channel (channel)}
+            {@const active = channels.length === 1 && channels[0] === channel}
+            <Button
+              href={offersHref(brand.alias, range ?? {}, [channel])}
+              variant={active ? "default" : "outline"}
+              aria-current={active ? "page" : undefined}
+            >
+              {channel}
+            </Button>
+          {/each}
+        </ButtonGroup.Root>
+      </div>
+
+      <div class="space-y-2">
+        <span class="text-sm font-medium" id="view-label">View</span>
+        <ButtonGroup.Root aria-labelledby="view-label">
+          <Button
+            href={tabHref("table")}
+            variant={data.calendar ? "outline" : "default"}
+            aria-current={data.calendar ? undefined : "page"}
+          >
+            Table
+          </Button>
+          <Button
+            href={tabHref("calendar")}
+            variant={data.calendar ? "default" : "outline"}
+            aria-current={data.calendar ? "page" : undefined}
+          >
+            Calendar
+          </Button>
+        </ButtonGroup.Root>
+      </div>
     </div>
 
-    {#await data.offers}
-      <Card.Root aria-busy="true">
-        <Card.Content class="space-y-3 py-6">
-          <p class="text-muted-foreground text-sm">
-            {range
-              ? `Adding up ${brand.name}'s sales from ${range.from} to ${range.to}.`
-              : `First visit for ${brand.name}: adding up its full sales history. Later visits load instantly from the daily cache.`}
-          </p>
-          {#each { length: 8 } as _, index (index)}
-            <Skeleton class="h-8 w-full" />
-          {/each}
-        </Card.Content>
-      </Card.Root>
-    {:then cached}
-      {@const offers = cached?.offers ?? []}
-      {@const picked = offers.filter((offer) =>
-        compareCodes.includes(offer.code),
-      )}
-      <div class="flex flex-wrap items-center gap-3 text-sm">
-        {#if range}
-          <span class="text-muted-foreground">
-            Sales from {range.from} to {range.to}, computed live
-          </span>
-        {:else}
-          <span class="text-muted-foreground">
-            {cached
-              ? `All time · updated ${updatedAt.format(cached.computedAt)} · refreshed daily`
-              : "Another refresh is computing this brand; reload in a minute."}
-          </span>
+    {#if data.calendar && data.calendarRange}
+      {#await data.calendar}
+        <Card.Root aria-busy="true">
+          <Card.Content class="space-y-3 py-6">
+            <p class="text-muted-foreground text-sm">
+              Adding up {brand.name}'s offer sales from {data.calendarRange
+                .from} to {data.calendarRange.to}.
+            </p>
+            <Skeleton class="h-64 w-full" />
+          </Card.Content>
+        </Card.Root>
+      {:then calendar}
+        <OfferCalendar
+          {calendar}
+          brand={brand.alias}
+          range={data.calendarRange}
+          channels={scopedChannels}
+          allTime={!range}
+        />
+      {:catch}
+        <Card.Root>
+          <Card.Content class="text-destructive py-8 text-sm">
+            Could not load the offers calendar for {brand.name}. Try again in a
+            moment.
+          </Card.Content>
+        </Card.Root>
+      {/await}
+    {:else}
+      {#await data.offers}
+        <Card.Root aria-busy="true">
+          <Card.Content class="space-y-3 py-6">
+            <p class="text-muted-foreground text-sm">
+              {range
+                ? `Adding up ${brand.name}'s sales from ${range.from} to ${range.to}.`
+                : scopedChannels
+                  ? `Adding up ${brand.name}'s full sales history on ${channels.join(", ")}.`
+                  : `First visit for ${brand.name}: adding up its full sales history. Later visits load instantly from the daily cache.`}
+            </p>
+            {#each { length: 8 } as _, index (index)}
+              <Skeleton class="h-8 w-full" />
+            {/each}
+          </Card.Content>
+        </Card.Root>
+      {:then cached}
+        {@const offers = cached?.offers ?? []}
+        {@const picked = offers.filter((offer) =>
+          compareCodes.includes(offer.code),
+        )}
+        <div class="flex flex-wrap items-center gap-3 text-sm">
+          {#if range || scopedChannels}
+            <span class="text-muted-foreground">
+              {range
+                ? `Sales from ${range.from} to ${range.to}`
+                : "All time"}{scopedChannels
+                ? ` on ${channels.join(", ")}`
+                : ""}, computed live
+            </span>
+          {:else}
+            <span class="text-muted-foreground">
+              {cached
+                ? `All time · updated ${updatedAt.format(cached.computedAt)} · refreshed daily`
+                : "Another refresh is computing this brand; reload in a minute."}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={refreshing}
+              onclick={() => refresh(brand.alias)}
+            >
+              {#if refreshing}
+                <LoaderCircleIcon class="animate-spin" aria-hidden="true" />
+                Refreshing…
+              {:else}
+                <RefreshCwIcon aria-hidden="true" />
+                Refresh
+              {/if}
+            </Button>
+          {/if}
+          <Button
+            size="sm"
+            disabled={picked.length < 2}
+            title={picked.length < 2
+              ? "Tick two offers in the table to compare them"
+              : undefined}
+            onclick={() => openCompare(picked)}
+          >
+            Offer VS{picked.length > 0 ? ` (${picked.length})` : ""}
+          </Button>
           <Button
             variant="outline"
             size="sm"
-            disabled={refreshing}
-            onclick={() => refresh(brand.alias)}
+            disabled={exporting || offers.length === 0}
+            title="All offers of this brand, dates and channel, ignoring the filter and search below"
+            onclick={exportExcel}
           >
-            {#if refreshing}
+            {#if exporting}
               <LoaderCircleIcon class="animate-spin" aria-hidden="true" />
-              Refreshing…
             {:else}
-              <RefreshCwIcon aria-hidden="true" />
-              Refresh
+              <DownloadIcon aria-hidden="true" />
             {/if}
+            Export to Excel
           </Button>
-        {/if}
-        <Button
-          size="sm"
-          disabled={picked.length < 2}
-          title={picked.length < 2
-            ? "Tick two offers in the table to compare them"
-            : undefined}
-          onclick={() => openCompare(picked)}
-        >
-          Offer VS{picked.length > 0 ? ` (${picked.length})` : ""}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={exporting || offers.length === 0}
-          title="All offers of this brand and dates, ignoring the filter and search below"
-          onclick={exportExcel}
-        >
-          {#if exporting}
-            <LoaderCircleIcon class="animate-spin" aria-hidden="true" />
-          {:else}
-            <DownloadIcon aria-hidden="true" />
+        </div>
+        {#if offers.length === 0}
+          <Card.Root>
+            <Card.Content class="text-muted-foreground py-8 text-sm">
+              No offers found for {brand.name}{range
+                ? " in these dates"
+                : ""}{scopedChannels ? ` on ${channels.join(", ")}` : ""}.
+            </Card.Content>
+          </Card.Root>
+        {:else}
+          {@const activeFilter =
+            verdictFilter && countBy(offers, verdictFilter) > 0
+              ? verdictFilter
+              : null}
+          {@const query = search.trim().toLowerCase()}
+          {@const visibleOffers = offers.filter(
+            (offer) =>
+              (!activeFilter || offer.verdict === activeFilter) &&
+              (!query || matchesSearch(offer, query)),
+          )}
+          <div class="relative max-w-sm">
+            <SearchIcon
+              class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
+              aria-hidden="true"
+            />
+            <Input
+              type="search"
+              bind:value={search}
+              placeholder="Search offers by name or code"
+              aria-label="Search offers by name or code"
+              class="pl-8"
+            />
+          </div>
+          <div class="flex flex-wrap gap-2 text-sm">
+            {#each VERDICTS as verdict (verdict)}
+              {@const count = countBy(offers, verdict)}
+              {#if count > 0}
+                <button
+                  type="button"
+                  aria-pressed={activeFilter === verdict}
+                  title={activeFilter === verdict
+                    ? "Show all offers"
+                    : `Show only ${OFFER_VERDICT_LABELS[verdict].toLowerCase()}`}
+                  class={cn(
+                    badgeVariants({ variant: VERDICT_VARIANT[verdict] }),
+                    "cursor-pointer hover:opacity-80",
+                    activeFilter && activeFilter !== verdict && "opacity-40",
+                    activeFilter === verdict &&
+                      "ring-ring ring-offset-background ring-2 ring-offset-1",
+                  )}
+                  onclick={() =>
+                    (verdictFilter = activeFilter === verdict ? null : verdict)}
+                >
+                  {OFFER_VERDICT_LABELS[verdict]}: {count}
+                </button>
+              {/if}
+            {/each}
+          </div>
+          {#if countBy(offers, "no_target") > 0}
+            <p class="text-muted-foreground text-sm">
+              {brand.name} has no ideal FC % target yet, so no verdict can be given.
+              An admin can set it on the brand's admin page.
+            </p>
           {/if}
-          Export to Excel
-        </Button>
-      </div>
-      {#if offers.length === 0}
-        <Card.Root>
-          <Card.Content class="text-muted-foreground py-8 text-sm">
-            No offers found for {brand.name}{range ? " in these dates" : ""}.
-          </Card.Content>
-        </Card.Root>
-      {:else}
-        {@const activeFilter =
-          verdictFilter && countBy(offers, verdictFilter) > 0
-            ? verdictFilter
-            : null}
-        {@const query = search.trim().toLowerCase()}
-        {@const visibleOffers = offers.filter(
-          (offer) =>
-            (!activeFilter || offer.verdict === activeFilter) &&
-            (!query || matchesSearch(offer, query)),
-        )}
-        <div class="relative max-w-sm">
-          <SearchIcon
-            class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
-            aria-hidden="true"
-          />
-          <Input
-            type="search"
-            bind:value={search}
-            placeholder="Search offers by name or code"
-            aria-label="Search offers by name or code"
-            class="pl-8"
-          />
-        </div>
-        <div class="flex flex-wrap gap-2 text-sm">
-          {#each VERDICTS as verdict (verdict)}
-            {@const count = countBy(offers, verdict)}
-            {#if count > 0}
-              <button
-                type="button"
-                aria-pressed={activeFilter === verdict}
-                title={activeFilter === verdict
-                  ? "Show all offers"
-                  : `Show only ${OFFER_VERDICT_LABELS[verdict].toLowerCase()}`}
-                class={cn(
-                  badgeVariants({ variant: VERDICT_VARIANT[verdict] }),
-                  "cursor-pointer hover:opacity-80",
-                  activeFilter && activeFilter !== verdict && "opacity-40",
-                  activeFilter === verdict &&
-                    "ring-ring ring-offset-background ring-2 ring-offset-1",
-                )}
-                onclick={() =>
-                  (verdictFilter = activeFilter === verdict ? null : verdict)}
-              >
-                {OFFER_VERDICT_LABELS[verdict]}: {count}
-              </button>
-            {/if}
-          {/each}
-        </div>
-        {#if countBy(offers, "no_target") > 0}
-          <p class="text-muted-foreground text-sm">
-            {brand.name} has no ideal FC % target yet, so no verdict can be given.
-            An admin can set it on the brand's admin page.
-          </p>
-        {/if}
-        {#if countBy(offers, "no_cost") > 0}
-          <p class="text-muted-foreground text-sm">
-            Offers marked "No cost data" have no food cost in the offers
-            catalogue. Fill them in from <a
-              class="underline"
-              href="/offers-data-quality">Offers data quality</a
-            >.
-          </p>
-        {/if}
+          {#if countBy(offers, "no_cost") > 0}
+            <p class="text-muted-foreground text-sm">
+              Offers marked "No cost data" have no food cost in the offers
+              catalogue. Fill them in from <a
+                class="underline"
+                href="/offers-data-quality">Offers data quality</a
+              >.
+            </p>
+          {/if}
 
-        <Card.Root>
-          <Card.Content class="p-0">
-            <Table.Root>
-              <Table.Header>
-                <Table.Row>
-                  <Table.Head class="w-10">
-                    <span class="sr-only">Compare</span>
-                  </Table.Head>
-                  {#each COLUMNS as column (column.key)}
-                    <Table.Head
-                      class={column.numeric ? "text-right" : ""}
-                      aria-sort={sort.key === column.key
-                        ? sort.desc
-                          ? "descending"
-                          : "ascending"
-                        : "none"}
-                    >
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        class="-mx-2"
-                        onclick={() => toggleSort(column.key)}
-                      >
-                        {column.label}
-                        <ArrowUpDownIcon aria-hidden="true" />
-                      </Button>
+          <Card.Root>
+            <Card.Content class="p-0">
+              <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.Head class="w-10">
+                      <span class="sr-only">Compare</span>
                     </Table.Head>
-                  {/each}
-                  <Table.Head>Verdict</Table.Head>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {#each sorted(visibleOffers) as offer (offer.code)}
-                  <Table.Row>
-                    <Table.Cell>
-                      <Checkbox
-                        checked={compareCodes.includes(offer.code)}
-                        onCheckedChange={(checked) =>
-                          toggleCompare(offer.code, checked)}
-                        aria-label="Compare {offer.name}"
-                      />
-                    </Table.Cell>
-                    <Table.Cell class="max-w-72">
-                      <button
-                        type="button"
-                        class="block max-w-full truncate text-left font-medium underline-offset-4 hover:underline"
-                        title="Why {OFFER_VERDICT_LABELS[
-                          offer.verdict
-                        ].toLowerCase()}? {offer.name}"
-                        onclick={() => {
-                          selected = offer;
-                          dialogOpen = true;
-                        }}
+                    {#each COLUMNS as column (column.key)}
+                      <Table.Head
+                        class={column.numeric ? "text-right" : ""}
+                        aria-sort={sort.key === column.key
+                          ? sort.desc
+                            ? "descending"
+                            : "ascending"
+                          : "none"}
                       >
-                        {offer.name}
-                      </button>
-                      <div class="text-muted-foreground text-xs">
-                        {offer.code}{offer.channel ? ` · ${offer.channel}` : ""}
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell class="text-xs whitespace-nowrap">
-                      {offer.firstSale} → {offer.lastSale}
-                    </Table.Cell>
-                    <Table.Cell class="text-right tabular-nums">
-                      {formatSalesCount(offer.daysOnSale)}
-                    </Table.Cell>
-                    <Table.Cell class="text-right tabular-nums">
-                      {formatSalesCount(Math.round(offer.units))}
-                    </Table.Cell>
-                    <Table.Cell class="text-right tabular-nums">
-                      {money(offer.offerNet)}
-                    </Table.Cell>
-                    <Table.Cell
-                      class="text-right tabular-nums"
-                      title="List price minus offer price (catalogue), excl. VAT, × units"
-                    >
-                      {money(offer.discountGiven)}
-                    </Table.Cell>
-                    <Table.Cell class="text-right tabular-nums">
-                      {money(offer.foodCost)}
-                    </Table.Cell>
-                    <Table.Cell class="text-right tabular-nums">
-                      {money(addonPerOrder(offer))}
-                    </Table.Cell>
-                    <Table.Cell class="text-right font-medium tabular-nums">
-                      {money(offer.contribution)}
-                    </Table.Cell>
-                    <Table.Cell class="text-right tabular-nums">
-                      {offer.marginPct === null
-                        ? "–"
-                        : pct.format(offer.marginPct)}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Badge variant={VERDICT_VARIANT[offer.verdict]}>
-                        {OFFER_VERDICT_LABELS[offer.verdict]}
-                      </Badge>
-                    </Table.Cell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          class="-mx-2"
+                          onclick={() => toggleSort(column.key)}
+                        >
+                          {column.label}
+                          <ArrowUpDownIcon aria-hidden="true" />
+                        </Button>
+                      </Table.Head>
+                    {/each}
+                    <Table.Head>Verdict</Table.Head>
                   </Table.Row>
-                {:else}
-                  <Table.Row>
-                    <Table.Cell
-                      colspan={COLUMNS.length + 2}
-                      class="text-muted-foreground py-6 text-center"
-                    >
-                      No offers match "{search.trim()}".
-                    </Table.Cell>
-                  </Table.Row>
-                {/each}
-              </Table.Body>
-            </Table.Root>
+                </Table.Header>
+                <Table.Body>
+                  {#each sorted(visibleOffers) as offer (offer.code)}
+                    <Table.Row>
+                      <Table.Cell>
+                        <Checkbox
+                          checked={compareCodes.includes(offer.code)}
+                          onCheckedChange={(checked) =>
+                            toggleCompare(offer.code, checked)}
+                          aria-label="Compare {offer.name}"
+                        />
+                      </Table.Cell>
+                      <Table.Cell class="max-w-72">
+                        <button
+                          type="button"
+                          class="block max-w-full truncate text-left font-medium underline-offset-4 hover:underline"
+                          title="Why {OFFER_VERDICT_LABELS[
+                            offer.verdict
+                          ].toLowerCase()}? {offer.name}"
+                          onclick={() => {
+                            selected = offer;
+                            dialogOpen = true;
+                          }}
+                        >
+                          {offer.name}
+                        </button>
+                        <div class="text-muted-foreground text-xs">
+                          {offer.code}{offer.channel
+                            ? ` · ${offer.channel}`
+                            : ""}
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell class="text-xs whitespace-nowrap">
+                        {offer.firstSale} → {offer.lastSale}
+                      </Table.Cell>
+                      <Table.Cell class="text-right tabular-nums">
+                        {formatSalesCount(offer.daysOnSale)}
+                      </Table.Cell>
+                      <Table.Cell class="text-right tabular-nums">
+                        {formatSalesCount(Math.round(offer.units))}
+                      </Table.Cell>
+                      <Table.Cell
+                        class="text-right tabular-nums"
+                        title="Units ÷ orders containing the offer"
+                      >
+                        {@const perOrder = qtyPerOrder(offer)}
+                        {perOrder === null ? "–" : qty.format(perOrder)}
+                      </Table.Cell>
+                      <Table.Cell class="text-right tabular-nums">
+                        {money(offer.offerNet)}
+                      </Table.Cell>
+                      <Table.Cell
+                        class="text-right tabular-nums"
+                        title="List price minus offer price (catalogue), excl. VAT, × units"
+                      >
+                        {money(offer.discountGiven)}
+                      </Table.Cell>
+                      <Table.Cell class="text-right tabular-nums">
+                        {money(offer.foodCost)}
+                      </Table.Cell>
+                      <Table.Cell class="text-right tabular-nums">
+                        {money(addonPerOrder(offer))}
+                      </Table.Cell>
+                      <Table.Cell class="text-right font-medium tabular-nums">
+                        {money(offer.contribution)}
+                      </Table.Cell>
+                      <Table.Cell class="text-right tabular-nums">
+                        {offer.marginPct === null
+                          ? "–"
+                          : pct.format(offer.marginPct)}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Badge variant={VERDICT_VARIANT[offer.verdict]}>
+                          {OFFER_VERDICT_LABELS[offer.verdict]}
+                        </Badge>
+                      </Table.Cell>
+                    </Table.Row>
+                  {:else}
+                    <Table.Row>
+                      <Table.Cell
+                        colspan={COLUMNS.length + 2}
+                        class="text-muted-foreground py-6 text-center"
+                      >
+                        No offers match "{search.trim()}".
+                      </Table.Cell>
+                    </Table.Row>
+                  {/each}
+                </Table.Body>
+              </Table.Root>
+            </Card.Content>
+          </Card.Root>
+        {/if}
+        <OfferValueDialog
+          bind:open={dialogOpen}
+          offer={selected}
+          brand={brand.alias}
+          {range}
+          channels={scopedChannels}
+          idealFcPerc={cached?.idealFcPerc ?? null}
+          verdictVariant={VERDICT_VARIANT}
+        />
+        <OfferCompareDialog
+          bind:open={compareOpen}
+          offers={comparePair}
+          brand={brand.alias}
+          {range}
+          channels={scopedChannels}
+          verdictVariant={VERDICT_VARIANT}
+        />
+        <AlertDialog.Root bind:open={tooManyOpen}>
+          <AlertDialog.Content>
+            <AlertDialog.Header>
+              <AlertDialog.Title>Pick two offers</AlertDialog.Title>
+              <AlertDialog.Description>
+                Only 2 offers can be compared at a time. You have {picked.length}
+                ticked; untick {picked.length - 2} to continue.
+              </AlertDialog.Description>
+            </AlertDialog.Header>
+            <AlertDialog.Footer>
+              <AlertDialog.Action onclick={() => (tooManyOpen = false)}>
+                OK
+              </AlertDialog.Action>
+            </AlertDialog.Footer>
+          </AlertDialog.Content>
+        </AlertDialog.Root>
+      {:catch}
+        <Card.Root>
+          <Card.Content class="text-destructive py-8 text-sm">
+            Could not load the offers for {brand.name}. Try again in a moment.
           </Card.Content>
         </Card.Root>
-      {/if}
-      <OfferValueDialog
-        bind:open={dialogOpen}
-        offer={selected}
-        brand={brand.alias}
-        {range}
-        idealFcPerc={cached?.idealFcPerc ?? null}
-        verdictVariant={VERDICT_VARIANT}
-      />
-      <OfferCompareDialog
-        bind:open={compareOpen}
-        offers={comparePair}
-        brand={brand.alias}
-        {range}
-        verdictVariant={VERDICT_VARIANT}
-      />
-      <AlertDialog.Root bind:open={tooManyOpen}>
-        <AlertDialog.Content>
-          <AlertDialog.Header>
-            <AlertDialog.Title>Pick two offers</AlertDialog.Title>
-            <AlertDialog.Description>
-              Only 2 offers can be compared at a time. You have {picked.length}
-              ticked; untick {picked.length - 2} to continue.
-            </AlertDialog.Description>
-          </AlertDialog.Header>
-          <AlertDialog.Footer>
-            <AlertDialog.Action onclick={() => (tooManyOpen = false)}>
-              OK
-            </AlertDialog.Action>
-          </AlertDialog.Footer>
-        </AlertDialog.Content>
-      </AlertDialog.Root>
-    {:catch}
-      <Card.Root>
-        <Card.Content class="text-destructive py-8 text-sm">
-          Could not load the offers for {brand.name}. Try again in a moment.
-        </Card.Content>
-      </Card.Root>
-    {/await}
+      {/await}
+    {/if}
   {/if}
 </main>

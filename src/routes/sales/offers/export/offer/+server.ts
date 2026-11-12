@@ -3,7 +3,6 @@ import { requireApiPermission } from "$lib/server/auth-guards";
 import { generateExcelFile } from "$lib/server/mastra/tools/generate-excel";
 import { withSingleBrand } from "$lib/services/sales-dashboard";
 import { resolveSalesDashboardScope } from "$lib/services/sales-dashboard.server";
-import { DELIVERY_CHANNELS } from "$lib/services/sales-delivery";
 import {
   OFFER_VERDICT_LABELS,
   offerReason,
@@ -35,15 +34,13 @@ export const GET: RequestHandler = async (event) => {
   const code = event.url.searchParams.get("code")?.trim();
   if (!code) error(400, "Missing offer code");
 
-  const brand = withSingleBrand(scope.filters).brands[0];
+  const { brands, channels } = withSingleBrand(scope.filters);
+  const brand = brands[0];
   const range = parseOfferDateRange(event.url.searchParams);
-  // /sales/delivery/offers: only orders on these channels; unknown names are dropped.
-  const channels = (event.url.searchParams.get("channels") ?? "")
-    .split(",")
-    .filter((channel) => DELIVERY_CHANNELS.includes(channel));
-  const scoped = range && channels.length > 0 ? channels : undefined;
+  // Only orders on these channels (?channels=, parsed by the scope).
+  const scoped = channels.length > 0 ? channels : undefined;
   const [values, daily] = await Promise.all([
-    range
+    range || scoped
       ? getOfferValuesForRange(brand, range, scoped)
       : getCachedOfferValues(brand),
     getOfferDailyRows(brand, [code], range, scoped),

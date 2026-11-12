@@ -1,7 +1,6 @@
 import { error, json } from "@sveltejs/kit";
 import { z } from "zod";
 import { isIsoDate } from "$lib/services/sales-dashboard";
-import { DELIVERY_CHANNELS } from "$lib/services/sales-delivery";
 import { requireExploreRequest } from "$lib/services/sales-explore.server";
 import { getOfferDailyRows } from "$lib/services/sales-offers.server";
 import type { RequestHandler } from "./$types";
@@ -14,10 +13,11 @@ const compareSchema = z.object({
   codes: z.array(z.string().trim().min(1)).min(1).max(2),
   // Same range as the table, so the curve adds up to its totals.
   range: z.object({ from: isoDate, to: isoDate }).nullable().default(null),
-  // /sales/delivery/offers: only orders on these channels (needs a range).
+  // Only orders on these channels (bound ClickHouse params; unknown names match nothing).
   channels: z
-    .array(z.enum(DELIVERY_CHANNELS as [string, ...string[]]))
+    .array(z.string().trim().min(1).max(100))
     .min(1)
+    .max(20)
     .optional(),
 });
 

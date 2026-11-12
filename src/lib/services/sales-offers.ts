@@ -1,5 +1,11 @@
 import { VAT_FACTOR } from "./offers-data-quality";
 import { formatSalesAmount, isIsoDate } from "./sales-dashboard";
+import {
+  buildSalesCalendar,
+  buildSalesHoursGrid,
+  type SalesDayCell,
+  type SalesHourCell,
+} from "./sales-hours";
 
 /**
  * /sales/offers: all-time value of each offer of one brand. Offer net is every
@@ -320,4 +326,58 @@ export function offerReason(
   return offer.verdict === "positive"
     ? `${ownText}.${lift} That meets the brand target of ${pct(target)}, so the offer earned ${formatSalesAmount(contribution)} while keeping the margin the brand aims for.`
     : `It made ${formatSalesAmount(contribution)}, but at a thinner margin than the brand target. ${ownText}.${lift} The target is ${pct(target)}, so each euro sold through this offer keeps less than the brand aims for.`;
+}
+
+/** Offer units + offer net of one business day × order hour (offers calendar). weekday: 1 = Mon. */
+export type OfferCalendarRow = {
+  day: string;
+  weekday: number;
+  hour: number;
+  units: number;
+  net: number;
+};
+
+/** One clicked calendar cell: a date, a weekday, or a weekday × hour. */
+export type OfferSlot = { date?: string; weekday?: number; hour?: number };
+
+/** One offer's totals inside a calendar cell. */
+export type OfferSlotSale = {
+  code: string;
+  name: string;
+  units: number;
+  orders: number;
+  net: number;
+};
+
+/**
+ * Folds calendar rows into the /sales/hours grid and date calendar. `txns`
+ * carries offer units, so every "orders" figure there reads as offers sold.
+ */
+export function buildOfferCalendar(
+  rows: OfferCalendarRow[],
+  from: string,
+  to: string,
+) {
+  const hourCells = new Map<string, SalesHourCell>();
+  const dayCells = new Map<string, SalesDayCell>();
+  for (const row of rows) {
+    const key = `${row.weekday}|${row.hour}`;
+    const cell = hourCells.get(key) ?? {
+      weekday: row.weekday,
+      hour: row.hour,
+      net: 0,
+      txns: 0,
+    };
+    cell.net += row.net;
+    cell.txns += row.units;
+    hourCells.set(key, cell);
+    const day = dayCells.get(row.day) ?? { day: row.day, net: 0, txns: 0 };
+    day.net += row.net;
+    day.txns += row.units;
+    dayCells.set(row.day, day);
+  }
+  return {
+    grid: buildSalesHoursGrid([...hourCells.values()], from, to),
+    dates: buildSalesCalendar([...dayCells.values()], from, to),
+  };
 }
