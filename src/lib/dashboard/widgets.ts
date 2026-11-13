@@ -142,25 +142,40 @@ export function canSeeWidget(
 }
 
 export type DashboardWidget = {
-  /** One instance per type, so the type doubles as the dnd item id. */
-  id: WidgetType;
+  /** Instance id (also the dnd item id); equals the type for default widgets. */
+  id: string;
+  type: WidgetType;
   settings: Record<string, unknown>;
 };
+
+const WIDGET_ID_PATTERN = /^[a-z0-9-]{1,60}$/;
 
 /** The shape accepted from the client / storage before normalising. */
 export const dashboardLayoutSchema = z.object({
   widgets: z
-    .array(z.object({ id: z.string().max(50), settings: z.unknown() }))
+    .array(
+      z.object({
+        id: z.string().max(60),
+        type: z.string().max(50),
+        settings: z.unknown(),
+      }),
+    )
     .max(20),
 });
+
+/** Id for a duplicated widget; not crypto.randomUUID (missing on plain-HTTP origins). */
+export function newWidgetId(type: WidgetType): string {
+  return `${type}-${Date.now().toString(36)}`;
+}
 
 function defaultSettings(type: WidgetType): Record<string, unknown> {
   return definitions[type].settings.parse({});
 }
 
 /**
- * Saved (or posted) layout -> the layout this role may have: unknown, hidden
- * and repeated widgets are dropped, bad settings fall back to defaults.
+ * Saved (or posted) layout -> the layout this role may have: unknown types,
+ * hidden types, bad and repeated ids are dropped (a type may appear several
+ * times, e.g. one per brand), bad settings fall back to defaults.
  * Nothing saved -> every visible widget in registry order.
  */
 export function normalizeLayout(
@@ -171,19 +186,21 @@ export function normalizeLayout(
   if (!parsed.success) {
     return widgetTypes
       .filter((type) => canSeeWidget(role, type))
-      .map((type) => ({ id: type, settings: defaultSettings(type) }));
+      .map((type) => ({ id: type, type, settings: defaultSettings(type) }));
   }
 
   const seen = new Set<string>();
   const widgets: DashboardWidget[] = [];
   for (const widget of parsed.data.widgets) {
-    if (!(widget.id in definitions) || seen.has(widget.id)) continue;
-    const type = widget.id as WidgetType;
+    if (!(widget.type in definitions)) continue;
+    if (!WIDGET_ID_PATTERN.test(widget.id) || seen.has(widget.id)) continue;
+    const type = widget.type as WidgetType;
     if (!canSeeWidget(role, type)) continue;
-    seen.add(type);
+    seen.add(widget.id);
     const settings = definitions[type].settings.safeParse(widget.settings);
     widgets.push({
-      id: type,
+      id: widget.id,
+      type,
       settings: settings.success ? settings.data : defaultSettings(type),
     });
   }
@@ -195,7 +212,7 @@ export function availableWidgets(
   layout: DashboardWidget[],
   role: string | null | undefined,
 ): WidgetType[] {
-  const used = new Set(layout.map((widget) => widget.id));
+  const used = new Set(layout.map((widget) => widget.type));
   return widgetTypes.filter(
     (type) => !used.has(type) && canSeeWidget(role, type),
   );

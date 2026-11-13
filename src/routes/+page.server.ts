@@ -19,9 +19,11 @@ import {
   loadWidget,
 } from "$lib/server/dashboard-widgets.server";
 
-type StreamedWidgets = Partial<{
-  [K in keyof WidgetDataMap]: Promise<WidgetResult<WidgetDataMap[K]>>;
-}>;
+/** Keyed by widget instance id; the page narrows each entry by the widget's type. */
+type StreamedWidgets = Record<
+  string,
+  Promise<WidgetResult<WidgetDataMap[keyof WidgetDataMap]>>
+>;
 
 /**
  * Home dashboard: the layout is awaited so the grid renders at once; each
@@ -42,14 +44,13 @@ export const load: PageServerLoad = async (event) => {
 
   const streamed: StreamedWidgets = {};
   for (const widget of layout) {
-    // Each key gets its own widget's promise; the mapped type can't follow the loop variable.
-    (streamed as Record<string, unknown>)[widget.id] = loadWidget(ctx, widget);
+    streamed[widget.id] = loadWidget(ctx, widget);
   }
 
   const canPickSalesBrand = widgetTypes.some(
     (type) =>
       hasSalesSettings(type) &&
-      (layout.some((widget) => widget.id === type) ||
+      (layout.some((widget) => widget.type === type) ||
         availableWidgets(layout, role).includes(type)),
   );
 

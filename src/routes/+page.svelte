@@ -13,10 +13,13 @@
   import OffersSummary from "$lib/components/dashboard/widgets/offers-summary.svelte";
   import PlusIcon from "@lucide/svelte/icons/plus";
   import {
+    newWidgetId,
     SALES_PERIOD_LABELS,
     widgetDefinitions,
     type DashboardWidget,
     type SalesWidgetSettings,
+    type WidgetDataMap,
+    type WidgetResult,
     type WidgetType,
   } from "$lib/dashboard/widgets";
   import type { PageData } from "./$types";
@@ -28,7 +31,10 @@
   // Local copy the drag zone can reorder; reset whenever the server layout reloads.
   let widgets = $derived(data.layout);
   let editing = $state(false);
-  let settingsFor = $state<DashboardWidget | null>(null);
+  /** Widget being configured; `after` set = a duplicate that is inserted only on save. */
+  let settingsFor = $state<{ widget: DashboardWidget; after?: string } | null>(
+    null,
+  );
   let settingsOpen = $state(false);
 
   async function save(next: DashboardWidget[], reload: boolean) {
@@ -37,7 +43,7 @@
       headers: { "content-type": "application/json" },
       // Strip svelte-dnd-action's shadow-item marker.
       body: JSON.stringify({
-        widgets: next.map(({ id, settings }) => ({ id, settings })),
+        widgets: next.map(({ id, type, settings }) => ({ id, type, settings })),
       }),
     }).catch(() => null);
     if (!response?.ok) {
@@ -58,11 +64,14 @@
   }
 
   function add(type: WidgetType) {
-    void save([...widgets, { id: type, settings: {} }], true);
+    void save(
+      [...widgets, { id: newWidgetId(type), type, settings: {} }],
+      true,
+    );
   }
 
-  function remove(type: WidgetType) {
-    widgets = widgets.filter((widget) => widget.id !== type);
+  function remove(id: string) {
+    widgets = widgets.filter((widget) => widget.id !== id);
     void save(widgets, true);
   }
 
@@ -74,16 +83,46 @@
   }
 
   function openSettings(widget: DashboardWidget) {
-    settingsFor = widget;
+    settingsFor = { widget };
+    settingsOpen = true;
+  }
+
+  /** Opens the copy's settings first, so it is saved already pointing at another brand. */
+  function duplicate(widget: DashboardWidget) {
+    settingsFor = {
+      widget: { ...widget, id: newWidgetId(widget.type) },
+      after: widget.id,
+    };
     settingsOpen = true;
   }
 
   function saveSettings(settings: SalesWidgetSettings) {
-    const id = settingsFor?.id;
+    if (!settingsFor) return;
+    const { widget, after } = settingsFor;
+    const updated = { ...widget, settings };
     void save(
-      widgets.map((widget) => (widget.id === id ? { id, settings } : widget)),
+      after
+        ? widgets.flatMap((w) => (w.id === after ? [w, updated] : [w]))
+        : widgets.map((w) => (w.id === widget.id ? updated : w)),
       true,
     );
+  }
+
+  /** The widget's streamed data, typed for its widget type. */
+  function streamOf<K extends WidgetType>(widget: DashboardWidget, type: K) {
+    return widget.type === type
+      ? (data.streamed[widget.id] as Promise<WidgetResult<WidgetDataMap[K]>>)
+      : undefined;
+  }
+
+  /** "Offers performance · Akashi": unset brand = the first brand in scope. */
+  function salesTitle(widget: DashboardWidget) {
+    const alias = (widget.settings as SalesWidgetSettings).brand;
+    const brand =
+      data.salesBrands.find((option) => option.alias === alias) ??
+      data.salesBrands[0];
+    const title = widgetDefinitions[widget.type].title;
+    return brand ? `${title} · ${brand.name}` : title;
   }
 
   /** "Week to date" etc., shown in sales widget descriptions. */
@@ -157,17 +196,17 @@
     onfinalize={finalize}
   >
     {#each widgets as widget (widget.id)}
-      {@const def = widgetDefinitions[widget.id]}
+      {@const def = widgetDefinitions[widget.type]}
       <div animate:flip={{ duration: FLIP_MS }} class="h-full">
-        {#if widget.id === "open-gaps" || widget.id === "awaiting-approval"}
+        {#if widget.type === "open-gaps" || widget.type === "awaiting-approval"}
           {@const empty =
-            widget.id === "open-gaps"
+            widget.type === "open-gaps"
               ? "No open gaps for your brands."
               : "Nothing waiting for approval."}
           <WidgetFrame
             title={def.title}
             description={def.description}
-            result={data.streamed[widget.id]}
+            result={streamOf(widget, widget.type)}
             {editing}
             onremove={() => remove(widget.id)}
           >
@@ -175,39 +214,42 @@
               <GapsList data={gaps} {empty} />
             {/snippet}
           </WidgetFrame>
-        {:else if widget.id === "sales-summary"}
+        {:else if widget.type === "sales-summary"}
           <WidgetFrame
-            title={def.title}
+            title={salesTitle(widget)}
             description={`${periodLabel(widget)} vs last year (same dates).`}
-            result={data.streamed[widget.id]}
+            result={streamOf(widget, widget.type)}
             {editing}
             onsettings={() => openSettings(widget)}
+            onduplicate={() => duplicate(widget)}
             onremove={() => remove(widget.id)}
           >
             {#snippet children(sales)}
               <SalesSummary data={sales} />
             {/snippet}
           </WidgetFrame>
-        {:else if widget.id === "delivery-summary"}
+        {:else if widget.type === "delivery-summary"}
           <WidgetFrame
-            title={def.title}
+            title={salesTitle(widget)}
             description={`${periodLabel(widget)} on aggregator channels.`}
-            result={data.streamed[widget.id]}
+            result={streamOf(widget, widget.type)}
             {editing}
             onsettings={() => openSettings(widget)}
+            onduplicate={() => duplicate(widget)}
             onremove={() => remove(widget.id)}
           >
             {#snippet children(delivery)}
               <DeliverySummary data={delivery} />
             {/snippet}
           </WidgetFrame>
-        {:else if widget.id === "offers-summary"}
+        {:else if widget.type === "offers-summary"}
           <WidgetFrame
-            title={def.title}
+            title={salesTitle(widget)}
             description={`${periodLabel(widget)} offer value and verdicts.`}
-            result={data.streamed[widget.id]}
+            result={streamOf(widget, widget.type)}
             {editing}
             onsettings={() => openSettings(widget)}
+            onduplicate={() => duplicate(widget)}
             onremove={() => remove(widget.id)}
           >
             {#snippet children(offers)}
@@ -223,8 +265,10 @@
 {#if settingsFor}
   <WidgetSettingsDialog
     bind:open={settingsOpen}
-    title={widgetDefinitions[settingsFor.id].title}
-    settings={settingsFor.settings as SalesWidgetSettings}
+    title={settingsFor.after
+      ? `Duplicate ${widgetDefinitions[settingsFor.widget.type].title}`
+      : salesTitle(settingsFor.widget)}
+    settings={settingsFor.widget.settings as SalesWidgetSettings}
     brands={data.salesBrands}
     onsave={saveSettings}
   />

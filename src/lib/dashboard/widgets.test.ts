@@ -19,11 +19,11 @@ describe("normalizeLayout", () => {
   it("keeps saved order and drops unknown, forbidden and repeated widgets", () => {
     const saved = {
       widgets: [
-        { id: "offers-summary", settings: {} },
-        { id: "nope", settings: {} },
-        { id: "open-gaps", settings: {} },
-        { id: "sales-summary", settings: {} },
-        { id: "offers-summary", settings: {} },
+        { id: "offers-summary", type: "offers-summary", settings: {} },
+        { id: "nope", type: "nope", settings: {} },
+        { id: "open-gaps", type: "open-gaps", settings: {} },
+        { id: "sales-summary", type: "sales-summary", settings: {} },
+        { id: "offers-summary", type: "offers-summary", settings: {} },
       ],
     };
     expect(ids(normalizeLayout(saved, "analyticsViewer"))).toEqual([
@@ -32,13 +32,55 @@ describe("normalizeLayout", () => {
     ]);
   });
 
+  it("keeps several copies of a type with different ids", () => {
+    const layout = normalizeLayout(
+      {
+        widgets: [
+          { id: "offers-summary", type: "offers-summary", settings: {} },
+          {
+            id: "offers-summary-m1",
+            type: "offers-summary",
+            settings: { brand: "bk", period: "wtd" },
+          },
+          { id: "offers-summary-m1", type: "offers-summary", settings: {} },
+          { id: "Bad Id", type: "offers-summary", settings: {} },
+        ],
+      },
+      "analyticsViewer",
+    );
+    expect(ids(layout)).toEqual(["offers-summary", "offers-summary-m1"]);
+    expect(layout[1].settings).toEqual({ brand: "bk", period: "wtd" });
+  });
+
+  it("uses the type as id by default and resets layouts without types", () => {
+    for (const widget of normalizeLayout(null, "superUser")) {
+      expect(widget.id).toBe(widget.type);
+    }
+    expect(
+      ids(
+        normalizeLayout(
+          { widgets: [{ id: "offers-summary", settings: {} }] },
+          "analyticsViewer",
+        ),
+      ),
+    ).toEqual(["sales-summary", "delivery-summary", "offers-summary"]);
+  });
+
   it("keeps an emptied dashboard empty", () => {
     expect(normalizeLayout({ widgets: [] }, "admin")).toEqual([]);
   });
 
   it("falls back to default settings when saved ones are invalid", () => {
     const [widget] = normalizeLayout(
-      { widgets: [{ id: "sales-summary", settings: { period: "decade" } }] },
+      {
+        widgets: [
+          {
+            id: "sales-summary",
+            type: "sales-summary",
+            settings: { period: "decade" },
+          },
+        ],
+      },
       "admin",
     );
     expect(widget.settings).toEqual({ brand: null, period: "wtd" });
@@ -46,7 +88,11 @@ describe("normalizeLayout", () => {
     const [valid] = normalizeLayout(
       {
         widgets: [
-          { id: "sales-summary", settings: { brand: "phcy", period: "mtd" } },
+          {
+            id: "sales-summary",
+            type: "sales-summary",
+            settings: { brand: "phcy", period: "mtd" },
+          },
         ],
       },
       "admin",
@@ -56,7 +102,9 @@ describe("normalizeLayout", () => {
 
   it("lists the widgets the role may still add", () => {
     const layout = normalizeLayout(
-      { widgets: [{ id: "sales-summary", settings: {} }] },
+      {
+        widgets: [{ id: "sales-summary", type: "sales-summary", settings: {} }],
+      },
       "analyticsViewer",
     );
     expect(availableWidgets(layout, "analyticsViewer")).toEqual([

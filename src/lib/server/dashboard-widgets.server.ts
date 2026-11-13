@@ -197,16 +197,16 @@ const loaders: {
  */
 export async function loadWidget<K extends WidgetType>(
   ctx: DashboardContext,
-  widget: DashboardWidget & { id: K },
+  widget: DashboardWidget & { type: K },
 ): Promise<WidgetResult<WidgetDataMap[K]>> {
   try {
     return {
-      data: await loaders[widget.id](ctx, widget.settings),
+      data: await loaders[widget.type](ctx, widget.settings),
       error: null,
     };
   } catch (err) {
     console.error(
-      `[dashboard] widget ${widget.id} failed:`,
+      `[dashboard] widget ${widget.type} (${widget.id}) failed:`,
       err instanceof Error ? err.message : err,
     );
     return { data: null, error: "Could not load this widget." };
