@@ -3,12 +3,16 @@ import { prisma } from "$lib/server/prisma";
 import { Prisma } from "../../../generated/prisma/client";
 import {
   ALL_TIME_FROM,
+  addDays,
   resolveDayRange,
   splitAtCursor,
   todayInZone,
   type DayRange,
 } from "./page-view-days";
-import { rawViewsWithVisitStarts } from "./page-view-sql.server";
+import {
+  localMidnightUtc,
+  rawViewsWithVisitStarts,
+} from "./page-view-sql.server";
 import type {
   HistoryDay,
   HistoryRouteRow,
@@ -304,5 +308,52 @@ export async function getUserHistory(
       foregroundMs: sortedDays.reduce((sum, day) => sum + day.foregroundMs, 0),
     },
     days: sortedDays,
+  };
+}
+
+export interface ActivityHeatmap {
+  /** Page views started per ISO weekday (1 = Monday) and local hour (0-23). */
+  cells: { weekday: number; hour: number; views: number }[];
+  /**
+   * First day the heatmap can cover: raw rows older than the retention window
+   * are purged, so this is later than the range start when retention is short.
+   */
+  coveredFrom: string;
+}
+
+/**
+ * When one user works: page views bucketed by weekday x hour in the activity
+ * timezone. Rollups keep no time of day, so this reads raw `page_view` rows
+ * only, clipped to the retention window.
+ */
+export async function getUserActivityHeatmap(
+  userId: string,
+  range: DayRange,
+): Promise<ActivityHeatmap> {
+  const { ACTIVITY_TIMEZONE: timeZone, PAGE_VIEW_RETENTION_DAYS } =
+    getPageViewEnv();
+  const retentionStart = addDays(range.to, 1 - PAGE_VIEW_RETENTION_DAYS);
+  const coveredFrom = retentionStart > range.from ? retentionStart : range.from;
+  const local = Prisma.sql`("startedAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})`;
+  const rows = await prisma.$queryRaw<
+    { weekday: number; hour: number; views: bigint }[]
+  >`
+    SELECT EXTRACT(ISODOW FROM ${local})::int AS weekday,
+      EXTRACT(HOUR FROM ${local})::int AS hour,
+      COUNT(*)::bigint AS views
+    FROM "page_view"
+    WHERE "userId" = ${userId}
+      AND "startedAt" >= ${localMidnightUtc(coveredFrom, timeZone)}
+      AND "startedAt" < ${localMidnightUtc(addDays(range.to, 1), timeZone)}
+    GROUP BY 1, 2
+  `;
+
+  return {
+    cells: rows.map((row) => ({
+      weekday: row.weekday,
+      hour: row.hour,
+      views: Number(row.views),
+    })),
+    coveredFrom,
   };
 }

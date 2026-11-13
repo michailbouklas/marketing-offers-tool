@@ -1,6 +1,7 @@
 import { defaultUserRole, parseRoles, type UserRole } from "$lib/auth/roles";
 import { auth } from "$lib/server/auth";
 import { prisma } from "$lib/server/prisma";
+import type { Prisma } from "../../generated/prisma/client";
 import type {
   CreateUserFormData,
   EditUserFormData,
@@ -25,8 +26,32 @@ export async function getUserSummaryById(
   });
 }
 
-export async function listUsers(): Promise<UserRecord[]> {
+export async function getUserById(id: string): Promise<UserRecord | null> {
+  const [user] = await listUsers({ id });
+  return user ?? null;
+}
+
+/** Deactivate (permanent ban + session revoke) or reactivate an account. */
+export async function setUserBanned(
+  userId: string,
+  banned: boolean,
+  headers: Headers,
+) {
+  if (banned) {
+    await auth.api.banUser({
+      body: { userId, banReason: "Deactivated: left the organisation" },
+      headers,
+    });
+  } else {
+    await auth.api.unbanUser({ body: { userId }, headers });
+  }
+}
+
+export async function listUsers(
+  where?: Prisma.userWhereInput,
+): Promise<UserRecord[]> {
   const users = await prisma.user.findMany({
+    where,
     select: {
       id: true,
       name: true,
@@ -40,28 +65,28 @@ export async function listUsers(): Promise<UserRecord[]> {
     },
   });
 
-  const brandAssignments =
+  const userIds = users.map((user) => user.id);
+  const [brandAssignments, lastActiveByUserId] =
     users.length === 0
-      ? []
-      : await prisma.user_brand.findMany({
-          where: {
-            userId: {
-              in: users.map((user) => user.id),
-            },
-          },
-          select: {
-            userId: true,
-            brand: {
-              select: {
-                id: true,
-                name: true,
-                alias: true,
-                slug: true,
-                active: true,
+      ? [[], new Map<string, Date>()]
+      : await Promise.all([
+          prisma.user_brand.findMany({
+            where: { userId: { in: userIds } },
+            select: {
+              userId: true,
+              brand: {
+                select: {
+                  id: true,
+                  name: true,
+                  alias: true,
+                  slug: true,
+                  active: true,
+                },
               },
             },
-          },
-        });
+          }),
+          getLastActiveByUserId(userIds),
+        ]);
 
   const brandsByUserId = new Map<string, UserRecord["brands"]>();
 
@@ -83,7 +108,38 @@ export async function listUsers(): Promise<UserRecord[]> {
     brands: brandsByUserId.get(user.id) ?? [],
     createdAt: user.createdAt,
     banned: user.banned ?? false,
+    lastActiveAt: lastActiveByUserId.get(user.id) ?? null,
   }));
+}
+
+/**
+ * Latest page-view heartbeat per user. Raw `page_view` rows are purged after
+ * rollup, so the permanent `user_visit_daily` rollup is read too.
+ */
+async function getLastActiveByUserId(userIds: string[]) {
+  const where = { userId: { in: userIds } };
+  const [raw, rolledUp] = await Promise.all([
+    prisma.page_view.groupBy({
+      by: ["userId"],
+      where,
+      _max: { lastSeenAt: true },
+    }),
+    prisma.user_visit_daily.groupBy({
+      by: ["userId"],
+      where,
+      _max: { lastSeenAt: true },
+    }),
+  ]);
+
+  const lastActive = new Map<string, Date>();
+  for (const row of [...raw, ...rolledUp]) {
+    const seen = row._max.lastSeenAt;
+    const current = lastActive.get(row.userId);
+    if (seen && (!current || seen > current)) {
+      lastActive.set(row.userId, seen);
+    }
+  }
+  return lastActive;
 }
 
 export async function createUser(data: CreateUserFormData, headers: Headers) {
@@ -194,4 +250,52 @@ async function replaceUserBrandAssignments(userId: string, brandIds: number[]) {
       skipDuplicates: true,
     });
   });
+}
+
+/** Unexpired sessions, newest activity first. Never selects the token. */
+export async function listUserSessions(userId: string) {
+  return prisma.session.findMany({
+    where: { userId, expiresAt: { gt: new Date() } },
+    select: {
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+      expiresAt: true,
+      ipAddress: true,
+      userAgent: true,
+      impersonatedBy: true,
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
+export async function revokeUserSessions(userId: string, headers: Headers) {
+  await auth.api.revokeUserSessions({ body: { userId }, headers });
+}
+
+/** What the user produced since `since`; each count uses a `userId` index. */
+export async function getUserWorkCounts(userId: string, since: Date) {
+  const [images, copies, chats, offerChanges, submissions, approvals] =
+    await Promise.all([
+      prisma.generatedImage.count({
+        where: { userId, createdAt: { gte: since } },
+      }),
+      prisma.generatedCopy.count({
+        where: { userId, createdAt: { gte: since } },
+      }),
+      prisma.ai_chat_threads.count({
+        where: { resourceId: userId, createdAt: { gte: since } },
+      }),
+      prisma.dim_offers_audit.count({
+        where: { changed_by: userId, changed_at: { gte: since } },
+      }),
+      prisma.dim_offers_staging.count({
+        where: { submitted_by: userId, submitted_at: { gte: since } },
+      }),
+      prisma.dim_offers_staging.count({
+        where: { approved_by: userId, approved_at: { gte: since } },
+      }),
+    ]);
+
+  return { images, copies, chats, offerChanges, submissions, approvals };
 }

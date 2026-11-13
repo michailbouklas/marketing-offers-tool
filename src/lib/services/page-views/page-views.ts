@@ -4,6 +4,8 @@
  * Days are `YYYY-MM-DD` in the activity timezone; instants are ISO strings.
  */
 
+import { addDays } from "./page-view-days";
+
 export interface VisitorSummaryRow {
   userId: string;
   name: string;
@@ -64,4 +66,109 @@ export function formatDuration(ms: number): string {
     return `${minutes} min`;
   }
   return `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+}
+
+export interface UserUsageSummary {
+  totals: UserHistory["totals"];
+  /** Last day with any activity in the range, or null. */
+  lastActiveDay: string | null;
+  /** Every day of the range, oldest first, zero-filled. */
+  daily: {
+    day: string;
+    visits: number;
+    pageViews: number;
+    foregroundMs: number;
+  }[];
+  /** Routes summed across the range, most viewed first. */
+  topRoutes: { routeId: string; views: number; foregroundMs: number }[];
+  /** Views per app section (see `routeSection`), most used first. */
+  sections: {
+    section: string;
+    views: number;
+    foregroundMs: number;
+    /** Fraction of all views in the range, 0..1. */
+    share: number;
+  }[];
+}
+
+/**
+ * Collapse a `UserHistory` into chart-ready usage stats so the details page
+ * never ships the raw per-view rows to the browser.
+ */
+export function summarizeUserUsage(
+  history: UserHistory,
+  range: { from: string; to: string },
+  topRouteLimit = 10,
+): UserUsageSummary {
+  const byDay = new Map(history.days.map((day) => [day.day, day]));
+  const daily: UserUsageSummary["daily"] = [];
+  for (let day = range.from; day <= range.to; day = addDays(day, 1)) {
+    const entry = byDay.get(day);
+    daily.push({
+      day,
+      visits: entry?.visits ?? 0,
+      pageViews: entry?.pageViews ?? 0,
+      foregroundMs: entry?.foregroundMs ?? 0,
+    });
+  }
+
+  const routes = new Map<string, { views: number; foregroundMs: number }>();
+  const sections = new Map<string, { views: number; foregroundMs: number }>();
+  for (const day of history.days) {
+    for (const route of day.routes) {
+      for (const [map, key] of [
+        [routes, route.routeId],
+        [sections, routeSection(route.routeId)],
+      ] as const) {
+        const sum = map.get(key) ?? { views: 0, foregroundMs: 0 };
+        sum.views += route.views;
+        sum.foregroundMs += route.foregroundMs;
+        map.set(key, sum);
+      }
+    }
+  }
+
+  const totalViews = [...sections.values()].reduce((n, s) => n + s.views, 0);
+
+  return {
+    totals: history.totals,
+    // `history.days` is sorted newest first.
+    lastActiveDay: history.days.find((day) => day.pageViews > 0)?.day ?? null,
+    daily,
+    topRoutes: byMostUsed(routes, "routeId").slice(0, topRouteLimit),
+    sections: byMostUsed(sections, "section").map((row) => ({
+      ...row,
+      share: totalViews > 0 ? row.views / totalViews : 0,
+    })),
+  };
+}
+
+function byMostUsed<K extends string>(
+  map: Map<string, { views: number; foregroundMs: number }>,
+  keyName: K,
+) {
+  return [...map]
+    .map(
+      ([key, sum]) =>
+        ({ [keyName]: key, ...sum }) as Record<K, string> & {
+          views: number;
+          foregroundMs: number;
+        },
+    )
+    .sort((a, b) => b.views - a.views || b.foregroundMs - a.foregroundMs);
+}
+
+/**
+ * App section of a route id: its first real segment, e.g.
+ * "/sales/offers" -> "/sales". Route groups like "(auth)" are skipped;
+ * "" (404) stays "".
+ */
+export function routeSection(routeId: string): string {
+  if (!routeId) {
+    return "";
+  }
+  const segment = routeId
+    .split("/")
+    .find((part) => part && !part.startsWith("("));
+  return segment ? `/${segment}` : "/";
 }
