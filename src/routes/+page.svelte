@@ -1,298 +1,231 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button/index.js";
-  import OfferStatusWidget from "$lib/components/home/offer-status-widget.svelte";
-  import MetricLinkCard from "$lib/components/home/metric-link-card.svelte";
-  import UsageSummaryWidget from "$lib/components/home/usage-summary-widget.svelte";
-  import { Badge } from "$lib/components/ui/badge/index.js";
-  import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
+  import { flip } from "svelte/animate";
+  import { dndzone, type DndEvent } from "svelte-dnd-action";
+  import { invalidate } from "$app/navigation";
+  import { toast } from "svelte-sonner";
+  import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+  import WidgetFrame from "$lib/components/dashboard/widget-frame.svelte";
+  import WidgetSettingsDialog from "$lib/components/dashboard/widget-settings-dialog.svelte";
+  import GapsList from "$lib/components/dashboard/widgets/gaps-list.svelte";
+  import SalesSummary from "$lib/components/dashboard/widgets/sales-summary.svelte";
+  import DeliverySummary from "$lib/components/dashboard/widgets/delivery-summary.svelte";
+  import OffersSummary from "$lib/components/dashboard/widgets/offers-summary.svelte";
+  import PlusIcon from "@lucide/svelte/icons/plus";
+  import {
+    SALES_PERIOD_LABELS,
+    widgetDefinitions,
+    type DashboardWidget,
+    type SalesWidgetSettings,
+    type WidgetType,
+  } from "$lib/dashboard/widgets";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
 
-  const widgetCards = $derived(
-    data.offers
-      ? [
-          {
-            title: "Active offers",
-            eyebrow: "Live now",
-            description:
-              "Offers that are currently running and still inside their active date window.",
-            countLabel: "currently in market",
-            emptyMessage:
-              "No live offers right now. New launches will appear here first.",
-            footerLabel: "Prioritize the campaigns ending soonest.",
-            tone: "active" as const,
-            widget: data.offers.activeOffers,
-          },
-          {
-            title: "About to expire",
-            eyebrow: "2-day watchlist",
-            description:
-              "Offers scheduled to end exactly two days from today so the team can react early.",
-            countLabel: "ending in 2 days",
-            emptyMessage: "Nothing hits the two-day expiry window yet.",
-            footerLabel: "Great spot for renewals, swaps, or quick comms.",
-            tone: "warning" as const,
-            widget: data.offers.expiringSoon,
-          },
-          {
-            title: "Recently expired",
-            eyebrow: "Last 48 hours",
-            description:
-              "Offers whose end date passed during the last two days and may need follow-up.",
-            countLabel: "just wrapped",
-            emptyMessage:
-              "No recent expirations in the last two days. The board is clear.",
-            footerLabel:
-              "Useful for performance checks and post-campaign wrap-up.",
-            tone: "expired" as const,
-            widget: data.offers.recentlyExpired,
-          },
-        ]
-      : [],
-  );
+  const FLIP_MS = 200;
 
-  const hasAnyWidget = $derived(
-    data.access.canEditOffers ||
-      data.access.canApprove ||
-      data.access.canManageUsers ||
-      data.access.canViewUsage ||
-      data.access.canGenerateImages ||
-      data.access.canManageBrands,
-  );
+  // Local copy the drag zone can reorder; reset whenever the server layout reloads.
+  let widgets = $derived(data.layout);
+  let editing = $state(false);
+  let settingsFor = $state<DashboardWidget | null>(null);
+  let settingsOpen = $state(false);
+
+  async function save(next: DashboardWidget[], reload: boolean) {
+    const response = await fetch("/api/dashboard/layout", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      // Strip svelte-dnd-action's shadow-item marker.
+      body: JSON.stringify({
+        widgets: next.map(({ id, settings }) => ({ id, settings })),
+      }),
+    }).catch(() => null);
+    if (!response?.ok) {
+      toast.error("Could not save your dashboard.");
+      return;
+    }
+    // shortcut: reloads every widget, not just the changed one; add a per-widget endpoint if the dashboard gets slow.
+    if (reload) await invalidate("app:dashboard");
+  }
+
+  function consider(event: CustomEvent<DndEvent<DashboardWidget>>) {
+    widgets = event.detail.items;
+  }
+
+  function finalize(event: CustomEvent<DndEvent<DashboardWidget>>) {
+    widgets = event.detail.items;
+    void save(widgets, false);
+  }
+
+  function add(type: WidgetType) {
+    void save([...widgets, { id: type, settings: {} }], true);
+  }
+
+  function remove(type: WidgetType) {
+    widgets = widgets.filter((widget) => widget.id !== type);
+    void save(widgets, true);
+  }
+
+  async function reset() {
+    await fetch("/api/dashboard/layout", { method: "DELETE" }).catch(
+      () => null,
+    );
+    await invalidate("app:dashboard");
+  }
+
+  function openSettings(widget: DashboardWidget) {
+    settingsFor = widget;
+    settingsOpen = true;
+  }
+
+  function saveSettings(settings: SalesWidgetSettings) {
+    const id = settingsFor?.id;
+    void save(
+      widgets.map((widget) => (widget.id === id ? { id, settings } : widget)),
+      true,
+    );
+  }
+
+  /** "Week to date" etc., shown in sales widget descriptions. */
+  const periodLabel = (widget: DashboardWidget) =>
+    SALES_PERIOD_LABELS[(widget.settings as SalesWidgetSettings).period];
 </script>
 
 <svelte:head>
-  <title>Aggregator Offers Tool</title>
-  <meta
-    name="description"
-    content="A role-aware operations overview surfacing the widgets relevant to your access."
-  />
+  <title>Dashboard — Marketing Tools</title>
 </svelte:head>
 
-<div class="relative isolate overflow-hidden">
-  <div class="bg-background absolute inset-0 -z-20"></div>
-  <div
-    class="absolute inset-x-0 top-0 -z-10 h-[30rem] bg-[radial-gradient(circle_at_top_left,_color-mix(in_oklab,var(--color-chart-2)_18%,transparent),transparent_36%),radial-gradient(circle_at_86%_16%,_color-mix(in_oklab,var(--color-chart-1)_24%,transparent),transparent_26%)]"
-  ></div>
-  <div
-    class="bg-chart-2/10 absolute -top-16 left-10 -z-10 size-56 rounded-full blur-3xl"
-  ></div>
-  <div
-    class="bg-chart-1/12 absolute top-52 right-0 -z-10 size-72 rounded-full blur-3xl"
-  ></div>
-  <div
-    class="bg-chart-3/10 absolute bottom-12 left-1/3 -z-10 size-64 rounded-full blur-3xl"
-  ></div>
-
-  <main
-    class="mx-auto flex min-h-screen max-w-7xl flex-col gap-10 px-4 py-8 sm:px-6 lg:px-8 lg:py-12"
-  >
-    <section
-      class="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_auto] lg:items-end"
-    >
-      <div class="space-y-5">
-        <Badge
-          variant="outline"
-          class="border-primary/20 bg-background/85 text-muted-foreground px-3 py-1 text-[0.7rem] tracking-[0.24em] uppercase shadow-sm backdrop-blur"
-        >
-          Home overview
-        </Badge>
-
-        <div class="space-y-4">
-          <h1
-            class="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-balance sm:text-5xl lg:text-6xl"
-          >
-            Dashboard
-          </h1>
-          <p
-            class="text-muted-foreground max-w-3xl text-base leading-7 sm:text-lg"
-          >
-            Each widget below reflects the access you hold — offers, approvals,
-            user management, or image-generation usage. The more roles you have,
-            the more you see.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    {#if data.offers}
-      <section class="space-y-4">
-        <div class="space-y-1">
-          <p
-            class="text-sm font-semibold tracking-[0.18em] text-zinc-500 uppercase"
-          >
-            Offers
-          </p>
-          <h2 class="text-2xl font-semibold tracking-[-0.03em]">
-            Keep the offer board readable before campaigns drift out of view
-          </h2>
-        </div>
-        <div class="grid gap-5 xl:grid-cols-3">
-          {#each widgetCards as widget (widget.title)}
-            <OfferStatusWidget {...widget} />
-          {/each}
-        </div>
-      </section>
-    {/if}
-
-    {#if data.imageGeneration}
-      <section class="space-y-4">
-        <div class="space-y-1">
-          <p
-            class="text-sm font-semibold tracking-[0.18em] text-zinc-500 uppercase"
-          >
-            Image generation
-          </p>
-          <h2 class="text-2xl font-semibold tracking-[-0.03em]">
-            Create on-brand marketing images
-          </h2>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {#if data.imageGeneration.canGenerateImages}
-            <MetricLinkCard
-              eyebrow="Image generator"
-              title="Your generated images"
-              metric={data.imageGeneration.generatedImageCount ?? 0}
-              metricLabel="created so far"
-              description="Open the generator to create new on-brand marketing images, or revisit everything you've made."
-              href="/image-generator"
-              cta="Open image generator"
-            />
-          {/if}
-          {#if data.imageGeneration.canManageBrands}
-            <a
-              href="/admin/brands"
-              class="border-border/70 bg-background/88 hover:bg-background group flex h-full flex-col justify-between rounded-3xl border p-6 shadow-sm backdrop-blur transition-colors"
+<div class="mx-auto w-full max-w-7xl space-y-6 px-4 py-8">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div class="space-y-1">
+      <h1 class="text-2xl font-semibold tracking-tight">Dashboard</h1>
+      <p class="text-muted-foreground text-sm">
+        {editing
+          ? "Drag widgets to reorder them (or focus one and use Space + arrow keys)."
+          : "Your widgets. Customize to reorder, add or remove them."}
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      {#if editing}
+        {#if data.available.length > 0}
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger
+              class={buttonVariants({ variant: "outline" })}
             >
-              <div class="space-y-4">
-                <Badge
-                  variant="outline"
-                  class="border-primary/20 bg-background/85 text-muted-foreground px-3 py-1 text-[0.7rem] tracking-[0.24em] uppercase shadow-sm"
-                >
-                  Brand assets
-                </Badge>
-                <div class="space-y-1">
-                  <p class="text-lg font-semibold tracking-[-0.02em]">Brands</p>
-                  <p class="text-muted-foreground text-sm leading-6">
-                    Manage brand guidelines and reference assets that feed the
-                    image generator.
-                  </p>
-                </div>
-              </div>
-              <div
-                class="mt-6 inline-flex items-center gap-2 text-sm font-medium"
-              >
-                <span>Manage brands</span>
-                <ArrowRightIcon
-                  class="size-4 transition-transform group-hover:translate-x-1"
-                />
-              </div>
-            </a>
-          {/if}
-        </div>
-      </section>
-    {/if}
-
-    {#if data.copywriting}
-      <section class="space-y-4">
-        <div class="space-y-1">
-          <p
-            class="text-sm font-semibold tracking-[0.18em] text-zinc-500 uppercase"
-          >
-            Copywriting
-          </p>
-          <h2 class="text-2xl font-semibold tracking-[-0.03em]">
-            Write on-brand marketing copy
-          </h2>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <MetricLinkCard
-            eyebrow="Copywriter"
-            title="Your generated copy"
-            metric={data.copywriting.generatedCopyCount ?? 0}
-            metricLabel="briefs written so far"
-            description="Generate bilingual offer copy, social captions, push notifications, and banner headlines that follow your brand guidelines."
-            href="/copywriter"
-            cta="Open copywriter"
-          />
-        </div>
-      </section>
-    {/if}
-
-    {#if data.approvals || data.users}
-      <section class="space-y-4">
-        <div class="space-y-1">
-          <p
-            class="text-sm font-semibold tracking-[0.18em] text-zinc-500 uppercase"
-          >
-            Review &amp; administration
-          </p>
-          <h2 class="text-2xl font-semibold tracking-[-0.03em]">
-            What's waiting on you
-          </h2>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {#if data.approvals}
-            <MetricLinkCard
-              eyebrow="Approvals"
-              title="Pending submissions"
-              metric={data.approvals.pendingCount}
-              metricLabel="awaiting review"
-              description="Staged pricing updates waiting to be approved before they are written into ClickHouse."
-              href="/admin/pending-submissions"
-              cta="Review submissions"
-            />
-          {/if}
-          {#if data.users}
-            <MetricLinkCard
-              eyebrow="User management"
-              title="Users"
-              metric={data.users.userCount}
-              metricLabel="internal accounts"
-              description="Maintain internal accounts, roles, and brand assignments."
-              href="/admin/users"
-              cta="Manage users"
-            />
-          {/if}
-        </div>
-      </section>
-    {/if}
-
-    {#if data.usage}
-      <section class="space-y-4">
-        <div class="space-y-1">
-          <p
-            class="text-sm font-semibold tracking-[0.18em] text-zinc-500 uppercase"
-          >
-            Image generation
-          </p>
-          <h2 class="text-2xl font-semibold tracking-[-0.03em]">
-            Usage across every account
-          </h2>
-        </div>
-        <UsageSummaryWidget
-          summary={data.usage.summary}
-          href="/admin/image-generator-usage"
-        />
-      </section>
-    {/if}
-
-    {#if !hasAnyWidget}
-      <section
-        class="border-border/70 bg-background/88 rounded-3xl border p-10 text-center shadow-sm backdrop-blur"
+              <PlusIcon class="size-4" />
+              Add widget
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="end">
+              {#each data.available as type (type)}
+                <DropdownMenu.Item onSelect={() => add(type)}>
+                  {widgetDefinitions[type].title}
+                </DropdownMenu.Item>
+              {/each}
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        {/if}
+        <Button variant="outline" onclick={reset}>Reset to default</Button>
+      {/if}
+      <Button
+        variant={editing ? "default" : "outline"}
+        onclick={() => (editing = !editing)}
       >
-        <p class="text-lg font-semibold tracking-[-0.02em]">
-          No widgets for your roles yet
-        </p>
-        <p
-          class="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-6"
-        >
-          Your account doesn't have a role that surfaces dashboard widgets yet.
-          Ask an administrator to grant you the relevant role to see offers,
-          approvals, user management, or usage here.
-        </p>
-      </section>
-    {/if}
-  </main>
+        {editing ? "Done" : "Customize"}
+      </Button>
+    </div>
+  </div>
+
+  {#if widgets.length === 0}
+    <p
+      class="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm"
+    >
+      {data.available.length > 0
+        ? "No widgets yet. Use Customize → Add widget."
+        : "There are no widgets for your roles yet."}
+    </p>
+  {/if}
+
+  <div
+    class="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3"
+    use:dndzone={{
+      items: widgets,
+      flipDurationMs: FLIP_MS,
+      dragDisabled: !editing,
+      dropTargetStyle: {},
+    }}
+    onconsider={consider}
+    onfinalize={finalize}
+  >
+    {#each widgets as widget (widget.id)}
+      {@const def = widgetDefinitions[widget.id]}
+      <div animate:flip={{ duration: FLIP_MS }} class="h-full">
+        {#if widget.id === "open-gaps" || widget.id === "awaiting-approval"}
+          {@const empty =
+            widget.id === "open-gaps"
+              ? "No open gaps for your brands."
+              : "Nothing waiting for approval."}
+          <WidgetFrame
+            title={def.title}
+            description={def.description}
+            result={data.streamed[widget.id]}
+            {editing}
+            onremove={() => remove(widget.id)}
+          >
+            {#snippet children(gaps)}
+              <GapsList data={gaps} {empty} />
+            {/snippet}
+          </WidgetFrame>
+        {:else if widget.id === "sales-summary"}
+          <WidgetFrame
+            title={def.title}
+            description={`${periodLabel(widget)} vs last year (same dates).`}
+            result={data.streamed[widget.id]}
+            {editing}
+            onsettings={() => openSettings(widget)}
+            onremove={() => remove(widget.id)}
+          >
+            {#snippet children(sales)}
+              <SalesSummary data={sales} />
+            {/snippet}
+          </WidgetFrame>
+        {:else if widget.id === "delivery-summary"}
+          <WidgetFrame
+            title={def.title}
+            description={`${periodLabel(widget)} on aggregator channels.`}
+            result={data.streamed[widget.id]}
+            {editing}
+            onsettings={() => openSettings(widget)}
+            onremove={() => remove(widget.id)}
+          >
+            {#snippet children(delivery)}
+              <DeliverySummary data={delivery} />
+            {/snippet}
+          </WidgetFrame>
+        {:else if widget.id === "offers-summary"}
+          <WidgetFrame
+            title={def.title}
+            description={`${periodLabel(widget)} offer value and verdicts.`}
+            result={data.streamed[widget.id]}
+            {editing}
+            onsettings={() => openSettings(widget)}
+            onremove={() => remove(widget.id)}
+          >
+            {#snippet children(offers)}
+              <OffersSummary data={offers} />
+            {/snippet}
+          </WidgetFrame>
+        {/if}
+      </div>
+    {/each}
+  </div>
 </div>
+
+{#if settingsFor}
+  <WidgetSettingsDialog
+    bind:open={settingsOpen}
+    title={widgetDefinitions[settingsFor.id].title}
+    settings={settingsFor.settings as SalesWidgetSettings}
+    brands={data.salesBrands}
+    onsave={saveSettings}
+  />
+{/if}

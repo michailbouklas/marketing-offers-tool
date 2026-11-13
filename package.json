@@ -95,6 +95,7 @@
     "pg": "^8.16.3",
     "read-excel-file": "^9.3.14",
     "sharp": "^0.34.5",
+    "svelte-dnd-action": "^0.9.80",
     "sveltekit-superforms": "^2.30.0",
     "three": "^0.185.1",
     "vue": "^3.5.44",

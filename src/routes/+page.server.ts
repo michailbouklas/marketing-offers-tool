@@ -1,82 +1,62 @@
+import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { getHomeOfferWidgets } from "$lib/services/home-offer-widgets";
-import { countUsers } from "$lib/services/users.server";
-import { getPendingGapSubmissionCount } from "$lib/services/offers-data-quality.server";
-import {
-  countGeneratedImagesForUser,
-  getAdminImageUsageOverview,
-} from "$lib/services/image-generator/image-generator.server";
-import { countGeneratedCopiesForUser } from "$lib/services/copywriter/copywriter.server";
 import {
   getAuthenticatedUserRole,
-  hasPermission,
   requireAuthenticatedUser,
 } from "$lib/server/auth-guards";
+import { getUserPreference } from "$lib/services/user-preferences.server";
+import {
+  availableWidgets,
+  DASHBOARD_LAYOUT_PREFERENCE,
+  hasSalesSettings,
+  normalizeLayout,
+  widgetTypes,
+  type WidgetDataMap,
+  type WidgetResult,
+} from "$lib/dashboard/widgets";
+import {
+  listSalesBrands,
+  loadWidget,
+} from "$lib/server/dashboard-widgets.server";
 
+type StreamedWidgets = Partial<{
+  [K in keyof WidgetDataMap]: Promise<WidgetResult<WidgetDataMap[K]>>;
+}>;
+
+/**
+ * Home dashboard: the layout is awaited so the grid renders at once; each
+ * widget's data is streamed and shows a skeleton until it settles. Only
+ * widgets in the role-normalised layout are loaded.
+ */
 export const load: PageServerLoad = async (event) => {
   const { user } = requireAuthenticatedUser(event);
+  if (!user) redirect(302, "/login");
+  event.depends("app:dashboard");
 
-  // Each role surfaces its own dashboard widgets; a multi-role user sees the
-  // union. Resolve the capability flags first (mirrors /admin/+page.server.ts),
-  // then only load the data for the sections this user can actually see.
-  const [
-    userRole,
-    canEditOffers,
-    canApprove,
-    canManageUsers,
-    canViewUsage,
-    canGenerateImages,
-    canManageBrands,
-    canGenerateCopy,
-  ] = await Promise.all([
-    getAuthenticatedUserRole(event),
-    hasPermission(event, { offer: ["edit"] }),
-    hasPermission(event, { submission: ["approve"] }),
-    hasPermission(event, { user: ["list"] }),
-    hasPermission(event, { imageGenerator: ["view-usage"] }),
-    hasPermission(event, { imageGenerator: ["generate"] }),
-    hasPermission(event, { brand: ["manage"] }),
-    hasPermission(event, { copywriter: ["generate"] }),
-  ]);
+  const role = await getAuthenticatedUserRole(event);
+  const layout = normalizeLayout(
+    await getUserPreference(user.id, DASHBOARD_LAYOUT_PREFERENCE),
+    role,
+  );
+  const ctx = { userId: user.id, role };
 
-  const [
-    offers,
-    pendingCount,
-    userCount,
-    usageOverview,
-    generatedImageCount,
-    generatedCopyCount,
-  ] = await Promise.all([
-    canEditOffers ? getHomeOfferWidgets() : Promise.resolve(null),
-    canApprove ? getPendingGapSubmissionCount() : Promise.resolve(null),
-    canManageUsers ? countUsers() : Promise.resolve(null),
-    canViewUsage ? getAdminImageUsageOverview() : Promise.resolve(null),
-    canGenerateImages && user
-      ? countGeneratedImagesForUser(user.id)
-      : Promise.resolve(null),
-    canGenerateCopy && user
-      ? countGeneratedCopiesForUser(user.id)
-      : Promise.resolve(null),
-  ]);
+  const streamed: StreamedWidgets = {};
+  for (const widget of layout) {
+    // Each key gets its own widget's promise; the mapped type can't follow the loop variable.
+    (streamed as Record<string, unknown>)[widget.id] = loadWidget(ctx, widget);
+  }
+
+  const canPickSalesBrand = widgetTypes.some(
+    (type) =>
+      hasSalesSettings(type) &&
+      (layout.some((widget) => widget.id === type) ||
+        availableWidgets(layout, role).includes(type)),
+  );
 
   return {
-    userRole,
-    access: {
-      canEditOffers,
-      canApprove,
-      canManageUsers,
-      canViewUsage,
-      canGenerateImages,
-      canManageBrands,
-    },
-    offers,
-    approvals: pendingCount === null ? null : { pendingCount },
-    users: userCount === null ? null : { userCount },
-    usage: usageOverview === null ? null : { summary: usageOverview.summary },
-    imageGeneration:
-      canGenerateImages || canManageBrands
-        ? { generatedImageCount, canGenerateImages, canManageBrands }
-        : null,
-    copywriting: canGenerateCopy ? { generatedCopyCount } : null,
+    layout,
+    available: availableWidgets(layout, role),
+    salesBrands: canPickSalesBrand ? await listSalesBrands(ctx) : [],
+    streamed,
   };
 };
