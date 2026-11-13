@@ -8,6 +8,9 @@ import {
 } from "$lib/server/auth-guards";
 import { installForecastGateway } from "$lib/server/forecast-gateway.server";
 import { installGoogleAnalyticsGateway } from "$lib/server/google-analytics-gateway.server";
+import { installConsolidatedSalesGateway } from "$lib/server/consolidated-sales-gateway.server";
+import { installSalesDeliveryGateway } from "$lib/server/sales-delivery-gateway.server";
+import { installSalesOffersGateway } from "$lib/server/sales-offers-gateway.server";
 import { startScheduler } from "$lib/server/scheduler.server";
 import { resyncUserSkills } from "$lib/services/skills/user-skills-sync.server";
 import { svelteKitHandler } from "better-auth/svelte-kit";
@@ -26,6 +29,12 @@ installForecastGateway();
 // Same seam for the Google Analytics Assistant: its tools reach the GA4 Data
 // API (and the per-property encrypted keys) only through this gateway.
 installGoogleAnalyticsGateway();
+
+// Same seam for the sales page assistants (/sales/offers,
+// /sales/consolidated-sales-report, /sales/delivery).
+installSalesOffersGateway();
+installConsolidatedSalesGateway();
+installSalesDeliveryGateway();
 
 // Admin-authored agent skills live in the database and are projected to
 // workspace/user-skills/<agentId>/ (gitignored) before the first request so

@@ -16,6 +16,7 @@ import {
 import {
   resolveGoogleAnalyticsPageContext,
   resolvePageContext,
+  resolveSalesPageContext,
   resolveSalesSelectedOrders,
 } from "$lib/server/chat-page-context";
 import { getMastra } from "$lib/server/mastra";
@@ -25,6 +26,8 @@ import {
   GOOGLE_ANALYTICS_PAGE_CONTEXT_RUNTIME_KEY,
   GOOGLE_ANALYTICS_SCOPE_RUNTIME_KEY,
   MANAGEMENT_ACCOUNTS_SCOPE_RUNTIME_KEY,
+  SALES_PAGE_AGENT_IDS,
+  SALES_PAGE_CONTEXT_RUNTIME_KEY,
   SALES_SELECTED_ORDERS_RUNTIME_KEY,
   type GoogleAnalyticsScopeEntry,
   type SalesSelectedOrders,
@@ -172,6 +175,14 @@ async function buildAgentRequestContext(
           headerLabels: ORDER_LINE_HEADER_LABELS,
         };
         requestContext.set(SALES_SELECTED_ORDERS_RUNTIME_KEY, selected);
+      }
+    } else if ((SALES_PAGE_AGENT_IDS as readonly string[]).includes(agentId)) {
+      const pageContext = resolveSalesPageContext(
+        rawPageContext,
+        scopedAliases,
+      );
+      if (pageContext) {
+        requestContext.set(SALES_PAGE_CONTEXT_RUNTIME_KEY, pageContext);
       }
     } else if (config.googleAnalyticsScoped) {
       const pageContext = resolveGoogleAnalyticsPageContext(

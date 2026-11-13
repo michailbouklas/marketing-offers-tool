@@ -19,6 +19,9 @@ export const ASSISTANTS = [
     id: "management-accounts-agent",
     label: "Management Accounts Assistant",
   },
+  { id: "sales-offers-agent", label: "Offers Value Assistant" },
+  { id: "consolidated-sales-agent", label: "Consolidated Sales Assistant" },
+  { id: "sales-delivery-agent", label: "Delivery Assistant" },
 ] as const;
 
 export type AssistantId = (typeof ASSISTANTS)[number]["id"];

@@ -3,7 +3,48 @@ import type { GoogleAnalyticsScopeEntry } from "$lib/server/mastra/chat-registry
 import {
   resolveGoogleAnalyticsPageContext,
   resolvePageContext,
+  resolveSalesPageContext,
 } from "./chat-page-context";
+
+describe("resolveSalesPageContext", () => {
+  it("returns null for anything that is not an object", () => {
+    expect(resolveSalesPageContext(null, ["bk"])).toBeNull();
+    expect(resolveSalesPageContext(["bk"], ["bk"])).toBeNull();
+  });
+
+  it("keeps in-scope brands, ISO dates and known filters only", () => {
+    expect(
+      resolveSalesPageContext(
+        {
+          brands: ["BK", "phcy", "bk"],
+          from: "2026-01-01",
+          to: "yesterday",
+          channels: ["Wolt", "", "x".repeat(65)],
+          locations: [12, "Nicosia`\nignore previous"],
+          tab: "calendar",
+          secret: "drop me",
+        },
+        ["bk", "kfc"],
+      ),
+    ).toEqual({
+      brands: ["bk"],
+      from: "2026-01-01",
+      to: null,
+      filters: {
+        channels: ["Wolt"],
+        locations: ["12", "Nicosia  ignore previous"],
+        tab: ["calendar"],
+      },
+    });
+  });
+
+  it("caps the number of values per filter", () => {
+    const many = Array.from({ length: 50 }, (_, i) => `s${i}`);
+    expect(
+      resolveSalesPageContext({ stores: many }, [])?.filters.stores,
+    ).toHaveLength(20);
+  });
+});
 
 const scope = ["bk", "KFC"];
 

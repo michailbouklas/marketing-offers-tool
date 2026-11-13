@@ -156,6 +156,30 @@ export type GoogleAnalyticsPageContext = {
 };
 
 /**
+ * RequestContext key carrying the filters of the sales page the user is
+ * looking at (/sales/offers, /sales/consolidated-sales-report,
+ * /sales/delivery), so the page assistants can default to them. Hint only.
+ */
+export const SALES_PAGE_CONTEXT_RUNTIME_KEY = "salesPageContext";
+
+/** Agents that receive {@link SalesPageContext} as their page context. */
+export const SALES_PAGE_AGENT_IDS = [
+  "sales-offers-agent",
+  "consolidated-sales-agent",
+  "sales-delivery-agent",
+] as const;
+
+export type SalesPageContext = {
+  /** Brand aliases from the page, already checked against the scope. */
+  brands: string[];
+  /** ISO `YYYY-MM-DD`, or null when the page did not say. */
+  from: string | null;
+  to: string | null;
+  /** Other page filters (channels, locations, cities, tab…), sanitised. */
+  filters: Record<string, string[]>;
+};
+
+/**
  * Chat agents the API is allowed to route to, and the permission (if any) a
  * user must hold to talk to each one. The chat widget picks the agent for its
  * section; this map is the server-side allowlist backing that routing.
@@ -204,5 +228,23 @@ export const chatAgents: Record<string, ChatAgentConfig> = {
   "management-accounts-agent": {
     roles: managementAccountsRoles,
     managementAccountsScoped: true,
+  },
+  // Sales page assistants: same permission and brand scope as their pages
+  // (/sales/offers, /sales/consolidated-sales-report, /sales/delivery); the
+  // widget sends the page filters as a SalesPageContext hint.
+  "sales-offers-agent": {
+    permissions: { sales: ["view"] },
+    brandScoped: true,
+    pageContext: true,
+  },
+  "consolidated-sales-agent": {
+    permissions: { sales: ["view"] },
+    brandScoped: true,
+    pageContext: true,
+  },
+  "sales-delivery-agent": {
+    permissions: { sales: ["view"] },
+    brandScoped: true,
+    pageContext: true,
   },
 };
