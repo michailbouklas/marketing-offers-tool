@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
+  import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import DateRangeFilter from "$lib/components/date-range-filter.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
@@ -23,6 +24,13 @@
   ];
   // Channel VS picks its own channels, so the single-channel filter is hidden there.
   const onVs = $derived(page.url.pathname === `${base}/vs`);
+  const tab = $derived(
+    page.url.pathname.endsWith("/vs")
+      ? "vs"
+      : page.url.pathname.endsWith("/offers")
+        ? "offers"
+        : "overview",
+  );
 
   /** Same tab, new filters; `channel`/`vs` survive unless `reset` (brand switch). */
   function href(
@@ -143,5 +151,20 @@
     {:else}
       {@render children()}
     {/if}
+
+    <ChatWidget
+      agentId="sales-delivery-agent"
+      title="Delivery Assistant"
+      greeting="Hi! Ask me how each delivery platform performs, compare Wolt vs Bolt, or which offers work per channel."
+      placeholder="e.g. How did Wolt compare with Bolt this month?"
+      context={{
+        brands: filters.brands,
+        from: filters.from,
+        to: filters.to,
+        channel: data.channel,
+        vs: page.url.searchParams.get("vs")?.split(",") ?? null,
+        tab,
+      }}
+    />
   {/if}
 </main>
