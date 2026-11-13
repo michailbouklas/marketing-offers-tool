@@ -196,6 +196,30 @@ describe("reports", () => {
     ).rejects.toMatchObject({ status: 403, code: "PERMISSION_DENIED" });
   });
 
+  it("names the endpoint and keeps the body of a non-JSON 502", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response("<html>Error 502 (Server Error)!!1</html>", {
+        status: 502,
+        statusText: "Bad Gateway",
+        headers: { "content-type": "text/html" },
+      }),
+    );
+
+    await expect(
+      runReport(
+        "123456",
+        { metrics: [{ name: "sessions" }], dateRanges: [] },
+        credentials,
+        fetchImpl,
+      ),
+    ).rejects.toMatchObject({
+      status: 502,
+      code: "http_502",
+      message:
+        "Data API properties/123456:runReport: 502 Bad Gateway <html>Error 502 (Server Error)!!1</html>",
+    });
+  });
+
   it("batches up to the API limit and returns reports in order", async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse({ reports: [{ rowCount: 1 }, { rowCount: 2 }] }),

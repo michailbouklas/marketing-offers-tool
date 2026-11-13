@@ -242,18 +242,24 @@ export function buildJwtAssertion(
   return `${signingInput}.${base64url(signature)}`;
 }
 
-async function readErrorMessage(response: Response): Promise<{
+async function readErrorMessage(
+  response: Response,
+  label: string,
+): Promise<{
   code: string;
   message: string;
 }> {
+  const text = await response.text().catch(() => "");
+  // A non-JSON body comes from a front end (Google's edge, a proxy), not the API: keep who and what.
   const fallback = {
     code: `http_${response.status}`,
-    message: `${response.status} ${response.statusText}`.trim(),
+    message:
+      `${label}: ${response.status} ${response.statusText} ${text.replace(/\s+/g, " ").slice(0, 200)}`.trim(),
   };
 
   let body: unknown;
   try {
-    body = await response.json();
+    body = JSON.parse(text);
   } catch {
     return fallback;
   }
@@ -331,7 +337,10 @@ export async function getAccessToken(
   }
 
   if (!response.ok) {
-    const { code, message } = await readErrorMessage(response);
+    const { code, message } = await readErrorMessage(
+      response,
+      "token endpoint",
+    );
     throw new GoogleAnalyticsApiError(response.status, code, message);
   }
 
@@ -394,7 +403,10 @@ async function callDataApi<T>(
   }
 
   if (!response.ok) {
-    const { code, message } = await readErrorMessage(response);
+    const { code, message } = await readErrorMessage(
+      response,
+      `Data API ${path}`,
+    );
     throw new GoogleAnalyticsApiError(response.status, code, message);
   }
 
