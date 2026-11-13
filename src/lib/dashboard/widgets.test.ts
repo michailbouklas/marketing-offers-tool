@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { availableWidgets, normalizeLayout, resolvePeriod } from "./widgets";
+import {
+  availableWidgets,
+  dismissedWidgets,
+  normalizeLayout,
+  resolvePeriod,
+} from "./widgets";
 
 const ids = (layout: { id: string }[]) => layout.map((widget) => widget.id);
 
@@ -33,6 +38,7 @@ describe("normalizeLayout", () => {
     expect(ids(normalizeLayout(saved, "analyticsViewer"))).toEqual([
       "offers-summary",
       "sales-summary",
+      "latest-release",
     ]);
   });
 
@@ -52,7 +58,11 @@ describe("normalizeLayout", () => {
       },
       "analyticsViewer",
     );
-    expect(ids(layout)).toEqual(["offers-summary", "offers-summary-m1"]);
+    expect(ids(layout)).toEqual([
+      "offers-summary",
+      "offers-summary-m1",
+      "latest-release",
+    ]);
     expect(layout[1].settings).toEqual({ brand: "bk", period: "wtd" });
   });
 
@@ -75,8 +85,23 @@ describe("normalizeLayout", () => {
     ]);
   });
 
-  it("keeps an emptied dashboard empty", () => {
-    expect(normalizeLayout({ widgets: [] }, "admin")).toEqual([]);
+  it("adds default-on widgets to saved layouts unless dismissed", () => {
+    const saved = {
+      widgets: [{ id: "open-gaps", type: "open-gaps", settings: {} }],
+    };
+    expect(ids(normalizeLayout(saved, "offerEditor"))).toEqual([
+      "open-gaps",
+      "latest-release",
+    ]);
+    const off = { ...saved, dismissed: ["latest-release", "nope"] };
+    expect(ids(normalizeLayout(off, "offerEditor"))).toEqual(["open-gaps"]);
+    expect(dismissedWidgets(off)).toEqual(["latest-release"]);
+  });
+
+  it("keeps an emptied dashboard empty once the defaults are dismissed", () => {
+    expect(
+      normalizeLayout({ widgets: [], dismissed: ["latest-release"] }, "admin"),
+    ).toEqual([]);
   });
 
   it("falls back to default settings when saved ones are invalid", () => {
@@ -119,7 +144,6 @@ describe("normalizeLayout", () => {
     expect(availableWidgets(layout, "analyticsViewer")).toEqual([
       "delivery-summary",
       "offers-summary",
-      "latest-release",
     ]);
   });
 });

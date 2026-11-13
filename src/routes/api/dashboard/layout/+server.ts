@@ -6,6 +6,7 @@ import {
 import {
   DASHBOARD_LAYOUT_PREFERENCE,
   dashboardLayoutSchema,
+  dismissedWidgets,
   normalizeLayout,
 } from "$lib/dashboard/widgets";
 import { setUserPreference } from "$lib/services/user-preferences.server";
@@ -24,7 +25,10 @@ export const PUT: RequestHandler = async (event) => {
     parsed.data,
     await getAuthenticatedUserRole(event),
   );
-  await setUserPreference(user.id, DASHBOARD_LAYOUT_PREFERENCE, { widgets });
+  await setUserPreference(user.id, DASHBOARD_LAYOUT_PREFERENCE, {
+    widgets,
+    dismissed: dismissedWidgets(parsed.data),
+  });
   return new Response(null, { status: 204 });
 };
 

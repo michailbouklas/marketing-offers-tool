@@ -129,6 +129,8 @@ const definitions = {
     description: "What changed in the app most recently.",
     roles: [...userRoles],
     settings: noSettings,
+    /** Added to saved layouts too, unless the user dismissed it. */
+    defaultOn: true,
   },
 } satisfies Record<
   string,
@@ -137,6 +139,7 @@ const definitions = {
     description: string;
     roles: UserRole[];
     settings: z.ZodType;
+    defaultOn?: boolean;
   }
 >;
 
@@ -175,6 +178,8 @@ export const dashboardLayoutSchema = z.object({
       }),
     )
     .max(20),
+  /** Types the user removed; default-on widgets stay off once listed here. */
+  dismissed: z.array(z.string().max(50)).max(20).default([]),
 });
 
 /** Id for a duplicated widget; not crypto.randomUUID (missing on plain-HTTP origins). */
@@ -190,7 +195,8 @@ function defaultSettings(type: WidgetType): Record<string, unknown> {
  * Saved (or posted) layout -> the layout this role may have: unknown types,
  * hidden types, bad and repeated ids are dropped (a type may appear several
  * times, e.g. one per brand), bad settings fall back to defaults.
- * Nothing saved -> every visible widget in registry order.
+ * Default-on widgets missing from a saved layout are appended unless
+ * dismissed. Nothing saved -> every visible widget in registry order.
  */
 export function normalizeLayout(
   saved: unknown,
@@ -218,7 +224,28 @@ export function normalizeLayout(
       settings: settings.success ? settings.data : defaultSettings(type),
     });
   }
+
+  const dismissed = new Set(parsed.data.dismissed);
+  for (const type of widgetTypes) {
+    if (
+      "defaultOn" in definitions[type] &&
+      canSeeWidget(role, type) &&
+      !dismissed.has(type) &&
+      !widgets.some((widget) => widget.type === type)
+    ) {
+      widgets.push({ id: type, type, settings: defaultSettings(type) });
+    }
+  }
   return widgets;
+}
+
+/** Known widget types the user removed (see `dismissed` in the layout schema). */
+export function dismissedWidgets(saved: unknown): WidgetType[] {
+  const parsed = dashboardLayoutSchema.safeParse(saved);
+  if (!parsed.success) return [];
+  return parsed.data.dismissed.filter(
+    (type): type is WidgetType => type in definitions,
+  );
 }
 
 /** Widgets the role may add that are not on the dashboard yet. */

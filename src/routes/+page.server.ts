@@ -9,6 +9,7 @@ import {
   availableWidgets,
   DASHBOARD_LAYOUT_PREFERENCE,
   hasSalesSettings,
+  dismissedWidgets,
   normalizeLayout,
   widgetTypes,
   type WidgetDataMap,
@@ -36,10 +37,8 @@ export const load: PageServerLoad = async (event) => {
   event.depends("app:dashboard");
 
   const role = await getAuthenticatedUserRole(event);
-  const layout = normalizeLayout(
-    await getUserPreference(user.id, DASHBOARD_LAYOUT_PREFERENCE),
-    role,
-  );
+  const saved = await getUserPreference(user.id, DASHBOARD_LAYOUT_PREFERENCE);
+  const layout = normalizeLayout(saved, role);
   const ctx = { userId: user.id, role };
 
   const streamed: StreamedWidgets = {};
@@ -56,6 +55,7 @@ export const load: PageServerLoad = async (event) => {
 
   return {
     layout,
+    dismissed: dismissedWidgets(saved),
     available: availableWidgets(layout, role),
     salesBrands: canPickSalesBrand ? await listSalesBrands(ctx) : [],
     streamed,
