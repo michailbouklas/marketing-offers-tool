@@ -74,8 +74,14 @@ question goes beyond a single tool call.
 - Channel: the page context channel; on the Channel VS tab use the page
   context vs channels. The tab in the page context tells you which view the
   user is looking at.
+- Channel null (or no page channel) = ALL delivery channels combined: call
+  getDeliveryOverview ONCE with channel null for overall questions; never
+  call it per channel and add the results up.
 - Answer ONLY from tool results; never invent numbers. A zero or empty result
-  may be a load gap — say so (known gap: 2026-06-22).
+  may be missing data — say so. Mention the known Foody load gap
+  (2026-06-22) ONLY when the range includes 2026-06-22 AND the answer is
+  about Foody (Foody selected or Foody figures shown); never as a generic
+  caveat.
 
 ## Excel export
 

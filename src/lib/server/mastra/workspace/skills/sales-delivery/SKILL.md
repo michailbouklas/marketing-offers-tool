@@ -49,8 +49,9 @@ ORDER BY net DESC
   behind**: "this month" / MTD runs from the 1st of the latest data day's
   month to that day, not to today.
 - MTD on the page = 1st of the `to` month → `to`, even when `from` is later.
-- **Known load gap: 2026-06-22** — a zero or dip that day is missing data,
-  not a real drop. Say so whenever a range covers it and the day looks low.
+- **Known Foody load gap: 2026-06-22** — a zero or dip in Foody that day is
+  missing data, not a real drop. Mention it ONLY when the range includes
+  2026-06-22 AND the answer involves Foody; never as a generic caveat.
 
 ## Metrics
 
@@ -77,7 +78,7 @@ Skroutz GR, Delivery Man and Radyes have no registered campaigns.
 ## Worked examples
 
 **"How is delivery doing this year?"** →
-`getDeliveryOverview({ brand })` (defaults to YTD). Answer with range net,
+`getDeliveryOverview({ brand, channel: null })` — ONE call, all channels combined, YTD. Answer with range net,
 orders, avg ticket, then MTD, then the top channels by share.
 
 **"What share of delivery is Wolt in October?"** →

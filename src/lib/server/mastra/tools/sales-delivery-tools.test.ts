@@ -249,6 +249,33 @@ describe("getDeliveryOverview", () => {
       avgTicket: 25.11,
     });
   });
+
+  it("treats channel null (strict-schema 'all delivery') like omitted", async () => {
+    // OpenAI strict tool schemas send every key, so optional fields arrive as null.
+    const input = {
+      brand: "bk",
+      from: null,
+      to: null,
+      channel: null,
+      includeDaily: null,
+      topLocations: null,
+    };
+    expect(deliveryOverviewInputSchema.safeParse(input).success).toBe(true);
+
+    const gateway = fakeGateway();
+    const result = await run(getDeliveryOverview, input, scoped());
+    expect(gateway.getOverview).toHaveBeenCalledWith({
+      brand: "bk",
+      scopedBrands: ["bk", "kfc"],
+      from: null,
+      to: null,
+      channel: null,
+    });
+    expect(result.channel).toBe("all delivery channels");
+    expect(result.kpis.range.net).toBe(200);
+    expect(result.locations.rows).toHaveLength(10);
+    expect(result.daily).toBeNull();
+  });
 });
 
 describe("compareDeliveryChannels", () => {
@@ -278,6 +305,27 @@ describe("compareDeliveryChannels", () => {
       scoped(),
     );
     expect(result.note).toContain("top two");
+  });
+});
+
+describe("nullable optional inputs", () => {
+  it("accepts null for every optional field", () => {
+    expect(
+      compareDeliveryChannelsInputSchema.safeParse({
+        brand: "bk",
+        from: null,
+        to: null,
+        channels: null,
+      }).success,
+    ).toBe(true);
+    expect(
+      deliveryOfferValuesInputSchema.safeParse({
+        brand: "bk",
+        channel: "Wolt",
+        ...range,
+        limit: null,
+      }).success,
+    ).toBe(true);
   });
 });
 

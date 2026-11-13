@@ -150,14 +150,16 @@ const isoDateSchema = z
 
 const optionalRange = {
   from: isoDateSchema
+    .nullable()
     .optional()
     .describe(
-      "Start, YYYY-MM-DD. Omit for Jan 1 of the `to` year (page default).",
+      "Start, YYYY-MM-DD. Null or omit for Jan 1 of the `to` year (page default).",
     ),
   to: isoDateSchema
+    .nullable()
     .optional()
     .describe(
-      "End, YYYY-MM-DD. Omit for the latest loaded day (page default).",
+      "End, YYYY-MM-DD. Null or omit for the latest loaded day (page default).",
     ),
 };
 
@@ -165,8 +167,9 @@ const channelSchema = z
   .enum(DELIVERY_CHANNELS as [string, ...string[]])
   .describe(`Delivery channel: ${DELIVERY_CHANNELS.join(", ")}.`);
 
-const rangeRefine = <T extends { from?: string; to?: string }>(input: T) =>
-  !input.from || !input.to || input.from <= input.to;
+const rangeRefine = <T extends { from?: string | null; to?: string | null }>(
+  input: T,
+) => !input.from || !input.to || input.from <= input.to;
 const rangeMessage = { message: "`from` must be on or before `to`." };
 
 export const deliveryOverviewInputSchema = z
@@ -174,10 +177,14 @@ export const deliveryOverviewInputSchema = z
     brand: brandSchema,
     ...optionalRange,
     channel: channelSchema
+      .nullable()
       .optional()
-      .describe("One delivery channel; omit for all delivery channels."),
+      .describe(
+        "One delivery channel, or null for ALL delivery channels combined (the default; use it for overall delivery questions, never sum channels yourself).",
+      ),
     includeDaily: z
       .boolean()
+      .nullable()
       .default(false)
       .describe("Add the daily series (only when the user asks for days)."),
     topLocations: z
@@ -185,6 +192,7 @@ export const deliveryOverviewInputSchema = z
       .int()
       .min(1)
       .max(MAX_ROWS)
+      .nullable()
       .default(10)
       .describe(
         `Locations to list, biggest net first (1–${MAX_ROWS}, default 10).`,
@@ -199,8 +207,11 @@ export const compareDeliveryChannelsInputSchema = z
     channels: z
       .array(channelSchema)
       .length(2)
+      .nullable()
       .optional()
-      .describe("The two channels to compare; omit for the top two by net."),
+      .describe(
+        "The two channels to compare; null or omit for the top two by net.",
+      ),
   })
   .refine(rangeRefine, rangeMessage);
 
@@ -221,6 +232,7 @@ export const deliveryOfferValuesInputSchema = z
       .int()
       .min(1)
       .max(MAX_ROWS)
+      .nullable()
       .default(30)
       .describe(
         `Offers to list, biggest offer net first (1–${MAX_ROWS}, default 30).`,
