@@ -15,6 +15,7 @@
     result,
     editing,
     onsettings,
+    onduplicate,
     onremove,
     emptyMessage = "No brands are assigned to you.",
     children,
@@ -25,6 +26,8 @@
     editing: boolean;
     /** Omitted for widgets without settings. */
     onsettings?: () => void;
+    /** Omitted for widgets without settings (a copy could not differ). */
+    onduplicate?: () => void;
     onremove: () => void;
     emptyMessage?: string;
     children: Snippet<[T]>;
@@ -53,6 +56,10 @@
       <DropdownMenu.Content align="end">
         {#if onsettings}
           <DropdownMenu.Item onSelect={onsettings}>Settings</DropdownMenu.Item>
+        {/if}
+        {#if onduplicate}
+          <DropdownMenu.Item onSelect={onduplicate}>Duplicate</DropdownMenu.Item
+          >
         {/if}
         <DropdownMenu.Item onSelect={onremove}>Remove</DropdownMenu.Item>
       </DropdownMenu.Content>
