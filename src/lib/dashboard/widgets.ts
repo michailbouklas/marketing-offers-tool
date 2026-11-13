@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { hasAnyRole, salesRoles, type UserRole } from "$lib/auth/roles";
+import {
+  hasAnyRole,
+  salesRoles,
+  userRoles,
+  type UserRole,
+} from "$lib/auth/roles";
 import type { GapListItem } from "$lib/services/offers-data-quality";
 import {
   shiftDays,
@@ -8,6 +13,7 @@ import {
 } from "$lib/services/sales-dashboard";
 import type { DeliveryTotals } from "$lib/services/sales-delivery";
 import type { OfferVerdict } from "$lib/services/sales-offers";
+import type { ReleaseDetail } from "$lib/services/releases/releases";
 
 /**
  * Home dashboard widget registry (browser-safe). Each widget declares who may
@@ -79,6 +85,8 @@ export type WidgetDataMap = {
   "sales-summary": SalesWidgetData | null;
   "delivery-summary": DeliveryWidgetData | null;
   "offers-summary": OffersWidgetData | null;
+  /** Null = no release notes yet. */
+  "latest-release": ReleaseDetail | null;
 };
 
 export type WidgetResult<T> =
@@ -115,6 +123,12 @@ const definitions = {
     description: "Offer value verdicts and top offers.",
     roles: salesRoles,
     settings: salesSettings,
+  },
+  "latest-release": {
+    title: "Latest release",
+    description: "What changed in the app most recently.",
+    roles: [...userRoles],
+    settings: noSettings,
   },
 } satisfies Record<
   string,

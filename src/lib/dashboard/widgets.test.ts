@@ -5,15 +5,19 @@ const ids = (layout: { id: string }[]) => layout.map((widget) => widget.id);
 
 describe("normalizeLayout", () => {
   it("defaults to every widget the role may see", () => {
-    expect(ids(normalizeLayout(null, "offerEditor"))).toEqual(["open-gaps"]);
+    expect(ids(normalizeLayout(null, "offerEditor"))).toEqual([
+      "open-gaps",
+      "latest-release",
+    ]);
     expect(ids(normalizeLayout(null, "approver,analyticsViewer"))).toEqual([
       "awaiting-approval",
       "sales-summary",
       "delivery-summary",
       "offers-summary",
+      "latest-release",
     ]);
-    expect(normalizeLayout(null, "superUser")).toHaveLength(5);
-    expect(normalizeLayout(null, "user")).toEqual([]);
+    expect(normalizeLayout(null, "superUser")).toHaveLength(6);
+    expect(ids(normalizeLayout(null, "user"))).toEqual(["latest-release"]);
   });
 
   it("keeps saved order and drops unknown, forbidden and repeated widgets", () => {
@@ -63,7 +67,12 @@ describe("normalizeLayout", () => {
           "analyticsViewer",
         ),
       ),
-    ).toEqual(["sales-summary", "delivery-summary", "offers-summary"]);
+    ).toEqual([
+      "sales-summary",
+      "delivery-summary",
+      "offers-summary",
+      "latest-release",
+    ]);
   });
 
   it("keeps an emptied dashboard empty", () => {
@@ -110,6 +119,7 @@ describe("normalizeLayout", () => {
     expect(availableWidgets(layout, "analyticsViewer")).toEqual([
       "delivery-summary",
       "offers-summary",
+      "latest-release",
     ]);
   });
 });

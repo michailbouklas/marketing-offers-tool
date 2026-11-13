@@ -1,4 +1,4 @@
-<script lang="ts" generics="T extends { href: string }">
+<script lang="ts" generics="T extends object">
   import type { Snippet } from "svelte";
   import * as Card from "$lib/components/ui/card/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
@@ -82,13 +82,16 @@
       {:else if loaded.data === null}
         <p class="text-muted-foreground text-sm">{emptyMessage}</p>
       {:else}
+        {@const href = "href" in loaded.data ? String(loaded.data.href) : null}
         {@render children(loaded.data)}
-        <div class="mt-3 flex justify-end">
-          <Button href={loaded.data.href} variant="link" size="sm" class="px-0">
-            Show all
-            <ArrowRightIcon class="size-4" />
-          </Button>
-        </div>
+        {#if href}
+          <div class="mt-3 flex justify-end">
+            <Button {href} variant="link" size="sm" class="px-0">
+              Show all
+              <ArrowRightIcon class="size-4" />
+            </Button>
+          </div>
+        {/if}
       {/if}
     {/await}
   </Card.Content>
