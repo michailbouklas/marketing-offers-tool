@@ -2,6 +2,7 @@ import type {
   ForecastPageContext,
   GoogleAnalyticsPageContext,
   GoogleAnalyticsScopeEntry,
+  SalesPageContext,
 } from "$lib/server/mastra/chat-registry";
 import { isForecastHorizon } from "$lib/services/forecasts/forecast-types";
 import { googleAnalyticsRangeOptions } from "$lib/services/google-analytics/google-analytics";
@@ -153,4 +154,70 @@ export function resolveGoogleAnalyticsPageContext(
     propertyRowId: propertyEntry?.propertyRowId ?? null,
     range,
   };
+}
+
+/** Page filters a sales page assistant may receive, besides brands/dates. */
+export const SALES_PAGE_FILTER_KEYS = [
+  "channel",
+  "channels",
+  "locations",
+  "stores",
+  "cities",
+  "weekdays",
+  "tab",
+  "vs",
+] as const;
+export const SALES_PAGE_MAX_VALUES = 20;
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Single value or array of strings/numbers -> trimmed, prompt-safe strings. */
+function pageValues(value: unknown): string[] {
+  const list = Array.isArray(value) ? value : [value];
+  return list
+    .filter(
+      (entry): entry is string | number =>
+        typeof entry === "string" ||
+        (typeof entry === "number" && Number.isFinite(entry)),
+    )
+    .map((entry) =>
+      String(entry)
+        .replace(/[\u0000-\u001f`]/g, " ")
+        .trim(),
+    )
+    .filter((entry) => entry.length > 0 && entry.length <= MAX_ALIAS_LENGTH)
+    .slice(0, SALES_PAGE_MAX_VALUES);
+}
+
+/**
+ * Normalises the `context` the sales page widgets send (/sales/offers,
+ * /sales/consolidated-sales-report, /sales/delivery) into a
+ * {@link SalesPageContext}. Hints only, so bad values are dropped:
+ * brands outside the scope, non-ISO dates, unknown keys, long strings.
+ *
+ * Returns null when the payload is not an object at all.
+ */
+export function resolveSalesPageContext(
+  raw: unknown,
+  scopedAliases: readonly string[],
+): SalesPageContext | null {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+    return null;
+  }
+  const input = raw as Record<string, unknown>;
+  const allowed = new Set(
+    scopedAliases.map((alias) => alias.trim().toLowerCase()),
+  );
+  const brands = [
+    ...new Set(pageValues(input.brands).map((brand) => brand.toLowerCase())),
+  ].filter((brand) => allowed.has(brand));
+  const date = (value: unknown) =>
+    typeof value === "string" && ISO_DATE.test(value) ? value : null;
+
+  const filters: Record<string, string[]> = {};
+  for (const key of SALES_PAGE_FILTER_KEYS) {
+    const values = pageValues(input[key]);
+    if (values.length > 0) filters[key] = values;
+  }
+
+  return { brands, from: date(input.from), to: date(input.to), filters };
 }

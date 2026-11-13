@@ -266,6 +266,26 @@ export const salesAgent = new Agent({
   available data date) → Excel export etiquette → output format (GFM tables,
   EUR formatting, lead with the answer, don't show SQL unless asked).
 
+### 5.0 Page assistants with typed tools (sales pages)
+
+`sales-offers-agent` (/sales/offers), `consolidated-sales-agent`
+(/sales/consolidated-sales-report) and `sales-delivery-agent`
+(/sales/delivery) answer from typed tools that wrap the page's own services
+and pure builders, so their numbers equal the page. Pattern to copy:
+
+- Gateway seam per assistant: `tools/<topic>-gateway.ts` (interface only)
+  - `src/lib/server/<topic>-gateway.server.ts` (calls `$lib` services),
+    installed from `hooks.server.ts`; tools fail closed without it.
+- Every tool re-checks the brand against `BRAND_SCOPE_RUNTIME_KEY` itself
+  (FORBIDDEN, gateway never called) — not only the prompt.
+- Make every optional tool input `.nullable().optional()`: under OpenAI
+  strict tool schemas an optional enum has no null option, so the model is
+  forced to pick a value and loops one call per value (seen live: 10–12
+  calls for one question before the fix).
+- Page filters arrive as `SalesPageContext` (`resolveSalesPageContext`,
+  rendered by `agents/sales-page-context-section.ts`); `querySalesSql`
+  stays as the fallback for questions the typed tools do not cover.
+
 ### 5.1 Chat registry (`chat-registry.ts`)
 
 The server-side allowlist that maps `agentId` → access policy; the API only
@@ -282,6 +302,8 @@ export const chatAgents: Record<string, ChatAgentConfig> = {
   "competition-agent": { permissions: { competition: ["view"] } },
   "offers-data-quality-agent": { brandScoped: true },
   "sales-agent": { permissions: { sales: ["view"] }, brandScoped: true },
+  // …plus forecasts, google-analytics, management-accounts and the three
+  // sales page assistants (sales:view, brandScoped, pageContext).
 };
 export const BRAND_SCOPE_RUNTIME_KEY = "allowedBrandAliases";
 export const BRAND_SCOPE_NAMES_RUNTIME_KEY = "allowedBrandNames";

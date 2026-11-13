@@ -21,6 +21,9 @@ import { invoicesAgent } from "./agents/invoices-agent";
 import { managementAccountsAgent } from "./agents/management-accounts-agent";
 import { offersDataQualityAgent } from "./agents/offers-data-quality-agent";
 import { salesAgent } from "./agents/sales-agent";
+import { consolidatedSalesAgent } from "./agents/consolidated-sales-agent";
+import { salesDeliveryAgent } from "./agents/sales-delivery-agent";
+import { salesOffersAgent } from "./agents/sales-offers-agent";
 import { getAiChatEnv, getClickhouseEnv, getDatabaseUrl } from "./env";
 import {
   IMAGE_COMPLIANCE_WORKFLOW_ID,
@@ -103,6 +106,9 @@ function createMastra(): Mastra {
       "google-analytics-agent": googleAnalyticsAgent,
       "image-compliance-agent": imageComplianceAgent,
       "management-accounts-agent": managementAccountsAgent,
+      "sales-offers-agent": salesOffersAgent,
+      "consolidated-sales-agent": consolidatedSalesAgent,
+      "sales-delivery-agent": salesDeliveryAgent,
     },
     workflows: {
       [IMAGE_COMPLIANCE_WORKFLOW_ID]: imageComplianceWorkflow,
