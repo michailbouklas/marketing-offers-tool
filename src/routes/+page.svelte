@@ -31,6 +31,7 @@
 
   // Local copy the drag zone can reorder; reset whenever the server layout reloads.
   let widgets = $derived(data.layout);
+  let dismissed = $derived(data.dismissed);
   let editing = $state(false);
   /** Widget being configured; `after` set = a duplicate that is inserted only on save. */
   let settingsFor = $state<{ widget: DashboardWidget; after?: string } | null>(
@@ -45,6 +46,7 @@
       // Strip svelte-dnd-action's shadow-item marker.
       body: JSON.stringify({
         widgets: next.map(({ id, type, settings }) => ({ id, type, settings })),
+        dismissed,
       }),
     }).catch(() => null);
     if (!response?.ok) {
@@ -65,6 +67,7 @@
   }
 
   function add(type: WidgetType) {
+    dismissed = dismissed.filter((t) => t !== type);
     void save(
       [...widgets, { id: newWidgetId(type), type, settings: {} }],
       true,
@@ -72,7 +75,12 @@
   }
 
   function remove(id: string) {
+    const type = widgets.find((widget) => widget.id === id)?.type;
     widgets = widgets.filter((widget) => widget.id !== id);
+    // Removing the last copy dismisses the type, so default-on widgets stay off.
+    if (type && !widgets.some((widget) => widget.type === type)) {
+      dismissed = [...dismissed, type];
+    }
     void save(widgets, true);
   }
 
