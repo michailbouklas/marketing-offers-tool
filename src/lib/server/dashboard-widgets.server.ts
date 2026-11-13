@@ -16,6 +16,10 @@ import { getDeliveryDayRows } from "$lib/services/sales-delivery.server";
 import type { OfferVerdict } from "$lib/services/sales-offers";
 import { getOfferValuesForRange } from "$lib/services/sales-offers.server";
 import {
+  getLatestReleaseId,
+  getReleaseDetail,
+} from "$lib/services/releases/releases.server";
+import {
   resolvePeriod,
   type DashboardWidget,
   type DeliveryWidgetData,
@@ -189,6 +193,10 @@ const loaders: {
   "sales-summary": (ctx, s) => salesWidget(ctx, s as SalesWidgetSettings),
   "delivery-summary": (ctx, s) => deliveryWidget(ctx, s as SalesWidgetSettings),
   "offers-summary": (ctx, s) => offersWidget(ctx, s as SalesWidgetSettings),
+  "latest-release": async () => {
+    const id = await getLatestReleaseId();
+    return id === null ? null : getReleaseDetail(id);
+  },
 };
 
 /**

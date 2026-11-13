@@ -11,6 +11,7 @@
   import SalesSummary from "$lib/components/dashboard/widgets/sales-summary.svelte";
   import DeliverySummary from "$lib/components/dashboard/widgets/delivery-summary.svelte";
   import OffersSummary from "$lib/components/dashboard/widgets/offers-summary.svelte";
+  import LatestRelease from "$lib/components/dashboard/widgets/latest-release.svelte";
   import PlusIcon from "@lucide/svelte/icons/plus";
   import {
     newWidgetId,
@@ -240,6 +241,19 @@
           >
             {#snippet children(delivery)}
               <DeliverySummary data={delivery} />
+            {/snippet}
+          </WidgetFrame>
+        {:else if widget.type === "latest-release"}
+          <WidgetFrame
+            title={def.title}
+            description={def.description}
+            result={streamOf(widget, widget.type)}
+            {editing}
+            emptyMessage="No release notes yet."
+            onremove={() => remove(widget.id)}
+          >
+            {#snippet children(release)}
+              <LatestRelease {release} />
             {/snippet}
           </WidgetFrame>
         {:else if widget.type === "offers-summary"}
