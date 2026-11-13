@@ -73,9 +73,13 @@ tool marks the winner per metric (`a` = first code, `b` = second).
 
 ## Question → tool
 
+Optional filters take `null` for "not used" (verdict null = all verdicts). Never
+loop over verdicts or offers: one call with `codes` returns up to 20 offers.
+
 | Question                                    | Tool                                                                        |
 | ------------------------------------------- | --------------------------------------------------------------------------- |
 | Which offers lose money / are below target? | getOfferValues with `verdict`                                               |
+| Units / net / verdict of offers A and B     | ONE getOfferValues call with `codes: [A, B]`, `verdict: null`               |
 | Top 10 offers by contribution this summer   | getOfferValues with from/to, `sortBy: contribution`, `limit: 10`            |
 | Why is X below target?                      | compareOffers with one code (returns the reason)                            |
 | X vs Y                                      | compareOffers with both codes                                               |

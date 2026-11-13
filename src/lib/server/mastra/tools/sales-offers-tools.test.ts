@@ -326,6 +326,39 @@ describe("getOfferValues", () => {
     expect(half).toMatchObject({ ok: false, code: "INVALID_RANGE" });
   });
 
+  it("null filters (strict tool schemas) mean 'no filter' and codes fetch several offers in one call", async () => {
+    const gateway = fakeGateway();
+    const result = await run(
+      getOfferValues.execute!(
+        valuesInput({
+          from: null,
+          to: null,
+          channels: null,
+          locations: null,
+          verdict: null,
+          search: null,
+          sortBy: null,
+          ascending: null,
+          limit: null,
+          codes: ["of2", "OF1", "NOPE"],
+        }),
+        ctx(["phcy"]),
+      ),
+    );
+    expect(gateway.getCachedOfferValues).toHaveBeenCalledTimes(1);
+    expect(gateway.getLiveOfferValues).not.toHaveBeenCalled();
+    expect(result.ok).toBe(true);
+    // Both verdicts (below_target + loss) in one call, default contribution sort.
+    expect(result.rows.map((r: { code: string }) => r.code)).toEqual([
+      "OF1",
+      "OF2",
+    ]);
+    expect(result.missingCodes).toEqual(["nope"]);
+    expect(() =>
+      valuesInput({ codes: Array.from({ length: 21 }, (_, i) => `c${i}`) }),
+    ).toThrow();
+  });
+
   it("an empty cache is reported, not rebuilt", async () => {
     fakeGateway({ getCachedOfferValues: vi.fn(async () => ok(null)) });
     const result = await run(

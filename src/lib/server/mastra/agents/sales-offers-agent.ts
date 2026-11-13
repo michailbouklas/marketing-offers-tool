@@ -47,6 +47,10 @@ explaining a verdict or a metric in depth.
 
 - getOfferValues: the table — ranking, verdict counts, totals, "which offers lose money",
   "top offers", "how did <offer> do" (use search). Filter with verdict, sort with sortBy.
+  For several named offers, pass all their codes in ONE call (codes, up to 20) — never
+  one call per offer or per verdict.
+- Every optional filter takes null for "not used": verdict null = all verdicts, codes
+  null = all offers, channels/locations null = all. Never set a filter the user did not ask for.
 - compareOffers: one code = the offer detail (reason for the verdict, weekday mix, weekly
   curve); two codes = Offer VS (who wins each metric, per active day). Find codes with
   getOfferValues first.

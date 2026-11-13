@@ -101,8 +101,8 @@ const fromGateway = (error: ForecastGatewayError): ToolFailure =>
 
 /** Both ends or neither; reversed ends swapped (parseOfferDateRange). */
 export function toRange(
-  from: string | undefined,
-  to: string | undefined,
+  from: string | null | undefined,
+  to: string | null | undefined,
 ): { ok: true; range: OfferDateRange | null } | ToolFailure {
   if (!from && !to) return { ok: true, range: null };
   if (!from || !to) {
@@ -132,9 +132,11 @@ async function resolveFilters(
   gateway: SalesOffersGateway,
   brand: string,
   range: OfferDateRange | null,
-  channels: string[] = [],
-  locations: number[] = [],
+  channels: string[] | null = [],
+  locations: number[] | null = [],
 ): Promise<{ ok: true; filters: OfferFilters } | ToolFailure> {
+  channels ??= [];
+  locations ??= [];
   if (channels.length === 0 && locations.length === 0) {
     return { ok: true, filters: { range, channels: [], locations: [] } };
   }
@@ -270,52 +272,85 @@ const isoDate = z
   .string()
   .refine(isIsoDate, "Use a valid YYYY-MM-DD date")
   .describe("YYYY-MM-DD");
+// Every optional input is also nullable: OpenAI strict tool schemas make the
+// model send each key, and null is how it says "no filter / default".
 const channelsSchema = z
   .array(z.string().trim().min(1).max(100))
   .max(20)
+  .nullable()
   .optional()
   .describe(
-    "Sales channel names (e.g. 'Wolt'); omit for all. Needs from/to. Names from listOfferFilterOptions.",
+    "Sales channel names (e.g. 'Wolt'); null = all channels. Needs from/to. Names from listOfferFilterOptions.",
   );
 const locationsSchema = z
   .array(z.number().int().min(1).max(32_767))
   .max(200)
+  .nullable()
   .optional()
   .describe(
-    "POS location ids; omit for all. Needs from/to. Ids from listOfferFilterOptions.",
+    "POS location ids; null = all locations. Needs from/to. Ids from listOfferFilterOptions.",
   );
 
 const filterShape = {
   brand: brandSchema,
   from: isoDate
+    .nullable()
     .optional()
-    .describe("Range start YYYY-MM-DD; omit from AND to for all time."),
-  to: isoDate.optional().describe("Range end YYYY-MM-DD (inclusive)."),
+    .describe("Range start YYYY-MM-DD; null from AND to = all time."),
+  to: isoDate
+    .nullable()
+    .optional()
+    .describe("Range end YYYY-MM-DD (inclusive); null = all time."),
   channels: channelsSchema,
   locations: locationsSchema,
 };
 
+export const MAX_CODES = 20;
+
 export const getOfferValuesInputSchema = z.object({
   ...filterShape,
+  codes: z
+    .array(z.string().trim().min(1).max(64))
+    .max(MAX_CODES)
+    .nullable()
+    .optional()
+    .describe(
+      `Exact offer codes to return (up to ${MAX_CODES}) — use this to fetch several named offers in ONE call. null = all offers.`,
+    ),
   verdict: z
     .enum(VERDICTS)
+    .nullable()
     .optional()
-    .describe("Only offers with this verdict (the page's verdict badges)."),
+    .describe(
+      "Only offers with this verdict (the page's verdict badges). null = all verdicts — use null unless the user asks for one verdict.",
+    ),
   search: z
     .string()
     .trim()
     .max(80)
+    .nullable()
     .optional()
-    .describe("Case-insensitive substring of the offer name or code."),
+    .describe(
+      "Case-insensitive substring of the offer name or code; null = no search.",
+    ),
   sortBy: z
     .enum(SORT_KEYS)
-    .default("contribution")
-    .describe("Sort column (default contribution, like the page)."),
+    .nullable()
+    .optional()
+    .describe("Sort column; null = contribution (like the page)."),
   ascending: z
     .boolean()
-    .default(false)
-    .describe("Sort ascending (default false = biggest first)."),
-  limit: z.number().int().min(1).max(MAX_ROWS).default(DEFAULT_ROWS),
+    .nullable()
+    .optional()
+    .describe("Sort ascending; null = false (biggest first)."),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_ROWS)
+    .nullable()
+    .optional()
+    .describe(`Rows to return; null = ${DEFAULT_ROWS}.`),
 });
 
 export const compareOffersInputSchema = z.object({
@@ -341,22 +376,36 @@ const requiredRangeShape = {
 
 export const getOfferSlotSalesInputSchema = z.object({
   ...requiredRangeShape,
-  date: isoDate.optional().describe("One business day (instead of weekday)."),
+  date: isoDate
+    .nullable()
+    .optional()
+    .describe("One business day (instead of weekday); else null."),
   weekday: z
     .number()
     .int()
     .min(1)
     .max(7)
+    .nullable()
     .optional()
-    .describe("ISO weekday 1 = Monday … 7 = Sunday."),
+    .describe("ISO weekday 1 = Monday … 7 = Sunday; null when date is set."),
   hour: z
     .number()
     .int()
     .min(0)
     .max(23)
+    .nullable()
     .optional()
-    .describe("Order hour 0-23 (local Cyprus time); only with weekday."),
-  limit: z.number().int().min(1).max(MAX_ROWS).default(20),
+    .describe(
+      "Order hour 0-23 (local Cyprus time), only with weekday; null = whole day.",
+    ),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(MAX_ROWS)
+    .nullable()
+    .optional()
+    .describe("Rows to return; null = 20."),
 });
 
 // ---------------------------------------------------------------------------
@@ -366,10 +415,10 @@ export const getOfferSlotSalesInputSchema = z.object({
 async function prepare(
   input: {
     brand: string;
-    from?: string;
-    to?: string;
-    channels?: string[];
-    locations?: number[];
+    from?: string | null;
+    to?: string | null;
+    channels?: string[] | null;
+    locations?: number[] | null;
   },
   requestContext: RequestContextLike | undefined,
 ): Promise<
@@ -432,8 +481,8 @@ export const listOfferFilterOptions = createTool({
     "tools need.",
   inputSchema: z.object({
     brand: brandSchema,
-    from: isoDate.optional(),
-    to: isoDate.optional(),
+    from: isoDate.nullable().optional().describe("null = all history."),
+    to: isoDate.nullable().optional().describe("null = all history."),
   }),
   execute: async ({ brand, from, to }, context) => {
     const authorized = authorizeBrand(
@@ -469,7 +518,9 @@ export const getOfferValues = createTool({
     "no_target), plus a summary (offers per verdict, totals). No from/to and " +
     "no channel/location = all time from the nightly cache (instant); any " +
     "filter = live, needs from/to. Use it for 'which offers lose money', " +
-    "'top offers by contribution', 'how did <offer> do'.",
+    "'top offers by contribution', 'how did <offer> do'. Pass null for every " +
+    "filter you do not need (verdict null = all verdicts). For several named " +
+    "offers, pass all their codes in ONE call via codes.",
   inputSchema: getOfferValuesInputSchema,
   execute: async (input, context) => {
     const ready = await prepare(
@@ -492,17 +543,27 @@ export const getOfferValues = createTool({
     const sum = (pick: (offer: OfferValue) => number | null) =>
       r2(offers.reduce((total, offer) => total + (pick(offer) ?? 0), 0));
     const query = input.search?.toLowerCase();
+    const codes = input.codes?.length
+      ? new Set(input.codes.map((code) => code.toLowerCase()))
+      : null;
+    const limit = input.limit ?? DEFAULT_ROWS;
     const matching = sortOffers(
       offers.filter(
         (offer) =>
+          (!codes || codes.has(offer.code.toLowerCase())) &&
           (!input.verdict || offer.verdict === input.verdict) &&
           (!query ||
             offer.name.toLowerCase().includes(query) ||
             offer.code.toLowerCase().includes(query)),
       ),
-      input.sortBy,
+      input.sortBy ?? "contribution",
       !input.ascending,
     );
+    const missingCodes = codes
+      ? [...codes].filter(
+          (code) => !offers.some((offer) => offer.code.toLowerCase() === code),
+        )
+      : [];
 
     return {
       ok: true as const,
@@ -530,9 +591,11 @@ export const getOfferValues = createTool({
         foodCost: sum((offer) => offer.foodCost),
         contribution: sum((offer) => offer.contribution),
       },
+      // summary covers every offer of the brand under these filters; rows only the matching ones.
       matching: matching.length,
-      truncated: matching.length > input.limit,
-      rows: matching.slice(0, input.limit).map(compactOffer),
+      ...(codes ? { missingCodes } : {}),
+      truncated: matching.length > limit,
+      rows: matching.slice(0, limit).map(compactOffer),
     };
   },
 });
@@ -679,10 +742,9 @@ export const getOfferSlotSales = createTool({
     "or 'which offers did best on 2026-10-03'.",
   inputSchema: getOfferSlotSalesInputSchema,
   execute: async (input, context) => {
-    if (
-      !input.date === !input.weekday ||
-      (input.date && input.hour !== undefined)
-    ) {
+    const hour = input.hour ?? undefined;
+    const limit = input.limit ?? 20;
+    if (!input.date === !input.weekday || (input.date && hour !== undefined)) {
       return fail(
         "INVALID_SLOT",
         "Pass either date, or weekday (optionally with hour) — not both.",
@@ -695,9 +757,10 @@ export const getOfferSlotSales = createTool({
     if (!ready.ok) return ready;
     const { gateway, brand, filters } = ready;
 
+    // The service treats only undefined as "no hour": never pass null down.
     const slot = input.date
       ? { date: input.date }
-      : { weekday: input.weekday, hour: input.hour };
+      : { weekday: input.weekday ?? undefined, hour };
     const outcome = await gateway.getOfferSlotSales(
       brand,
       { ...filters, range: filters.range! },
@@ -710,8 +773,8 @@ export const getOfferSlotSales = createTool({
       filters: describeFilters(brand, filters),
       slot,
       offers: outcome.value.length,
-      truncated: outcome.value.length > input.limit,
-      rows: outcome.value.slice(0, input.limit).map((row) => ({
+      truncated: outcome.value.length > limit,
+      rows: outcome.value.slice(0, limit).map((row) => ({
         code: row.code,
         name: row.name,
         units: r2(row.units),
