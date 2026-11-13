@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto, invalidateAll } from "$app/navigation";
   import { page } from "$app/state";
+  import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import { Badge, badgeVariants } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import DateRangeFilter from "$lib/components/date-range-filter.svelte";
@@ -692,5 +693,21 @@
         </Card.Root>
       {/await}
     {/if}
+
+    <!-- Page filters are defaults only; brand scope is enforced server-side. -->
+    <ChatWidget
+      agentId="sales-offers-agent"
+      title="Offers Value Assistant"
+      greeting="Hi! Ask me which offers make or lose money, compare two offers, or when an offer sells best."
+      placeholder="e.g. Which offers lost money this month?"
+      context={{
+        brands: [brand.alias],
+        from: range?.from ?? null,
+        to: range?.to ?? null,
+        channels,
+        locations,
+        tab: page.url.searchParams.get("tab") ?? "table",
+      }}
+    />
   {/if}
 </main>
