@@ -231,7 +231,7 @@ Before every new task, use the SymDex MCP server to reindex the project so the s
 - `src/routes/offers-data-quality/[id]/+page.server.ts`: Server load for the pricing form route, including gap details, lookups, and pre-populated form state.
 - `src/routes/admin/pending-submissions/+page.server.ts`: Server load for the admin-only pending submissions queue, including staged values plus current `dim_offers` comparison data for dialog review.
 - `src/routes/admin/dim-offers/+page.server.ts`: Server load for the admin-only `dim_offers` browser, including active brand filter options and paginated ClickHouse rows.
-- `src/lib/services/home-offer-widgets.ts`: Builds the home page dashboard widget data for active offers, offers expiring exactly two days out, and recently expired offers using Prisma queries and compact previews.
+- `src/lib/dashboard/widgets.ts`: Browser-safe home dashboard widget registry (title, roles, Zod settings per widget), layout normalisation against the user's roles, and sales period resolution. Layout lives in `user.meta.preferences["home.dashboard"]`, saved via `PUT/DELETE /api/dashboard/layout`; per-widget server loaders are in `src/lib/server/dashboard-widgets.server.ts` and stream from `src/routes/+page.server.ts`.
 - `src/lib/services/user-editor-form.ts`: Defines the Zod + superforms schemas and default value mappers for the admin users create/edit dialogs.
 - `src/lib/services/transport-security.ts`: Browser-safe helper for detecting insecure HTTP contexts and blocking password submissions unless the app is running on HTTPS or loopback localhost.
 - `src/lib/services/users.ts`: Shared admin users types for browser-safe imports, including the admin users table row shape.

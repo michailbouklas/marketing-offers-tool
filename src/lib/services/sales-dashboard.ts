@@ -92,7 +92,7 @@ export function isIsoDate(value: string | null | undefined): value is string {
   );
 }
 
-function shiftDays(iso: string, days: number): string {
+export function shiftDays(iso: string, days: number): string {
   return new Date(Date.parse(`${iso}T00:00:00Z`) + days * DAY_MS)
     .toISOString()
     .slice(0, 10);
