@@ -214,6 +214,7 @@ describe("getDeliveryOverview", () => {
     );
     expect(gateway.getOverview).toHaveBeenCalledWith({
       brand: "bk",
+      scopedBrands: ["bk", "kfc"],
       from: null,
       to: null,
       channel: null,
@@ -308,6 +309,7 @@ describe("getDeliveryOfferValues", () => {
     );
     expect(gateway.getOfferValues).toHaveBeenCalledWith({
       brand: "bk",
+      scopedBrands: ["bk", "kfc"],
       channel: "Wolt",
       ...range,
     });

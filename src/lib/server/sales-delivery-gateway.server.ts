@@ -7,6 +7,7 @@ import {
   type SalesDeliveryGateway,
 } from "$lib/server/mastra/tools/sales-delivery-gateway";
 import { resolveSalesDashboardFilters } from "$lib/services/sales-dashboard";
+import { getLatestSalesDay } from "$lib/services/sales-dashboard.server";
 import {
   buildChannelVs,
   buildDeliveryDashboard,
@@ -20,30 +21,15 @@ import {
 } from "$lib/services/sales-delivery.server";
 import { getOfferValuesForRange } from "$lib/services/sales-offers.server";
 
-const DAY_MS = 86_400_000;
-const isoDaysAgo = (days: number) =>
-  new Date(Date.now() - days * DAY_MS).toISOString().slice(0, 10);
-
 /**
- * Latest loaded delivery day of the brand in the last 60 days (the warehouse
- * lags ~1 day). shortcut: the page anchors on the latest day of ANY channel
- * (private getLatestSalesDay); export it from sales-dashboard.server.ts if
- * the two ever disagree.
+ * Same range rules as /sales/delivery/+layout.server.ts: missing `to` = the
+ * latest loaded day over ALL the user's scoped brands (resolveSalesDashboardScope).
  */
-async function latestDeliveryDay(brand: string): Promise<string> {
-  const rows = await getDeliveryDayRows([brand], isoDaysAgo(60), isoDaysAgo(0));
-  return (
-    rows.reduce((max, row) => (row.day > max ? row.day : max), "") ||
-    isoDaysAgo(1)
-  );
-}
-
-/** Same range rules as /sales/delivery/+layout.server.ts. */
 async function resolveRange(input: DeliveryRangeInput): Promise<DeliveryRange> {
   const params = new URLSearchParams();
   if (input.from) params.set("from", input.from);
   if (input.to) params.set("to", input.to);
-  const latest = input.to ?? (await latestDeliveryDay(input.brand));
+  const latest = input.to ?? (await getLatestSalesDay(input.scopedBrands));
   const filters = resolveSalesDashboardFilters(params, [input.brand], latest);
   // Year view by default (the shared resolver defaults 30 days).
   if (!input.from) filters.from = `${filters.to.slice(0, 4)}-01-01`;

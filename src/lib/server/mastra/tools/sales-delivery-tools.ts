@@ -47,7 +47,7 @@ export type RequestContextLike = { get(key: string): unknown };
 export function authorizeBrand(
   brand: string,
   requestContext: RequestContextLike | undefined,
-): { ok: true; brand: string } | ToolFailure {
+): { ok: true; brand: string; scope: string[] } | ToolFailure {
   const raw = requestContext?.get(BRAND_SCOPE_RUNTIME_KEY);
   if (!Array.isArray(raw)) {
     return fail(
@@ -57,18 +57,17 @@ export function authorizeBrand(
     );
   }
   const wanted = brand.trim().toLowerCase();
-  const allowed = raw.some(
-    (alias) =>
-      typeof alias === "string" && alias.trim().toLowerCase() === wanted,
-  );
-  if (!allowed) {
+  const scope = raw
+    .filter((alias): alias is string => typeof alias === "string")
+    .map((alias) => alias.trim().toLowerCase());
+  if (!scope.includes(wanted)) {
     return fail(
       "FORBIDDEN",
       `The brand "${brand}" is not among the user's assigned brands. ` +
         `Do not retry with another alias. Reply exactly: ${REFUSAL_SENTENCE}`,
     );
   }
-  return { ok: true, brand: wanted };
+  return { ok: true, brand: wanted, scope };
 }
 
 function requireGateway():
@@ -101,6 +100,7 @@ function access(brand: string, requestContext: RequestContextLike | undefined) {
   return {
     ok: true as const,
     brand: authorized.brand,
+    scopedBrands: authorized.scope,
     gateway: gateway.gateway,
   };
 }
@@ -248,6 +248,7 @@ export const getDeliveryOverview = createTool({
 
     const outcome = await ready.gateway.getOverview({
       brand: ready.brand,
+      scopedBrands: ready.scopedBrands,
       from: input.from ?? null,
       to: input.to ?? null,
       channel: input.channel ?? null,
@@ -314,6 +315,7 @@ export const compareDeliveryChannels = createTool({
     const requested = input.channels ?? [];
     const outcome = await ready.gateway.compareChannels({
       brand: ready.brand,
+      scopedBrands: ready.scopedBrands,
       from: input.from ?? null,
       to: input.to ?? null,
       channels: requested,
@@ -373,6 +375,7 @@ export const getDeliveryCampaigns = createTool({
 
     const outcome = await ready.gateway.getCampaigns({
       brand: ready.brand,
+      scopedBrands: ready.scopedBrands,
       from: input.from ?? null,
       to: input.to ?? null,
     });
@@ -409,6 +412,7 @@ export const getDeliveryOfferValues = createTool({
 
     const outcome = await ready.gateway.getOfferValues({
       brand: ready.brand,
+      scopedBrands: ready.scopedBrands,
       from: input.from,
       to: input.to,
       channel: input.channel,

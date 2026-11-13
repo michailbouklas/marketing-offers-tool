@@ -23,6 +23,8 @@ export type DeliveryRange = { from: string; to: string };
 export type DeliveryRangeInput = {
   /** Lowercase brand alias, already authorised by the tool. */
   brand: string;
+  /** Every alias in the user's scope: the page's default `to` spans them all. */
+  scopedBrands: string[];
   from: string | null;
   to: string | null;
 };
