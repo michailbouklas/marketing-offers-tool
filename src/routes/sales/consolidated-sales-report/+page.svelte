@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
+  import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import DateRangeFilter from "$lib/components/date-range-filter.svelte";
   import MultiSelectFilter from "$lib/components/sales/multi-select-filter.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
@@ -293,5 +294,23 @@
         {/if}
       </Card.Content>
     </Card.Root>
+
+    <!-- The assistant receives the page filters as defaults; brand access is
+         still enforced server-side against the user scope. -->
+    <ChatWidget
+      agentId="consolidated-sales-agent"
+      title="Consolidated Sales Assistant"
+      greeting="Hi! Ask me about sales by company, store or city, transactions and average ticket."
+      placeholder="e.g. Which store had the highest average ticket?"
+      context={{
+        brands: filters.brands,
+        from: filters.from,
+        to: filters.to,
+        channels: filters.channels,
+        stores: extras.stores,
+        cities: extras.cities,
+        weekdays: extras.weekdays,
+      }}
+    />
   {/if}
 </main>

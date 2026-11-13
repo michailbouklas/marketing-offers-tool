@@ -71,7 +71,7 @@ export async function resolveSalesDashboardScope(
 }
 
 /** Latest loaded `tran_date` for the brands (the warehouse lags ~1 day). */
-async function getLatestSalesDay(brands: string[]): Promise<string> {
+export async function getLatestSalesDay(brands: string[]): Promise<string> {
   const today = toIsoDate(new Date());
   const result = await clickhouse.query({
     query: `
