@@ -238,3 +238,32 @@ export async function markReleaseRead(
   });
   return true;
 }
+
+/**
+ * Admin user page: how many releases one user has opened, plus the newest
+ * `limit` releases with their read time. Counts every release, like the
+ * inbox's unread badge (no cut-off at the account's creation date).
+ */
+export async function getUserReleaseReads(userId: string, limit = 10) {
+  const [total, read, rows] = await Promise.all([
+    prisma.release.count(),
+    prisma.releaseRead.count({ where: { userId } }),
+    prisma.release.findMany({
+      orderBy: [...newestFirst],
+      take: limit,
+      select: {
+        ...summarySelect,
+        reads: { where: { userId }, select: { readAt: true } },
+      },
+    }),
+  ]);
+
+  return {
+    total,
+    read,
+    recent: rows.map((row) => ({
+      ...toSummary(row),
+      readAt: row.reads[0]?.readAt.toISOString() ?? null,
+    })),
+  };
+}
