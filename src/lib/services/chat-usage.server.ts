@@ -7,6 +7,7 @@ import {
   type ChatUserCount,
   type UserChatAgentGroup,
 } from "$lib/services/chat-usage";
+import type { RecentChatsData } from "$lib/dashboard/widgets";
 
 /**
  * Read-side queries for the superUser chat-usage pages. All reads go through
@@ -189,4 +190,54 @@ function parseMessageParts(content: string): ChatConversationMessage["parts"] {
   }
 
   return [{ type: "text", text: content }];
+}
+
+/**
+ * The `limit` most recently updated chats across all users, grouped by user
+ * (groups ordered by their newest chat) for the home dashboard widget.
+ */
+export async function getRecentChats(
+  limit = 5,
+): Promise<RecentChatsData["users"]> {
+  const threads = await prisma.ai_chat_threads.findMany({
+    orderBy: { updatedAt: "desc" },
+    take: limit,
+    select: { id: true, title: true, updatedAt: true, resourceId: true },
+  });
+  if (threads.length === 0) return [];
+
+  const ids = threads.map((thread) => thread.id);
+  const [users, messageCounts] = await Promise.all([
+    prisma.user.findMany({
+      where: { id: { in: threads.map((thread) => thread.resourceId) } },
+      select: { id: true, name: true },
+    }),
+    prisma.ai_chat_messages.groupBy({
+      by: ["thread_id"],
+      where: { thread_id: { in: ids } },
+      _count: { _all: true },
+    }),
+  ]);
+  const nameById = new Map(users.map((user) => [user.id, user.name]));
+  const countByThread = new Map(
+    messageCounts.map((row) => [row.thread_id, row._count._all]),
+  );
+
+  const groups = new Map<string, RecentChatsData["users"][number]>();
+  for (const thread of threads) {
+    const group = groups.get(thread.resourceId) ?? {
+      userId: thread.resourceId,
+      name: nameById.get(thread.resourceId) ?? null,
+      threads: [],
+    };
+    group.threads.push({
+      id: thread.id,
+      agentId: parseThreadId(thread.id)?.agentId ?? "unknown",
+      title: thread.title || untitledConversation,
+      updatedAt: thread.updatedAt ? thread.updatedAt.toISOString() : null,
+      messageCount: countByThread.get(thread.id) ?? 0,
+    });
+    groups.set(thread.resourceId, group);
+  }
+  return [...groups.values()];
 }

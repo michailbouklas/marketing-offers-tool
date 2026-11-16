@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   availableWidgets,
+  canSeeWidget,
   dismissedWidgets,
   normalizeLayout,
   resolvePeriod,
@@ -21,7 +22,8 @@ describe("normalizeLayout", () => {
       "offers-summary",
       "latest-release",
     ]);
-    expect(normalizeLayout(null, "superUser")).toHaveLength(6);
+    expect(normalizeLayout(null, "superUser")).toHaveLength(8);
+    expect(normalizeLayout(null, "admin")).toHaveLength(6);
     expect(ids(normalizeLayout(null, "user"))).toEqual(["latest-release"]);
   });
 
@@ -132,6 +134,25 @@ describe("normalizeLayout", () => {
       "admin",
     );
     expect(valid.settings).toEqual({ brand: "phcy", period: "mtd" });
+  });
+
+  it("shows superUser-only widgets to superUser but not admin", () => {
+    expect(canSeeWidget("superUser", "live-monitor")).toBe(true);
+    expect(canSeeWidget("admin,superUser", "chat-usage")).toBe(true);
+    expect(canSeeWidget("admin", "live-monitor")).toBe(false);
+    expect(canSeeWidget("admin", "chat-usage")).toBe(false);
+    const saved = {
+      widgets: [
+        { id: "live-monitor", type: "live-monitor", settings: {} },
+        { id: "chat-usage", type: "chat-usage", settings: {} },
+      ],
+      dismissed: ["latest-release"],
+    };
+    expect(normalizeLayout(saved, "admin")).toEqual([]);
+    expect(ids(normalizeLayout(saved, "superUser"))).toEqual([
+      "live-monitor",
+      "chat-usage",
+    ]);
   });
 
   it("lists the widgets the role may still add", () => {

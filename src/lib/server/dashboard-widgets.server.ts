@@ -15,6 +15,7 @@ import { buildDeliveryDashboard } from "$lib/services/sales-delivery";
 import { getDeliveryDayRows } from "$lib/services/sales-delivery.server";
 import type { OfferVerdict } from "$lib/services/sales-offers";
 import { getOfferValuesForRange } from "$lib/services/sales-offers.server";
+import { getRecentChats } from "$lib/services/chat-usage.server";
 import {
   getLatestReleaseId,
   getReleaseDetail,
@@ -196,6 +197,11 @@ const loaders: {
   "latest-release": async () => {
     const id = await getLatestReleaseId();
     return id === null ? null : getReleaseDetail(id);
+  },
+  "live-monitor": async () => ({ href: "/admin/live-monitoring" }),
+  "chat-usage": async () => {
+    const users = await getRecentChats();
+    return users.length > 0 ? { href: "/admin/chat-usage", users } : null;
   },
 };
 

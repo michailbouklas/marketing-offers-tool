@@ -58,3 +58,51 @@ export const PRESENCE_HEARTBEAT_MS = 30_000;
  * so a tighter TTL would flicker background tabs offline.
  */
 export const PRESENCE_TTL_MS = 90_000;
+
+/** One signed-in user and their open tabs. */
+export interface PresenceUserGroup {
+  userId: string;
+  name: string;
+  email: string;
+  role: string | null;
+  tabs: PresenceTab[];
+  anyVisible: boolean;
+}
+
+/**
+ * Tabs -> one group per user: foreground tab first, then most recently
+ * navigated; users with a visible tab first, then by name.
+ */
+export function groupPresenceTabs(tabs: PresenceTab[]): PresenceUserGroup[] {
+  const byUser = new Map<string, PresenceUserGroup>();
+  for (const tab of tabs) {
+    let group = byUser.get(tab.userId);
+    if (!group) {
+      group = {
+        userId: tab.userId,
+        name: tab.name,
+        email: tab.email,
+        role: tab.role,
+        tabs: [],
+        anyVisible: false,
+      };
+      byUser.set(tab.userId, group);
+    }
+    group.tabs.push(tab);
+    group.anyVisible ||= tab.visible;
+  }
+
+  for (const group of byUser.values()) {
+    group.tabs.sort(
+      (a, b) =>
+        Number(b.visible) - Number(a.visible) ||
+        b.pathSince.localeCompare(a.pathSince),
+    );
+  }
+
+  return [...byUser.values()].sort(
+    (a, b) =>
+      Number(b.anyVisible) - Number(a.anyVisible) ||
+      a.name.localeCompare(b.name),
+  );
+}

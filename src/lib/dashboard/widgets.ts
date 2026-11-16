@@ -14,6 +14,7 @@ import {
 import type { DeliveryTotals } from "$lib/services/sales-delivery";
 import type { OfferVerdict } from "$lib/services/sales-offers";
 import type { ReleaseDetail } from "$lib/services/releases/releases";
+import type { UserChatThread } from "$lib/services/chat-usage";
 
 /**
  * Home dashboard widget registry (browser-safe). Each widget declares who may
@@ -87,6 +88,19 @@ export type WidgetDataMap = {
   "offers-summary": OffersWidgetData | null;
   /** Null = no release notes yet. */
   "latest-release": ReleaseDetail | null;
+  "live-monitor": { href: string };
+  /** Null = nobody has chatted yet. */
+  "chat-usage": RecentChatsData | null;
+};
+
+/** Latest chats across all users, grouped by user in recency order. */
+export type RecentChatsData = {
+  href: string;
+  users: {
+    userId: string;
+    name: string | null;
+    threads: (UserChatThread & { agentId: string })[];
+  }[];
 };
 
 export type WidgetResult<T> =
@@ -132,6 +146,20 @@ const definitions = {
     /** Added to saved layouts too, unless the user dismissed it. */
     defaultOn: true,
   },
+  "live-monitor": {
+    title: "Live monitor",
+    description: "Who is online and which page they're on.",
+    roles: ["superUser"],
+    exactRoles: true,
+    settings: noSettings,
+  },
+  "chat-usage": {
+    title: "AI chat usage",
+    description: "The latest AI chats, grouped by user.",
+    roles: ["superUser"],
+    exactRoles: true,
+    settings: noSettings,
+  },
 } satisfies Record<
   string,
   {
@@ -140,6 +168,8 @@ const definitions = {
     roles: UserRole[];
     settings: z.ZodType;
     defaultOn?: boolean;
+    /** Only these roles; admin is not added implicitly. */
+    exactRoles?: boolean;
   }
 >;
 
@@ -155,7 +185,9 @@ export function canSeeWidget(
   role: string | null | undefined,
   type: WidgetType,
 ): boolean {
-  return hasAnyRole(role, [...definitions[type].roles, "admin", "superUser"]);
+  const def = definitions[type];
+  if ("exactRoles" in def) return hasAnyRole(role, def.roles);
+  return hasAnyRole(role, [...def.roles, "admin", "superUser"]);
 }
 
 export type DashboardWidget = {
