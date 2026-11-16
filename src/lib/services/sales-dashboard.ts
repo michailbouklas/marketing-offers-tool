@@ -19,10 +19,13 @@ export type SalesDashboardFilters = {
   divisionName: string | null;
   /** `dim_division_group_channel` values; empty means every channel. */
   channels: string[];
+  /** `dim_store.district` values; empty or missing means every city. */
+  cities?: string[];
 };
 
 export type SalesDashboardBrand = { alias: string; name: string };
-export type SalesLocationOption = { id: number; name: string };
+/** `city` is the store's `dim_store.district`; empty when unknown. */
+export type SalesLocationOption = { id: number; name: string; city: string };
 export type SalesDivisionOption = { group: string; division: string };
 
 /** One day of the selected brand: net = sales minus returns, txns = sales rows. */
@@ -169,6 +172,7 @@ export function resolveSalesDashboardFilters(
     divisionGroup: blankToNull(params.get("group")),
     divisionName: blankToNull(params.get("division")),
     channels: [...new Set(csv(params.get("channels")))],
+    cities: [...new Set(csv(params.get("cities")))],
   };
 }
 
@@ -207,6 +211,9 @@ export function salesDashboardSearch(
   }
   if (filters.channels.length > 0) {
     params.set("channels", filters.channels.join(","));
+  }
+  if (filters.cities?.length) {
+    params.set("cities", filters.cities.join(","));
   }
 
   return params.toString();

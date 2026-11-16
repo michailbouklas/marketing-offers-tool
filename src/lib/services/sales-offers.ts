@@ -163,6 +163,35 @@ export function parseOfferLocations(params: URLSearchParams): number[] {
   return [...new Set(ids)];
 }
 
+/**
+ * Picked locations + cities against the brand's own location options. Stale
+ * cities and ids are dropped, and so are picks outside the chosen cities.
+ * `scoped` = the ids to query: the picks, else every location in the cities,
+ * else [] (all). Dropping stale cities first means a city pick never widens to all.
+ */
+export function scopeOfferLocations(
+  options: { id: number; city: string }[],
+  picked: number[],
+  pickedCities: string[],
+) {
+  const cities = pickedCities.filter((city) =>
+    options.some((option) => option.city === city),
+  );
+  const inCities = options.filter(
+    (option) => cities.length === 0 || cities.includes(option.city),
+  );
+  const locations = picked.filter((id) =>
+    inCities.some((option) => option.id === id),
+  );
+  const scoped =
+    locations.length > 0
+      ? locations
+      : cities.length > 0
+        ? inCities.map((option) => option.id)
+        : [];
+  return { cities, locations, scoped };
+}
+
 /** One offer's POS totals on one business day, for the Offer VS dialog. */
 export type OfferDailyRow = {
   code: string;

@@ -90,6 +90,19 @@ export async function getLatestSalesDay(brands: string[]): Promise<string> {
   return row && row.day > "1970-01-01" ? row.day : addDays(today, -1);
 }
 
+/**
+ * City and the company display name live only in `apidata_replica.dim_store`
+ * (joined on `BI Name` = `store_bi_name`). dim_store is CDC-replicated and has
+ * duplicate store rows, so it is always read collapsed to one row per store.
+ */
+export const STORE_DIM = `
+  SELECT assumeNotNull(\`BI Name\`) AS store,
+         ifNull(any(\`SAP CompanyName\`), '') AS company_label,
+         ifNull(any(district), '') AS city
+  FROM apidata_replica.dim_store FINAL
+  WHERE _sign = 1 AND \`BI Name\` IS NOT NULL
+  GROUP BY store`;
+
 export function filterClause(filters: SalesDashboardFilters) {
   const clauses: string[] = [];
   const params: Record<string, unknown> = {
@@ -115,6 +128,12 @@ export function filterClause(filters: SalesDashboardFilters) {
       "AND trim(dim_division_group_channel) IN {channels:Array(String)}",
     );
     params.channels = filters.channels;
+  }
+  if (filters.cities?.length) {
+    clauses.push(
+      `AND store_bi_name IN (SELECT store FROM (${STORE_DIM}) WHERE city IN {cities:Array(String)})`,
+    );
+    params.cities = filters.cities;
   }
 
   return { sql: clauses.join("\n        "), params };
@@ -221,9 +240,14 @@ export async function getSalesDashboardOptions(
   const [locationResult, divisionResult, channelResult] = await Promise.all([
     clickhouse.query({
       query: `
-        SELECT tran_location AS id, anyLast(location_name) AS name
-        ${where}
-        GROUP BY id
+        SELECT l.id AS id, l.name AS name, d.city AS city
+        FROM (
+          SELECT tran_location AS id, anyLast(location_name) AS name,
+                 anyLast(store_bi_name) AS store
+          ${where}
+          GROUP BY id
+        ) AS l
+        LEFT JOIN (${STORE_DIM}) AS d ON d.store = l.store
         ORDER BY name`,
       query_params: params,
       format: "JSONEachRow",
@@ -250,6 +274,7 @@ export async function getSalesDashboardOptions(
   const locations = await locationResult.json<{
     id: string | number;
     name: string;
+    city: string;
   }>();
   const divisions = await divisionResult.json<{
     division_group: string;
@@ -260,6 +285,7 @@ export async function getSalesDashboardOptions(
     locations: locations.map((row) => ({
       id: toNumber(row.id),
       name: row.name.trim() || `Location ${row.id}`,
+      city: row.city.trim(),
     })),
     divisions: divisions
       .filter((row) => row.division.trim().length > 0)

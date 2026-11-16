@@ -6,6 +6,7 @@ import {
   offerReason,
   parseOfferDateRange,
   parseOfferLocations,
+  scopeOfferLocations,
   unitFoodCost,
   valueOffer,
   weekdayMix,
@@ -236,5 +237,47 @@ describe("parseOfferLocations", () => {
 
   it("drops junk, zero, negatives, decimals and overflow", () => {
     expect(parse("abc,0,-3,2.5,32768,7")).toEqual([7]);
+  });
+});
+
+describe("scopeOfferLocations", () => {
+  const options = [
+    { id: 1, city: "Limassol" },
+    { id: 2, city: "Limassol" },
+    { id: 3, city: "Nicosia" },
+    { id: 4, city: "" },
+  ];
+
+  it("means all locations when nothing is picked", () => {
+    expect(scopeOfferLocations(options, [], [])).toEqual({
+      cities: [],
+      locations: [],
+      scoped: [],
+    });
+  });
+
+  it("widens a city-only pick to that city's locations", () => {
+    expect(scopeOfferLocations(options, [], ["Limassol"]).scoped).toEqual([
+      1, 2,
+    ]);
+  });
+
+  it("drops picked locations outside the chosen cities and stale ids", () => {
+    expect(scopeOfferLocations(options, [3, 2, 99], ["Limassol"])).toEqual({
+      cities: ["Limassol"],
+      locations: [2],
+      scoped: [2],
+    });
+  });
+
+  it("drops stale cities instead of silently meaning all", () => {
+    expect(scopeOfferLocations(options, [], ["Paphos"])).toEqual({
+      cities: [],
+      locations: [],
+      scoped: [],
+    });
+    expect(
+      scopeOfferLocations(options, [], ["Paphos", "Nicosia"]).scoped,
+    ).toEqual([3]);
   });
 });
