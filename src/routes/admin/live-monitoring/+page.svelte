@@ -3,9 +3,10 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
   import { parseRoles, roleLabels } from "$lib/auth/roles";
-  import type {
-    PresenceSnapshot,
-    PresenceTab,
+  import {
+    groupPresenceTabs,
+    type PresenceSnapshot,
+    type PresenceTab,
   } from "$lib/services/presence/presence";
   import ArrowLeftIcon from "@lucide/svelte/icons/arrow-left";
   import EyeOffIcon from "@lucide/svelte/icons/eye-off";
@@ -13,15 +14,6 @@
   import HistoryIcon from "@lucide/svelte/icons/history";
 
   type ConnectionStatus = "connecting" | "live" | "reconnecting";
-
-  type UserGroup = {
-    userId: string;
-    name: string;
-    email: string;
-    role: string | null;
-    tabs: PresenceTab[];
-    anyVisible: boolean;
-  };
 
   let tabs = $state<PresenceTab[]>([]);
   let status = $state<ConnectionStatus>("connecting");
@@ -58,40 +50,7 @@
     };
   });
 
-  const groups = $derived.by<UserGroup[]>(() => {
-    const byUser = new Map<string, UserGroup>();
-    for (const tab of tabs) {
-      let group = byUser.get(tab.userId);
-      if (!group) {
-        group = {
-          userId: tab.userId,
-          name: tab.name,
-          email: tab.email,
-          role: tab.role,
-          tabs: [],
-          anyVisible: false,
-        };
-        byUser.set(tab.userId, group);
-      }
-      group.tabs.push(tab);
-      group.anyVisible ||= tab.visible;
-    }
-
-    for (const group of byUser.values()) {
-      // Foreground tab first, then most recently navigated.
-      group.tabs.sort(
-        (a, b) =>
-          Number(b.visible) - Number(a.visible) ||
-          b.pathSince.localeCompare(a.pathSince),
-      );
-    }
-
-    return [...byUser.values()].sort(
-      (a, b) =>
-        Number(b.anyVisible) - Number(a.anyVisible) ||
-        a.name.localeCompare(b.name),
-    );
-  });
+  const groups = $derived(groupPresenceTabs(tabs));
 
   const activeUserCount = $derived(
     groups.filter((group) => group.anyVisible).length,

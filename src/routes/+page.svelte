@@ -12,6 +12,8 @@
   import DeliverySummary from "$lib/components/dashboard/widgets/delivery-summary.svelte";
   import OffersSummary from "$lib/components/dashboard/widgets/offers-summary.svelte";
   import LatestRelease from "$lib/components/dashboard/widgets/latest-release.svelte";
+  import LiveMonitor from "$lib/components/dashboard/widgets/live-monitor.svelte";
+  import RecentChats from "$lib/components/dashboard/widgets/recent-chats.svelte";
   import PlusIcon from "@lucide/svelte/icons/plus";
   import {
     newWidgetId,
@@ -262,6 +264,31 @@
           >
             {#snippet children(release)}
               <LatestRelease {release} />
+            {/snippet}
+          </WidgetFrame>
+        {:else if widget.type === "live-monitor"}
+          <WidgetFrame
+            title={def.title}
+            description={def.description}
+            result={streamOf(widget, widget.type)}
+            {editing}
+            onremove={() => remove(widget.id)}
+          >
+            {#snippet children()}
+              <LiveMonitor />
+            {/snippet}
+          </WidgetFrame>
+        {:else if widget.type === "chat-usage"}
+          <WidgetFrame
+            title={def.title}
+            description={def.description}
+            result={streamOf(widget, widget.type)}
+            {editing}
+            emptyMessage="No AI chats yet."
+            onremove={() => remove(widget.id)}
+          >
+            {#snippet children(chats)}
+              <RecentChats data={chats} />
             {/snippet}
           </WidgetFrame>
         {:else if widget.type === "offers-summary"}
