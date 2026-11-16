@@ -6,6 +6,7 @@ import {
   buildOfferCalendar,
   parseOfferDateRange,
   parseOfferLocations,
+  scopeOfferLocations,
 } from "$lib/services/sales-offers";
 import {
   getCachedOfferValues,
@@ -34,8 +35,15 @@ export const load: PageServerLoad = async (event) => {
     range,
   );
   // Only the brand's own stores: another brand's ids (stale URL) are dropped.
-  const locations = parseOfferLocations(event.url.searchParams).filter((id) =>
-    locationOptions.some((option) => option.id === id),
+  // `scopedLocations` is what the queries use: the picks, or every store of the picked cities.
+  const {
+    cities,
+    locations,
+    scoped: scopedLocations,
+  } = scopeOfferLocations(
+    locationOptions,
+    parseOfferLocations(event.url.searchParams),
+    filters.cities ?? [],
   );
   const base = {
     scope: { brands: scope.brands, filters },
@@ -43,6 +51,8 @@ export const load: PageServerLoad = async (event) => {
     channels,
     locationOptions,
     locations,
+    cities,
+    scopedLocations,
   };
 
   if (event.url.searchParams.get("tab") === "calendar") {
@@ -55,7 +65,7 @@ export const load: PageServerLoad = async (event) => {
         brand,
         calendarRange,
         filters.channels,
-        locations,
+        scopedLocations,
       ).then((rows) =>
         buildOfferCalendar(rows, calendarRange.from, calendarRange.to),
       ),
@@ -64,10 +74,15 @@ export const load: PageServerLoad = async (event) => {
   }
 
   // The cache holds all channels and locations over all time only; anything else is live.
-  if (range || filters.channels.length > 0 || locations.length > 0) {
+  if (range || filters.channels.length > 0 || scopedLocations.length > 0) {
     return {
       ...base,
-      offers: getOfferValuesForRange(brand, range, filters.channels, locations),
+      offers: getOfferValuesForRange(
+        brand,
+        range,
+        filters.channels,
+        scopedLocations,
+      ),
     };
   }
 

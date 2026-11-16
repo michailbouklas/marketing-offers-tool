@@ -95,6 +95,7 @@
     range: { from?: string; to?: string },
     channels: string[] = [],
     locations: number[] = [],
+    cities: string[] = [],
   ) {
     const params = new URLSearchParams({ brands: alias });
     if (range.from && range.to) {
@@ -103,6 +104,7 @@
     }
     if (channels.length > 0) params.set("channels", channels.join(","));
     if (locations.length > 0) params.set("locations", locations.join(","));
+    if (cities.length > 0) params.set("cities", cities.join(","));
     // Table / Calendar tab and the calendar's view toggles survive filter changes.
     for (const key of ["tab", "by", "view"]) {
       const value = page.url.searchParams.get(key);
@@ -261,14 +263,29 @@
     {@const channels = data.scope.filters.channels}
     {@const scopedChannels = channels.length > 0 ? channels : undefined}
     {@const locations = data.locations ?? []}
-    {@const scopedLocations = locations.length > 0 ? locations : undefined}
-    {@const locationOptions = (data.locationOptions ?? []).map((item) => ({
-      value: String(item.id),
-      label: item.name,
-    }))}
-    {@const atLocations = scopedLocations
-      ? ` at ${locations.length === 1 ? (locationOptions.find((item) => item.value === String(locations[0]))?.label ?? "1 location") : `${locations.length} locations`}`
-      : ""}
+    {@const cities = data.cities ?? []}
+    {@const scopedLocations =
+      (data.scopedLocations ?? []).length > 0
+        ? data.scopedLocations
+        : undefined}
+    {@const cityOptions = [
+      ...new Set((data.locationOptions ?? []).map((item) => item.city)),
+    ]
+      .filter((city) => city)
+      .sort()
+      .map((city) => ({ value: city, label: city }))}
+    {@const locationOptions = (data.locationOptions ?? [])
+      .filter((item) => cities.length === 0 || cities.includes(item.city))
+      .map((item) => ({
+        value: String(item.id),
+        label: item.name,
+      }))}
+    {@const atLocations =
+      locations.length > 0
+        ? ` at ${locations.length === 1 ? (locationOptions.find((item) => item.value === String(locations[0]))?.label ?? "1 location") : `${locations.length} locations`}`
+        : cities.length > 0
+          ? ` in ${cities.length === 1 ? cities[0] : `${cities.length} cities`}`
+          : ""}
     <div class="flex flex-wrap items-end gap-6">
       <div class="space-y-2">
         <span class="text-sm font-medium" id="brand-label">Brand</span>
@@ -291,7 +308,7 @@
           from={range?.from}
           to={range?.to}
           onApply={(next) =>
-            goto(offersHref(brand.alias, next, channels, locations), {
+            goto(offersHref(brand.alias, next, channels, locations, cities), {
               keepFocus: true,
               noScroll: true,
             })}
@@ -307,7 +324,19 @@
         noun="channels"
         selected={channels}
         onApply={(next) =>
-          goto(offersHref(brand.alias, range ?? {}, next, locations), {
+          goto(offersHref(brand.alias, range ?? {}, next, locations, cities), {
+            keepFocus: true,
+            noScroll: true,
+          })}
+      />
+
+      <MultiSelectFilter
+        label="City"
+        options={cityOptions}
+        noun="cities"
+        selected={cities}
+        onApply={(next) =>
+          goto(offersHref(brand.alias, range ?? {}, channels, [], next), {
             keepFocus: true,
             noScroll: true,
           })}
@@ -320,7 +349,13 @@
         selected={locations.map(String)}
         onApply={(next) =>
           goto(
-            offersHref(brand.alias, range ?? {}, channels, next.map(Number)),
+            offersHref(
+              brand.alias,
+              range ?? {},
+              channels,
+              next.map(Number),
+              cities,
+            ),
             {
               keepFocus: true,
               noScroll: true,
@@ -705,7 +740,7 @@
         from: range?.from ?? null,
         to: range?.to ?? null,
         channels,
-        locations,
+        locations: data.scopedLocations ?? [],
         tab: page.url.searchParams.get("tab") ?? "table",
       }}
     />

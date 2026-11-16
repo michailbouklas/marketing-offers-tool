@@ -9,23 +9,14 @@ import type {
   ConsolidatedStoreOption,
 } from "./sales-consolidated";
 import type { SalesDashboardFilters } from "./sales-dashboard";
-import { filterClause } from "./sales-dashboard.server";
+import { filterClause, STORE_DIM } from "./sales-dashboard.server";
 
 /**
  * ClickHouse reads for /sales/consolidated-sales-report. Brand scope, dates
  * and channels come from the sales dashboard filters (`filterClause`). City
- * and the company display name live only in `apidata_replica.dim_store`
- * (joined on `BI Name` = `store_bi_name`). dim_store is CDC-replicated and has
- * duplicate store rows, so it is always read collapsed to one row per store.
+ * (also a dashboard filter) and the company display name come from
+ * `STORE_DIM`.
  */
-
-export const STORE_DIM = `
-  SELECT assumeNotNull(\`BI Name\`) AS store,
-         ifNull(any(\`SAP CompanyName\`), '') AS company_label,
-         ifNull(any(district), '') AS city
-  FROM apidata_replica.dim_store FINAL
-  WHERE _sign = 1 AND \`BI Name\` IS NOT NULL
-  GROUP BY store`;
 
 /** Per-store Trans / Gross / Discount / Net with company and city labels. */
 export async function getConsolidatedRows(
@@ -36,13 +27,6 @@ export async function getConsolidatedRows(
   const clauses = [extra.sql];
   if (extras.stores.length > 0) {
     clauses.push("AND store_bi_name IN {stores:Array(String)}");
-  }
-  if (extras.cities.length > 0) {
-    clauses.push(
-      "AND store_bi_name IN (SELECT store FROM (" +
-        STORE_DIM +
-        ") WHERE city IN {cities:Array(String)})",
-    );
   }
   if (extras.weekdays.length > 0) {
     clauses.push("AND toDayOfWeek(tran_date) IN {weekdays:Array(UInt8)}");

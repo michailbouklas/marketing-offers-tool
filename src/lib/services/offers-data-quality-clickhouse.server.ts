@@ -1,7 +1,7 @@
 import { env } from "$env/dynamic/private";
 import { clickhouse } from "$lib/server/clickhouse";
 import { salesTransactionsTable } from "$lib/services/forecasts/forecast-series.server";
-import { STORE_DIM } from "$lib/services/sales-consolidated.server";
+import { STORE_DIM } from "$lib/services/sales-dashboard.server";
 import type { CurrentDimOffersValues } from "$lib/services/offers-data-quality";
 
 type TransactionContextRow = {

@@ -2,6 +2,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import DateRangeFilter from "$lib/components/date-range-filter.svelte";
+  import MultiSelectFilter from "$lib/components/sales/multi-select-filter.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
@@ -60,6 +61,20 @@
       year: "numeric",
       timeZone: "UTC",
     });
+
+  const cities = $derived(filters?.cities ?? []);
+  const cityOptions = $derived(
+    [...new Set((data.locations ?? []).map((item) => item.city))]
+      .filter((city) => city)
+      .sort()
+      .map((city) => ({ value: city, label: city })),
+  );
+  // Picking cities narrows the location list to those cities.
+  const locationOptions = $derived(
+    (data.locations ?? []).filter(
+      (item) => cities.length === 0 || cities.includes(item.city),
+    ),
+  );
 
   type ViewMode = { grouped: boolean; dates: boolean; vs: boolean };
 
@@ -205,6 +220,7 @@
               divisionGroup: null,
               divisionName: null,
               channels: [],
+              cities: [],
             })}
             variant={item.alias === filters.brands[0] ? "default" : "outline"}
             aria-current={item.alias === filters.brands[0] ? "page" : undefined}
@@ -252,6 +268,13 @@
     </div>
 
     <div class="flex flex-wrap items-end gap-3">
+      <MultiSelectFilter
+        label="City"
+        noun="cities"
+        options={cityOptions}
+        selected={cities}
+        onApply={(next) => navigate({ cities: next, locationId: null })}
+      />
       <div class="space-y-2">
         <label class="text-sm font-medium" for="location">Location</label>
         <NativeSelect.Root
@@ -263,7 +286,7 @@
           }}
         >
           <NativeSelect.Option value="">All locations</NativeSelect.Option>
-          {#each data.locations ?? [] as location (location.id)}
+          {#each locationOptions as location (location.id)}
             <NativeSelect.Option value={location.id.toString()}>
               {location.name}
             </NativeSelect.Option>

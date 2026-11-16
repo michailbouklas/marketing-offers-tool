@@ -7,9 +7,11 @@ import {
   OFFER_VERDICT_LABELS,
   parseOfferDateRange,
   parseOfferLocations,
+  scopeOfferLocations,
 } from "$lib/services/sales-offers";
 import {
   getCachedOfferValues,
+  getOfferFilterOptions,
   getOfferValuesForRange,
 } from "$lib/services/sales-offers.server";
 import type { RequestHandler } from "./$types";
@@ -29,10 +31,20 @@ export const GET: RequestHandler = async (event) => {
   const scope = await resolveSalesDashboardScope(event, user.id);
   if (!scope) error(403, "No brands assigned");
 
-  const { brands, channels } = withSingleBrand(scope.filters);
+  const filters = withSingleBrand(scope.filters);
+  const { brands, channels } = filters;
   const brand = brands[0];
   const range = parseOfferDateRange(event.url.searchParams);
-  const locations = parseOfferLocations(event.url.searchParams);
+  // Same city → location resolution as the page, so the file matches the table.
+  const { locations: locationOptions } = await getOfferFilterOptions(
+    filters,
+    range,
+  );
+  const { scoped: locations } = scopeOfferLocations(
+    locationOptions,
+    parseOfferLocations(event.url.searchParams),
+    filters.cities ?? [],
+  );
   const values =
     range || channels.length > 0 || locations.length > 0
       ? await getOfferValuesForRange(brand, range, channels, locations)

@@ -30,6 +30,7 @@ describe("resolveSalesDashboardFilters", () => {
       divisionGroup: null,
       divisionName: null,
       channels: [],
+      cities: [],
     });
   });
 
@@ -60,9 +61,10 @@ describe("resolveSalesDashboardFilters", () => {
 
   it("round-trips through salesDashboardSearch", () => {
     const filters = resolve(
-      "brands=kfc&location=12&division=TAWOLT&channels=Wolt,Dine%20in,Wolt",
+      "brands=kfc&location=12&division=TAWOLT&channels=Wolt,Dine%20in,Wolt&cities=Limassol,Nicosia,Limassol",
     );
     expect(filters.channels).toEqual(["Wolt", "Dine in"]);
+    expect(filters.cities).toEqual(["Limassol", "Nicosia"]);
     const search = salesDashboardSearch(filters, { allBrands: false });
     expect(resolve(search)).toEqual(filters);
   });
