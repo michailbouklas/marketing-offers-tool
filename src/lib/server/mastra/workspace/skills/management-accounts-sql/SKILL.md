@@ -1,9 +1,15 @@
 ---
 name: management-accounts-sql
-description: How the SAP warehouse (MSSQL SAPBW) GL, chart of accounts and budgets relate, the rules that make marketing-spend numbers match the Power BI Management Accounts dashboard, the company/cost-centre → brand map, and proven T-SQL patterns for marketing-spend questions.
+description: How the SAP warehouse (MSSQL SAPBW) GL, chart of accounts and budgets relate, the rules that make marketing-spend numbers match the Power BI Management Accounts dashboard, the company/cost-centre → brand map, and proven T-SQL patterns for marketing-spend questions. Only useful to an assistant that has the query-management-accounts-sql tool.
 ---
 
 # Management accounts — marketing spend (MSSQL SAPBW)
+
+> **Do you have the `query-management-accounts-sql` tool?** If not, you cannot
+> read the general ledger. Do not answer GL, account or marketing-spend
+> questions from this file. Tell the user to ask the **Marketing Spend
+> assistant** on the Management Accounts → Marketing costs page
+> (`/management-accounts/marketing-costs`), which can query the ledger.
 
 Every number you report about marketing spend must follow the **Power BI rules**
 in this file. With them, our totals match the Power BI "Financial Performance"
@@ -321,6 +327,12 @@ missing. 2026 is still open (Power BI was ≈ €17.6k behind the GL on 2026-11-
   % change; be clear whether periods are full years or year-to-date.
 - Brand questions → use the §4 CASE; keep "Unallocated / head office" visible.
 - "What is in line X?" → drill into accounts, then top suppliers/postings.
+- "What is in account X?" / "what is charged to X?" → query it, never tell the
+  user to review the ledger themselves: spend by supplier (§5 pattern, with
+  `GLAccount = 'X'` instead of the marketing filter) plus the top `LineRemarks`
+  and largest postings, for a stated period (default: current year to date).
+  Look up X in `sapbw_coa` for its line. If X has no postings or isn't in the
+  COA, say so and suggest close codes (e.g. 61012104 vs 61012014 Foody).
 - Aggregator marketing (Wolt/Bolt/Foody ads) → accounts 61012014/15/16 only;
   aggregator **commissions** (other 610120 accounts) are NOT marketing — say so
   if the user asks about them.

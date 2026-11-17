@@ -14,6 +14,7 @@ export const SQL_TOOL_PART_TYPES = new Set([
   "tool-queryDimOffersSql",
   "tool-queryCompetitionSql",
   "tool-queryGoogleReviewsSql",
+  "tool-queryManagementAccountsSql",
 ]);
 
 export function isSqlToolPart(type: string): boolean {
