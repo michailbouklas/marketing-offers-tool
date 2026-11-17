@@ -130,6 +130,11 @@ ORDER BY ungpriced_items DESC
   reference.
 - `transaction_details` is large — always filter on `trde_date` and exclude the
   `'-1'` sentinel `trde_item`.
+- When counting or summing lines (units, net, orders), keep only orders that have
+  a header in `transactions`. About 4% of order keys have no header (staff meals in
+  division 20, some walk-ins), and the POS does not count them as sales:
+  `AND (trde_date, trde_location, trde_division, trde_no) IN (SELECT tran_date, tran_location, tran_division, tran_no FROM transactions WHERE lower(brand) = … AND tran_date BETWEEN …)`.
+  Lookups (an item's name, brand, or whether it was ever rung) do not need it.
 - The tool caps results at 200 rows — aggregate instead of listing.
 - Case-insensitive text search: `positionCaseInsensitiveUTF8(col, 'term') > 0`.
 - The workflow state (open/submitted gaps, pending submissions) is NOT here —

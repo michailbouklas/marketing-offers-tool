@@ -47,34 +47,35 @@ export async function getOfferFilterOptions(
 const CODE_SQL = "if(trde_combo_item = '', trde_item, trde_combo_item)";
 
 /**
- * SQL + params limiting `trde_date` to a range; empty for all time. `channels`
- * keeps only orders rung on those `trim(dim_division_group_channel)` values:
- * lines carry no channel, so it comes from the order header. `locations`
- * keeps only lines rung at those POS `trde_location` ids.
+ * SQL + params limiting `trde_date` to a range (none = all time). Lines always
+ * need an order header in `transactions`: 4.4% of order keys (staff meals,
+ * some walk-ins) have none, and the POS and header-based pages leave them out.
+ * `channels` keeps only orders rung on those `trim(dim_division_group_channel)`
+ * values (lines carry no channel, so it comes from the header). `locations`
+ * keeps only lines rung at those POS `trde_location` ids. Needs {brand}.
  */
 export function rangeFilter(
   range: OfferDateRange | null,
   channels?: string[],
   locations?: number[],
 ) {
-  const where = range ? "AND trde_date BETWEEN {from:Date} AND {to:Date}" : "";
-  const dates = locations?.length
-    ? `${where} AND trde_location IN {locations:Array(Int16)}`
-    : where;
-  const params = {
-    ...(range ? { from: range.from, to: range.to } : {}),
-    ...(locations?.length ? { locations } : {}),
-  };
-  if (!channels?.length) return { sql: dates, params };
+  const dates = range ? "AND trde_date BETWEEN {from:Date} AND {to:Date}" : "";
+  const where = locations?.length
+    ? `${dates} AND trde_location IN {locations:Array(Int16)}`
+    : dates;
   return {
-    sql: `${dates}
+    sql: `${where}
             AND (trde_date, trde_location, trde_division, trde_no) IN (
               SELECT tran_date, tran_location, tran_division, tran_no
               FROM ${salesTransactionsTable()}
               WHERE lower(brand) = {brand:String}
                 ${range ? "AND tran_date BETWEEN {from:Date} AND {to:Date}" : ""}
-                AND trim(dim_division_group_channel) IN {channels:Array(String)})`,
-    params: { ...params, channels },
+                ${channels?.length ? "AND trim(dim_division_group_channel) IN {channels:Array(String)}" : ""})`,
+    params: {
+      ...(range ? { from: range.from, to: range.to } : {}),
+      ...(locations?.length ? { locations } : {}),
+      ...(channels?.length ? { channels } : {}),
+    },
   };
 }
 

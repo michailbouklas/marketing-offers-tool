@@ -167,6 +167,7 @@ export const SALES_PAGE_AGENT_IDS = [
   "sales-offers-agent",
   "consolidated-sales-agent",
   "sales-delivery-agent",
+  "item-analysis-agent",
 ] as const;
 
 export type SalesPageContext = {
@@ -243,6 +244,11 @@ export const chatAgents: Record<string, ChatAgentConfig> = {
     pageContext: true,
   },
   "sales-delivery-agent": {
+    permissions: { sales: ["view"] },
+    brandScoped: true,
+    pageContext: true,
+  },
+  "item-analysis-agent": {
     permissions: { sales: ["view"] },
     brandScoped: true,
     pageContext: true,

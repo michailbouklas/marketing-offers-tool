@@ -111,6 +111,9 @@ function fakeGateway(overrides: Partial<SalesOffersGateway> = {}) {
     getOfferSlotSales: vi.fn(async () =>
       ok([{ code: "OF1", name: "Family Deal", units: 3, orders: 3, net: 30 }]),
     ),
+    getItemAnalysis: vi.fn(async () =>
+      ok({ groups: [], grand: { qty: 0, trans: 0, net: 0 } }),
+    ),
     ...overrides,
   };
   setSalesOffersGateway(gateway);

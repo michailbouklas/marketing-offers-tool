@@ -145,6 +145,8 @@ export async function getMenuItem(
  * Units sold and net sales per item over the last `days` days, from POS
  * `transaction_details`. Only head lines (`trde_sub_line = 0`) count: sub-lines
  * are modifiers/components, not items the guest ordered from the menu.
+ * Voided lines and orders without a `transactions` header (staff meals, some
+ * walk-ins; the POS leaves them out) do not count.
  */
 export async function listItemSales(
   alias: string,
@@ -163,7 +165,13 @@ export async function listItemSales(
       WHERE lower(brand) = {alias:String}
         AND trde_date >= today() - {days:UInt16}
         AND trde_sub_line = 0
+        AND trde_void_time = ''
         AND trde_item IN ({codes:Array(String)})
+        AND (trde_date, trde_location, trde_division, trde_no) IN (
+          SELECT tran_date, tran_location, tran_division, tran_no
+          FROM transactions
+          WHERE lower(brand) = {alias:String}
+            AND tran_date >= today() - {days:UInt16})
       GROUP BY trde_item
     `,
     query_params: { alias: alias.toLowerCase(), days, codes: itemCodes },
@@ -188,7 +196,10 @@ export async function listItemSales(
 const COMBO_WHERE = `lower(brand) = {alias:String}
   AND trde_date BETWEEN {from:Date} AND {to:Date}
   AND trde_void_time = ''
-  AND trde_item != '-1'`;
+  AND trde_item != '-1'
+  AND (trde_date, trde_location, trde_division, trde_no) IN (
+    SELECT tran_date, tran_location, tran_division, tran_no FROM transactions
+    WHERE lower(brand) = {alias:String} AND tran_date BETWEEN {from:Date} AND {to:Date})`;
 
 export type ComboSummary = {
   code: string;

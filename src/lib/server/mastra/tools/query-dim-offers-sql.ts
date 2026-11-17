@@ -270,14 +270,18 @@ export const queryDimOffersSql = createTool({
     "Run a single read-only ClickHouse SELECT query against the offers pricing data " +
     "(table dim_offers = current offer pricing per item_code: channel, category, subcategory, " +
     "ideal_price, selling_price, fc_perc, mktg_spend, discount_amount; plus transaction_details and " +
-    "apidata_replica.dim_items for item context / brand). " +
+    "apidata_replica.dim_items for item context / brand). When you count or sum " +
+    "transaction_details lines (units, net, orders), keep only orders that have a header in " +
+    "transactions: AND (trde_date, trde_location, trde_division, trde_no) IN (SELECT tran_date, " +
+    "tran_location, tran_division, tran_no FROM transactions WHERE <same brand and dates>) — " +
+    "~4% of order keys (staff meals, some walk-ins) have none and are not sales. " +
     `Returns at most ${MAX_ROWS} rows — use aggregations (sum, count, GROUP BY) for totals instead of fetching raw rows.`,
   inputSchema: z.object({
     sql: z
       .string()
       .describe(
         "A single ClickHouse SELECT statement. Use unqualified names for the " +
-          "default-database tables (dim_offers, transaction_details) and the " +
+          "default-database tables (dim_offers, transaction_details, transactions) and the " +
           "qualified name apidata_replica.dim_items for the item dimension, e.g. " +
           "SELECT count() FROM dim_offers WHERE ideal_price = 0.",
       ),

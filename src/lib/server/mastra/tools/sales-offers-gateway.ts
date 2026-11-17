@@ -7,6 +7,7 @@ import type {
   OfferValue,
   OfferWeek,
 } from "../../../services/sales-offers";
+import type { ItemAnalysisReport } from "../../../services/sales-item-analysis";
 import type { GatewayOutcome } from "./forecast-gateway";
 
 /**
@@ -92,6 +93,11 @@ export interface SalesOffersGateway {
     filters: OfferFilters & { range: OfferDateRange },
     slot: OfferSlot,
   ): Promise<GatewayOutcome<OfferSlotSale[]>>;
+  /** The /sales/item-analysis report (same filters as the offers page). */
+  getItemAnalysis(
+    brand: string,
+    filters: OfferFilters & { range: OfferDateRange },
+  ): Promise<GatewayOutcome<ItemAnalysisReport>>;
 }
 
 const globalForSalesOffersGateway = globalThis as typeof globalThis & {
