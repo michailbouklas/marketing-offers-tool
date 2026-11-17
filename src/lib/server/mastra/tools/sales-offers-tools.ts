@@ -82,7 +82,7 @@ export function authorizeBrand(
   return { ok: true, brand: wanted };
 }
 
-function requireGateway():
+export function requireGateway():
   | { ok: true; gateway: SalesOffersGateway }
   | ToolFailure {
   const gateway = getSalesOffersGateway();
@@ -96,7 +96,7 @@ function requireGateway():
       );
 }
 
-const fromGateway = (error: ForecastGatewayError): ToolFailure =>
+export const fromGateway = (error: ForecastGatewayError): ToolFailure =>
   fail(error.code, error.message, error.retryable);
 
 /** Both ends or neither; reversed ends swapped (parseOfferDateRange). */
@@ -128,7 +128,7 @@ export function toRange(
  * the brand's options; requires a range when either is set, because the cache
  * holds all channels/locations only and a live all-time scan is too slow.
  */
-async function resolveFilters(
+export async function resolveFilters(
   gateway: SalesOffersGateway,
   brand: string,
   range: OfferDateRange | null,
@@ -466,7 +466,7 @@ const CACHE_EMPTY = fail(
     "or ask a question over a date range instead.",
 );
 
-type ToolContext = { requestContext?: RequestContextLike } | undefined;
+export type ToolContext = { requestContext?: RequestContextLike } | undefined;
 
 // ---------------------------------------------------------------------------
 // Tools

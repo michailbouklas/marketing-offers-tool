@@ -48,6 +48,7 @@ export const load: PageServerLoad = async (event) => {
     locationOptions,
     locations,
     cities,
+    scopedLocations,
     report: getItemAnalysisRows(
       filters.brands[0],
       range,

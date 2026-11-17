@@ -268,7 +268,7 @@ export const salesAgent = new Agent({
 
 ### 5.0 Page assistants with typed tools (sales pages)
 
-`sales-offers-agent` (/sales/offers), `consolidated-sales-agent`
+`sales-offers-agent` (/sales/offers), `item-analysis-agent` (/sales/item-analysis), `consolidated-sales-agent`
 (/sales/consolidated-sales-report) and `sales-delivery-agent`
 (/sales/delivery) answer from typed tools that wrap the page's own services
 and pure builders, so their numbers equal the page. Pattern to copy:

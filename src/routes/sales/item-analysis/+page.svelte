@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
+  import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import DateRangeFilter from "$lib/components/date-range-filter.svelte";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
@@ -120,9 +121,10 @@
     <p class="text-muted-foreground max-w-3xl text-base leading-7">
       Quantity, transactions and net sales (excl. VAT) of every item, grouped by
       POS category, like the POS Item Analysis Report. Combo and offer money is
-      booked to the offer; items inside a combo are not counted again. Grp % is
-      the share of the category, Tot % the share of everything selected, and
-      Qty/Tr the item's quantity per transaction of the selection.
+      booked to the offer; items inside a combo are not counted again, and a
+      half pizza counts 0.5. Grp % is the share of the category, Tot % the share
+      of everything selected, and Qty/Tr the item's quantity per transaction of
+      the selection.
     </p>
   </section>
 
@@ -328,5 +330,21 @@
         </Card.Content>
       </Card.Root>
     {/await}
+
+    <!-- Page filters are defaults only; brand scope is enforced server-side. -->
+    <ChatWidget
+      agentId="item-analysis-agent"
+      title="Item Analysis Assistant"
+      greeting="Hi! Ask me which items or categories sell most, an item's share of its category, or how two periods compare."
+      placeholder="e.g. Top 10 items by net sales on Wolt"
+      context={{
+        brands: [brand.alias],
+        from: range.from,
+        to: range.to,
+        channels,
+        locations: data.scopedLocations ?? [],
+        cities,
+      }}
+    />
   {/if}
 </main>

@@ -22,6 +22,8 @@ import {
   getOfferValuesForRange,
   type CachedOfferValues,
 } from "$lib/services/sales-offers.server";
+import { buildItemAnalysis } from "$lib/services/sales-item-analysis";
+import { getItemAnalysisRows } from "$lib/services/sales-item-analysis.server";
 
 /**
  * SvelteKit-side implementation of the sales-offers assistant gateway
@@ -150,6 +152,12 @@ export function createSalesOffersGateway(): SalesOffersGateway {
 
     getOfferSlotSales: (brand, { range, channels, locations }, slot) =>
       attempt(() => getOfferSlotSales(brand, range, channels, slot, locations)),
+    getItemAnalysis: (brand, { range, channels, locations }) =>
+      attempt(() =>
+        getItemAnalysisRows(brand, range, channels, locations).then(
+          buildItemAnalysis,
+        ),
+      ),
   };
 }
 
