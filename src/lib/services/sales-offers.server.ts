@@ -52,7 +52,7 @@ const CODE_SQL = "if(trde_combo_item = '', trde_item, trde_combo_item)";
  * lines carry no channel, so it comes from the order header. `locations`
  * keeps only lines rung at those POS `trde_location` ids.
  */
-function rangeFilter(
+export function rangeFilter(
   range: OfferDateRange | null,
   channels?: string[],
   locations?: number[],

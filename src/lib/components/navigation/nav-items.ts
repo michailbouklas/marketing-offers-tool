@@ -182,6 +182,7 @@ const allNavItems: NavItem[] = [
       { href: "/sales/hours", label: "Busy & dead hours" },
       { href: "/sales/delivery", label: "Delivery" },
       { href: "/sales/offers", label: "Offers" },
+      { href: "/sales/item-analysis", label: "Item analysis" },
       {
         href: "/sales/consolidated-sales-report",
         label: "Consolidated report",
