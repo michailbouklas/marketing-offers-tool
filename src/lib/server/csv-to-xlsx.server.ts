@@ -22,10 +22,13 @@ const IMPORT_TIMEOUT_MS = 120_000;
  * `writeCsv` fills the CSV inside a private temp dir that is always removed.
  * Callers must already have neutralised `=`-prefixed text: import turns
  * those into live formulas.
+ * `pivot`, when given, adds a "Pivot" sheet holding one pivot table; the
+ * props go straight to `officecli add --type pivottable` (`source` required).
  */
 export async function exportCsvAsXlsx(
   name: string,
   writeCsv: (csvPath: string) => Promise<void>,
+  pivot?: Record<string, string>,
 ): Promise<{ downloadUrl: string; bytes: number }> {
   const filename = sanitizeFilename(name);
   // Short temp path: officecli on Windows fails under very long paths.
@@ -53,6 +56,26 @@ export async function exportCsvAsXlsx(
     if (report.success !== true) {
       throw new Error(
         `officecli import failed: ${JSON.stringify(report.error ?? report).slice(0, 400)}`,
+      );
+    }
+    if (pivot) {
+      await runOfficeCli(
+        ["add", xlsxPath, "/", "--type", "sheet", "--prop", "name=Pivot"],
+        CREATE_TIMEOUT_MS,
+      );
+      await runOfficeCli(
+        [
+          "add",
+          xlsxPath,
+          "/Pivot",
+          "--type",
+          "pivottable",
+          ...Object.entries(pivot).flatMap(([key, value]) => [
+            "--prop",
+            `${key}=${value}`,
+          ]),
+        ],
+        IMPORT_TIMEOUT_MS,
       );
     }
     await closeResident(xlsxPath);

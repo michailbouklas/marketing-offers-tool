@@ -12,6 +12,22 @@ export type SalesHourCell = {
   txns: number;
 };
 
+/** One brand × location × channel × calendar month (YYYY-MM of tran_date) × hour bucket, summed. */
+export type SalesMonthHourCell = {
+  brand: string;
+  /** dim_store district; empty when the store has no dim_store row. */
+  city: string;
+  /** POS store_bi_name, the dim_store key. */
+  store: string;
+  location: string;
+  /** Trimmed dim_division_group_channel (Foody has a trailing space). */
+  channel: string;
+  month: string;
+  hour: number;
+  net: number;
+  txns: number;
+};
+
 /** An hour averaging under this share of the store's busiest hour is "dead". */
 export const DEAD_HOUR_SHARE = 0.15;
 /** Average orders per day an hour needs to count as a trading hour at all. */
@@ -250,6 +266,12 @@ export function weekdayCounts(from: string, to: string): number[] {
 
 const businessOrder = (hour: number) =>
   (hour + 24 - BUSINESS_DAY_START_HOUR) % 24;
+
+/** DAYPARTS label of a clock hour; after-midnight hours fall in late night. */
+export function daypartLabel(hour: number): string {
+  const h = businessOrder(hour) + BUSINESS_DAY_START_HOUR;
+  return DAYPARTS.find((part) => h >= part.from && h < part.to)?.label ?? "";
+}
 
 export function buildSalesHoursGrid(
   cells: SalesHourCell[],

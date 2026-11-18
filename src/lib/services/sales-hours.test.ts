@@ -3,10 +3,27 @@ import {
   buildChannelBreakdown,
   buildSalesCalendar,
   buildSalesHoursGrid,
+  daypartLabel,
   isChannelVs,
   isDateView,
   weekdayCounts,
 } from "./sales-hours";
+
+describe("daypartLabel", () => {
+  it("maps clock hours to dayparts at the boundaries", () => {
+    expect([5, 10, 11, 15, 18, 21, 22, 0, 4].map(daypartLabel)).toEqual([
+      "Breakfast",
+      "Breakfast",
+      "Lunch",
+      "Afternoon",
+      "Dinner",
+      "Dinner",
+      "Late night",
+      "Late night",
+      "Late night",
+    ]);
+  });
+});
 
 describe("buildSalesCalendar", () => {
   const calendar = buildSalesCalendar(

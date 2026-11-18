@@ -3,9 +3,11 @@
   import { page } from "$app/state";
   import DateRangeFilter from "$lib/components/date-range-filter.svelte";
   import MultiSelectFilter from "$lib/components/sales/multi-select-filter.svelte";
-  import { Button } from "$lib/components/ui/button/index.js";
+  import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
+  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import * as Popover from "$lib/components/ui/popover/index.js";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
   import { Switch } from "$lib/components/ui/switch/index.js";
@@ -33,6 +35,8 @@
 
   let metric = $state<"net" | "txns">("net");
   let exporting = $state(false);
+  let monthsOpen = $state(false);
+  let monthsBrands = $state<string[]>([]);
 
   const byDay = $derived(isGroupedByDay(page.url.searchParams));
   const dateView = $derived(isDateView(page.url.searchParams));
@@ -131,13 +135,16 @@
       : "";
 
   /** Server rebuilds the grid from the same URL, then we follow the download URL. */
-  async function exportExcel() {
+  async function exportExcel(endpoint = "export", body?: unknown) {
     exporting = true;
     const toastId = toast.loading("Preparing the Excel export…");
     try {
       const response = await fetch(
-        `${page.url.pathname}/export${page.url.search}`,
-        { method: "POST" },
+        `${page.url.pathname}/${endpoint}${page.url.search}`,
+        {
+          method: "POST",
+          body: body === undefined ? undefined : JSON.stringify(body),
+        },
       );
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as {
@@ -160,6 +167,23 @@
     } finally {
       exporting = false;
     }
+  }
+
+  // Every brand starts ticked each time the popover opens.
+  function onMonthsOpenChange(next: boolean) {
+    if (next) monthsBrands = allBrands.map((brand) => brand.alias);
+    monthsOpen = next;
+  }
+
+  function toggleMonthsBrand(alias: string) {
+    monthsBrands = monthsBrands.includes(alias)
+      ? monthsBrands.filter((item) => item !== alias)
+      : [...monthsBrands, alias];
+  }
+
+  function exportMonths() {
+    monthsOpen = false;
+    exportExcel("export-months", { brands: monthsBrands });
   }
 
   function selectValue(event: Event): string | null {
@@ -229,6 +253,74 @@
           </Button>
         {/each}
       </ButtonGroup.Root>
+    </div>
+
+    <div>
+      <Popover.Root open={monthsOpen} onOpenChange={onMonthsOpenChange}>
+        <Popover.Trigger
+          class={buttonVariants({ variant: "outline" })}
+          disabled={exporting}
+          title="Net sales and orders per brand, location, channel, month and hour for the selected date range"
+        >
+          <DownloadIcon class="size-4" />
+          Hours per month
+        </Popover.Trigger>
+        <Popover.Content align="start" class="w-72 p-0">
+          <div
+            class="flex items-center justify-between gap-2 border-b px-4 py-2"
+          >
+            <button
+              type="button"
+              class="text-sm font-medium underline-offset-4 hover:underline"
+              onclick={() =>
+                (monthsBrands = allBrands.map((brand) => brand.alias))}
+            >
+              Select all
+            </button>
+            <button
+              type="button"
+              class="text-muted-foreground hover:text-foreground text-sm font-medium underline-offset-4 hover:underline"
+              onclick={() => (monthsBrands = [])}
+            >
+              Select none
+            </button>
+          </div>
+          <div class="max-h-72 overflow-y-auto p-2">
+            {#each allBrands as brand (brand.alias)}
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={monthsBrands.includes(brand.alias)}
+                class="hover:bg-accent/50 flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm"
+                onclick={() => toggleMonthsBrand(brand.alias)}
+              >
+                <Checkbox
+                  checked={monthsBrands.includes(brand.alias)}
+                  class="pointer-events-none"
+                  tabindex={-1}
+                  aria-hidden="true"
+                />
+                {brand.name}
+              </button>
+            {/each}
+          </div>
+          <div class="border-t px-4 py-3">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-muted-foreground text-xs">
+                {monthsBrands.length} / {allBrands.length} brands
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                disabled={monthsBrands.length === 0}
+                onclick={exportMonths}
+              >
+                Export
+              </Button>
+            </div>
+          </div>
+        </Popover.Content>
+      </Popover.Root>
     </div>
 
     <div class="space-y-2">
@@ -352,7 +444,7 @@
         variant="outline"
         class="ml-auto"
         disabled={exporting || grid.hours.length === 0}
-        onclick={exportExcel}
+        onclick={() => exportExcel()}
       >
         {#if exporting}
           <LoaderCircleIcon class="size-4 animate-spin" />
