@@ -174,13 +174,14 @@
     <MultiSelectFilter
       label="Store"
       noun="stores"
+      searchable
       options={storeOptions}
       selected={params.stores}
       onApply={(stores) => navigate({ stores })}
     />
 
     <div class="space-y-2">
-      <label class="text-sm font-medium" for="invoiceNumber">Invoice #</label>
+      <label class="block text-sm font-medium" for="invoiceNumber">Invoice #</label>
       <Input
         id="invoiceNumber"
         class="w-40"
@@ -232,8 +233,8 @@
     </Button>
   </div>
 
-  <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
-    {#each [{ label: "Marketing gross", value: money(total.total.gross) }, { label: "Marketing net", value: money(total.total.net) }, { label: "VAT", value: money(total.total.vat) }, { label: "Bolt delivery marketing", value: money(total.bolt.deliveryGross) }, { label: "Invoices", value: String(total.total.invoices) }, { label: "% of sales", value: percent(total.total.pctOfSales) }] as kpi (kpi.label)}
+  <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+    {#each [{ label: "Marketing gross", value: money(total.total.gross) }, { label: "Marketing net", value: money(total.total.net) }, { label: "VAT", value: money(total.total.vat) }, { label: "Invoices", value: String(total.total.invoices) }, { label: "% of sales", value: percent(total.total.pctOfSales) }] as kpi (kpi.label)}
       <Card.Root class="gap-1 py-4">
         <Card.Header class="px-4">
           <Card.Description>{kpi.label}</Card.Description>

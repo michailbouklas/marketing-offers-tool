@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Button, buttonVariants } from "$lib/components/ui/button/index.js";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
 
@@ -12,6 +13,7 @@
     selected,
     noun,
     onApply,
+    searchable = false,
   }: {
     label: string;
     options: Option[];
@@ -20,14 +22,40 @@
     /** Plural used in the trigger summary, e.g. "channels". */
     noun: string;
     onApply: (values: string[]) => void;
+    /** Adds a search box over the options (for long lists). */
+    searchable?: boolean;
   } = $props();
 
   let open = $state(false);
   let draft = $state<string[]>([]);
+  let query = $state("");
+
+  // Case- and accent-insensitive, so "λαρνακα" finds "Λάρνακα".
+  const fold = (text: string) =>
+    text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase();
+  const visible = $derived.by(() => {
+    const needle = fold(query.trim());
+    return needle
+      ? options.filter((option) => fold(option.label).includes(needle))
+      : options;
+  });
 
   function onOpenChange(next: boolean) {
-    if (next) draft = [...selected];
+    if (next) {
+      draft = [...selected];
+      query = "";
+    }
     open = next;
+  }
+
+  // Select all / none act on the visible (searched) options only.
+  function selectVisible(on: boolean) {
+    const values = new Set(visible.map((option) => option.value));
+    // Without a search this is the old behaviour (stale values dropped too).
+    const kept = query.trim()
+      ? draft.filter((value) => !values.has(value))
+      : [];
+    draft = on ? [...kept, ...values] : kept;
   }
 
   function toggle(value: string) {
@@ -65,24 +93,34 @@
       <ChevronsUpDownIcon class="size-4 opacity-60" />
     </Popover.Trigger>
     <Popover.Content align="start" class="w-72 p-0">
+      {#if searchable}
+        <div class="border-b p-2">
+          <Input
+            bind:value={query}
+            placeholder={`Search ${noun}`}
+            aria-label={`Search ${noun}`}
+            class="h-8"
+          />
+        </div>
+      {/if}
       <div class="flex items-center justify-between gap-2 border-b px-4 py-2">
         <button
           type="button"
           class="text-sm font-medium underline-offset-4 hover:underline"
-          onclick={() => (draft = options.map((option) => option.value))}
+          onclick={() => selectVisible(true)}
         >
           Select all
         </button>
         <button
           type="button"
           class="text-muted-foreground hover:text-foreground text-sm font-medium underline-offset-4 hover:underline"
-          onclick={() => (draft = [])}
+          onclick={() => selectVisible(false)}
         >
           Select none
         </button>
       </div>
       <div class="max-h-72 overflow-y-auto p-2">
-        {#each options as option (option.value)}
+        {#each visible as option (option.value)}
           <button
             type="button"
             role="checkbox"
@@ -100,7 +138,7 @@
           </button>
         {:else}
           <p class="text-muted-foreground px-3 py-2 text-sm">
-            No {noun} in this range.
+            {query.trim() ? `No ${noun} match.` : `No ${noun} in this range.`}
           </p>
         {/each}
       </div>
