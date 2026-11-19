@@ -21,8 +21,13 @@
     type InvoiceSortField,
     type InvoiceViewMode,
   } from "$lib/services/aggregator-invoices/aggregator-invoices";
+  import {
+    MKT_REPORT_PATH,
+    mktReportSearch,
+  } from "$lib/services/aggregator-invoices/mkt-report";
   import { formatBrandLabel } from "$lib/services/brands";
   import ChartLineIcon from "@lucide/svelte/icons/chart-line";
+  import MegaphoneIcon from "@lucide/svelte/icons/megaphone";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import InfoIcon from "@lucide/svelte/icons/info";
   import SearchIcon from "@lucide/svelte/icons/search";
@@ -173,6 +178,20 @@
       : "/aggregator-offers/invoices";
   }
 
+  // The marketing report opens on the same scope (it covers both aggregators).
+  const reportHref = $derived(
+    `${MKT_REPORT_PATH}?${mktReportSearch({
+      aggregators: [],
+      brands: data.brandId ? [data.brandId] : [],
+      stores: [],
+      invoiceNumber: data.filters.invoiceNumber,
+      lineDetails: data.filters.lineDetails,
+      from: data.filters.from,
+      to: data.filters.to,
+      view: "chart",
+    })}`,
+  );
+
   function getPageHref(targetPage: number) {
     return getRouteHref({ page: targetPage });
   }
@@ -312,6 +331,10 @@
             >
               <InfoIcon class="size-4" />
               Info
+            </Button>
+            <Button variant="outline" href={reportHref}>
+              <MegaphoneIcon class="size-4" />
+              Marketing report
             </Button>
           </div>
         </div>
