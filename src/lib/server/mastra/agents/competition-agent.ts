@@ -1,6 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
+import { chatAttachmentsProcessor } from "../processors/chat-attachments";
 import { userSkillsFor } from "../skills/user-skills-fs";
 import { queryCompetitionSql } from "../tools/query-competition-sql";
 import { sharedTools } from "../tools/shared";
@@ -117,4 +118,5 @@ export const competitionAgent = new Agent({
   // Admin-authored skills assigned to this assistant (workspace/user-skills/competition-agent).
   skills: userSkillsFor("competition-agent"),
   memory: () => getChatMemory(),
+  inputProcessors: [chatAttachmentsProcessor],
 });

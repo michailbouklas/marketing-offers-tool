@@ -9,6 +9,7 @@ import {
 } from "../chat-registry";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
+import { chatAttachmentsProcessor } from "../processors/chat-attachments";
 import { userSkillsFor } from "../skills/user-skills-fs";
 import { googleAnalyticsTools } from "../tools/google-analytics-tools";
 import { sharedTools } from "../tools/shared";
@@ -286,4 +287,5 @@ export const googleAnalyticsAgent = new Agent({
   // Admin-authored skills assigned to this assistant (workspace/user-skills/google-analytics-agent).
   skills: userSkillsFor("google-analytics-agent"),
   memory: () => getChatMemory(),
+  inputProcessors: [chatAttachmentsProcessor],
 });
