@@ -35,7 +35,9 @@
     | "last-week"
     | "last-month"
     | "last-quarter"
-    | "ytd";
+    | "ytd"
+    | "ytd-last-month"
+    | "last-year";
 
   const presetOptions: { value: PresetKey; label: string }[] = [
     { value: "all", label: "All time" },
@@ -44,6 +46,8 @@
     { value: "last-month", label: "Last month" },
     { value: "last-quarter", label: "Last quarter" },
     { value: "ytd", label: "Year to date" },
+    { value: "ytd-last-month", label: "YTD - 1mo" },
+    { value: "last-year", label: "Last year" },
   ];
 
   function parseDay(
@@ -96,6 +100,18 @@
       }
       case "ytd":
         return { start: startOfYear(now), end: now };
+      case "ytd-last-month": {
+        // Through the end of last month. In January that is all of last year.
+        const end = startOfMonth(now).subtract({ days: 1 });
+        return { start: startOfYear(end), end };
+      }
+      case "last-year": {
+        const startThisYear = startOfYear(now);
+        return {
+          start: startThisYear.subtract({ years: 1 }),
+          end: startThisYear.subtract({ days: 1 }),
+        };
+      }
       default:
         return { start: undefined, end: undefined };
     }
