@@ -7,6 +7,7 @@ import {
 } from "../chat-registry";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
+import { chatAttachmentsProcessor } from "../processors/chat-attachments";
 import { userSkillsFor } from "../skills/user-skills-fs";
 import { querySalesSql } from "../tools/query-sales-sql";
 import { sharedTools } from "../tools/shared";
@@ -226,4 +227,5 @@ export const salesAgent = new Agent({
   // Admin-authored skills assigned to this assistant (workspace/user-skills/sales-agent).
   skills: userSkillsFor("sales-agent"),
   memory: () => getChatMemory(),
+  inputProcessors: [chatAttachmentsProcessor],
 });

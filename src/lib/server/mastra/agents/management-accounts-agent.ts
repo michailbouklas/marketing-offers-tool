@@ -5,6 +5,7 @@ import {
 } from "../chat-registry";
 import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
+import { chatAttachmentsProcessor } from "../processors/chat-attachments";
 import { userSkillsFor } from "../skills/user-skills-fs";
 import { queryManagementAccountsSql } from "../tools/query-management-accounts-sql";
 import { sharedTools } from "../tools/shared";
@@ -110,4 +111,5 @@ export const managementAccountsAgent = new Agent({
   // Admin-authored skills assigned to this assistant (workspace/user-skills/management-accounts-agent).
   skills: userSkillsFor("management-accounts-agent"),
   memory: () => getChatMemory(),
+  inputProcessors: [chatAttachmentsProcessor],
 });

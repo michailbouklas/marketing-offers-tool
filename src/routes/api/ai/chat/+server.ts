@@ -19,7 +19,14 @@ import {
   resolveSalesPageContext,
   resolveSalesSelectedOrders,
 } from "$lib/server/chat-page-context";
+import { validateUserMessage } from "$lib/components/ai-chat/attachments";
 import { getMastra } from "$lib/server/mastra";
+import {
+  attachmentPrefix,
+  CHAT_ATTACHMENTS_PREFIX_RUNTIME_KEY,
+  removeAttachments,
+  storeMessageAttachments,
+} from "$lib/server/mastra/processors/chat-attachments";
 import {
   chatAgents,
   FORECAST_PAGE_CONTEXT_RUNTIME_KEY,
@@ -218,12 +225,32 @@ export const POST: RequestHandler = async (event) => {
   const { agentId, sessionKey } = body.data;
   const { user } = await authorizeAgent(event, agentId);
 
-  const requestContext = await buildAgentRequestContext(
-    event,
-    agentId,
-    user.id,
-    body.data.context,
-  );
+  // Only the newest message is forwarded (below), so only it needs checking.
+  const newMessage = body.data.messages.at(-1)!;
+  const invalid = validateUserMessage(newMessage);
+  if (invalid) {
+    error(invalid.status, invalid.message);
+  }
+
+  const requestContext =
+    (await buildAgentRequestContext(
+      event,
+      agentId,
+      user.id,
+      body.data.context,
+    )) ?? new RequestContext();
+
+  // Attachments go to the object store; the history keeps only reference
+  // markers, which the chat-attachments processor resolves per model call.
+  const prefix = attachmentPrefix(user.id, agentId, sessionKey);
+  requestContext.set(CHAT_ATTACHMENTS_PREFIX_RUNTIME_KEY, prefix);
+  const message = {
+    ...newMessage,
+    parts: await storeMessageAttachments(
+      prefix,
+      newMessage.parts as Record<string, unknown>[],
+    ),
+  };
 
   const stream = await handleChatStream({
     mastra: getMastra(),
@@ -236,9 +263,9 @@ export const POST: RequestHandler = async (event) => {
       // models reject the next request because the replayed message items
       // lack their paired reasoning items.
       // Cast: the zod pass-through type is looser than Mastra's UIMessage.
-      messages: body.data.messages.slice(-1) as never,
+      messages: [message] as never,
       maxSteps: 8,
-      ...(requestContext ? { requestContext } : {}),
+      requestContext,
       memory: {
         thread: threadIdFor(agentId, user.id, sessionKey),
         resource: user.id,
@@ -368,6 +395,8 @@ export const DELETE: RequestHandler = async (event) => {
       // Unknown or already-deleted thread — treat as success.
     }
   }
+
+  await removeAttachments(attachmentPrefix(user.id, agentId, sessionKey.data));
 
   return new Response(null, { status: 204 });
 };

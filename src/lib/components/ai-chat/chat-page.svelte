@@ -22,6 +22,15 @@
     type ChatSession,
   } from "$lib/components/ai-chat/session-list.svelte";
   import ToolPart from "$lib/components/ai-chat/tool-part.svelte";
+  import AttachmentComposer from "$lib/components/ai-chat/attachment-composer.svelte";
+  import MessageAttachments from "$lib/components/ai-chat/message-attachments.svelte";
+  import {
+    attachmentPartsOf,
+    parseAttachmentText,
+    toMessageParts,
+    typedTextOf,
+  } from "$lib/components/ai-chat/attachments";
+  import { toast } from "svelte-sonner";
   import ChartColumnIcon from "@lucide/svelte/icons/chart-column";
   import DownloadIcon from "@lucide/svelte/icons/download";
   import FileSpreadsheetIcon from "@lucide/svelte/icons/file-spreadsheet";
@@ -156,21 +165,39 @@
     wasBusy = busy;
   });
 
-  function handleSubmit(event?: SubmitEvent) {
-    event?.preventDefault();
-    const text = input.trim();
+  let pendingFiles = $state<File[]>([]);
+  let preparingFiles = $state(false);
 
-    if (!text || busy) {
-      return;
-    }
-
+  // Attachments go first, then the typed text (if any) — same as Claude.
+  function send(parts: (typeof chat.messages)[number]["parts"], text: string) {
     // agentId/sessionKey ride along per request (instead of on the transport)
     // so they are read at send time, keeping them reactive.
     void chat.sendMessage(
-      { text },
+      { parts: [...parts, ...(text ? [{ type: "text" as const, text }] : [])] },
       { body: { agentId, sessionKey, ...(context ? { context } : {}) } },
     );
-    input = "";
+  }
+
+  async function handleSubmit(event?: SubmitEvent) {
+    event?.preventDefault();
+    const text = input.trim();
+
+    if ((!text && pendingFiles.length === 0) || busy || preparingFiles) {
+      return;
+    }
+
+    preparingFiles = true;
+    try {
+      send(await toMessageParts(pendingFiles), text);
+      input = "";
+      pendingFiles = [];
+    } catch (cause) {
+      toast.error(
+        `Could not read the attachment: ${cause instanceof Error ? cause.message : String(cause)}`,
+      );
+    } finally {
+      preparingFiles = false;
+    }
   }
 
   // Enter sends, Shift+Enter inserts a newline — same as Claude.
@@ -184,27 +211,25 @@
   let editingMessageId = $state<string | null>(null);
   let editDraft = $state("");
 
+  // Typed text only — converted attachments render as chips, not text.
   function messageText(message: (typeof chat.messages)[number]) {
-    return message.parts
-      .flatMap((part) => (part.type === "text" ? [part.text] : []))
-      .join("\n\n");
+    return typedTextOf(message.parts);
   }
 
   // Re-asks from this user message: the conversation is truncated to just
-  // before it and the same text is submitted again for a fresh answer.
+  // before it and the same text + attachments are submitted again.
   function retryMessage(messageIndex: number) {
-    const text = messageText(chat.messages[messageIndex]);
+    const message = chat.messages[messageIndex];
+    const text = messageText(message);
+    const attachments = attachmentPartsOf(message.parts);
 
-    if (!text || busy) {
+    if ((!text && attachments.length === 0) || busy) {
       return;
     }
 
     cancelEditing();
     chat.messages = chat.messages.slice(0, messageIndex);
-    void chat.sendMessage(
-      { text },
-      { body: { agentId, sessionKey, ...(context ? { context } : {}) } },
-    );
+    send(attachments, text);
   }
 
   function startEditing(message: (typeof chat.messages)[number]) {
@@ -225,17 +250,16 @@
   // submits the new text, so the answer is regenerated for the edited prompt.
   function submitEdit(messageIndex: number) {
     const text = editDraft.trim();
+    // The edited message keeps its attachments.
+    const attachments = attachmentPartsOf(chat.messages[messageIndex].parts);
 
-    if (!text || busy) {
+    if ((!text && attachments.length === 0) || busy) {
       return;
     }
 
     chat.messages = chat.messages.slice(0, messageIndex);
     cancelEditing();
-    void chat.sendMessage(
-      { text },
-      { body: { agentId, sessionKey, ...(context ? { context } : {}) } },
-    );
+    send(attachments, text);
   }
 
   function handleEditKeydown(event: KeyboardEvent, messageIndex: number) {
@@ -377,7 +401,9 @@
                   </Button>
                   <Button
                     size="sm"
-                    disabled={!editDraft.trim() || busy}
+                    disabled={(!editDraft.trim() &&
+                      attachmentPartsOf(message.parts).length === 0) ||
+                      busy}
                     onclick={() => submitEdit(messageIndex)}
                   >
                     Send
@@ -386,15 +412,22 @@
               </div>
             {:else}
               <div class="space-y-1">
-                <div class="flex justify-end">
-                  <div
-                    class="bg-primary text-primary-foreground max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap"
-                  >
-                    {#each message.parts as part, partIndex (partIndex)}
-                      {#if part.type === "text"}{part.text}{/if}
-                    {/each}
+                <MessageAttachments
+                  parts={message.parts}
+                  {agentId}
+                  {sessionKey}
+                />
+                {#if userText}
+                  <div class="flex justify-end">
+                    <div
+                      class="bg-primary text-primary-foreground max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap"
+                    >
+                      {#each message.parts as part, partIndex (partIndex)}
+                        {#if part.type === "text" && !parseAttachmentText(part.text)}{part.text}{/if}
+                      {/each}
+                    </div>
                   </div>
-                </div>
+                {/if}
                 <UserMessageActions
                   text={userText}
                   metadata={message.metadata}
@@ -509,27 +542,31 @@
     </div>
 
     <div class="border-t">
-      <form
-        class="mx-auto flex w-full max-w-3xl items-end gap-2 px-4 py-4"
-        onsubmit={handleSubmit}
-      >
-        <Textarea
-          bind:ref={textareaRef}
-          bind:value={input}
-          {placeholder}
-          rows={1}
-          autocomplete="off"
-          class="max-h-52 min-h-10 flex-1 resize-none overflow-y-auto"
-          onkeydown={handleInputKeydown}
-        />
-        <Button
-          type="submit"
-          size="icon"
-          aria-label="Send message"
-          disabled={busy || input.trim().length === 0}
+      <form class="mx-auto w-full max-w-3xl px-4 py-4" onsubmit={handleSubmit}>
+        <AttachmentComposer
+          bind:files={pendingFiles}
+          disabled={busy || preparingFiles}
         >
-          <SendHorizontalIcon class="size-4" />
-        </Button>
+          <Textarea
+            bind:ref={textareaRef}
+            bind:value={input}
+            {placeholder}
+            rows={1}
+            autocomplete="off"
+            class="max-h-52 min-h-10 flex-1 resize-none overflow-y-auto"
+            onkeydown={handleInputKeydown}
+          />
+          <Button
+            type="submit"
+            size="icon"
+            aria-label="Send message"
+            disabled={busy ||
+              preparingFiles ||
+              (input.trim().length === 0 && pendingFiles.length === 0)}
+          >
+            <SendHorizontalIcon class="size-4" />
+          </Button>
+        </AttachmentComposer>
       </form>
     </div>
   </div>
