@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildItemAnalysis, type ItemAnalysisRow } from "./sales-item-analysis";
+import {
+  buildItemAnalysis,
+  buildItemAnalysisMonths,
+  parseItemAnalysisParams,
+  type ItemAnalysisRow,
+} from "./sales-item-analysis";
 
 const row = (
   level: ItemAnalysisRow["level"],
@@ -48,6 +53,57 @@ describe("buildItemAnalysis", () => {
     expect(buildItemAnalysis([])).toEqual({
       groups: [],
       grand: { qty: 0, trans: 0, net: 0 },
+    });
+  });
+});
+
+describe("buildItemAnalysisMonths", () => {
+  const monthly = (month: string, net: number): ItemAnalysisRow[] => [
+    { ...row("grand", "", "", 10, 5, net), month },
+    { ...row("category", "Pizzas", "", 10, 5, net), month },
+    { ...row("item", "Pizzas", "PIZ", 10, 5, net), month },
+  ];
+
+  it("builds one report per month, oldest first, each with its own grand", () => {
+    const entries = buildItemAnalysisMonths([
+      ...monthly("2026-11-01", 300),
+      ...monthly("2026-10-01", 100),
+    ]);
+    expect(entries.map((entry) => entry.month)).toEqual([
+      "2026-10-01",
+      "2026-11-01",
+    ]);
+    expect(entries.map((entry) => entry.report.grand.net)).toEqual([100, 300]);
+    expect(entries[1].report.groups[0].items[0].netTot).toBe(1);
+  });
+
+  it("gives a single month-less report when not grouped", () => {
+    const entries = buildItemAnalysisMonths([
+      row("grand", "", "", 10, 5, 50),
+      row("category", "Pizzas", "", 10, 5, 50),
+    ]);
+    expect(entries).toHaveLength(1);
+    expect(entries[0].month).toBeNull();
+    expect(entries[0].report.grand.net).toBe(50);
+  });
+});
+
+describe("parseItemAnalysisParams", () => {
+  it("keeps repeated known categories (commas included) and reads byMonth", () => {
+    const params = new URLSearchParams();
+    params.append("category", "Pizzas, Pasta");
+    params.append("category", "Pizzas, Pasta");
+    params.append("category", "Stale");
+    params.set("byMonth", "1");
+    expect(
+      parseItemAnalysisParams(params, ["Pizzas, Pasta", "Drinks"]),
+    ).toEqual({ categories: ["Pizzas, Pasta"], byMonth: true });
+  });
+
+  it("defaults to all categories, not grouped", () => {
+    expect(parseItemAnalysisParams(new URLSearchParams(), ["Drinks"])).toEqual({
+      categories: [],
+      byMonth: false,
     });
   });
 });

@@ -8,8 +8,14 @@ import {
   scopeOfferLocations,
 } from "$lib/services/sales-offers";
 import { getOfferFilterOptions } from "$lib/services/sales-offers.server";
-import { buildItemAnalysis } from "$lib/services/sales-item-analysis";
-import { getItemAnalysisRows } from "$lib/services/sales-item-analysis.server";
+import {
+  buildItemAnalysisMonths,
+  parseItemAnalysisParams,
+} from "$lib/services/sales-item-analysis";
+import {
+  getItemAnalysisCategories,
+  getItemAnalysisRows,
+} from "$lib/services/sales-item-analysis.server";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
@@ -27,9 +33,14 @@ export const load: PageServerLoad = async (event) => {
     from: filters.from,
     to: filters.to,
   };
-  const { channels, locations: locationOptions } = await getOfferFilterOptions(
-    filters,
-    range,
+  const [{ channels, locations: locationOptions }, categoryOptions] =
+    await Promise.all([
+      getOfferFilterOptions(filters, range),
+      getItemAnalysisCategories(filters.brands[0], range),
+    ]);
+  const { categories, byMonth } = parseItemAnalysisParams(
+    event.url.searchParams,
+    categoryOptions,
   );
   const {
     cities,
@@ -49,11 +60,15 @@ export const load: PageServerLoad = async (event) => {
     locations,
     cities,
     scopedLocations,
+    categoryOptions,
+    categories,
+    byMonth,
     report: getItemAnalysisRows(
       filters.brands[0],
       range,
       filters.channels,
       scopedLocations,
-    ).then(buildItemAnalysis),
+      { categories, byMonth },
+    ).then(buildItemAnalysisMonths),
   };
 };

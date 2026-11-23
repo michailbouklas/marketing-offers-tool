@@ -34,15 +34,20 @@ export async function getItemAnalysisRows(
   range: OfferDateRange,
   channels?: string[],
   locations?: number[],
+  options: { categories?: string[]; byMonth?: boolean } = {},
 ): Promise<ItemAnalysisRow[]> {
   const where = rangeFilter(range, channels, locations);
+  const categories = options.categories ?? [];
+  // `month` leads every grouping set, so the grouping(category, code) levels stay 0/1/3.
+  const month = options.byMonth ? "month, " : "";
   const result = await clickhouse.query({
     query: `
-        SELECT grouping(category, code) AS level, category, code,
+        SELECT grouping(category, code) AS level, ${month}category, code,
           any(name) AS name, sum(qty) AS qty,
           uniqExact(order_key) AS trans, sum(net) AS net
         FROM (
           SELECT (trde_date, trde_location, trde_division, trde_no) AS order_key,
+            ${options.byMonth ? "toStartOfMonth(trde_date) AS month," : ""}
             if(trde_combo_item = '', trde_item, trde_combo_item) AS code,
             anyIf(item_category, trde_item = code) AS category,
             anyIf(item_name, trde_item = code) AS name,
@@ -54,16 +59,23 @@ export async function getItemAnalysisRows(
             AND trde_item != '-1' AND item_category != 'INTERNAL USE'
             AND trde_qty_ratio <= 1
             ${where.sql}
-          GROUP BY order_key, code
+          GROUP BY ${month}order_key, code
         )
-        GROUP BY GROUPING SETS ((category, code), (category), ())
+        -- The item's own category (combo children follow their head), not each line's.
+        ${categories.length > 0 ? "WHERE category IN {categories:Array(String)}" : ""}
+        GROUP BY GROUPING SETS ((${month}category, code), (${month}category), (${options.byMonth ? "month" : ""}))
       `,
-    query_params: { brand, ...where.params },
+    query_params: {
+      brand,
+      ...where.params,
+      ...(categories.length > 0 ? { categories } : {}),
+    },
     format: "JSONEachRow",
   });
   const rows = await result.json<Record<string, string | number>>();
   return rows.map((row) => ({
     level: LEVELS[toNumber(row.level) as keyof typeof LEVELS],
+    ...(options.byMonth ? { month: String(row.month) } : {}),
     // A line whose head was voided has no category of its own.
     category: String(row.category ?? "") || "Uncategorised",
     code: String(row.code ?? ""),
@@ -72,4 +84,25 @@ export async function getItemAnalysisRows(
     trans: toNumber(row.trans),
     net: toNumber(row.net),
   }));
+}
+
+/** The brand's POS categories sold in the range (category filter options), sorted. */
+export async function getItemAnalysisCategories(
+  brand: string,
+  range: OfferDateRange,
+): Promise<string[]> {
+  const result = await clickhouse.query({
+    query: `
+        SELECT DISTINCT item_category AS category
+        FROM ${detailsTable()}
+        WHERE lower(brand) = {brand:String}
+          AND trde_date BETWEEN {from:Date} AND {to:Date}
+          AND item_category NOT IN ('', 'INTERNAL USE')
+        ORDER BY category
+      `,
+    query_params: { brand, from: range.from, to: range.to },
+    format: "JSONEachRow",
+  });
+  const rows = await result.json<{ category: string }>();
+  return rows.map((row) => row.category);
 }

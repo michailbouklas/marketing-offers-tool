@@ -1,6 +1,8 @@
 /** One row of the item-analysis query: an item, a category total, or the grand total. */
 export type ItemAnalysisRow = {
   level: "item" | "category" | "grand";
+  /** First day of the month (YYYY-MM-DD), only when grouped by month. */
+  month?: string;
   category: string;
   code: string;
   name: string;
@@ -41,6 +43,42 @@ export type ItemAnalysisReport = {
 };
 
 const ratio = (part: number, whole: number) => (whole === 0 ? 0 : part / whole);
+
+/**
+ * Page-only filters from the URL. Categories are repeated `category` params,
+ * not comma-joined, since POS category names may contain commas. Picks not
+ * in the brand's `options` (stale after a range change) are dropped.
+ */
+export function parseItemAnalysisParams(
+  params: URLSearchParams,
+  options: string[],
+) {
+  return {
+    categories: [...new Set(params.getAll("category"))].filter((value) =>
+      options.includes(value),
+    ),
+    byMonth: params.get("byMonth") === "1",
+  };
+}
+
+/** One report per month (ascending); rows without a month give one `month: null` report. */
+export function buildItemAnalysisMonths(
+  rows: ItemAnalysisRow[],
+): { month: string | null; report: ItemAnalysisReport }[] {
+  const byMonth = new Map<string | null, ItemAnalysisRow[]>();
+  for (const row of rows) {
+    const month = row.month ?? null;
+    const list = byMonth.get(month);
+    if (list) list.push(row);
+    else byMonth.set(month, [row]);
+  }
+  return [...byMonth.keys()]
+    .sort((a, b) => (a ?? "").localeCompare(b ?? ""))
+    .map((month) => ({
+      month,
+      report: buildItemAnalysis(byMonth.get(month) ?? []),
+    }));
+}
 
 /** Groups the rows like the POS report: categories by net (best first), items by code. */
 export function buildItemAnalysis(rows: ItemAnalysisRow[]): ItemAnalysisReport {

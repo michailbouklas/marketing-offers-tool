@@ -6,14 +6,19 @@
   import DateRangeFilter from "$lib/components/date-range-filter.svelte";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
   import { Skeleton } from "$lib/components/ui/skeleton/index.js";
+  import { Switch } from "$lib/components/ui/switch/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import MultiSelectFilter from "$lib/components/sales/multi-select-filter.svelte";
   import {
     formatSalesAmount,
     formatSalesCount,
   } from "$lib/services/sales-dashboard";
-  import type { ItemAnalysisFigures } from "$lib/services/sales-item-analysis";
+  import type {
+    ItemAnalysisFigures,
+    ItemAnalysisReport,
+  } from "$lib/services/sales-item-analysis";
   import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import DownloadIcon from "@lucide/svelte/icons/download";
   import { toast } from "svelte-sonner";
@@ -42,24 +47,29 @@
     }
   }
 
-  /** Same page with another brand, range, channels, locations and/or cities. */
-  function reportHref(
-    alias: string,
-    range: { from?: string; to?: string },
-    channels: string[] = [],
-    locations: number[] = [],
-    cities: string[] = [],
-  ) {
-    const params = new URLSearchParams({ brands: alias });
-    if (range.from && range.to) {
-      params.set("from", range.from);
-      params.set("to", range.to);
+  /**
+   * Same page with some params changed: a string sets it, an array repeats it,
+   * empty / null removes it. Everything else in the URL is kept.
+   */
+  function reportHref(changes: Record<string, string | string[] | null>) {
+    const params = new URLSearchParams(page.url.searchParams);
+    for (const [key, value] of Object.entries(changes)) {
+      params.delete(key);
+      for (const item of [value ?? []].flat()) {
+        if (item) params.append(key, item);
+      }
     }
-    if (channels.length > 0) params.set("channels", channels.join(","));
-    if (locations.length > 0) params.set("locations", locations.join(","));
-    if (cities.length > 0) params.set("cities", cities.join(","));
     return `${page.url.pathname}?${params}`;
   }
+
+  const apply = (changes: Parameters<typeof reportHref>[0]) =>
+    goto(reportHref(changes), { keepFocus: true, noScroll: true });
+
+  const monthFormat = new Intl.DateTimeFormat("en-GB", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 
   const allBrands = $derived(data.scope?.brands ?? []);
   const brand = $derived(
@@ -152,13 +162,22 @@
         value: String(item.id),
         label: item.name,
       }))}
-    <div class="flex flex-wrap items-end gap-6">
+    <div
+      class="bg-background sticky top-14 z-30 -mx-4 flex flex-wrap items-end gap-6 border-b px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+    >
       <div class="space-y-2">
         <span class="text-sm font-medium" id="brand-label">Brand</span>
         <ButtonGroup.Root aria-labelledby="brand-label" class="flex-wrap">
           {#each allBrands as item (item.alias)}
+            <!-- Each brand has its own channels, locations and categories: reset them. -->
             <Button
-              href={reportHref(item.alias, range)}
+              href={reportHref({
+                brands: item.alias,
+                channels: null,
+                locations: null,
+                cities: null,
+                category: null,
+              })}
               variant={item.alias === brand.alias ? "default" : "outline"}
               aria-current={item.alias === brand.alias ? "page" : undefined}
             >
@@ -174,10 +193,7 @@
           from={range.from}
           to={range.to}
           onApply={(next) =>
-            goto(reportHref(brand.alias, next, channels, locations, cities), {
-              keepFocus: true,
-              noScroll: true,
-            })}
+            apply({ from: next.from ?? null, to: next.to ?? null })}
         />
       </div>
 
@@ -189,11 +205,7 @@
         }))}
         noun="channels"
         selected={channels}
-        onApply={(next) =>
-          goto(reportHref(brand.alias, range, next, locations, cities), {
-            keepFocus: true,
-            noScroll: true,
-          })}
+        onApply={(next) => apply({ channels: next.join(",") })}
       />
 
       <MultiSelectFilter
@@ -201,11 +213,7 @@
         options={cityOptions}
         noun="cities"
         selected={cities}
-        onApply={(next) =>
-          goto(reportHref(brand.alias, range, channels, [], next), {
-            keepFocus: true,
-            noScroll: true,
-          })}
+        onApply={(next) => apply({ cities: next.join(","), locations: null })}
       />
 
       <MultiSelectFilter
@@ -213,12 +221,30 @@
         options={locationOptions}
         noun="locations"
         selected={locations.map(String)}
-        onApply={(next) =>
-          goto(
-            reportHref(brand.alias, range, channels, next.map(Number), cities),
-            { keepFocus: true, noScroll: true },
-          )}
+        onApply={(next) => apply({ locations: next.join(",") })}
       />
+
+      <MultiSelectFilter
+        label="Category"
+        options={(data.categoryOptions ?? []).map((value) => ({
+          value,
+          label: value,
+        }))}
+        noun="categories"
+        searchable
+        selected={data.categories ?? []}
+        onApply={(next) => apply({ category: next })}
+      />
+
+      <div class="flex h-9 items-center gap-2">
+        <Switch
+          id="group-by-month"
+          checked={data.byMonth ?? false}
+          onCheckedChange={(checked) =>
+            apply({ byMonth: checked ? "1" : null })}
+        />
+        <Label for="group-by-month">Group by month</Label>
+      </div>
 
       <Button
         variant="outline"
@@ -246,8 +272,8 @@
           {/each}
         </Card.Content>
       </Card.Root>
-    {:then report}
-      {#if report.groups.length === 0}
+    {:then entries}
+      {#if entries.every((entry) => entry.report.groups.length === 0)}
         <Card.Root>
           <Card.Content class="text-muted-foreground py-8 text-sm">
             No sales found for {brand.name} from {range.from} to {range.to} with these
@@ -255,72 +281,14 @@
           </Card.Content>
         </Card.Root>
       {:else}
-        <Card.Root class="py-0">
-          <Card.Content class="px-0">
-            <Table.Root class="text-xs">
-              <Table.Header class="bg-background sticky top-0">
-                <Table.Row>
-                  <Table.Head>Item</Table.Head>
-                  <Table.Head></Table.Head>
-                  {#each HEADERS as header, index (index)}
-                    <Table.Head class={["text-right", blockStart(index)]}>
-                      {header}
-                    </Table.Head>
-                  {/each}
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {#each report.groups as group (group.category)}
-                  <Table.Row class="bg-muted/50 hover:bg-muted/50">
-                    <Table.Cell colspan={12} class="font-semibold">
-                      {group.category}
-                    </Table.Cell>
-                  </Table.Row>
-                  {#each group.items as item (item.code)}
-                    <Table.Row>
-                      <Table.Cell class="font-mono">{item.code}</Table.Cell>
-                      <Table.Cell>{item.name}</Table.Cell>
-                      {#each cells(item) as cell, index (index)}
-                        <Table.Cell
-                          class={["text-right tabular-nums", blockStart(index)]}
-                        >
-                          {cell}
-                        </Table.Cell>
-                      {/each}
-                    </Table.Row>
-                  {/each}
-                  <Table.Row class="font-semibold">
-                    <Table.Cell colspan={2}>{group.category} total</Table.Cell>
-                    {#each cells(group.total) as cell, index (index)}
-                      <Table.Cell
-                        class={["text-right tabular-nums", blockStart(index)]}
-                      >
-                        {index === 1 || index === 5 || index === 8 ? "" : cell}
-                      </Table.Cell>
-                    {/each}
-                  </Table.Row>
-                {/each}
-              </Table.Body>
-              <Table.Footer>
-                <Table.Row class="font-semibold">
-                  <Table.Cell colspan={2}>Grand totals</Table.Cell>
-                  <Table.Cell class="border-l text-right tabular-nums">
-                    {formatSalesCount(report.grand.qty)}
-                  </Table.Cell>
-                  <Table.Cell colspan={3}></Table.Cell>
-                  <Table.Cell class="border-l text-right tabular-nums">
-                    {formatSalesCount(report.grand.trans)}
-                  </Table.Cell>
-                  <Table.Cell colspan={2}></Table.Cell>
-                  <Table.Cell class="border-l text-right tabular-nums">
-                    {formatSalesAmount(report.grand.net)}
-                  </Table.Cell>
-                  <Table.Cell colspan={2}></Table.Cell>
-                </Table.Row>
-              </Table.Footer>
-            </Table.Root>
-          </Card.Content>
-        </Card.Root>
+        {#each entries as entry (entry.month)}
+          {#if entry.month}
+            <h2 class="text-xl font-semibold tracking-tight">
+              {monthFormat.format(new Date(entry.month))}
+            </h2>
+          {/if}
+          {@render reportTable(entry.report)}
+        {/each}
       {/if}
     {:catch}
       <Card.Root>
@@ -330,6 +298,75 @@
         </Card.Content>
       </Card.Root>
     {/await}
+
+    {#snippet reportTable(report: ItemAnalysisReport)}
+      <Card.Root class="py-0">
+        <Card.Content class="px-0">
+          <Table.Root class="text-xs">
+            <Table.Header class="bg-background sticky top-0">
+              <Table.Row>
+                <Table.Head>Item</Table.Head>
+                <Table.Head></Table.Head>
+                {#each HEADERS as header, index (index)}
+                  <Table.Head class={["text-right", blockStart(index)]}>
+                    {header}
+                  </Table.Head>
+                {/each}
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {#each report.groups as group (group.category)}
+                <Table.Row class="bg-muted/50 hover:bg-muted/50">
+                  <Table.Cell colspan={12} class="font-semibold">
+                    {group.category}
+                  </Table.Cell>
+                </Table.Row>
+                {#each group.items as item (item.code)}
+                  <Table.Row>
+                    <Table.Cell class="font-mono">{item.code}</Table.Cell>
+                    <Table.Cell>{item.name}</Table.Cell>
+                    {#each cells(item) as cell, index (index)}
+                      <Table.Cell
+                        class={["text-right tabular-nums", blockStart(index)]}
+                      >
+                        {cell}
+                      </Table.Cell>
+                    {/each}
+                  </Table.Row>
+                {/each}
+                <Table.Row class="font-semibold">
+                  <Table.Cell colspan={2}>{group.category} total</Table.Cell>
+                  {#each cells(group.total) as cell, index (index)}
+                    <Table.Cell
+                      class={["text-right tabular-nums", blockStart(index)]}
+                    >
+                      {index === 1 || index === 5 || index === 8 ? "" : cell}
+                    </Table.Cell>
+                  {/each}
+                </Table.Row>
+              {/each}
+            </Table.Body>
+            <Table.Footer>
+              <Table.Row class="font-semibold">
+                <Table.Cell colspan={2}>Grand totals</Table.Cell>
+                <Table.Cell class="border-l text-right tabular-nums">
+                  {formatSalesCount(report.grand.qty)}
+                </Table.Cell>
+                <Table.Cell colspan={3}></Table.Cell>
+                <Table.Cell class="border-l text-right tabular-nums">
+                  {formatSalesCount(report.grand.trans)}
+                </Table.Cell>
+                <Table.Cell colspan={2}></Table.Cell>
+                <Table.Cell class="border-l text-right tabular-nums">
+                  {formatSalesAmount(report.grand.net)}
+                </Table.Cell>
+                <Table.Cell colspan={2}></Table.Cell>
+              </Table.Row>
+            </Table.Footer>
+          </Table.Root>
+        </Card.Content>
+      </Card.Root>
+    {/snippet}
 
     <!-- Page filters are defaults only; brand scope is enforced server-side. -->
     <ChatWidget
