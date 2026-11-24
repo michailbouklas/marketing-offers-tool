@@ -906,6 +906,91 @@ describe("dismissGaps", () => {
     );
   });
 
+  it("approves only submitted gaps of the user's brands", async () => {
+    const rows = new Map([
+      [
+        1,
+        {
+          dq_id: 1,
+          status: "submitted",
+          brand_aliases: ["kfc"],
+          trde_item: "A",
+        },
+      ],
+      [2, { dq_id: 2, status: "open", brand_aliases: ["kfc"], trde_item: "B" }],
+      [
+        3,
+        {
+          dq_id: 3,
+          status: "submitted",
+          brand_aliases: ["phc"],
+          trde_item: "C",
+        },
+      ],
+      [
+        5,
+        {
+          dq_id: 5,
+          status: "submitted",
+          brand_aliases: ["kfc"],
+          trde_item: "E",
+        },
+      ],
+    ]);
+    const staging = {
+      id: 42,
+      dq_id: 1,
+      item_code: "A",
+      channel: "Wolt Only",
+      category: "ONEPLUSX",
+      subcategory: "% Disc",
+      ideal_price: { toString: () => "8.5", toFixed: () => "8.50" },
+      selling_price: { toString: () => "5.99", toFixed: () => "5.99" },
+      fc_perc: { toFixed: () => "0.3200" },
+      fc_eur: null,
+      mktg_spend: null,
+      status: "pending",
+    };
+    serviceDeps.getSnapshotRowByGapId.mockImplementation(
+      async (id: number) => rows.get(id) ?? null,
+    );
+    // Gap 5 is submitted but its pending staging row belongs to another gap.
+    serviceDeps.getPendingStagingRecordByItemCode.mockImplementation(
+      async (itemCode: string) =>
+        itemCode === "A"
+          ? staging
+          : itemCode === "E"
+            ? { id: 43, dq_id: 99 }
+            : null,
+    );
+    serviceDeps.getStagingRecordById.mockResolvedValue(staging);
+    serviceDeps.getGapRecordById.mockResolvedValue({
+      dq_id: 1,
+      item_name: "Zinger",
+      brand: "kfc",
+    });
+    serviceDeps.getDimOfferAuditSnapshot.mockResolvedValue(null);
+
+    const result = await orchestration.approveGaps(
+      [1, 1, 2, 3, 4, 5],
+      [" KFC "],
+      "user-1",
+    );
+
+    expect(result.processedIds).toEqual([1]);
+    expect(result.failed.map((failure) => failure.id)).toEqual([2, 3, 4, 5]);
+    expect(serviceDeps.updateDimOffersStagingStatus).toHaveBeenCalledTimes(1);
+    expect(serviceDeps.updateDimOffersStagingStatus).toHaveBeenCalledWith(
+      42,
+      "approved",
+      "user-1",
+    );
+    expect(serviceDeps.updateGapRecordStatus).toHaveBeenCalledWith(
+      1,
+      "resolved",
+    );
+  });
+
   it("does not revive a dismissed gap from an old open-form link", async () => {
     serviceDeps.getSnapshotRowByItemCode.mockResolvedValue(null);
     serviceDeps.getGapRecordByItemCode.mockResolvedValue({

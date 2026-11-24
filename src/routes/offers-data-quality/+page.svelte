@@ -2,6 +2,7 @@
   import ArchiveIcon from "@lucide/svelte/icons/archive";
   import ArrowDownIcon from "@lucide/svelte/icons/arrow-down";
   import ArrowUpIcon from "@lucide/svelte/icons/arrow-up";
+  import CheckIcon from "@lucide/svelte/icons/check";
   import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import ChevronsLeftRightEllipsisIcon from "@lucide/svelte/icons/chevrons-left-right-ellipsis";
@@ -64,6 +65,8 @@
   let selectedIds = $state<number[]>([]);
   let confirmRemoveOpen = $state(false);
   let isRemoving = $state(false);
+  let confirmApproveOpen = $state(false);
+  let isApproving = $state(false);
   let latestRefreshRequestId = 0;
   let itemNameSearch = $state("");
   let itemCodeSearch = $state("");
@@ -112,6 +115,14 @@
     gaps.filter((gap) => gap.dq_id > 0).map((gap) => gap.dq_id),
   );
   const selectedIdSet = $derived(new Set(selectedIds));
+  // Only checked rows awaiting approval can be approved.
+  const approvableIds = $derived(
+    gaps
+      .filter(
+        (gap) => gap.status === "submitted" && selectedIdSet.has(gap.dq_id),
+      )
+      .map((gap) => gap.dq_id),
+  );
   const allSelected = $derived(
     selectableIds.length > 0 &&
       selectableIds.every((id) => selectedIdSet.has(id)),
@@ -326,6 +337,40 @@
     }
   }
 
+  async function approveSelected() {
+    isApproving = true;
+    try {
+      const response = await fetch("/api/gaps/approve", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ids: approvableIds }),
+      });
+      if (!response.ok) {
+        throw new Error(`Approve failed (${response.status})`);
+      }
+      const result = (await response.json()) as {
+        processedIds: number[];
+        failed: Array<{ id: number; error: string }>;
+      };
+      if (result.processedIds.length > 0) {
+        toast.success(
+          `Approved ${result.processedIds.length} submission${result.processedIds.length === 1 ? "" : "s"}.`,
+        );
+      }
+      if (result.failed.length > 0) {
+        toast.error(
+          `${result.failed.length} not approved: ${result.failed[0].error}.`,
+        );
+      }
+      confirmApproveOpen = false;
+      await refreshQueue();
+    } catch {
+      toast.error("The selected gaps could not be approved. Try again.");
+    } finally {
+      isApproving = false;
+    }
+  }
+
   async function goToPage(targetPage: number) {
     if (targetPage < 1 || targetPage > totalPages || targetPage === page) {
       return;
@@ -511,6 +556,13 @@
                 <ChevronDownIcon class="size-4 opacity-60" />
               </DropdownMenu.Trigger>
               <DropdownMenu.Content align="end" class="w-52">
+                <DropdownMenu.Item
+                  disabled={approvableIds.length === 0}
+                  onSelect={() => (confirmApproveOpen = true)}
+                >
+                  <CheckIcon />
+                  Approve
+                </DropdownMenu.Item>
                 <DropdownMenu.Item
                   variant="destructive"
                   onSelect={() => (confirmRemoveOpen = true)}
@@ -704,6 +756,32 @@
         {/if}
       </Card.Content>
     </Card.Root>
+
+    <AlertDialog.Root bind:open={confirmApproveOpen}>
+      <AlertDialog.Content>
+        <AlertDialog.Header>
+          <AlertDialog.Title>
+            Approve {approvableIds.length} submission{approvableIds.length === 1
+              ? ""
+              : "s"}?
+          </AlertDialog.Title>
+          <AlertDialog.Description>
+            The submitted prices are written to the offers table as they are,
+            without a per-item review. Selected gaps that are not awaiting
+            approval are skipped.
+          </AlertDialog.Description>
+        </AlertDialog.Header>
+        <AlertDialog.Footer>
+          <AlertDialog.Cancel disabled={isApproving}>Cancel</AlertDialog.Cancel>
+          <Button disabled={isApproving} onclick={approveSelected}>
+            {#if isApproving}
+              <LoaderCircleIcon class="size-4 animate-spin" />
+            {/if}
+            Approve
+          </Button>
+        </AlertDialog.Footer>
+      </AlertDialog.Content>
+    </AlertDialog.Root>
 
     <AlertDialog.Root bind:open={confirmRemoveOpen}>
       <AlertDialog.Content>

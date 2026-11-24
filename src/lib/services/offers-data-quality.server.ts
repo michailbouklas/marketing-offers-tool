@@ -600,6 +600,59 @@ export async function dismissGaps(
   return result;
 }
 
+/**
+ * Bulk "Approve" from the queue: approve the pending submission behind each
+ * submitted gap the user owns (by brand). Rows that are not awaiting approval
+ * are refused.
+ */
+export async function approveGaps(
+  dqIds: number[],
+  allowedBrandAliases: string[],
+  userId: string,
+): Promise<{
+  processedIds: number[];
+  failed: Array<{ id: number; error: string }>;
+}> {
+  const allowed = new Set(allowedBrandAliases.map(normalizeBrandAlias));
+  const result = {
+    processedIds: [] as number[],
+    failed: [] as Array<{ id: number; error: string }>,
+  };
+
+  for (const dqId of new Set(dqIds)) {
+    const row = await getSnapshotRowByGapId(dqId);
+
+    if (!row || !row.brand_aliases.some((alias) => allowed.has(alias))) {
+      result.failed.push({ id: dqId, error: "Gap not found in your queue" });
+      continue;
+    }
+
+    if (row.status !== "submitted") {
+      result.failed.push({ id: dqId, error: "Not awaiting approval" });
+      continue;
+    }
+
+    try {
+      const staging = await getPendingStagingRecordByItemCode(row.trde_item);
+
+      if (!staging || staging.dq_id !== dqId) {
+        result.failed.push({ id: dqId, error: "No pending submission found" });
+        continue;
+      }
+
+      await approveGapSubmission(staging.id, userId);
+      result.processedIds.push(dqId);
+    } catch (error) {
+      result.failed.push({
+        id: dqId,
+        error: error instanceof Error ? error.message : "Unable to approve gap",
+      });
+    }
+  }
+
+  return result;
+}
+
 export type FlaggedGap = {
   dq_id: number;
   trde_item: string;
