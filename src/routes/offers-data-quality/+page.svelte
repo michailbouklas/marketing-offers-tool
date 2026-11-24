@@ -23,6 +23,8 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import ChatWidget from "$lib/components/ai-chat/chat-widget.svelte";
+  import LiveGapsDialog from "$lib/components/offers-data-quality/live-gaps-dialog.svelte";
+  import TrendingUpIcon from "@lucide/svelte/icons/trending-up";
   import { fetchGapQueue } from "$lib/services/offers-data-quality-list";
   import {
     appendGapQueueFilters,
@@ -66,6 +68,7 @@
   let confirmRemoveOpen = $state(false);
   let isRemoving = $state(false);
   let confirmApproveOpen = $state(false);
+  let liveGapsOpen = $state(false);
   let isApproving = $state(false);
   let latestRefreshRequestId = 0;
   let itemNameSearch = $state("");
@@ -574,6 +577,15 @@
             </DropdownMenu.Root>
 
             <Button
+              variant="outline"
+              size="sm"
+              onclick={() => (liveGapsOpen = true)}
+            >
+              <TrendingUpIcon class="size-4" />
+              Selling now
+            </Button>
+
+            <Button
               href="/offers-data-quality/approved"
               variant="outline"
               size="sm"
@@ -765,6 +777,8 @@
         {/if}
       </Card.Content>
     </Card.Root>
+
+    <LiveGapsDialog bind:open={liveGapsOpen} gaps={data.liveGaps} />
 
     <AlertDialog.Root bind:open={confirmApproveOpen}>
       <AlertDialog.Content>

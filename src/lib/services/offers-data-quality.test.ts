@@ -47,6 +47,7 @@ vi.mock("./offers-data-quality-postgres.server", () => ({
   getPendingStagingRecordByItemCode: vi.fn(),
   getStagingRecordById: vi.fn(),
   listPendingStagingRecords: vi.fn(),
+  listCachedOfferSales: vi.fn(),
   listGapRecords: vi.fn(),
   listRecentlyResolvedItemCodes: vi.fn(),
   updateDimOffersStagingStatus: vi.fn(),
@@ -133,6 +134,168 @@ describe("offers-data-quality helpers", () => {
     expect(line.split(",").length - 1).toBe(
       helpers.approvedOffersCsvHeader.split(",").length,
     );
+  });
+
+  it("summarizes approved offers: recomputed FC %, self-approvals and data problems", () => {
+    const row = {
+      brand: "KFC",
+      channel: "Wolt Only",
+      category: "BundleDisc",
+      subcategory: "LTO",
+      fc_eur: 3,
+      brand_ideal_fc_perc: 0.3,
+      ideal_price: 11.24,
+      // 3 / (8 / 1.05 / 1.07) = 42.13%, 12.13 points over the 30% target.
+      selling_price: 8,
+      fc_perc: 0.4213,
+      submitted_by: "ann",
+      submitted_at: new Date("2026-11-01T08:00:00Z"),
+      approved_by: "bob",
+      approved_at: new Date("2026-11-01T10:00:00Z"),
+    };
+    const summary = helpers.summarizeApprovedOffers(
+      [
+        row,
+        // Self-approved, stored FC % is the gross ratio (3 / 8), not the formula.
+        { ...row, fc_perc: 0.375, approved_by: "ann" },
+        // Legacy row: no FC EUR, free selling price, channel not in the list.
+        {
+          ...row,
+          brand: "BK",
+          channel: "0",
+          fc_eur: null,
+          brand_ideal_fc_perc: null,
+          selling_price: 0,
+          approved_at: new Date("2026-12-02T08:00:00Z"),
+        },
+      ],
+      ["Wolt Only"],
+    );
+
+    expect(summary.total).toBe(3);
+    expect(summary.selfApproved).toBe(1);
+    expect(summary.medianHoursToApprove).toBe(2);
+    expect(summary.problems).toEqual({
+      any: 2,
+      noFcEur: 1,
+      zeroSellingPrice: 1,
+      fcPercMismatch: 1,
+      unknownChannel: 1,
+    });
+    expect(summary.brands.map((brand) => brand.label)).toEqual(["KFC", "BK"]);
+    expect(summary.brands[0]).toMatchObject({
+      approved: 2,
+      checkable: 2,
+      overWarn: 2,
+      overHigh: 2,
+      aboveIdeal: 0,
+    });
+    expect(summary.brands[0].avgPointsOverTarget).toBeCloseTo(12.13, 2);
+    expect(summary.brands[0].avgDiscountPct).toBeCloseTo(28.83, 2);
+    // A selling price of 0 is a data error, not a 100% discount.
+    expect(summary.brands[1]).toMatchObject({
+      checkable: 0,
+      avgPointsOverTarget: null,
+      avgDiscountPct: null,
+    });
+    expect(summary.months).toEqual([
+      { month: "2026-11", approved: 2 },
+      { month: "2026-12", approved: 1 },
+    ]);
+    expect(summary.approvers).toEqual([
+      { approver: "bob", approved: 2, selfApproved: 0 },
+      { approver: "ann", approved: 1, selfApproved: 1 },
+    ]);
+  });
+
+  it("checks approved prices against POS sales and leaves mismatched prices out of the FC figure", () => {
+    const row = {
+      brand: "BK",
+      trde_item: "A",
+      channel: "Wolt Only",
+      category: "BundleDisc",
+      subcategory: "LTO",
+      fc_eur: 4,
+      brand_ideal_fc_perc: 0.3,
+      ideal_price: 14,
+      selling_price: 10.5,
+      fc_perc: 0.4,
+      submitted_by: "ann",
+      submitted_at: new Date("2026-11-01T08:00:00Z"),
+      approved_by: "bob",
+      approved_at: new Date("2026-11-01T10:00:00Z"),
+    };
+    const sold = { daysOnSale: 10, lastSale: "2026-11-20" };
+    const check = helpers.summarizeOfferSales(
+      [
+        // Charged 10.00 net = 10.50 gross: matches. 100 x 4 / 1000 = 40% FC.
+        row,
+        // Approved twice: counted once.
+        row,
+        // Charged 5.25 gross against 10.50 approved: a placeholder price.
+        { ...row, trde_item: "B", fc_eur: 20 },
+        // Never sold.
+        { ...row, trde_item: "C" },
+      ],
+      new Map([
+        ["bk|A", { ...sold, units: 100, offerNet: 1000 }],
+        ["bk|B", { ...sold, units: 100, offerNet: 500 }],
+      ]),
+    );
+
+    expect(check).toHaveLength(1);
+    expect(check[0]).toMatchObject({
+      label: "BK",
+      sold: 2,
+      priceMismatch: 1,
+      checked: 1,
+      net: 1000,
+    });
+    expect(check[0].realFcPct).toBeCloseTo(40, 5);
+    expect(check[0].targetPct).toBeCloseTo(30, 5);
+    expect(check[0].eurAboveTarget).toBeCloseTo(100, 5);
+  });
+
+  it("ranks unpriced offers that sell now and counts the ones that no longer sell", () => {
+    const gap = (dq_id: number, trde_item: string) => ({
+      dq_id,
+      brand: " bk ",
+      trde_item,
+      item_name: trde_item,
+    });
+    const sale = (lastSale: string, offerNet: number) => ({
+      units: 1,
+      offerNet,
+      daysOnSale: 10,
+      lastSale,
+    });
+    const result = helpers.rankLiveGaps(
+      [
+        gap(1, "SMALL"),
+        gap(2, "BIG"),
+        gap(3, "OLD"),
+        gap(4, "NEVER"),
+        gap(5, "QUIET"),
+      ],
+      new Map([
+        ["bk|SMALL", sale("2026-11-20", 100)],
+        ["bk|BIG", sale("2026-10-26", 900)],
+        ["bk|OLD", sale("2026-01-01", 5000)],
+        // Sold two months ago: neither live nor dead.
+        ["bk|QUIET", sale("2026-09-20", 700)],
+      ]),
+      new Date("2026-11-24T12:00:00Z"),
+    );
+
+    expect(result.total).toBe(5);
+    expect(result.dead).toBe(2);
+    expect(result.live.map((item) => [item.trde_item, item.netPerDay])).toEqual(
+      [
+        ["BIG", 90],
+        ["SMALL", 10],
+      ],
+    );
+    expect(result.live[0].brand).toBe("BK");
   });
 
   it("parses comma-separated missing fields", () => {

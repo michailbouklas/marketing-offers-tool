@@ -1,5 +1,8 @@
 import { requireAuthenticatedUser } from "$lib/server/auth-guards";
-import { listApprovedOffers } from "$lib/services/offers-data-quality.server";
+import {
+  getApprovedOffersAnalytics,
+  listApprovedOffers,
+} from "$lib/services/offers-data-quality.server";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { readApprovedOffersQuery } from "./filters.server";
@@ -22,7 +25,13 @@ export const load: PageServerLoad = async (event) => {
     PAGE_SIZE,
   );
 
+  // Not awaited: streamed to the Analytics dialog so the table does not wait for it.
+  const analytics = getApprovedOffersAnalytics(selectedBrandAliases, filters);
+  // The dialog's {#await} shows the failure; this stops an unhandled rejection.
+  analytics.catch(() => {});
+
   return {
+    analytics,
     offers: items,
     totalItems,
     page,

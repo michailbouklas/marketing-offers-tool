@@ -754,3 +754,356 @@ export function approvedOfferCsvLine(offer: ApprovedOffer): string {
     .map(csvField)
     .join(",");
 }
+
+/** One approved submission, as numbers, for summarizeApprovedOffers. Percentages are fractions. */
+export type ApprovedOfferAnalyticsRow = {
+  brand: string;
+  channel: string;
+  category: string;
+  subcategory: string;
+  fc_eur: number | null;
+  brand_ideal_fc_perc: number | null;
+  ideal_price: number;
+  selling_price: number;
+  fc_perc: number;
+  submitted_by: string;
+  submitted_at: Date;
+  approved_by: string | null;
+  approved_at: Date | null;
+};
+
+export type ApprovedOffersMixRow = {
+  label: string;
+  approved: number;
+  /** Average % below the ideal price; null when no row has both prices. */
+  avgDiscountPct: number | null;
+};
+
+export type ApprovedOffersAnalytics = {
+  total: number;
+  medianHoursToApprove: number | null;
+  selfApproved: number;
+  problems: {
+    /** Rows with at least one of the problems below. */
+    any: number;
+    noFcEur: number;
+    zeroSellingPrice: number;
+    /** Stored FC % differs from the one recomputed from FC EUR and selling price. */
+    fcPercMismatch: number;
+    unknownChannel: number;
+  };
+  brands: (ApprovedOffersMixRow & {
+    /** Rows that can be checked against the target: FC EUR, target and a selling price. */
+    checkable: number;
+    /** Average FC % points above the brand target, over the checkable rows. */
+    avgPointsOverTarget: number | null;
+    overWarn: number;
+    overHigh: number;
+    aboveIdeal: number;
+  })[];
+  categories: ApprovedOffersMixRow[];
+  channels: ApprovedOffersMixRow[];
+  months: { month: string; approved: number }[];
+  approvers: { approver: string; approved: number; selfApproved: number }[];
+};
+
+/** FC % points above the brand target that count as over / well over. */
+export const FC_OVER_TARGET_WARN_POINTS = 5;
+export const FC_OVER_TARGET_HIGH_POINTS = 10;
+/** Stored and recomputed FC % further apart than this (fraction) count as a mismatch. */
+const FC_PERC_MISMATCH_TOLERANCE = 0.006;
+
+function groupRows<T>(rows: T[], key: (row: T) => string): [string, T[]][] {
+  const groups = new Map<string, T[]>();
+  for (const row of rows) {
+    const label = key(row);
+    const group = groups.get(label);
+    if (group) {
+      group.push(row);
+    } else {
+      groups.set(label, [row]);
+    }
+  }
+  return [...groups].sort((a, b) => b[1].length - a[1].length);
+}
+
+function average(values: number[]): number | null {
+  return values.length === 0
+    ? null
+    : values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+/** % below the ideal price. Rows with a selling price of 0 are data errors, not 100% discounts. */
+function discountPct(row: ApprovedOfferAnalyticsRow): number | null {
+  return row.ideal_price > 0 && row.selling_price > 0
+    ? (1 - row.selling_price / row.ideal_price) * 100
+    : null;
+}
+
+/** FC % points above the brand target, recomputed: the stored fc_perc is not reliable. */
+function pointsOverTarget(row: ApprovedOfferAnalyticsRow): number | null {
+  const fcPerc = calculateFcPerc(row.fc_eur, row.selling_price);
+  return fcPerc === null || row.brand_ideal_fc_perc === null
+    ? null
+    : (fcPerc - row.brand_ideal_fc_perc) * 100;
+}
+
+function mixRow(
+  label: string,
+  rows: ApprovedOfferAnalyticsRow[],
+): ApprovedOffersMixRow {
+  return {
+    label,
+    approved: rows.length,
+    avgDiscountPct: average(
+      rows.map(discountPct).filter((value) => value !== null),
+    ),
+  };
+}
+
+/** Everything the approved-offers Analytics dialog shows, from the filtered rows. */
+export function summarizeApprovedOffers(
+  rows: ApprovedOfferAnalyticsRow[],
+  knownChannels: string[],
+): ApprovedOffersAnalytics {
+  const channels = new Set(knownChannels);
+  const problems = {
+    any: 0,
+    noFcEur: 0,
+    zeroSellingPrice: 0,
+    fcPercMismatch: 0,
+    unknownChannel: 0,
+  };
+
+  for (const row of rows) {
+    const fcPerc = calculateFcPerc(row.fc_eur, row.selling_price);
+    const found = {
+      noFcEur: row.fc_eur === null,
+      zeroSellingPrice: row.selling_price <= 0,
+      fcPercMismatch:
+        fcPerc !== null &&
+        Math.abs(fcPerc - row.fc_perc) >= FC_PERC_MISMATCH_TOLERANCE,
+      unknownChannel: !channels.has(row.channel),
+    };
+    for (const key of Object.keys(found) as (keyof typeof found)[]) {
+      if (found[key]) problems[key] += 1;
+    }
+    if (Object.values(found).some(Boolean)) problems.any += 1;
+  }
+
+  const hours = rows
+    .flatMap((row) =>
+      row.approved_at
+        ? [(row.approved_at.getTime() - row.submitted_at.getTime()) / 3.6e6]
+        : [],
+    )
+    .sort((a, b) => a - b);
+  const middle = Math.floor(hours.length / 2);
+
+  return {
+    total: rows.length,
+    medianHoursToApprove:
+      hours.length === 0
+        ? null
+        : hours.length % 2
+          ? hours[middle]
+          : (hours[middle - 1] + hours[middle]) / 2,
+    selfApproved: rows.filter((row) => row.submitted_by === row.approved_by)
+      .length,
+    problems,
+    brands: groupRows(rows, (row) => row.brand).map(([label, group]) => {
+      const points = group.map(pointsOverTarget).filter((v) => v !== null);
+      return {
+        ...mixRow(label, group),
+        checkable: points.length,
+        avgPointsOverTarget: average(points),
+        overWarn: points.filter((v) => v > FC_OVER_TARGET_WARN_POINTS).length,
+        overHigh: points.filter((v) => v > FC_OVER_TARGET_HIGH_POINTS).length,
+        aboveIdeal: group.filter((row) => row.selling_price > row.ideal_price)
+          .length,
+      };
+    }),
+    categories: groupRows(
+      rows,
+      (row) => `${row.category} / ${row.subcategory}`,
+    ).map(([label, group]) => mixRow(label, group)),
+    channels: groupRows(rows, (row) => row.channel).map(([label, group]) =>
+      mixRow(label, group),
+    ),
+    months: groupRows(
+      rows.filter((row) => row.approved_at),
+      (row) => row.approved_at!.toISOString().slice(0, 7),
+    )
+      .map(([month, group]) => ({ month, approved: group.length }))
+      .sort((a, b) => a.month.localeCompare(b.month)),
+    approvers: groupRows(
+      rows.filter((row) => row.approved_by),
+      (row) => row.approved_by!,
+    ).map(([approver, group]) => ({
+      approver,
+      approved: group.length,
+      selfApproved: group.filter((row) => row.submitted_by === approver).length,
+    })),
+  };
+}
+
+/** Lifetime POS sales of one offer code, from the /sales/offers cache. */
+export type OfferSales = {
+  units: number;
+  /** Net EUR of every line of the offer. */
+  offerNet: number;
+  daysOnSale: number;
+  /** ISO day. */
+  lastSale: string;
+};
+
+/** Key of an offer in a sales map: brand alias + item code. */
+export function offerSalesKey(brand: string, code: string): string {
+  return `${brand.trim().toLowerCase()}|${code}`;
+}
+
+/** A charged price further than this from the approved price (fraction) is a mismatch. */
+export const PRICE_MISMATCH_TOLERANCE = 0.1;
+/** A gap counts as selling now when its last sale is within this many days. */
+export const LIVE_GAP_DAYS = 30;
+/** A gap counts as no longer sold after this many days without a sale. */
+export const DEAD_GAP_DAYS = 182;
+
+export type OfferSalesCheckRow = {
+  label: string;
+  /** Approved offers with POS sales and an approved selling price. */
+  sold: number;
+  /** Of those, charged more than PRICE_MISMATCH_TOLERANCE away from the approved price. */
+  priceMismatch: number;
+  /** Offers behind the FC figures: FC EUR, target, and a charged price that matches. */
+  checked: number;
+  net: number;
+  /** Food cost as % of POS net (units x FC EUR / net); null when nothing is checked. */
+  realFcPct: number | null;
+  targetPct: number | null;
+  /** Food cost EUR above what the target allows on that net. */
+  eurAboveTarget: number;
+};
+
+/**
+ * Approved prices against what the POS sold, per brand. Sales are lifetime and
+ * FC EUR is the one approved now, so old offers are costed at the current cost.
+ */
+export function summarizeOfferSales(
+  rows: (ApprovedOfferAnalyticsRow & { trde_item: string })[],
+  sales: Map<string, OfferSales>,
+): OfferSalesCheckRow[] {
+  const seen = new Set<string>();
+  // An offer approved twice has one set of sales: count it once.
+  const unique = rows.filter((row) => {
+    const key = offerSalesKey(row.brand, row.trde_item);
+    return !seen.has(key) && seen.add(key);
+  });
+
+  return groupRows(unique, (row) => row.brand)
+    .map(([label, group]) => {
+      const result: OfferSalesCheckRow = {
+        label,
+        sold: 0,
+        priceMismatch: 0,
+        checked: 0,
+        net: 0,
+        realFcPct: null,
+        targetPct: null,
+        eurAboveTarget: 0,
+      };
+      let cost = 0;
+      let allowed = 0;
+
+      for (const row of group) {
+        const sold = sales.get(offerSalesKey(row.brand, row.trde_item));
+        if (!sold || sold.units <= 0 || sold.offerNet <= 0) continue;
+        if (row.selling_price <= 0) continue;
+        result.sold += 1;
+
+        const charged = (sold.offerNet / sold.units) * VAT_FACTOR;
+        if (
+          Math.abs(charged / row.selling_price - 1) > PRICE_MISMATCH_TOLERANCE
+        ) {
+          result.priceMismatch += 1;
+          continue;
+        }
+        if (row.fc_eur === null || row.brand_ideal_fc_perc === null) continue;
+
+        result.checked += 1;
+        result.net += sold.offerNet;
+        cost += sold.units * row.fc_eur;
+        allowed += sold.offerNet * row.brand_ideal_fc_perc;
+      }
+
+      if (result.net > 0) {
+        result.realFcPct = (cost / result.net) * 100;
+        result.targetPct = (allowed / result.net) * 100;
+        result.eurAboveTarget = cost - allowed;
+      }
+      return result;
+    })
+    .filter((row) => row.sold > 0)
+    .sort((a, b) => b.net - a.net);
+}
+
+export type LiveGap = {
+  dq_id: number;
+  brand: string;
+  trde_item: string;
+  item_name: string;
+  /** Lifetime net / days with a sale. */
+  netPerDay: number;
+  lifetimeNet: number;
+  lastSale: string;
+};
+
+export type LiveGaps = {
+  /** Unpriced offers sold in the last LIVE_GAP_DAYS, biggest earner first. */
+  live: LiveGap[];
+  /** Unpriced offers with no sale in DEAD_GAP_DAYS, or none at all. */
+  dead: number;
+  total: number;
+};
+
+/** Splits the unpriced queue into what sells now (ranked) and what no longer sells. */
+export function rankLiveGaps(
+  gaps: {
+    dq_id: number;
+    brand: string;
+    trde_item: string;
+    item_name: string;
+  }[],
+  sales: Map<string, OfferSales>,
+  today: Date,
+): LiveGaps {
+  const dayBefore = (days: number) =>
+    new Date(today.getTime() - days * 864e5).toISOString().slice(0, 10);
+  const liveFrom = dayBefore(LIVE_GAP_DAYS);
+  const deadBefore = dayBefore(DEAD_GAP_DAYS);
+  const live: LiveGap[] = [];
+  let dead = 0;
+
+  for (const gap of gaps) {
+    const sold = sales.get(offerSalesKey(gap.brand, gap.trde_item));
+    if (!sold || sold.lastSale < deadBefore) {
+      dead += 1;
+    } else if (sold.lastSale >= liveFrom) {
+      live.push({
+        dq_id: gap.dq_id,
+        brand: gap.brand.trim().toUpperCase(),
+        trde_item: gap.trde_item,
+        item_name: gap.item_name,
+        netPerDay: sold.daysOnSale > 0 ? sold.offerNet / sold.daysOnSale : 0,
+        lifetimeNet: sold.offerNet,
+        lastSale: sold.lastSale,
+      });
+    }
+  }
+
+  return {
+    live: live.sort((a, b) => b.netPerDay - a.netPerDay),
+    dead,
+    total: gaps.length,
+  };
+}

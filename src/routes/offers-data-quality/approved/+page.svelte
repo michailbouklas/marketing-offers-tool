@@ -1,5 +1,6 @@
 <script lang="ts">
   import ArrowLeftIcon from "@lucide/svelte/icons/arrow-left";
+  import ChartColumnIcon from "@lucide/svelte/icons/chart-column";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import DownloadIcon from "@lucide/svelte/icons/download";
   import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
@@ -7,6 +8,7 @@
   import { goto } from "$app/navigation";
   import { page as pageState } from "$app/state";
   import DateRangeFilter from "$lib/components/date-range-filter.svelte";
+  import ApprovedAnalyticsDialog from "$lib/components/offers-data-quality/approved-analytics-dialog.svelte";
   import MultiSelectFilter from "$lib/components/sales/multi-select-filter.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
@@ -17,6 +19,7 @@
 
   let { data }: { data: PageData } = $props();
   let isExporting = $state(false);
+  let analyticsOpen = $state(false);
   let search = $state("");
   let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -150,6 +153,15 @@
           <Button href="/offers-data-quality" variant="outline" size="sm">
             <ArrowLeftIcon class="size-4" />
             Back to queue
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={data.totalItems === 0}
+            onclick={() => (analyticsOpen = true)}
+          >
+            <ChartColumnIcon class="size-4" />
+            Analytics
           </Button>
           <Button
             variant="outline"
@@ -290,3 +302,5 @@
     </Card.Root>
   </main>
 </div>
+
+<ApprovedAnalyticsDialog bind:open={analyticsOpen} analytics={data.analytics} />

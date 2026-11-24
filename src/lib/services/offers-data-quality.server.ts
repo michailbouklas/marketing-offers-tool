@@ -27,7 +27,11 @@ import {
   getStagingRecordById,
   getUserNamesByIds,
   countApprovedStagingRecords,
+  listApprovedStagingForAnalytics,
+  listCachedOfferSales,
+  listGapRecords,
   listApprovedStagingRecords,
+  listChannels,
   listGapBrandValues,
   listDismissedGapRecords,
   listPendingStagingRecords,
@@ -55,7 +59,13 @@ import {
   gapListSortFields,
   getMissingFieldsFromCurrentValues,
   parseMissingFields,
+  rankLiveGaps,
+  summarizeApprovedOffers,
+  summarizeOfferSales,
+  type LiveGaps,
+  type OfferSalesCheckRow,
   type ApprovedOffer,
+  type ApprovedOffersAnalytics,
   type GapFormLoadResponse,
   type GapListItem,
   type GapListPage,
@@ -912,4 +922,61 @@ export async function forEachApprovedOfferChunk(
     }
     cursorId = records[records.length - 1].id;
   }
+}
+
+/** Summary of every approved submission matching the filters, for the Analytics dialog. */
+export async function getApprovedOffersAnalytics(
+  allowedBrandAliases: string[],
+  filters: ApprovedOfferFilters,
+): Promise<ApprovedOffersAnalytics & { salesCheck: OfferSalesCheckRow[] }> {
+  const where = await approvedStagingFilters(allowedBrandAliases, filters);
+  const [records, channels, sales] = await Promise.all([
+    listApprovedStagingForAnalytics(where),
+    listChannels(),
+    listCachedOfferSales(allowedBrandAliases.map(normalizeBrandAlias)),
+  ]);
+  const rows = records.map(({ gap_record, ...record }) => ({
+    ...record,
+    brand: gap_record.brand.trim().toUpperCase(),
+    trde_item: gap_record.trde_item,
+    fc_eur: record.fc_eur?.toNumber() ?? null,
+    brand_ideal_fc_perc: record.brand_ideal_fc_perc?.toNumber() ?? null,
+    ideal_price: record.ideal_price.toNumber(),
+    selling_price: record.selling_price.toNumber(),
+    fc_perc: record.fc_perc.toNumber(),
+  }));
+  const analytics = summarizeApprovedOffers(
+    rows,
+    channels.map((channel) => channel.name),
+  );
+  const names = await getUserNamesByIds(
+    analytics.approvers.map((row) => row.approver),
+  );
+
+  return {
+    ...analytics,
+    salesCheck: summarizeOfferSales(rows, sales),
+    approvers: analytics.approvers.map((row) => ({
+      ...row,
+      approver: names.get(row.approver) ?? row.approver,
+    })),
+  };
+}
+
+/** The unpriced queue of these brands, split into selling now (ranked) and no longer sold. */
+export async function getLiveUnpricedOffers(
+  allowedBrandAliases: string[],
+): Promise<LiveGaps> {
+  const aliases = allowedBrandAliases.map(normalizeBrandAlias);
+  const allowed = new Set(aliases);
+  const [gaps, sales] = await Promise.all([
+    listGapRecords({ statuses: ["open", "submitted"] }),
+    listCachedOfferSales(aliases),
+  ]);
+
+  return rankLiveGaps(
+    gaps.filter((gap) => allowed.has(normalizeBrandAlias(gap.brand))),
+    sales,
+    new Date(),
+  );
 }

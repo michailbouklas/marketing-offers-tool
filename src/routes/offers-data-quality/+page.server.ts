@@ -6,6 +6,7 @@ import {
 import {
   getGapQueueFilterOptionsForBrands,
   getGapQueueStatus,
+  getLiveUnpricedOffers,
   getOpenGapList,
 } from "$lib/services/offers-data-quality.server";
 import {
@@ -65,7 +66,15 @@ export const load: PageServerLoad = async (event) => {
     getGapQueueFilterOptionsForBrands(selectedBrandAliases),
   ]);
 
+  // Not awaited: streamed to the "Selling now" dialog. All of the user's brands,
+  // since the queue re-filters client-side without re-running this load.
+  const liveGaps = getLiveUnpricedOffers(
+    userBrands.map((brand) => brand.alias),
+  );
+  liveGaps.catch(() => {});
+
   return {
+    liveGaps,
     gapsPage,
     brands: userBrands,
     selectedBrandAliases,

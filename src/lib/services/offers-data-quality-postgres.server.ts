@@ -4,7 +4,11 @@ import {
   type DimOffersStagingStatus,
   type DqGapStatus,
 } from "../../generated/prisma/enums";
-import type { LookupOption } from "$lib/services/offers-data-quality";
+import {
+  offerSalesKey,
+  type LookupOption,
+  type OfferSales,
+} from "$lib/services/offers-data-quality";
 
 export type GapRecord = {
   dq_id: number;
@@ -466,4 +470,53 @@ export async function listGapBrandValues(): Promise<string[]> {
   });
 
   return rows.map((row) => row.brand);
+}
+
+/**
+ * Every approved submission matching the filters, with only the columns the
+ * analytics summary reads.
+ * shortcut: loads all matching rows (305 today), aggregate in SQL past ~50k.
+ */
+export async function listApprovedStagingForAnalytics(
+  filters: ApprovedStagingFilters,
+) {
+  return prisma.dim_offers_staging.findMany({
+    where: approvedStagingWhere(filters),
+    select: {
+      channel: true,
+      category: true,
+      subcategory: true,
+      fc_eur: true,
+      brand_ideal_fc_perc: true,
+      ideal_price: true,
+      selling_price: true,
+      fc_perc: true,
+      submitted_by: true,
+      submitted_at: true,
+      approved_by: true,
+      approved_at: true,
+      gap_record: { select: { brand: true, trde_item: true } },
+    },
+  });
+}
+
+/**
+ * Lifetime POS sales per offer for these brand aliases, keyed by
+ * offerSalesKey, from the cache /sales/offers rebuilds nightly.
+ */
+export async function listCachedOfferSales(
+  brandAliases: string[],
+): Promise<Map<string, OfferSales>> {
+  const cached = await prisma.sales_offer_value_cache.findMany({
+    where: { brandAlias: { in: brandAliases } },
+    select: { brandAlias: true, rows: true },
+  });
+  const sales = new Map<string, OfferSales>();
+
+  for (const brand of cached) {
+    for (const row of brand.rows as (OfferSales & { code: string })[]) {
+      sales.set(offerSalesKey(brand.brandAlias, row.code), row);
+    }
+  }
+  return sales;
 }
