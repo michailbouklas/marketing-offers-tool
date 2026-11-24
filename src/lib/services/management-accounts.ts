@@ -115,7 +115,7 @@ export function formatAccounting(value: number): string {
 }
 
 /** One CSV field; text starting with `=` gets a leading space so officecli import keeps it as text. */
-function csvField(value: string | number): string {
+export function csvField(value: string | number): string {
   const text = String(value);
   const safe = text.startsWith("=") ? ` ${text}` : text;
   return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;

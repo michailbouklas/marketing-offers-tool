@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { csvField } from "$lib/services/management-accounts";
 
 export const missingOfferPricingFields = [
   "ideal_price",
@@ -682,4 +683,74 @@ function formatInputNumber(value: number | null, multiplier = 1) {
   const fixedValue = scaledValue.toFixed(multiplier === 100 ? 2 : 2);
 
   return fixedValue.replace(/\.00$/, "").replace(/(\.\d*[1-9])0$/, "$1");
+}
+
+/** One approved submission (a row of dim_offers_staging), as shown and exported. */
+export type ApprovedOffer = {
+  id: number;
+  trde_item: string;
+  item_name: string;
+  brand: string;
+  channel: string;
+  category: string;
+  subcategory: string;
+  /** Null on submissions made before FC EUR existed. */
+  fc_eur: string | null;
+  /** Percent text (30.00); null on legacy submissions. */
+  brand_ideal_fc_perc: string | null;
+  ideal_price: string;
+  selling_price: string;
+  /** Percent text (30.00). */
+  fc_perc: string;
+  mktg_spend: string | null;
+  notes: string | null;
+  submitted_by_name: string;
+  submitted_at: string;
+  approved_by_name: string | null;
+  approved_at: string | null;
+};
+
+export const approvedOffersCsvHeader = [
+  "Item code",
+  "Item",
+  "Brand",
+  "Channel",
+  "Category",
+  "Subcategory",
+  "FC EUR",
+  "Brand ideal FC %",
+  "Ideal price",
+  "Selling price",
+  "FC %",
+  "Marketing spend",
+  "Notes",
+  "Submitted by",
+  "Submitted on",
+  "Approved by",
+  "Approved on",
+].join(",");
+
+/** One CSV line per approved offer, columns as in approvedOffersCsvHeader. Dates are ISO days. */
+export function approvedOfferCsvLine(offer: ApprovedOffer): string {
+  return [
+    offer.trde_item,
+    offer.item_name,
+    offer.brand,
+    offer.channel,
+    offer.category,
+    offer.subcategory,
+    offer.fc_eur ?? "",
+    offer.brand_ideal_fc_perc ?? "",
+    offer.ideal_price,
+    offer.selling_price,
+    offer.fc_perc,
+    offer.mktg_spend ?? "",
+    offer.notes ?? "",
+    offer.submitted_by_name,
+    offer.submitted_at.slice(0, 10),
+    offer.approved_by_name ?? "",
+    offer.approved_at?.slice(0, 10) ?? "",
+  ]
+    .map(csvField)
+    .join(",");
 }

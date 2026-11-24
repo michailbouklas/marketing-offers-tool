@@ -515,7 +515,7 @@ Turns tabular data the model already has into a downloadable `.xlsx`:
   `string|number|boolean|null`), optional `extraCommands[]` (officecli batch
   items for formatting/formulas/charts — the `excel-generation` skill is the
   command reference).
-- Limits: 5 sheets, 50 columns, 5 000 rows/sheet, 20 000 total cells,
+- Limits: 12 sheets, 50 columns, 5 000 rows/sheet, 20 000 total cells,
   200 extra commands, 25 MB output.
 - Implementation: shells out to the `officecli` binary (`OFFICECLI_PATH` env,
   default resolves via PATH): `create` an xlsx in a temp dir, write one JSON

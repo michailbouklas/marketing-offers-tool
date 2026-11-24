@@ -382,3 +382,88 @@ export async function updateGapRecordStatus(
 
   return gapRecord;
 }
+
+export type ApprovedStagingFilters = {
+  /** Raw gap `brand` values the caller may see (see listGapBrandValues). */
+  brands: string[];
+  /** Approved-on day range, inclusive ISO dates (UTC days, like the queue Detected filter). */
+  from?: string;
+  to?: string;
+  /** Matches item name or item code, case-insensitive. */
+  search?: string;
+};
+
+function approvedStagingWhere(filters: ApprovedStagingFilters) {
+  const to = filters.to ? new Date(`${filters.to}T00:00:00Z`) : undefined;
+  to?.setUTCDate(to.getUTCDate() + 1);
+
+  return {
+    status: "approved" as const,
+    approved_at: {
+      gte: filters.from ? new Date(`${filters.from}T00:00:00Z`) : undefined,
+      lt: to,
+    },
+    gap_record: { brand: { in: filters.brands } },
+    ...(filters.search
+      ? {
+          OR: [
+            {
+              item_code: {
+                contains: filters.search,
+                mode: "insensitive" as const,
+              },
+            },
+            {
+              gap_record: {
+                item_name: {
+                  contains: filters.search,
+                  mode: "insensitive" as const,
+                },
+              },
+            },
+          ],
+        }
+      : {}),
+  };
+}
+
+/**
+ * Approved submissions, newest approval first. Pass `cursorId` (the last id of
+ * the previous chunk) to walk the whole set in chunks, or `skip` for a page.
+ */
+export async function listApprovedStagingRecords(
+  filters: ApprovedStagingFilters,
+  page: { take: number; skip?: number; cursorId?: number },
+) {
+  return prisma.dim_offers_staging.findMany({
+    where: approvedStagingWhere(filters),
+    include: {
+      gap_record: {
+        select: { trde_item: true, item_name: true, brand: true },
+      },
+    },
+    orderBy: [{ approved_at: "desc" }, { id: "desc" }],
+    take: page.take,
+    ...(page.cursorId
+      ? { cursor: { id: page.cursorId }, skip: 1 }
+      : { skip: page.skip ?? 0 }),
+  });
+}
+
+export async function countApprovedStagingRecords(
+  filters: ApprovedStagingFilters,
+) {
+  return prisma.dim_offers_staging.count({
+    where: approvedStagingWhere(filters),
+  });
+}
+
+/** Every distinct raw `brand` value on gap records (spacing/case as stored). */
+export async function listGapBrandValues(): Promise<string[]> {
+  const rows = await prisma.dq_missing_offers_pricing.findMany({
+    distinct: ["brand"],
+    select: { brand: true },
+  });
+
+  return rows.map((row) => row.brand);
+}

@@ -26,6 +26,9 @@ import {
   getPendingStagingRecordByItemCode,
   getStagingRecordById,
   getUserNamesByIds,
+  countApprovedStagingRecords,
+  listApprovedStagingRecords,
+  listGapBrandValues,
   listDismissedGapRecords,
   listPendingStagingRecords,
   listPriceFlaggedStagingRecords,
@@ -52,6 +55,7 @@ import {
   gapListSortFields,
   getMissingFieldsFromCurrentValues,
   parseMissingFields,
+  type ApprovedOffer,
   type GapFormLoadResponse,
   type GapListItem,
   type GapListPage,
@@ -794,4 +798,118 @@ export async function rejectGapSubmission(stagingId: number) {
   await updateGapRecordStatus(stagingRecord.dq_id, "open");
 
   return stagingRecord;
+}
+
+export type ApprovedOfferFilters = {
+  from?: string;
+  to?: string;
+  search?: string;
+};
+
+/** Rows read per database round trip by the approved-offers export. */
+const APPROVED_EXPORT_CHUNK = 5_000;
+
+type ApprovedStagingRecord = Awaited<
+  ReturnType<typeof listApprovedStagingRecords>
+>[number];
+
+/** Brand scoping in SQL: the stored brand spellings that match the user's aliases. */
+async function approvedStagingFilters(
+  allowedBrandAliases: string[],
+  filters: ApprovedOfferFilters,
+) {
+  const allowed = new Set(allowedBrandAliases.map(normalizeBrandAlias));
+  const brands = (await listGapBrandValues()).filter((brand) =>
+    allowed.has(normalizeBrandAlias(brand)),
+  );
+
+  return { brands, ...filters, search: filters.search?.trim() || undefined };
+}
+
+async function mapApprovedOffers(
+  records: ApprovedStagingRecord[],
+): Promise<ApprovedOffer[]> {
+  const names = await getUserNamesByIds([
+    ...new Set(
+      records.flatMap((record) =>
+        record.approved_by
+          ? [record.submitted_by, record.approved_by]
+          : [record.submitted_by],
+      ),
+    ),
+  ]);
+
+  return records.map((record) => ({
+    id: record.id,
+    trde_item: record.gap_record.trde_item,
+    item_name: record.gap_record.item_name,
+    brand: record.gap_record.brand.trim().toUpperCase(),
+    channel: record.channel,
+    category: record.category,
+    subcategory: record.subcategory,
+    fc_eur: record.fc_eur?.toFixed(2) ?? null,
+    brand_ideal_fc_perc: record.brand_ideal_fc_perc
+      ? record.brand_ideal_fc_perc.times(100).toFixed(2)
+      : null,
+    ideal_price: record.ideal_price.toFixed(2),
+    selling_price: record.selling_price.toFixed(2),
+    fc_perc: record.fc_perc.times(100).toFixed(2),
+    mktg_spend: record.mktg_spend?.toFixed(2) ?? null,
+    notes: record.notes,
+    submitted_by_name: names.get(record.submitted_by) ?? record.submitted_by,
+    submitted_at: record.submitted_at.toISOString(),
+    approved_by_name: record.approved_by
+      ? (names.get(record.approved_by) ?? record.approved_by)
+      : null,
+    approved_at: record.approved_at?.toISOString() ?? null,
+  }));
+}
+
+/** One page of approved submissions for the user's brands, newest approval first. */
+export async function listApprovedOffers(
+  allowedBrandAliases: string[],
+  filters: ApprovedOfferFilters,
+  page: number,
+  pageSize: number,
+): Promise<{ items: ApprovedOffer[]; totalItems: number }> {
+  const where = await approvedStagingFilters(allowedBrandAliases, filters);
+  const [records, totalItems] = await Promise.all([
+    listApprovedStagingRecords(where, {
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+    }),
+    countApprovedStagingRecords(where),
+  ]);
+
+  return { items: await mapApprovedOffers(records), totalItems };
+}
+
+/**
+ * Walks every approved submission matching the filters in chunks, so an
+ * export never holds the whole set in memory. Returns the row count.
+ */
+export async function forEachApprovedOfferChunk(
+  allowedBrandAliases: string[],
+  filters: ApprovedOfferFilters,
+  onChunk: (offers: ApprovedOffer[]) => Promise<void>,
+): Promise<number> {
+  const where = await approvedStagingFilters(allowedBrandAliases, filters);
+  let cursorId: number | undefined;
+  let total = 0;
+
+  for (;;) {
+    const records = await listApprovedStagingRecords(where, {
+      take: APPROVED_EXPORT_CHUNK,
+      cursorId,
+    });
+    if (records.length === 0) {
+      return total;
+    }
+    await onChunk(await mapApprovedOffers(records));
+    total += records.length;
+    if (records.length < APPROVED_EXPORT_CHUNK) {
+      return total;
+    }
+    cursorId = records[records.length - 1].id;
+  }
 }

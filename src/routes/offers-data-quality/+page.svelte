@@ -573,6 +573,15 @@
               </DropdownMenu.Content>
             </DropdownMenu.Root>
 
+            <Button
+              href="/offers-data-quality/approved"
+              variant="outline"
+              size="sm"
+            >
+              <CheckIcon class="size-4" />
+              Approved offers
+            </Button>
+
             {#if data.canDismiss}
               <Button
                 href="/offers-data-quality/flagged"

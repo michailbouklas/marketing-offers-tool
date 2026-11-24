@@ -11,7 +11,8 @@ import { getObjectStore } from "../object-store";
 
 const execFileAsync = promisify(execFile);
 
-const MAX_SHEETS = 5;
+// A year of monthly tabs; the real size guard is MAX_TOTAL_CELLS.
+const MAX_SHEETS = 12;
 const MAX_COLUMNS = 50;
 const MAX_ROWS_PER_SHEET = 5_000;
 const MAX_TOTAL_CELLS = 20_000;

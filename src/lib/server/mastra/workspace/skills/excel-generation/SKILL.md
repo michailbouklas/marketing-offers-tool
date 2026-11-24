@@ -21,7 +21,7 @@ tool result; never invent or repeat the download URL yourself.
 
 ## Limits
 
-- ≤ 5 sheets, ≤ 50 columns, ≤ 5,000 rows per sheet, ≤ 20,000 cells total.
+- ≤ 12 sheets, ≤ 50 columns, ≤ 5,000 rows per sheet, ≤ 20,000 cells total.
   If the data is larger, aggregate or narrow it and tell the user.
 - Data cells are always literal values — a cell value starting with `=` is
   stored as text, not a formula. Formulas only work via `extraCommands`.

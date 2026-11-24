@@ -105,6 +105,36 @@ describe("offers-data-quality helpers", () => {
     vi.clearAllMocks();
   });
 
+  it("writes an approved offer as one safe CSV line", () => {
+    const line = helpers.approvedOfferCsvLine({
+      id: 1,
+      trde_item: "ITM-1",
+      item_name: 'Bucket, "XL"',
+      brand: "KFC",
+      channel: "Wolt Only",
+      category: "ONEPLUSX",
+      subcategory: "Sub",
+      fc_eur: null,
+      brand_ideal_fc_perc: null,
+      ideal_price: "12.00",
+      selling_price: "9.50",
+      fc_perc: "31.25",
+      mktg_spend: null,
+      notes: "=SUM(A1)",
+      submitted_by_name: "Ann",
+      submitted_at: "2026-03-01T22:30:00.000Z",
+      approved_by_name: null,
+      approved_at: "2026-03-02T08:00:00.000Z",
+    });
+
+    expect(line).toBe(
+      'ITM-1,"Bucket, ""XL""",KFC,Wolt Only,ONEPLUSX,Sub,,,12.00,9.50,31.25,, =SUM(A1),Ann,2026-03-01,,2026-03-02',
+    );
+    expect(line.split(",").length - 1).toBe(
+      helpers.approvedOffersCsvHeader.split(",").length,
+    );
+  });
+
   it("parses comma-separated missing fields", () => {
     expect(helpers.parseMissingFields("ideal_price, fc_perc, unknown")).toEqual(
       ["ideal_price", "fc_perc"],

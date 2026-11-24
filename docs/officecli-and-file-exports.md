@@ -142,7 +142,7 @@ inputSchema: z.object({
 ```
 
 Hard limits (checked before any I/O; violations return `{ok:false, error}`
-with a message telling the model to aggregate/narrow): 5 sheets, 50 columns,
+with a message telling the model to aggregate/narrow): 12 sheets, 50 columns,
 5 000 rows/sheet, **20 000 total cells**, 200 extra commands, 25 MB output
 file. Timeouts: 15 s for `create`/`close`, 60 s for the `batch` run.
 
