@@ -19,6 +19,8 @@
     sessions: ChatSession[];
     /** Currently open session key, highlighted in the list. */
     activeKey: string;
+    /** Sessions open as tabs, each marked with a dot (tabbed chat page only). */
+    openKeys?: string[];
     /** Blocks selecting and deleting while the parent chat is busy. */
     disabled?: boolean;
     onSelect: (key: string) => void;
@@ -30,6 +32,7 @@
     agentId,
     sessions,
     activeKey,
+    openKeys = [],
     disabled = false,
     onSelect,
     onDeleted,
@@ -84,7 +87,16 @@
         class="flex min-w-0 flex-1 flex-col gap-0.5 px-3 py-2 text-left"
         onclick={() => onSelect(session.key)}
       >
-        <span class="truncate text-sm">{session.title}</span>
+        <span class="flex items-center gap-1.5">
+          {#if openKeys.includes(session.key)}
+            <span
+              class="bg-primary size-1.5 shrink-0 rounded-full"
+              role="img"
+              aria-label="Open in a tab"
+            ></span>
+          {/if}
+          <span class="truncate text-sm">{session.title}</span>
+        </span>
         {#if session.updatedAt}
           <span class="text-muted-foreground text-xs">
             {new Date(session.updatedAt).toLocaleString()}

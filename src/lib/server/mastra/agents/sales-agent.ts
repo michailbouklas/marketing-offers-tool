@@ -9,7 +9,11 @@ import { getAiChatEnv } from "../env";
 import { getChatMemory } from "../memory";
 import { chatAttachmentsProcessor } from "../processors/chat-attachments";
 import { userSkillsFor } from "../skills/user-skills-fs";
+import { consolidatedSalesTools } from "../tools/consolidated-sales-tools";
+import { itemAnalysisTools } from "../tools/item-analysis-tools";
 import { querySalesSql } from "../tools/query-sales-sql";
+import { salesDeliveryTools } from "../tools/sales-delivery-tools";
+import { salesOffersTools } from "../tools/sales-offers-tools";
 import { sharedTools } from "../tools/shared";
 import {
   buildBrandScopeSection,
@@ -74,10 +78,36 @@ question touches its area:
   month", YoY-to-date): anchor cutoffs to max(tran_date)/max(trde_date), not
   the clock.
 
+## Page reports (typed tools)
+
+Four /sales pages have their own skill and typed tools. When a question
+matches one, load its skill first and answer with its tools so the numbers
+match the page; never recompute what a tool returns:
+
+- "item-analysis" (/sales/item-analysis) — which items/categories sell:
+  quantity, orders, net, share. Tools: getItemAnalysis,
+  listOfferFilterOptions.
+- "sales-offers-value" (/sales/offers) — what an offer is worth: food cost,
+  contribution, margin, verdict. Tools: getOfferValues, compareOffers,
+  getOfferCalendar, getOfferSlotSales, listOfferFilterOptions.
+- "sales-delivery" (/sales/delivery) — aggregator channels (Wolt, Bolt,
+  Foody, Efood…), campaigns, offer values per channel. Tools:
+  getDeliveryOverview, compareDeliveryChannels, getDeliveryCampaigns,
+  getDeliveryOfferValues.
+- "consolidated-sales-report" (/sales/consolidated-sales-report) — trans,
+  gross, discount, net, average ticket per company / store / city. Tools:
+  getConsolidatedReport, getConsolidatedOptions.
+
+There is no page context in this chat: take the brand and dates from the
+question. If a tool needs one brand, several are in scope and none is named,
+ask which. Optional tool filters take null for "not used"; never set a filter
+the user did not ask for. Use query-sales-sql for everything these tools do
+not cover.
+
 ## Rules
 
-- Answer ONLY from query results returned by the query-sales-sql tool —
-  never invent numbers. If a query fails, read the error, fix the SQL, and
+- Answer ONLY from results returned by your tools (query-sales-sql or the
+  page tools above) — never invent numbers. If a query fails, read the error, fix the SQL, and
   retry (up to 3 attempts). Never show raw ClickHouse errors to the user.
 - The tool returns at most 200 rows. Use aggregations (sum, count, GROUP BY)
   rather than fetching raw rows; mention it when results were truncated.
@@ -149,6 +179,9 @@ const openWebUiChannelSection = [
   "- If the user asks for a file, chart, or export, present the data as a",
   "  markdown table instead and mention that downloadable exports are",
   "  available in the marketing tool's Sales Chat.",
+  "- The page-report tools (getItemAnalysis, getOfferValues, getDeliveryOverview,",
+  "  getConsolidatedReport, …) are NOT available in this channel either. Load",
+  "  the page skill for its rules and answer with query-sales-sql instead.",
   "- Reply in plain GitHub-flavored markdown only.",
 ].join("\n");
 
@@ -223,7 +256,15 @@ export const salesAgent = new Agent({
     return `${baseInstructions}\n\n${buildBrandScopeSection(brands)}${buildChannelSection(requestContext)}${buildSelectedOrdersSection(requestContext)}`;
   },
   model: getAiChatEnv().AI_CHAT_MODEL,
-  tools: { ...sharedTools, querySalesSql },
+  // Page tools: this assistant covers every /sales page, not only free SQL.
+  tools: {
+    ...sharedTools,
+    ...salesOffersTools,
+    ...consolidatedSalesTools,
+    ...salesDeliveryTools,
+    ...itemAnalysisTools,
+    querySalesSql,
+  },
   // Admin-authored skills assigned to this assistant (workspace/user-skills/sales-agent).
   skills: userSkillsFor("sales-agent"),
   memory: () => getChatMemory(),

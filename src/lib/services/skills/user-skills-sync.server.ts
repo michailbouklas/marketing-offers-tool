@@ -1,3 +1,4 @@
+import { SALES_PAGE_AGENT_IDS } from "$lib/server/mastra/chat-registry";
 import { prisma } from "$lib/server/prisma";
 import {
   syncUserSkillFolders,
@@ -64,10 +65,30 @@ export function toEditorData(row: RawAgentSkillRow): SkillEditorData {
   };
 }
 
+/**
+ * The Sales Assistant (/sales/chat) covers every /sales page, so a skill
+ * assigned to a page assistant is also projected into its folder. Projection
+ * only: the stored assignment is unchanged.
+ */
+export function withSalesChatInheritance(
+  skill: SkillEditorData,
+): SkillEditorData {
+  const agentIds: string[] = skill.agentIds;
+  if (
+    agentIds.includes("sales-agent") ||
+    !SALES_PAGE_AGENT_IDS.some((id) => agentIds.includes(id))
+  ) {
+    return skill;
+  }
+  return { ...skill, agentIds: [...skill.agentIds, "sales-agent"] };
+}
+
 async function performSync(): Promise<UserSkillsSyncResult | null> {
   try {
     const rows = await prisma.agentSkill.findMany();
-    const skills = rows.map((row) => toEditorData(row));
+    const skills = rows.map((row) =>
+      withSalesChatInheritance(toEditorData(row)),
+    );
     const { written, removed } = await syncUserSkillFolders(
       skills,
       ASSISTANT_IDS,

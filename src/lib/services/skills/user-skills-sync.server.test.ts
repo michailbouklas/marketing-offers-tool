@@ -16,8 +16,26 @@ vi.mock("$lib/server/mastra/skills/user-skills-fs", () => ({
   listBuiltInSkillNames: vi.fn(),
 }));
 
-const { resyncUserSkills, toEditorData } =
+const { resyncUserSkills, toEditorData, withSalesChatInheritance } =
   await import("./user-skills-sync.server");
+
+describe("withSalesChatInheritance", () => {
+  const skill = (agentIds: string[]) =>
+    toEditorData({ ...dbRow, agentIds } as never);
+
+  it("adds the Sales Assistant to skills of the sales page assistants", () => {
+    expect(
+      withSalesChatInheritance(skill(["item-analysis-agent"])).agentIds,
+    ).toEqual(["item-analysis-agent", "sales-agent"]);
+  });
+
+  it("leaves already-assigned and non-sales skills alone", () => {
+    const both = skill(["sales-agent", "sales-delivery-agent"]);
+    expect(withSalesChatInheritance(both)).toBe(both);
+    const other = skill(["competition-agent"]);
+    expect(withSalesChatInheritance(other)).toBe(other);
+  });
+});
 const { ASSISTANT_IDS } = await import("./assistants");
 
 const dbRow = {

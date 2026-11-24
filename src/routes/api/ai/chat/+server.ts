@@ -39,6 +39,7 @@ import {
   type GoogleAnalyticsScopeEntry,
   type SalesSelectedOrders,
 } from "$lib/server/mastra/chat-registry";
+import { findThreadIdsWithText } from "$lib/services/chat-usage.server";
 import { resolveManagementAccountsScope } from "$lib/services/management-accounts.server";
 import { listGoogleAnalyticsBrandsForUser } from "$lib/services/google-analytics/properties.server";
 import {
@@ -351,8 +352,21 @@ export const GET: RequestHandler = async (event) => {
     perPage: false,
   });
 
+  // Optional search: title or message text contains `q`.
+  const query = (event.url.searchParams.get("q") ?? "").trim().slice(0, 100);
+  const needle = query.toLowerCase();
+  const textMatches = query
+    ? await findThreadIdsWithText(threadPrefix, query)
+    : null;
+
   const sessions: ChatSessionSummary[] = threads
     .filter((thread) => thread.id.startsWith(threadPrefix))
+    .filter(
+      (thread) =>
+        !textMatches ||
+        textMatches.has(thread.id) ||
+        (thread.title ?? "").toLowerCase().includes(needle),
+    )
     .map((thread) => ({
       key: thread.id.slice(threadPrefix.length),
       title: thread.title || "Untitled conversation",

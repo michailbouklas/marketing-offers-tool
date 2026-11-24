@@ -105,6 +105,23 @@ export function getSkillEnhanceEnv(): SkillEnhanceEnv {
     SKILL_ENHANCE_MODEL: model.includes("/") ? model : `openai/${model}`,
   };
 }
+
+export interface ChatFollowUpsEnv {
+  /** Model for the follow-up suggestions under a chat answer (`provider/model`). */
+  CHAT_FOLLOW_UPS_MODEL: string;
+}
+
+export function getChatFollowUpsEnv(): ChatFollowUpsEnv {
+  // Also copies OPENAI_API_KEY into process.env for the model router.
+  getAiChatEnv();
+
+  const model = readEnv("CHAT_FOLLOW_UPS_MODEL") ?? "openai/gpt-4o-mini";
+
+  return {
+    CHAT_FOLLOW_UPS_MODEL: model.includes("/") ? model : `openai/${model}`,
+  };
+}
+
 export interface ReleaseFormatEnv {
   /** Model for the "AI" format button on /admin/features (`provider/model`). */
   RELEASE_FORMAT_MODEL: string;

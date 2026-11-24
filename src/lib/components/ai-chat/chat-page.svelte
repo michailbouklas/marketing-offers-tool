@@ -3,41 +3,19 @@
   import { DefaultChatTransport } from "ai";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
-  import { Textarea } from "$lib/components/ui/textarea/index.js";
-  import CopyMessageButton from "$lib/components/ai-chat/copy-message-button.svelte";
-  import MessageTimestamp from "$lib/components/ai-chat/message-timestamp.svelte";
-  import UserMessageActions from "$lib/components/ai-chat/user-message-actions.svelte";
-  import {
-    EXCEL_TOOL_PART_TYPE,
-    excelErrorText,
-    excelOutput,
-  } from "$lib/components/ai-chat/excel-tool";
-  import {
-    THREEJS_REPORT_TOOL_PART_TYPE,
-    threeJsReportErrorText,
-    threeJsReportOutput,
-  } from "$lib/components/ai-chat/threejs-report-tool";
-  import { renderMarkdown } from "$lib/components/ai-chat/markdown";
+  import * as Tabs from "$lib/components/ui/tabs/index.js";
+  import ChatSearchDialog from "$lib/components/ai-chat/chat-search-dialog.svelte";
+  import ChatConversation from "$lib/components/ai-chat/chat-conversation.svelte";
+  import { nextActiveAfterClose } from "$lib/components/ai-chat/chat-tabs";
   import SessionList, {
     type ChatSession,
   } from "$lib/components/ai-chat/session-list.svelte";
-  import ToolPart from "$lib/components/ai-chat/tool-part.svelte";
-  import AttachmentComposer from "$lib/components/ai-chat/attachment-composer.svelte";
-  import MessageAttachments from "$lib/components/ai-chat/message-attachments.svelte";
-  import {
-    attachmentPartsOf,
-    parseAttachmentText,
-    toMessageParts,
-    typedTextOf,
-  } from "$lib/components/ai-chat/attachments";
-  import { toast } from "svelte-sonner";
-  import ChartColumnIcon from "@lucide/svelte/icons/chart-column";
-  import DownloadIcon from "@lucide/svelte/icons/download";
-  import FileSpreadsheetIcon from "@lucide/svelte/icons/file-spreadsheet";
   import HistoryIcon from "@lucide/svelte/icons/history";
-  import SendHorizontalIcon from "@lucide/svelte/icons/send-horizontal";
+  import PlusIcon from "@lucide/svelte/icons/plus";
+  import SearchIcon from "@lucide/svelte/icons/search";
   import SparklesIcon from "@lucide/svelte/icons/sparkles";
   import SquarePenIcon from "@lucide/svelte/icons/square-pen";
+  import XIcon from "@lucide/svelte/icons/x";
 
   interface Props {
     /** Backend agent this page routes its messages to. */
@@ -58,29 +36,53 @@
     context,
   }: Props = $props();
 
-  let input = $state("");
-  let scrollContainer: HTMLDivElement | null = $state(null);
-  let textareaRef: HTMLTextAreaElement | null = $state(null);
-  let historyOpen = $state(false);
-  let sessions = $state<ChatSession[]>([]);
+  /** One open tab = one conversation with its own stream. */
+  type ChatTab = { key: string; chat: Chat };
+
   // Conversations are keyed client-side; the server namespaces the key per
   // agent + user, so a fresh key = a fresh thread while old ones stay stored.
-  let sessionKey = $state<string>(crypto.randomUUID());
-
-  const chat = new Chat({
-    transport: new DefaultChatTransport({
-      api: "/api/ai/chat",
-      // Memory-backed agents: the server loads the thread history itself, so
-      // only the new message travels (Mastra's documented useChat pattern).
-      // Replaying the client copy made Mastra overwrite the stored assistant
-      // turns with reasoning-less versions, which OpenAI's Responses API then
-      // rejected on the next turn ("message ... was provided without its
-      // required 'reasoning' item").
-      prepareSendMessagesRequest: ({ messages, body }) => ({
-        body: { ...body, messages: messages.slice(-1) },
+  function newTab(key: string = crypto.randomUUID()): ChatTab {
+    return {
+      key,
+      chat: new Chat({
+        transport: new DefaultChatTransport({
+          api: "/api/ai/chat",
+          // Memory-backed agents: the server loads the thread history itself, so
+          // only the new message travels (Mastra's documented useChat pattern).
+          // Replaying the client copy made Mastra overwrite the stored assistant
+          // turns with reasoning-less versions, which OpenAI's Responses API then
+          // rejected on the next turn ("message ... was provided without its
+          // required 'reasoning' item").
+          prepareSendMessagesRequest: ({ messages, body }) => ({
+            body: { ...body, messages: messages.slice(-1) },
+          }),
+        }),
       }),
-    }),
-  });
+    };
+  }
+
+  const firstTab = newTab();
+  // Raw: Chat instances must not be proxied; the array is replaced, not mutated.
+  let tabs = $state.raw<ChatTab[]>([firstTab]);
+  let activeKey = $state(firstTab.key);
+  let historyOpen = $state(false);
+  let searchOpen = $state(false);
+  let sessions = $state<ChatSession[]>([]);
+
+  function isBusy(tab: ChatTab) {
+    return tab.chat.status === "submitted" || tab.chat.status === "streaming";
+  }
+
+  function isBlank(tab: ChatTab) {
+    return tab.chat.messages.length === 0 && !isBusy(tab);
+  }
+
+  const anyBusy = $derived(tabs.some(isBusy));
+  const openKeys = $derived(tabs.map((tab) => tab.key));
+
+  function tabTitle(key: string) {
+    return sessions.find((session) => session.key === key)?.title ?? "New chat";
+  }
 
   async function fetchSessions() {
     try {
@@ -97,10 +99,13 @@
     }
   }
 
-  // Recalls a stored conversation and renders it as-is.
-  async function loadSession(key: string) {
-    if (busy || key === sessionKey) {
-      historyOpen = false;
+  // Opens a stored conversation: focuses its tab if already open, otherwise
+  // recalls it into the current tab when that one is blank, else a new tab.
+  async function openSession(key: string) {
+    historyOpen = false;
+
+    if (tabs.some((tab) => tab.key === key)) {
+      activeKey = key;
       return;
     }
 
@@ -113,184 +118,82 @@
         return;
       }
 
-      const history = (await response.json()) as typeof chat.messages;
-      sessionKey = key;
-      chat.messages = history;
+      const tab = newTab(key);
+      tab.chat.messages = (await response.json()) as Chat["messages"];
+
+      // A second click may have opened it while the fetch was in flight.
+      if (!tabs.some((open) => open.key === key)) {
+        const current = tabs.find((open) => open.key === activeKey);
+        tabs =
+          current && isBlank(current)
+            ? tabs.map((open) => (open === current ? tab : open))
+            : [...tabs, tab];
+      }
+
+      activeKey = key;
     } catch {
-      // Best effort — keep the current conversation on failure.
-    } finally {
-      historyOpen = false;
+      // Best effort — keep the current tabs on failure.
     }
   }
 
-  // Start a fresh thread. The previous conversation stays in the database and
-  // remains recallable from the sidebar.
-  function newConversation() {
-    if (busy) {
+  // Start a fresh thread in a new tab; a blank tab is reused instead of
+  // stacking empty ones. Stored conversations stay recallable from the sidebar.
+  function openNewTab() {
+    historyOpen = false;
+    const blank = tabs.find(isBlank);
+
+    if (blank) {
+      activeKey = blank.key;
       return;
     }
 
-    sessionKey = crypto.randomUUID();
-    chat.messages = [];
-    historyOpen = false;
+    const tab = newTab();
+    tabs = [...tabs, tab];
+    activeKey = tab.key;
   }
 
-  // After a delete: refresh the list, and if the open conversation was the
-  // one removed, reset to a fresh thread (same as newConversation).
+  // Closing only drops the tab: the conversation stays stored, and an answer
+  // still streaming is left to finish server-side.
+  function closeTab(key: string) {
+    const next = nextActiveAfterClose(
+      tabs.map((tab) => tab.key),
+      activeKey,
+      key,
+    );
+
+    if (next === undefined) {
+      const tab = newTab();
+      tabs = [tab];
+      activeKey = tab.key;
+      return;
+    }
+
+    tabs = tabs.filter((tab) => tab.key !== key);
+    activeKey = next;
+  }
+
+  // After a delete: close the conversation's tab if it is open, then refresh.
   async function handleDeleted(key: string) {
-    if (key === sessionKey) {
-      sessionKey = crypto.randomUUID();
-      chat.messages = [];
+    if (tabs.some((tab) => tab.key === key)) {
+      closeTab(key);
     }
 
     await fetchSessions();
   }
 
+  // The strip scrolls without a visible scrollbar, so keep the focused tab in
+  // view (new tabs open at the far end).
+  let tabStrip: HTMLElement | null = $state(null);
+  $effect(() => {
+    void tabs;
+    tabStrip
+      ?.querySelector(`[data-value="${activeKey}"]`)
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
+
   // The sidebar shows stored conversations from the start.
   $effect(() => {
     void fetchSessions();
-  });
-
-  const busy = $derived(
-    chat.status === "submitted" || chat.status === "streaming",
-  );
-
-  // Titles are AI-generated shortly after the first exchange, so refresh the
-  // list once each response finishes streaming.
-  let wasBusy = false;
-  $effect(() => {
-    if (wasBusy && !busy) {
-      void fetchSessions();
-    }
-    wasBusy = busy;
-  });
-
-  let pendingFiles = $state<File[]>([]);
-  let preparingFiles = $state(false);
-
-  // Attachments go first, then the typed text (if any) — same as Claude.
-  function send(parts: (typeof chat.messages)[number]["parts"], text: string) {
-    // agentId/sessionKey ride along per request (instead of on the transport)
-    // so they are read at send time, keeping them reactive.
-    void chat.sendMessage(
-      { parts: [...parts, ...(text ? [{ type: "text" as const, text }] : [])] },
-      { body: { agentId, sessionKey, ...(context ? { context } : {}) } },
-    );
-  }
-
-  async function handleSubmit(event?: SubmitEvent) {
-    event?.preventDefault();
-    const text = input.trim();
-
-    if ((!text && pendingFiles.length === 0) || busy || preparingFiles) {
-      return;
-    }
-
-    preparingFiles = true;
-    try {
-      send(await toMessageParts(pendingFiles), text);
-      input = "";
-      pendingFiles = [];
-    } catch (cause) {
-      toast.error(
-        `Could not read the attachment: ${cause instanceof Error ? cause.message : String(cause)}`,
-      );
-    } finally {
-      preparingFiles = false;
-    }
-  }
-
-  // Enter sends, Shift+Enter inserts a newline — same as Claude.
-  function handleInputKeydown(event: KeyboardEvent) {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleSubmit();
-    }
-  }
-
-  let editingMessageId = $state<string | null>(null);
-  let editDraft = $state("");
-
-  // Typed text only — converted attachments render as chips, not text.
-  function messageText(message: (typeof chat.messages)[number]) {
-    return typedTextOf(message.parts);
-  }
-
-  // Re-asks from this user message: the conversation is truncated to just
-  // before it and the same text + attachments are submitted again.
-  function retryMessage(messageIndex: number) {
-    const message = chat.messages[messageIndex];
-    const text = messageText(message);
-    const attachments = attachmentPartsOf(message.parts);
-
-    if ((!text && attachments.length === 0) || busy) {
-      return;
-    }
-
-    cancelEditing();
-    chat.messages = chat.messages.slice(0, messageIndex);
-    send(attachments, text);
-  }
-
-  function startEditing(message: (typeof chat.messages)[number]) {
-    if (busy) {
-      return;
-    }
-
-    editingMessageId = message.id;
-    editDraft = messageText(message);
-  }
-
-  function cancelEditing() {
-    editingMessageId = null;
-    editDraft = "";
-  }
-
-  // Sending an edit truncates the conversation from the edited message on and
-  // submits the new text, so the answer is regenerated for the edited prompt.
-  function submitEdit(messageIndex: number) {
-    const text = editDraft.trim();
-    // The edited message keeps its attachments.
-    const attachments = attachmentPartsOf(chat.messages[messageIndex].parts);
-
-    if ((!text && attachments.length === 0) || busy) {
-      return;
-    }
-
-    chat.messages = chat.messages.slice(0, messageIndex);
-    cancelEditing();
-    send(attachments, text);
-  }
-
-  function handleEditKeydown(event: KeyboardEvent, messageIndex: number) {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      submitEdit(messageIndex);
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      cancelEditing();
-    }
-  }
-
-  // Grow the composer with its content (capped; scrolls beyond the cap).
-  // Explicit height also covers browsers without `field-sizing: content`.
-  $effect(() => {
-    void input;
-
-    if (textareaRef) {
-      textareaRef.style.height = "auto";
-      textareaRef.style.height = `${Math.min(textareaRef.scrollHeight, 200)}px`;
-    }
-  });
-
-  // Keep the newest message in view while the answer streams in.
-  $effect(() => {
-    void chat.messages.at(-1)?.parts.length;
-    void chat.status;
-
-    if (scrollContainer) {
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
-    }
   });
 </script>
 
@@ -298,27 +201,43 @@
   <SessionList
     {agentId}
     {sessions}
-    activeKey={sessionKey}
-    disabled={busy}
-    onSelect={loadSession}
+    {activeKey}
+    {openKeys}
+    disabled={anyBusy}
+    onSelect={openSession}
     onDeleted={handleDeleted}
   />
 {/snippet}
+
+<ChatSearchDialog
+  bind:open={searchOpen}
+  {agentId}
+  {sessions}
+  {openKeys}
+  onOpen={openSession}
+/>
 
 <!-- Fills the viewport below the sticky h-14 top nav; all scrolling happens
   inside the conversation column so the page itself never scrolls. -->
 <div class="flex h-[calc(100svh-3.5rem)] overflow-hidden">
   <!-- Previous-chats sidebar (desktop) -->
   <aside class="bg-muted/30 hidden w-64 shrink-0 flex-col border-r md:flex">
-    <div class="p-3">
+    <div class="space-y-1.5 p-3">
       <Button
         variant="outline"
         class="w-full justify-start gap-2"
-        disabled={busy}
-        onclick={newConversation}
+        onclick={openNewTab}
       >
         <SquarePenIcon class="size-4" />
         New chat
+      </Button>
+      <Button
+        variant="ghost"
+        class="text-muted-foreground w-full justify-start gap-2"
+        onclick={() => (searchOpen = true)}
+      >
+        <SearchIcon class="size-4" />
+        Search chats
       </Button>
     </div>
     <nav
@@ -331,11 +250,20 @@
 
   <!-- Conversation column -->
   <div class="flex min-w-0 flex-1 flex-col">
-    <!-- Mobile header: history + new chat (the sidebar is hidden below md) -->
+    <!-- Mobile header: history (the sidebar is hidden below md) -->
     <div class="flex items-center gap-2 border-b px-4 py-2 md:hidden">
       <SparklesIcon class="text-primary size-4" />
       <span class="text-sm font-semibold">{title}</span>
       <div class="ml-auto flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          class="size-8"
+          aria-label="Search chats"
+          onclick={() => (searchOpen = true)}
+        >
+          <SearchIcon class="size-4" />
+        </Button>
         <Popover.Root bind:open={historyOpen}>
           <Popover.Trigger>
             {#snippet child({ props })}
@@ -356,218 +284,79 @@
             </div>
           </Popover.Content>
         </Popover.Root>
+      </div>
+    </div>
+
+    <!-- One tab per open conversation. Inactive panels stay mounted (only
+      hidden), so drafts, scroll position and running streams survive. -->
+    <Tabs.Root bind:value={activeKey} class="min-h-0 flex-1 gap-0">
+      <!-- Browser-style strip: tabs shrink to share the width, then scroll
+        with the scrollbar hidden (wheel or focus moves the strip). -->
+      <div class="bg-muted/50 flex items-end gap-1 px-2 pt-2">
+        <Tabs.List
+          bind:ref={tabStrip}
+          class="h-auto min-w-0 flex-1 items-end justify-start gap-1 overflow-x-auto overflow-y-hidden rounded-none bg-transparent p-0 [scrollbar-width:none] group-data-[orientation=horizontal]/tabs:h-auto [&::-webkit-scrollbar]:hidden"
+          aria-label="Open conversations"
+          onwheel={(event) => (event.currentTarget.scrollLeft += event.deltaY)}
+        >
+          {#each tabs as tab (tab.key)}
+            {@const label = tabTitle(tab.key)}
+            <div
+              class="group/tab relative flex max-w-60 min-w-40 flex-1 basis-0 items-center"
+            >
+              <Tabs.Trigger
+                value={tab.key}
+                title={label}
+                class="hover:bg-background/60 data-[state=active]:bg-background dark:data-[state=active]:bg-background h-9 w-full flex-none justify-start gap-2 rounded-t-lg rounded-b-none border-0 pr-8 pl-3 text-[13px] group-data-[variant=default]/tabs-list:data-[state=active]:shadow-none"
+              >
+                {#if isBusy(tab)}
+                  <span
+                    class="bg-primary size-1.5 shrink-0 animate-pulse rounded-full"
+                    aria-label="Answering"
+                  ></span>
+                {/if}
+                <span class="truncate">{label}</span>
+              </Tabs.Trigger>
+              <button
+                type="button"
+                class="text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-ring/50 absolute right-1.5 rounded-md p-1 opacity-0 outline-none group-hover/tab:opacity-100 group-has-data-[state=active]/tab:opacity-100 focus-visible:opacity-100 focus-visible:ring-[3px]"
+                aria-label={`Close tab "${label}"`}
+                onclick={() => closeTab(tab.key)}
+              >
+                <XIcon class="size-3.5" />
+              </button>
+            </div>
+          {/each}
+        </Tabs.List>
         <Button
           variant="ghost"
           size="icon"
-          class="size-8"
-          aria-label="New conversation"
-          disabled={busy}
-          onclick={newConversation}
+          class="mb-1 size-7 shrink-0"
+          aria-label="New tab"
+          onclick={openNewTab}
         >
-          <SquarePenIcon class="size-4" />
+          <PlusIcon class="size-4" />
         </Button>
       </div>
-    </div>
 
-    <div
-      bind:this={scrollContainer}
-      class="flex-1 overflow-y-auto overscroll-contain"
-    >
-      <div class="mx-auto w-full max-w-3xl space-y-6 px-4 py-6">
-        {#if chat.messages.length === 0}
-          <div
-            class="text-muted-foreground flex h-full flex-col items-center justify-center gap-3 pt-24 text-center"
-          >
-            <SparklesIcon class="text-primary size-8" />
-            <h1 class="text-foreground text-xl font-semibold">{title}</h1>
-            <p class="max-w-md text-sm">{greeting}</p>
-          </div>
-        {/if}
-
-        {#each chat.messages as message, messageIndex (message.id ?? messageIndex)}
-          {#if message.role === "user"}
-            {@const userText = messageText(message)}
-            {#if editingMessageId === message.id}
-              <div class="bg-muted/30 space-y-2 rounded-2xl border p-3">
-                <Textarea
-                  bind:value={editDraft}
-                  class="min-h-16 resize-none text-sm"
-                  aria-label="Edit message"
-                  onkeydown={(event) => handleEditKeydown(event, messageIndex)}
-                />
-                <div class="flex justify-end gap-2">
-                  <Button variant="ghost" size="sm" onclick={cancelEditing}>
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    disabled={(!editDraft.trim() &&
-                      attachmentPartsOf(message.parts).length === 0) ||
-                      busy}
-                    onclick={() => submitEdit(messageIndex)}
-                  >
-                    Send
-                  </Button>
-                </div>
-              </div>
-            {:else}
-              <div class="space-y-1">
-                <MessageAttachments
-                  parts={message.parts}
-                  {agentId}
-                  {sessionKey}
-                />
-                {#if userText}
-                  <div class="flex justify-end">
-                    <div
-                      class="bg-primary text-primary-foreground max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap"
-                    >
-                      {#each message.parts as part, partIndex (partIndex)}
-                        {#if part.type === "text" && !parseAttachmentText(part.text)}{part.text}{/if}
-                      {/each}
-                    </div>
-                  </div>
-                {/if}
-                <UserMessageActions
-                  text={userText}
-                  metadata={message.metadata}
-                  disabled={busy}
-                  onRetry={() => retryMessage(messageIndex)}
-                  onEdit={() => startEditing(message)}
-                />
-              </div>
-            {/if}
-          {:else if message.role === "assistant"}
-            {@const answerMarkdown = message.parts
-              .flatMap((part) => (part.type === "text" ? [part.text] : []))
-              .join("\n\n")}
-            <div class="space-y-2">
-              {#each message.parts as part, partIndex (partIndex)}
-                {#if part.type === "text"}
-                  <div
-                    class="prose prose-sm dark:prose-invert prose-p:my-1.5 prose-table:my-2 prose-th:px-2 prose-td:px-2 max-w-none text-sm"
-                  >
-                    <!-- eslint-disable-next-line svelte/no-at-html-tags — sanitized in renderMarkdown -->
-                    {@html renderMarkdown(part.text)}
-                  </div>
-                {:else if part.type === EXCEL_TOOL_PART_TYPE}
-                  {@const output = excelOutput(part)}
-                  {@const errorText = excelErrorText(part)}
-                  {#if output?.ok}
-                    <a
-                      href={output.downloadUrl}
-                      download={output.filename}
-                      class="bg-muted hover:bg-accent inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium"
-                    >
-                      <FileSpreadsheetIcon class="text-primary size-3.5" />
-                      {output.filename}
-                    </a>
-                  {:else if output || errorText}
-                    <p class="text-destructive text-xs">
-                      Excel export failed: {errorText ??
-                        (output && !output.ok ? output.error : "unknown error")}
-                    </p>
-                  {:else}
-                    <p
-                      class="text-muted-foreground flex animate-pulse items-center gap-1.5 text-xs"
-                    >
-                      <FileSpreadsheetIcon class="size-3" />
-                      Generating Excel…
-                    </p>
-                  {/if}
-                {:else if part.type === THREEJS_REPORT_TOOL_PART_TYPE}
-                  {@const report = threeJsReportOutput(part)}
-                  {@const reportError = threeJsReportErrorText(part)}
-                  {#if report?.ok}
-                    <span class="inline-flex items-center gap-1">
-                      <a
-                        href={report.openUrl}
-                        target="_blank"
-                        rel="noopener"
-                        title="Open the interactive 3D report in a new tab"
-                        class="bg-muted hover:bg-accent inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium"
-                      >
-                        <ChartColumnIcon class="text-primary size-3.5" />
-                        {report.filename}
-                      </a>
-                      <a
-                        href={report.downloadUrl}
-                        download={report.filename}
-                        aria-label="Download report"
-                        title="Download report"
-                        class="bg-muted hover:bg-accent inline-flex items-center rounded-md border p-1.5"
-                      >
-                        <DownloadIcon class="size-3.5" />
-                      </a>
-                    </span>
-                  {:else if report || reportError}
-                    <p class="text-destructive text-xs">
-                      3D report failed: {reportError ??
-                        (report && !report.ok ? report.error : "unknown error")}
-                    </p>
-                  {:else}
-                    <p
-                      class="text-muted-foreground flex animate-pulse items-center gap-1.5 text-xs"
-                    >
-                      <ChartColumnIcon class="size-3" />
-                      Building 3D report…
-                    </p>
-                  {/if}
-                {:else if part.type.startsWith("tool-") || part.type === "dynamic-tool"}
-                  <ToolPart {part} />
-                {/if}
-              {/each}
-              {#if answerMarkdown && !(messageIndex === chat.messages.length - 1 && busy)}
-                <div class="flex items-center gap-1.5">
-                  <CopyMessageButton text={answerMarkdown} />
-                  <MessageTimestamp metadata={message.metadata} />
-                </div>
-              {/if}
-            </div>
-          {/if}
-        {/each}
-
-        {#if chat.status === "submitted"}
-          <p class="text-muted-foreground animate-pulse text-sm">Thinking…</p>
-        {/if}
-
-        {#if chat.status === "error"}
-          <p class="text-destructive text-sm">
-            Something went wrong{chat.error?.message
-              ? `: ${chat.error.message}`
-              : ""}. Please try again.
-          </p>
-        {/if}
-      </div>
-    </div>
-
-    <div class="border-t">
-      <form class="mx-auto w-full max-w-3xl px-4 py-4" onsubmit={handleSubmit}>
-        <AttachmentComposer
-          bind:files={pendingFiles}
-          disabled={busy || preparingFiles}
+      {#each tabs as tab (tab.key)}
+        <Tabs.Content
+          value={tab.key}
+          class="min-h-0 flex-col data-[state=active]:flex"
         >
-          <Textarea
-            bind:ref={textareaRef}
-            bind:value={input}
+          <ChatConversation
+            chat={tab.chat}
+            {agentId}
+            sessionKey={tab.key}
+            {title}
+            {greeting}
             {placeholder}
-            rows={1}
-            autocomplete="off"
-            class="max-h-52 min-h-10 flex-1 resize-none overflow-y-auto"
-            onkeydown={handleInputKeydown}
+            {context}
+            active={tab.key === activeKey}
+            onSettled={fetchSessions}
           />
-          <Button
-            type="submit"
-            size="icon"
-            aria-label="Send message"
-            disabled={busy ||
-              preparingFiles ||
-              (input.trim().length === 0 && pendingFiles.length === 0)}
-          >
-            <SendHorizontalIcon class="size-4" />
-          </Button>
-        </AttachmentComposer>
-      </form>
-    </div>
+        </Tabs.Content>
+      {/each}
+    </Tabs.Root>
   </div>
 </div>

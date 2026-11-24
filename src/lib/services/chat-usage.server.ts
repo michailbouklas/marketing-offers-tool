@@ -155,6 +155,45 @@ export async function getRawThreadMessages(
   }));
 }
 
+/** True when `query` occurs in a stored message's text parts (case-insensitive). */
+export function messageTextContains(content: string, query: string) {
+  const needle = query.toLowerCase();
+
+  return parseMessageParts(content).some(
+    (part) => part.type === "text" && part.text?.toLowerCase().includes(needle),
+  );
+}
+
+/**
+ * Ids of the threads under `threadPrefix` (`<agentId>:<userId>:`, so always
+ * one user's own chats) that have a message whose text contains `query`.
+ */
+export async function findThreadIdsWithText(
+  threadPrefix: string,
+  query: string,
+): Promise<Set<string>> {
+  const rows = await prisma.ai_chat_messages.findMany({
+    where: {
+      thread_id: { startsWith: threadPrefix },
+      content: { contains: query, mode: "insensitive" },
+    },
+    select: { thread_id: true, content: true },
+    orderBy: { createdAt: "desc" },
+    // shortcut: unindexed scan capped at the newest 500 raw hits, and the raw
+    // match runs on JSON-escaped text (a query with quotes or newlines
+    // misses); move to a tsvector index if per-user history grows large.
+    take: 500,
+  });
+
+  // `content` is the serialised parts JSON, so the raw match also hits JSON
+  // keys and tool payloads ("text", "type"…); keep real text matches only.
+  return new Set(
+    rows
+      .filter((row) => messageTextContains(row.content, query))
+      .map((row) => row.thread_id),
+  );
+}
+
 function parseMessageParts(content: string): ChatConversationMessage["parts"] {
   try {
     const parsed: unknown = JSON.parse(content);
