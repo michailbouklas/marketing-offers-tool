@@ -2,6 +2,7 @@
   import type { Chat } from "@ai-sdk/svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
+  import CalculationFooter from "$lib/components/ai-chat/calculation-footer.svelte";
   import CopyMessageButton from "$lib/components/ai-chat/copy-message-button.svelte";
   import MessageFeedback from "$lib/components/ai-chat/message-feedback.svelte";
   import MessageTimestamp from "$lib/components/ai-chat/message-timestamp.svelte";
@@ -428,7 +429,7 @@
                 </p>
               {/if}
             {:else if part.type.startsWith("tool-") || part.type === "dynamic-tool"}
-              <ToolPart {part} />
+              <ToolPart {part} sqlInFooter />
             {/if}
           {/each}
           {#if answerMarkdown && !(messageIndex === chat.messages.length - 1 && busy)}
@@ -437,6 +438,9 @@
               <MessageFeedback {agentId} {sessionKey} messageId={message.id} />
               <MessageTimestamp metadata={message.metadata} />
             </div>
+          {/if}
+          {#if !(messageIndex === chat.messages.length - 1 && busy)}
+            <CalculationFooter parts={message.parts} />
           {/if}
           {#if messageIndex === chat.messages.length - 1 && followUps.length > 0}
             <div class="pt-4">

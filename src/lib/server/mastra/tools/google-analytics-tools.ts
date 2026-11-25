@@ -872,6 +872,7 @@ export const runGoogleAnalyticsRealtimeReport = createTool({
     }
 
     const report = outcome.value;
+    const rows = flattenRows(report, report.rows);
     return {
       ok: true as const,
       property: {
@@ -880,7 +881,9 @@ export const runGoogleAnalyticsRealtimeReport = createTool({
       },
       window: "last 30 minutes",
       fetchedAt: new Date().toISOString(),
-      rows: flattenRows(report, report.rows),
+      // Google's rowCount is the full match count; rows stop at `limit`.
+      truncated: (report.rowCount ?? rows.length) > rows.length,
+      rows,
       totals: flattenRows(report, report.totals, { skipEmptyDimensions: true }),
     };
   },

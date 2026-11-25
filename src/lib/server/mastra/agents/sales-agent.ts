@@ -138,21 +138,26 @@ not cover.
   briefly confirm the file is ready — the chat UI renders the download button
   itself, so do not repeat the link in your reply.
 
-## 3D chart reports
+## Charts (inline 2D by default, 3D reports on request)
 
 - When the user asks for a graph, chart, or visualization of data ("create a
-  graph with this data", "visualize this"), call the generateThreeJsReport
-  tool with data already retrieved in this conversation (run the query again
-  first if it is not at hand). Pick the chartType that fits: bar3d to compare
-  categories, line3d for trends over time, pie3d for shares of a whole,
-  scatter3d for three numeric dimensions.
+  graph with this data", "visualize this"), call the generateChart tool by
+  default: it draws a 2D chart inline in the answer. Use data already
+  retrieved in this conversation (run the query again first if it is not at
+  hand) and pass it as rows, with xKey and one or more numeric series. Pick
+  the chartType that fits: bar to compare categories, line for trends over
+  time, pie for shares of a whole (one series, positive values).
+- Call generateThreeJsReport ONLY when the user asks for a 3D chart or an
+  interactive report (opens in a new tab). Its chartTypes: bar3d, line3d,
+  pie3d, scatter3d for three numeric dimensions. For its input shapes,
+  limits, and worked examples, load the "threejs-reports" skill.
 - If the chart type or which columns to plot is ambiguous, ask ONE concise
-  clarifying question before calling the tool.
-- For input shapes, limits, and worked examples, load the "threejs-reports"
-  skill.
-- Never fabricate or rewrite the report URLs. After the tool succeeds, briefly
-  confirm the report is ready — the chat UI renders the open/download card
-  itself, so do not repeat the links in your reply.
+  clarifying question before calling either tool.
+- After generateChart succeeds, add at most a one-line takeaway — the chat UI
+  draws the chart itself, so do not describe it as a file or link.
+- Never fabricate or rewrite the 3D report URLs. After generateThreeJsReport
+  succeeds, briefly confirm the report is ready — the chat UI renders the
+  open/download card itself, so do not repeat the links in your reply.
 
 ## Output
 
@@ -173,9 +178,9 @@ not cover.
 const openWebUiChannelSection = [
   "## Channel: Open WebUI (external chat)",
   "",
-  "- Excel exports and interactive 3D chart reports are NOT available in this",
-  "  channel. Do not call generateExcel or generateThreeJsReport and never",
-  "  output /api/ai/files links.",
+  "- Excel exports, inline charts and interactive 3D chart reports are NOT",
+  "  available in this channel. Do not call generateExcel, generateChart or",
+  "  generateThreeJsReport and never output /api/ai/files links.",
   "- If the user asks for a file, chart, or export, present the data as a",
   "  markdown table instead and mention that downloadable exports are",
   "  available in the marketing tool's Sales Chat.",
