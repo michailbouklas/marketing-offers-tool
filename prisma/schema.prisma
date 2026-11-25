@@ -294,6 +294,9 @@ model user {
   agent_skills                     AgentSkill[]                        @relation("AgentSkillCreator")
   releases                         Release[]                           @relation("ReleaseAuthor")
   release_reads                    ReleaseRead[]
+  chat_feedback ChatFeedback[]
+  chat_prompts  ChatPrompt[]
+  chat_shares   ChatShare[]
 }
 
 model session {
@@ -1206,4 +1209,51 @@ model sales_offer_value_cache {
   brandAlias String   @id @db.VarChar(64)
   rows       Json
   computedAt DateTime @default(now())
+}
+
+/// Thumbs up/down on one assistant answer (any chat agent). One row per (user, message); rating again overwrites.
+model ChatFeedback {
+  id         Int      @id @default(autoincrement())
+  userId     String
+  user       user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId    String
+  /// Client session key (uuid); the Mastra thread id is `<agentId>:<userId>:<sessionKey>`.
+  sessionKey String
+  messageId  String
+  /// 1 = helpful, -1 = not helpful.
+  rating     Int
+  reason     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, messageId])
+  @@index([agentId, createdAt])
+}
+
+/// Saved starter question for a chat agent. Personal unless `published`, then visible to everyone who can use the agent.
+model ChatPrompt {
+  id        Int      @id @default(autoincrement())
+  agentId   String
+  text      String
+  userId    String
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([agentId, published])
+  @@index([userId])
+}
+
+/// Read-only share link for one stored conversation. The id is the unguessable link token.
+model ChatShare {
+  id           String   @id @default(cuid())
+  userId       String
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId      String
+  sessionKey   String
+  /// Owner's brand aliases when shared; a viewer may open the link only if their own scope covers all of them.
+  brandAliases String[] @default([])
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, agentId, sessionKey])
 }

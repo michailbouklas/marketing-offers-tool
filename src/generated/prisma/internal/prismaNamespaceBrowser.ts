@@ -110,6 +110,9 @@ export const ModelName = {
   Release: 'Release',
   ReleaseRead: 'ReleaseRead',
   sales_offer_value_cache: 'sales_offer_value_cache',
+  ChatFeedback: 'ChatFeedback',
+  ChatPrompt: 'ChatPrompt',
+  ChatShare: 'ChatShare',
   ai_chat_threads: 'ai_chat_threads',
   ai_chat_messages: 'ai_chat_messages'
 } as const
@@ -1006,6 +1009,45 @@ export const Sales_offer_value_cacheScalarFieldEnum = {
 } as const
 
 export type Sales_offer_value_cacheScalarFieldEnum = (typeof Sales_offer_value_cacheScalarFieldEnum)[keyof typeof Sales_offer_value_cacheScalarFieldEnum]
+
+
+export const ChatFeedbackScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  agentId: 'agentId',
+  sessionKey: 'sessionKey',
+  messageId: 'messageId',
+  rating: 'rating',
+  reason: 'reason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChatFeedbackScalarFieldEnum = (typeof ChatFeedbackScalarFieldEnum)[keyof typeof ChatFeedbackScalarFieldEnum]
+
+
+export const ChatPromptScalarFieldEnum = {
+  id: 'id',
+  agentId: 'agentId',
+  text: 'text',
+  userId: 'userId',
+  published: 'published',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatPromptScalarFieldEnum = (typeof ChatPromptScalarFieldEnum)[keyof typeof ChatPromptScalarFieldEnum]
+
+
+export const ChatShareScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  agentId: 'agentId',
+  sessionKey: 'sessionKey',
+  brandAliases: 'brandAliases',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatShareScalarFieldEnum = (typeof ChatShareScalarFieldEnum)[keyof typeof ChatShareScalarFieldEnum]
 
 
 export const Ai_chat_threadsScalarFieldEnum = {

@@ -357,6 +357,21 @@ export type ReleaseRead = Prisma.ReleaseReadModel
  */
 export type sales_offer_value_cache = Prisma.sales_offer_value_cacheModel
 /**
+ * Model ChatFeedback
+ * Thumbs up/down on one assistant answer (any chat agent). One row per (user, message); rating again overwrites.
+ */
+export type ChatFeedback = Prisma.ChatFeedbackModel
+/**
+ * Model ChatPrompt
+ * Saved starter question for a chat agent. Personal unless `published`, then visible to everyone who can use the agent.
+ */
+export type ChatPrompt = Prisma.ChatPromptModel
+/**
+ * Model ChatShare
+ * Read-only share link for one stored conversation. The id is the unguessable link token.
+ */
+export type ChatShare = Prisma.ChatShareModel
+/**
  * Model ai_chat_threads
  * One per-user conversation session. `id` is "<agentId>:<userId>:<sessionKey>",
  * `resourceId` is the user id, `title` is AI-generated after the first exchange.

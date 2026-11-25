@@ -443,6 +443,9 @@ export const ModelName = {
   Release: 'Release',
   ReleaseRead: 'ReleaseRead',
   sales_offer_value_cache: 'sales_offer_value_cache',
+  ChatFeedback: 'ChatFeedback',
+  ChatPrompt: 'ChatPrompt',
+  ChatShare: 'ChatShare',
   ai_chat_threads: 'ai_chat_threads',
   ai_chat_messages: 'ai_chat_messages'
 } as const
@@ -460,7 +463,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "company" | "brand_company" | "recipe" | "recipe_line" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "page_view" | "page_view_daily" | "user_visit_daily" | "page_view_rollup_state" | "agentSkill" | "release" | "releaseRead" | "sales_offer_value_cache" | "ai_chat_threads" | "ai_chat_messages"
+    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "company" | "brand_company" | "recipe" | "recipe_line" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "page_view" | "page_view_daily" | "user_visit_daily" | "page_view_rollup_state" | "agentSkill" | "release" | "releaseRead" | "sales_offer_value_cache" | "chatFeedback" | "chatPrompt" | "chatShare" | "ai_chat_threads" | "ai_chat_messages"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4830,6 +4833,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ChatFeedback: {
+      payload: Prisma.$ChatFeedbackPayload<ExtArgs>
+      fields: Prisma.ChatFeedbackFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChatFeedbackFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatFeedbackPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChatFeedbackFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatFeedbackPayload>
+        }
+        findFirst: {
+          args: Prisma.ChatFeedbackFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatFeedbackPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChatFeedbackFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatFeedbackPayload>
+        }
+        findMany: {
+          args: Prisma.ChatFeedbackFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatFeedbackPayload>[]
+        }
+        create: {
+          args: Prisma.ChatFeedbackCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatFeedbackPayload>
+        }
+        createMany: {
+          args: Prisma.ChatFeedbackCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChatFeedbackCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatFeedbackPayload>[]
+        }
+        delete: {
+          args: Prisma.ChatFeedbackDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatFeedbackPayload>
+        }
+        update: {
+          args: Prisma.ChatFeedbackUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatFeedbackPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChatFeedbackDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChatFeedbackUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChatFeedbackUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatFeedbackPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChatFeedbackUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatFeedbackPayload>
+        }
+        aggregate: {
+          args: Prisma.ChatFeedbackAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChatFeedback>
+        }
+        groupBy: {
+          args: Prisma.ChatFeedbackGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatFeedbackGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChatFeedbackCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatFeedbackCountAggregateOutputType> | number
+        }
+      }
+    }
+    ChatPrompt: {
+      payload: Prisma.$ChatPromptPayload<ExtArgs>
+      fields: Prisma.ChatPromptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChatPromptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPromptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChatPromptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPromptPayload>
+        }
+        findFirst: {
+          args: Prisma.ChatPromptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPromptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChatPromptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPromptPayload>
+        }
+        findMany: {
+          args: Prisma.ChatPromptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPromptPayload>[]
+        }
+        create: {
+          args: Prisma.ChatPromptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPromptPayload>
+        }
+        createMany: {
+          args: Prisma.ChatPromptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChatPromptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPromptPayload>[]
+        }
+        delete: {
+          args: Prisma.ChatPromptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPromptPayload>
+        }
+        update: {
+          args: Prisma.ChatPromptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPromptPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChatPromptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChatPromptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChatPromptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPromptPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChatPromptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatPromptPayload>
+        }
+        aggregate: {
+          args: Prisma.ChatPromptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChatPrompt>
+        }
+        groupBy: {
+          args: Prisma.ChatPromptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatPromptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChatPromptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatPromptCountAggregateOutputType> | number
+        }
+      }
+    }
+    ChatShare: {
+      payload: Prisma.$ChatSharePayload<ExtArgs>
+      fields: Prisma.ChatShareFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChatShareFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatSharePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChatShareFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatSharePayload>
+        }
+        findFirst: {
+          args: Prisma.ChatShareFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatSharePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChatShareFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatSharePayload>
+        }
+        findMany: {
+          args: Prisma.ChatShareFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatSharePayload>[]
+        }
+        create: {
+          args: Prisma.ChatShareCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatSharePayload>
+        }
+        createMany: {
+          args: Prisma.ChatShareCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChatShareCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatSharePayload>[]
+        }
+        delete: {
+          args: Prisma.ChatShareDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatSharePayload>
+        }
+        update: {
+          args: Prisma.ChatShareUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatSharePayload>
+        }
+        deleteMany: {
+          args: Prisma.ChatShareDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChatShareUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChatShareUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatSharePayload>[]
+        }
+        upsert: {
+          args: Prisma.ChatShareUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatSharePayload>
+        }
+        aggregate: {
+          args: Prisma.ChatShareAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChatShare>
+        }
+        groupBy: {
+          args: Prisma.ChatShareGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatShareGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChatShareCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatShareCountAggregateOutputType> | number
+        }
+      }
+    }
     ai_chat_threads: {
       payload: Prisma.$ai_chat_threadsPayload<ExtArgs>
       fields: Prisma.ai_chat_threadsFieldRefs
@@ -5823,6 +6048,45 @@ export const Sales_offer_value_cacheScalarFieldEnum = {
 export type Sales_offer_value_cacheScalarFieldEnum = (typeof Sales_offer_value_cacheScalarFieldEnum)[keyof typeof Sales_offer_value_cacheScalarFieldEnum]
 
 
+export const ChatFeedbackScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  agentId: 'agentId',
+  sessionKey: 'sessionKey',
+  messageId: 'messageId',
+  rating: 'rating',
+  reason: 'reason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChatFeedbackScalarFieldEnum = (typeof ChatFeedbackScalarFieldEnum)[keyof typeof ChatFeedbackScalarFieldEnum]
+
+
+export const ChatPromptScalarFieldEnum = {
+  id: 'id',
+  agentId: 'agentId',
+  text: 'text',
+  userId: 'userId',
+  published: 'published',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatPromptScalarFieldEnum = (typeof ChatPromptScalarFieldEnum)[keyof typeof ChatPromptScalarFieldEnum]
+
+
+export const ChatShareScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  agentId: 'agentId',
+  sessionKey: 'sessionKey',
+  brandAliases: 'brandAliases',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatShareScalarFieldEnum = (typeof ChatShareScalarFieldEnum)[keyof typeof ChatShareScalarFieldEnum]
+
+
 export const Ai_chat_threadsScalarFieldEnum = {
   id: 'id',
   resourceId: 'resourceId',
@@ -6413,6 +6677,9 @@ export type GlobalOmitConfig = {
   release?: Prisma.ReleaseOmit
   releaseRead?: Prisma.ReleaseReadOmit
   sales_offer_value_cache?: Prisma.sales_offer_value_cacheOmit
+  chatFeedback?: Prisma.ChatFeedbackOmit
+  chatPrompt?: Prisma.ChatPromptOmit
+  chatShare?: Prisma.ChatShareOmit
   ai_chat_threads?: Prisma.ai_chat_threadsOmit
   ai_chat_messages?: Prisma.ai_chat_messagesOmit
 }

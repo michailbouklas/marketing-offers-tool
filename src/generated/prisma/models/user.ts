@@ -255,6 +255,9 @@ export type userWhereInput = {
   agent_skills?: Prisma.AgentSkillListRelationFilter
   releases?: Prisma.ReleaseListRelationFilter
   release_reads?: Prisma.ReleaseReadListRelationFilter
+  chat_feedback?: Prisma.ChatFeedbackListRelationFilter
+  chat_prompts?: Prisma.ChatPromptListRelationFilter
+  chat_shares?: Prisma.ChatShareListRelationFilter
 }
 
 export type userOrderByWithRelationInput = {
@@ -291,6 +294,9 @@ export type userOrderByWithRelationInput = {
   agent_skills?: Prisma.AgentSkillOrderByRelationAggregateInput
   releases?: Prisma.ReleaseOrderByRelationAggregateInput
   release_reads?: Prisma.ReleaseReadOrderByRelationAggregateInput
+  chat_feedback?: Prisma.ChatFeedbackOrderByRelationAggregateInput
+  chat_prompts?: Prisma.ChatPromptOrderByRelationAggregateInput
+  chat_shares?: Prisma.ChatShareOrderByRelationAggregateInput
 }
 
 export type userWhereUniqueInput = Prisma.AtLeast<{
@@ -330,6 +336,9 @@ export type userWhereUniqueInput = Prisma.AtLeast<{
   agent_skills?: Prisma.AgentSkillListRelationFilter
   releases?: Prisma.ReleaseListRelationFilter
   release_reads?: Prisma.ReleaseReadListRelationFilter
+  chat_feedback?: Prisma.ChatFeedbackListRelationFilter
+  chat_prompts?: Prisma.ChatPromptListRelationFilter
+  chat_shares?: Prisma.ChatShareListRelationFilter
 }, "id" | "email">
 
 export type userOrderByWithAggregationInput = {
@@ -402,6 +411,9 @@ export type userCreateInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateInput = {
@@ -438,6 +450,9 @@ export type userUncheckedCreateInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userUpdateInput = {
@@ -474,6 +489,9 @@ export type userUpdateInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateInput = {
@@ -510,6 +528,9 @@ export type userUncheckedUpdateInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateManyInput = {
@@ -914,6 +935,48 @@ export type userUpdateOneRequiredWithoutRelease_readsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.userUpdateToOneWithWhereWithoutRelease_readsInput, Prisma.userUpdateWithoutRelease_readsInput>, Prisma.userUncheckedUpdateWithoutRelease_readsInput>
 }
 
+export type userCreateNestedOneWithoutChat_feedbackInput = {
+  create?: Prisma.XOR<Prisma.userCreateWithoutChat_feedbackInput, Prisma.userUncheckedCreateWithoutChat_feedbackInput>
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutChat_feedbackInput
+  connect?: Prisma.userWhereUniqueInput
+}
+
+export type userUpdateOneRequiredWithoutChat_feedbackNestedInput = {
+  create?: Prisma.XOR<Prisma.userCreateWithoutChat_feedbackInput, Prisma.userUncheckedCreateWithoutChat_feedbackInput>
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutChat_feedbackInput
+  upsert?: Prisma.userUpsertWithoutChat_feedbackInput
+  connect?: Prisma.userWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.userUpdateToOneWithWhereWithoutChat_feedbackInput, Prisma.userUpdateWithoutChat_feedbackInput>, Prisma.userUncheckedUpdateWithoutChat_feedbackInput>
+}
+
+export type userCreateNestedOneWithoutChat_promptsInput = {
+  create?: Prisma.XOR<Prisma.userCreateWithoutChat_promptsInput, Prisma.userUncheckedCreateWithoutChat_promptsInput>
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutChat_promptsInput
+  connect?: Prisma.userWhereUniqueInput
+}
+
+export type userUpdateOneRequiredWithoutChat_promptsNestedInput = {
+  create?: Prisma.XOR<Prisma.userCreateWithoutChat_promptsInput, Prisma.userUncheckedCreateWithoutChat_promptsInput>
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutChat_promptsInput
+  upsert?: Prisma.userUpsertWithoutChat_promptsInput
+  connect?: Prisma.userWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.userUpdateToOneWithWhereWithoutChat_promptsInput, Prisma.userUpdateWithoutChat_promptsInput>, Prisma.userUncheckedUpdateWithoutChat_promptsInput>
+}
+
+export type userCreateNestedOneWithoutChat_sharesInput = {
+  create?: Prisma.XOR<Prisma.userCreateWithoutChat_sharesInput, Prisma.userUncheckedCreateWithoutChat_sharesInput>
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutChat_sharesInput
+  connect?: Prisma.userWhereUniqueInput
+}
+
+export type userUpdateOneRequiredWithoutChat_sharesNestedInput = {
+  create?: Prisma.XOR<Prisma.userCreateWithoutChat_sharesInput, Prisma.userUncheckedCreateWithoutChat_sharesInput>
+  connectOrCreate?: Prisma.userCreateOrConnectWithoutChat_sharesInput
+  upsert?: Prisma.userUpsertWithoutChat_sharesInput
+  connect?: Prisma.userWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.userUpdateToOneWithWhereWithoutChat_sharesInput, Prisma.userUpdateWithoutChat_sharesInput>, Prisma.userUncheckedUpdateWithoutChat_sharesInput>
+}
+
 export type userCreateWithoutBrand_assignmentsInput = {
   id: string
   name: string
@@ -947,6 +1010,9 @@ export type userCreateWithoutBrand_assignmentsInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutBrand_assignmentsInput = {
@@ -982,6 +1048,9 @@ export type userUncheckedCreateWithoutBrand_assignmentsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutBrand_assignmentsInput = {
@@ -1033,6 +1102,9 @@ export type userUpdateWithoutBrand_assignmentsInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutBrand_assignmentsInput = {
@@ -1068,6 +1140,9 @@ export type userUncheckedUpdateWithoutBrand_assignmentsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutSessionsInput = {
@@ -1103,6 +1178,9 @@ export type userCreateWithoutSessionsInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutSessionsInput = {
@@ -1138,6 +1216,9 @@ export type userUncheckedCreateWithoutSessionsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutSessionsInput = {
@@ -1189,6 +1270,9 @@ export type userUpdateWithoutSessionsInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutSessionsInput = {
@@ -1224,6 +1308,9 @@ export type userUncheckedUpdateWithoutSessionsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutAccountsInput = {
@@ -1259,6 +1346,9 @@ export type userCreateWithoutAccountsInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutAccountsInput = {
@@ -1294,6 +1384,9 @@ export type userUncheckedCreateWithoutAccountsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutAccountsInput = {
@@ -1345,6 +1438,9 @@ export type userUpdateWithoutAccountsInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutAccountsInput = {
@@ -1380,6 +1476,9 @@ export type userUncheckedUpdateWithoutAccountsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutDim_offers_auditsInput = {
@@ -1415,6 +1514,9 @@ export type userCreateWithoutDim_offers_auditsInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutDim_offers_auditsInput = {
@@ -1450,6 +1552,9 @@ export type userUncheckedCreateWithoutDim_offers_auditsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutDim_offers_auditsInput = {
@@ -1501,6 +1606,9 @@ export type userUpdateWithoutDim_offers_auditsInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutDim_offers_auditsInput = {
@@ -1536,6 +1644,9 @@ export type userUncheckedUpdateWithoutDim_offers_auditsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutUrls_to_scrapeInput = {
@@ -1571,6 +1682,9 @@ export type userCreateWithoutUrls_to_scrapeInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutUrls_to_scrapeInput = {
@@ -1606,6 +1720,9 @@ export type userUncheckedCreateWithoutUrls_to_scrapeInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutUrls_to_scrapeInput = {
@@ -1657,6 +1774,9 @@ export type userUpdateWithoutUrls_to_scrapeInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutUrls_to_scrapeInput = {
@@ -1692,6 +1812,9 @@ export type userUncheckedUpdateWithoutUrls_to_scrapeInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutGenerated_imagesInput = {
@@ -1727,6 +1850,9 @@ export type userCreateWithoutGenerated_imagesInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutGenerated_imagesInput = {
@@ -1762,6 +1888,9 @@ export type userUncheckedCreateWithoutGenerated_imagesInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutGenerated_imagesInput = {
@@ -1813,6 +1942,9 @@ export type userUpdateWithoutGenerated_imagesInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutGenerated_imagesInput = {
@@ -1848,6 +1980,9 @@ export type userUncheckedUpdateWithoutGenerated_imagesInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutReference_imagesInput = {
@@ -1883,6 +2018,9 @@ export type userCreateWithoutReference_imagesInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutReference_imagesInput = {
@@ -1918,6 +2056,9 @@ export type userUncheckedCreateWithoutReference_imagesInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutReference_imagesInput = {
@@ -1969,6 +2110,9 @@ export type userUpdateWithoutReference_imagesInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutReference_imagesInput = {
@@ -2004,6 +2148,9 @@ export type userUncheckedUpdateWithoutReference_imagesInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutImage_presetsInput = {
@@ -2039,6 +2186,9 @@ export type userCreateWithoutImage_presetsInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutImage_presetsInput = {
@@ -2074,6 +2224,9 @@ export type userUncheckedCreateWithoutImage_presetsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutImage_presetsInput = {
@@ -2125,6 +2278,9 @@ export type userUpdateWithoutImage_presetsInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutImage_presetsInput = {
@@ -2160,6 +2316,9 @@ export type userUncheckedUpdateWithoutImage_presetsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutImage_templatesInput = {
@@ -2195,6 +2354,9 @@ export type userCreateWithoutImage_templatesInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutImage_templatesInput = {
@@ -2230,6 +2392,9 @@ export type userUncheckedCreateWithoutImage_templatesInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutImage_templatesInput = {
@@ -2281,6 +2446,9 @@ export type userUpdateWithoutImage_templatesInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutImage_templatesInput = {
@@ -2316,6 +2484,9 @@ export type userUncheckedUpdateWithoutImage_templatesInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutGenerated_copiesInput = {
@@ -2351,6 +2522,9 @@ export type userCreateWithoutGenerated_copiesInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutGenerated_copiesInput = {
@@ -2386,6 +2560,9 @@ export type userUncheckedCreateWithoutGenerated_copiesInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutGenerated_copiesInput = {
@@ -2437,6 +2614,9 @@ export type userUpdateWithoutGenerated_copiesInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutGenerated_copiesInput = {
@@ -2472,6 +2652,9 @@ export type userUncheckedUpdateWithoutGenerated_copiesInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutCompetition_restaurant_prefsInput = {
@@ -2507,6 +2690,9 @@ export type userCreateWithoutCompetition_restaurant_prefsInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutCompetition_restaurant_prefsInput = {
@@ -2542,6 +2728,9 @@ export type userUncheckedCreateWithoutCompetition_restaurant_prefsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutCompetition_restaurant_prefsInput = {
@@ -2593,6 +2782,9 @@ export type userUpdateWithoutCompetition_restaurant_prefsInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutCompetition_restaurant_prefsInput = {
@@ -2628,6 +2820,9 @@ export type userUncheckedUpdateWithoutCompetition_restaurant_prefsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutCompetition_dashboard_widgetsInput = {
@@ -2663,6 +2858,9 @@ export type userCreateWithoutCompetition_dashboard_widgetsInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutCompetition_dashboard_widgetsInput = {
@@ -2698,6 +2896,9 @@ export type userUncheckedCreateWithoutCompetition_dashboard_widgetsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutCompetition_dashboard_widgetsInput = {
@@ -2749,6 +2950,9 @@ export type userUpdateWithoutCompetition_dashboard_widgetsInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutCompetition_dashboard_widgetsInput = {
@@ -2784,6 +2988,9 @@ export type userUncheckedUpdateWithoutCompetition_dashboard_widgetsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutGoogle_reviews_business_prefsInput = {
@@ -2819,6 +3026,9 @@ export type userCreateWithoutGoogle_reviews_business_prefsInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutGoogle_reviews_business_prefsInput = {
@@ -2854,6 +3064,9 @@ export type userUncheckedCreateWithoutGoogle_reviews_business_prefsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutGoogle_reviews_business_prefsInput = {
@@ -2905,6 +3118,9 @@ export type userUpdateWithoutGoogle_reviews_business_prefsInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutGoogle_reviews_business_prefsInput = {
@@ -2940,6 +3156,9 @@ export type userUncheckedUpdateWithoutGoogle_reviews_business_prefsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -2975,6 +3194,9 @@ export type userCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -3010,6 +3232,9 @@ export type userUncheckedCreateWithoutGoogle_reviews_dashboard_widgetsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -3061,6 +3286,9 @@ export type userUpdateWithoutGoogle_reviews_dashboard_widgetsInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutGoogle_reviews_dashboard_widgetsInput = {
@@ -3096,6 +3324,9 @@ export type userUncheckedUpdateWithoutGoogle_reviews_dashboard_widgetsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutMonitor_entriesInput = {
@@ -3131,6 +3362,9 @@ export type userCreateWithoutMonitor_entriesInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutMonitor_entriesInput = {
@@ -3166,6 +3400,9 @@ export type userUncheckedCreateWithoutMonitor_entriesInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutMonitor_entriesInput = {
@@ -3217,6 +3454,9 @@ export type userUpdateWithoutMonitor_entriesInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutMonitor_entriesInput = {
@@ -3252,6 +3492,9 @@ export type userUncheckedUpdateWithoutMonitor_entriesInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutPage_viewsInput = {
@@ -3287,6 +3530,9 @@ export type userCreateWithoutPage_viewsInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutPage_viewsInput = {
@@ -3322,6 +3568,9 @@ export type userUncheckedCreateWithoutPage_viewsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutPage_viewsInput = {
@@ -3373,6 +3622,9 @@ export type userUpdateWithoutPage_viewsInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutPage_viewsInput = {
@@ -3408,6 +3660,9 @@ export type userUncheckedUpdateWithoutPage_viewsInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutPage_view_dailyInput = {
@@ -3443,6 +3698,9 @@ export type userCreateWithoutPage_view_dailyInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutPage_view_dailyInput = {
@@ -3478,6 +3736,9 @@ export type userUncheckedCreateWithoutPage_view_dailyInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutPage_view_dailyInput = {
@@ -3529,6 +3790,9 @@ export type userUpdateWithoutPage_view_dailyInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutPage_view_dailyInput = {
@@ -3564,6 +3828,9 @@ export type userUncheckedUpdateWithoutPage_view_dailyInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutVisit_dailyInput = {
@@ -3599,6 +3866,9 @@ export type userCreateWithoutVisit_dailyInput = {
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutVisit_dailyInput = {
@@ -3634,6 +3904,9 @@ export type userUncheckedCreateWithoutVisit_dailyInput = {
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutVisit_dailyInput = {
@@ -3685,6 +3958,9 @@ export type userUpdateWithoutVisit_dailyInput = {
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutVisit_dailyInput = {
@@ -3720,6 +3996,9 @@ export type userUncheckedUpdateWithoutVisit_dailyInput = {
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutAgent_skillsInput = {
@@ -3755,6 +4034,9 @@ export type userCreateWithoutAgent_skillsInput = {
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutAgent_skillsInput = {
@@ -3790,6 +4072,9 @@ export type userUncheckedCreateWithoutAgent_skillsInput = {
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutAgent_skillsInput = {
@@ -3841,6 +4126,9 @@ export type userUpdateWithoutAgent_skillsInput = {
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutAgent_skillsInput = {
@@ -3876,6 +4164,9 @@ export type userUncheckedUpdateWithoutAgent_skillsInput = {
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutReleasesInput = {
@@ -3911,6 +4202,9 @@ export type userCreateWithoutReleasesInput = {
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutReleasesInput = {
@@ -3946,6 +4240,9 @@ export type userUncheckedCreateWithoutReleasesInput = {
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutReleasesInput = {
@@ -3997,6 +4294,9 @@ export type userUpdateWithoutReleasesInput = {
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutReleasesInput = {
@@ -4032,6 +4332,9 @@ export type userUncheckedUpdateWithoutReleasesInput = {
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type userCreateWithoutRelease_readsInput = {
@@ -4067,6 +4370,9 @@ export type userCreateWithoutRelease_readsInput = {
   visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
 }
 
 export type userUncheckedCreateWithoutRelease_readsInput = {
@@ -4102,6 +4408,9 @@ export type userUncheckedCreateWithoutRelease_readsInput = {
   visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
   agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
   releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type userCreateOrConnectWithoutRelease_readsInput = {
@@ -4153,6 +4462,9 @@ export type userUpdateWithoutRelease_readsInput = {
   visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
 }
 
 export type userUncheckedUpdateWithoutRelease_readsInput = {
@@ -4188,6 +4500,513 @@ export type userUncheckedUpdateWithoutRelease_readsInput = {
   visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
   agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
   releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type userCreateWithoutChat_feedbackInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.accountCreateNestedManyWithoutUserInput
+  brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
+  dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutUserInput
+  image_presets?: Prisma.ImageGeneratorPresetCreateNestedManyWithoutUserInput
+  image_templates?: Prisma.ImageGeneratorTemplateCreateNestedManyWithoutUserInput
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefCreateNestedManyWithoutUserInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetCreateNestedManyWithoutUserInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput
+  monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput
+  page_views?: Prisma.page_viewCreateNestedManyWithoutUserInput
+  page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
+  visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
+  agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
+}
+
+export type userUncheckedCreateWithoutChat_feedbackInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
+  brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutUserInput
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedCreateNestedManyWithoutUserInput
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedCreateNestedManyWithoutUserInput
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedCreateNestedManyWithoutUserInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput
+  monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput
+  page_views?: Prisma.page_viewUncheckedCreateNestedManyWithoutUserInput
+  page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
+  visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
+  agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type userCreateOrConnectWithoutChat_feedbackInput = {
+  where: Prisma.userWhereUniqueInput
+  create: Prisma.XOR<Prisma.userCreateWithoutChat_feedbackInput, Prisma.userUncheckedCreateWithoutChat_feedbackInput>
+}
+
+export type userUpsertWithoutChat_feedbackInput = {
+  update: Prisma.XOR<Prisma.userUpdateWithoutChat_feedbackInput, Prisma.userUncheckedUpdateWithoutChat_feedbackInput>
+  create: Prisma.XOR<Prisma.userCreateWithoutChat_feedbackInput, Prisma.userUncheckedCreateWithoutChat_feedbackInput>
+  where?: Prisma.userWhereInput
+}
+
+export type userUpdateToOneWithWhereWithoutChat_feedbackInput = {
+  where?: Prisma.userWhereInput
+  data: Prisma.XOR<Prisma.userUpdateWithoutChat_feedbackInput, Prisma.userUncheckedUpdateWithoutChat_feedbackInput>
+}
+
+export type userUpdateWithoutChat_feedbackInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
+  brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
+  dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutUserNestedInput
+  image_presets?: Prisma.ImageGeneratorPresetUpdateManyWithoutUserNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateUpdateManyWithoutUserNestedInput
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUpdateManyWithoutUserNestedInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUpdateManyWithoutUserNestedInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput
+  monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput
+  page_views?: Prisma.page_viewUpdateManyWithoutUserNestedInput
+  page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
+  visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
+  agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
+}
+
+export type userUncheckedUpdateWithoutChat_feedbackInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
+  brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutUserNestedInput
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedUpdateManyWithoutUserNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedUpdateManyWithoutUserNestedInput
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedUpdateManyWithoutUserNestedInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput
+  monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput
+  page_views?: Prisma.page_viewUncheckedUpdateManyWithoutUserNestedInput
+  page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
+  visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
+  agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type userCreateWithoutChat_promptsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.accountCreateNestedManyWithoutUserInput
+  brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
+  dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutUserInput
+  image_presets?: Prisma.ImageGeneratorPresetCreateNestedManyWithoutUserInput
+  image_templates?: Prisma.ImageGeneratorTemplateCreateNestedManyWithoutUserInput
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefCreateNestedManyWithoutUserInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetCreateNestedManyWithoutUserInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput
+  monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput
+  page_views?: Prisma.page_viewCreateNestedManyWithoutUserInput
+  page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
+  visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
+  agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareCreateNestedManyWithoutUserInput
+}
+
+export type userUncheckedCreateWithoutChat_promptsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
+  brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutUserInput
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedCreateNestedManyWithoutUserInput
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedCreateNestedManyWithoutUserInput
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedCreateNestedManyWithoutUserInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput
+  monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput
+  page_views?: Prisma.page_viewUncheckedCreateNestedManyWithoutUserInput
+  page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
+  visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
+  agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_shares?: Prisma.ChatShareUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type userCreateOrConnectWithoutChat_promptsInput = {
+  where: Prisma.userWhereUniqueInput
+  create: Prisma.XOR<Prisma.userCreateWithoutChat_promptsInput, Prisma.userUncheckedCreateWithoutChat_promptsInput>
+}
+
+export type userUpsertWithoutChat_promptsInput = {
+  update: Prisma.XOR<Prisma.userUpdateWithoutChat_promptsInput, Prisma.userUncheckedUpdateWithoutChat_promptsInput>
+  create: Prisma.XOR<Prisma.userCreateWithoutChat_promptsInput, Prisma.userUncheckedCreateWithoutChat_promptsInput>
+  where?: Prisma.userWhereInput
+}
+
+export type userUpdateToOneWithWhereWithoutChat_promptsInput = {
+  where?: Prisma.userWhereInput
+  data: Prisma.XOR<Prisma.userUpdateWithoutChat_promptsInput, Prisma.userUncheckedUpdateWithoutChat_promptsInput>
+}
+
+export type userUpdateWithoutChat_promptsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
+  brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
+  dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutUserNestedInput
+  image_presets?: Prisma.ImageGeneratorPresetUpdateManyWithoutUserNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateUpdateManyWithoutUserNestedInput
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUpdateManyWithoutUserNestedInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUpdateManyWithoutUserNestedInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput
+  monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput
+  page_views?: Prisma.page_viewUpdateManyWithoutUserNestedInput
+  page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
+  visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
+  agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUpdateManyWithoutUserNestedInput
+}
+
+export type userUncheckedUpdateWithoutChat_promptsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
+  brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutUserNestedInput
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedUpdateManyWithoutUserNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedUpdateManyWithoutUserNestedInput
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedUpdateManyWithoutUserNestedInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput
+  monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput
+  page_views?: Prisma.page_viewUncheckedUpdateManyWithoutUserNestedInput
+  page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
+  visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
+  agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_shares?: Prisma.ChatShareUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type userCreateWithoutChat_sharesInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.accountCreateNestedManyWithoutUserInput
+  brand_assignments?: Prisma.user_brandCreateNestedManyWithoutUserInput
+  dim_offers_audits?: Prisma.dim_offers_auditCreateNestedManyWithoutActorInput
+  generated_images?: Prisma.GeneratedImageCreateNestedManyWithoutUserInput
+  generated_copies?: Prisma.GeneratedCopyCreateNestedManyWithoutUserInput
+  image_presets?: Prisma.ImageGeneratorPresetCreateNestedManyWithoutUserInput
+  image_templates?: Prisma.ImageGeneratorTemplateCreateNestedManyWithoutUserInput
+  reference_images?: Prisma.ReferenceImageCreateNestedManyWithoutUserInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefCreateNestedManyWithoutUserInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetCreateNestedManyWithoutUserInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefCreateNestedManyWithoutUserInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetCreateNestedManyWithoutUserInput
+  monitor_entries?: Prisma.user_monitorCreateNestedManyWithoutUserInput
+  urls_to_scrape?: Prisma.urls_to_scrapeCreateNestedManyWithoutUserInput
+  page_views?: Prisma.page_viewCreateNestedManyWithoutUserInput
+  page_view_daily?: Prisma.page_view_dailyCreateNestedManyWithoutUserInput
+  visit_daily?: Prisma.user_visit_dailyCreateNestedManyWithoutUserInput
+  agent_skills?: Prisma.AgentSkillCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptCreateNestedManyWithoutUserInput
+}
+
+export type userUncheckedCreateWithoutChat_sharesInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  createdAt: Date | string
+  updatedAt: Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.accountUncheckedCreateNestedManyWithoutUserInput
+  brand_assignments?: Prisma.user_brandUncheckedCreateNestedManyWithoutUserInput
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedCreateNestedManyWithoutActorInput
+  generated_images?: Prisma.GeneratedImageUncheckedCreateNestedManyWithoutUserInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedCreateNestedManyWithoutUserInput
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedCreateNestedManyWithoutUserInput
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedCreateNestedManyWithoutUserInput
+  reference_images?: Prisma.ReferenceImageUncheckedCreateNestedManyWithoutUserInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedCreateNestedManyWithoutUserInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedCreateNestedManyWithoutUserInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedCreateNestedManyWithoutUserInput
+  monitor_entries?: Prisma.user_monitorUncheckedCreateNestedManyWithoutUserInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedCreateNestedManyWithoutUserInput
+  page_views?: Prisma.page_viewUncheckedCreateNestedManyWithoutUserInput
+  page_view_daily?: Prisma.page_view_dailyUncheckedCreateNestedManyWithoutUserInput
+  visit_daily?: Prisma.user_visit_dailyUncheckedCreateNestedManyWithoutUserInput
+  agent_skills?: Prisma.AgentSkillUncheckedCreateNestedManyWithoutCreatedByInput
+  releases?: Prisma.ReleaseUncheckedCreateNestedManyWithoutCreatedByInput
+  release_reads?: Prisma.ReleaseReadUncheckedCreateNestedManyWithoutUserInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedCreateNestedManyWithoutUserInput
+  chat_prompts?: Prisma.ChatPromptUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type userCreateOrConnectWithoutChat_sharesInput = {
+  where: Prisma.userWhereUniqueInput
+  create: Prisma.XOR<Prisma.userCreateWithoutChat_sharesInput, Prisma.userUncheckedCreateWithoutChat_sharesInput>
+}
+
+export type userUpsertWithoutChat_sharesInput = {
+  update: Prisma.XOR<Prisma.userUpdateWithoutChat_sharesInput, Prisma.userUncheckedUpdateWithoutChat_sharesInput>
+  create: Prisma.XOR<Prisma.userCreateWithoutChat_sharesInput, Prisma.userUncheckedCreateWithoutChat_sharesInput>
+  where?: Prisma.userWhereInput
+}
+
+export type userUpdateToOneWithWhereWithoutChat_sharesInput = {
+  where?: Prisma.userWhereInput
+  data: Prisma.XOR<Prisma.userUpdateWithoutChat_sharesInput, Prisma.userUncheckedUpdateWithoutChat_sharesInput>
+}
+
+export type userUpdateWithoutChat_sharesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.accountUpdateManyWithoutUserNestedInput
+  brand_assignments?: Prisma.user_brandUpdateManyWithoutUserNestedInput
+  dim_offers_audits?: Prisma.dim_offers_auditUpdateManyWithoutActorNestedInput
+  generated_images?: Prisma.GeneratedImageUpdateManyWithoutUserNestedInput
+  generated_copies?: Prisma.GeneratedCopyUpdateManyWithoutUserNestedInput
+  image_presets?: Prisma.ImageGeneratorPresetUpdateManyWithoutUserNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateUpdateManyWithoutUserNestedInput
+  reference_images?: Prisma.ReferenceImageUpdateManyWithoutUserNestedInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUpdateManyWithoutUserNestedInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUpdateManyWithoutUserNestedInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUpdateManyWithoutUserNestedInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUpdateManyWithoutUserNestedInput
+  monitor_entries?: Prisma.user_monitorUpdateManyWithoutUserNestedInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUpdateManyWithoutUserNestedInput
+  page_views?: Prisma.page_viewUpdateManyWithoutUserNestedInput
+  page_view_daily?: Prisma.page_view_dailyUpdateManyWithoutUserNestedInput
+  visit_daily?: Prisma.user_visit_dailyUpdateManyWithoutUserNestedInput
+  agent_skills?: Prisma.AgentSkillUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUpdateManyWithoutUserNestedInput
+}
+
+export type userUncheckedUpdateWithoutChat_sharesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  meta?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.sessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.accountUncheckedUpdateManyWithoutUserNestedInput
+  brand_assignments?: Prisma.user_brandUncheckedUpdateManyWithoutUserNestedInput
+  dim_offers_audits?: Prisma.dim_offers_auditUncheckedUpdateManyWithoutActorNestedInput
+  generated_images?: Prisma.GeneratedImageUncheckedUpdateManyWithoutUserNestedInput
+  generated_copies?: Prisma.GeneratedCopyUncheckedUpdateManyWithoutUserNestedInput
+  image_presets?: Prisma.ImageGeneratorPresetUncheckedUpdateManyWithoutUserNestedInput
+  image_templates?: Prisma.ImageGeneratorTemplateUncheckedUpdateManyWithoutUserNestedInput
+  reference_images?: Prisma.ReferenceImageUncheckedUpdateManyWithoutUserNestedInput
+  competition_restaurant_prefs?: Prisma.competition_user_restaurant_prefUncheckedUpdateManyWithoutUserNestedInput
+  competition_dashboard_widgets?: Prisma.competition_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput
+  google_reviews_business_prefs?: Prisma.google_reviews_user_business_prefUncheckedUpdateManyWithoutUserNestedInput
+  google_reviews_dashboard_widgets?: Prisma.google_reviews_dashboard_widgetUncheckedUpdateManyWithoutUserNestedInput
+  monitor_entries?: Prisma.user_monitorUncheckedUpdateManyWithoutUserNestedInput
+  urls_to_scrape?: Prisma.urls_to_scrapeUncheckedUpdateManyWithoutUserNestedInput
+  page_views?: Prisma.page_viewUncheckedUpdateManyWithoutUserNestedInput
+  page_view_daily?: Prisma.page_view_dailyUncheckedUpdateManyWithoutUserNestedInput
+  visit_daily?: Prisma.user_visit_dailyUncheckedUpdateManyWithoutUserNestedInput
+  agent_skills?: Prisma.AgentSkillUncheckedUpdateManyWithoutCreatedByNestedInput
+  releases?: Prisma.ReleaseUncheckedUpdateManyWithoutCreatedByNestedInput
+  release_reads?: Prisma.ReleaseReadUncheckedUpdateManyWithoutUserNestedInput
+  chat_feedback?: Prisma.ChatFeedbackUncheckedUpdateManyWithoutUserNestedInput
+  chat_prompts?: Prisma.ChatPromptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -4217,6 +5036,9 @@ export type UserCountOutputType = {
   agent_skills: number
   releases: number
   release_reads: number
+  chat_feedback: number
+  chat_prompts: number
+  chat_shares: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4241,6 +5063,9 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   agent_skills?: boolean | UserCountOutputTypeCountAgent_skillsArgs
   releases?: boolean | UserCountOutputTypeCountReleasesArgs
   release_reads?: boolean | UserCountOutputTypeCountRelease_readsArgs
+  chat_feedback?: boolean | UserCountOutputTypeCountChat_feedbackArgs
+  chat_prompts?: boolean | UserCountOutputTypeCountChat_promptsArgs
+  chat_shares?: boolean | UserCountOutputTypeCountChat_sharesArgs
 }
 
 /**
@@ -4400,6 +5225,27 @@ export type UserCountOutputTypeCountRelease_readsArgs<ExtArgs extends runtime.Ty
   where?: Prisma.ReleaseReadWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountChat_feedbackArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChatFeedbackWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountChat_promptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChatPromptWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountChat_sharesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChatShareWhereInput
+}
+
 
 export type userSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -4435,6 +5281,9 @@ export type userSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   agent_skills?: boolean | Prisma.user$agent_skillsArgs<ExtArgs>
   releases?: boolean | Prisma.user$releasesArgs<ExtArgs>
   release_reads?: boolean | Prisma.user$release_readsArgs<ExtArgs>
+  chat_feedback?: boolean | Prisma.user$chat_feedbackArgs<ExtArgs>
+  chat_prompts?: boolean | Prisma.user$chat_promptsArgs<ExtArgs>
+  chat_shares?: boolean | Prisma.user$chat_sharesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -4506,6 +5355,9 @@ export type userInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   agent_skills?: boolean | Prisma.user$agent_skillsArgs<ExtArgs>
   releases?: boolean | Prisma.user$releasesArgs<ExtArgs>
   release_reads?: boolean | Prisma.user$release_readsArgs<ExtArgs>
+  chat_feedback?: boolean | Prisma.user$chat_feedbackArgs<ExtArgs>
+  chat_prompts?: boolean | Prisma.user$chat_promptsArgs<ExtArgs>
+  chat_shares?: boolean | Prisma.user$chat_sharesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type userIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -4535,6 +5387,9 @@ export type $userPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     agent_skills: Prisma.$AgentSkillPayload<ExtArgs>[]
     releases: Prisma.$ReleasePayload<ExtArgs>[]
     release_reads: Prisma.$ReleaseReadPayload<ExtArgs>[]
+    chat_feedback: Prisma.$ChatFeedbackPayload<ExtArgs>[]
+    chat_prompts: Prisma.$ChatPromptPayload<ExtArgs>[]
+    chat_shares: Prisma.$ChatSharePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -4967,6 +5822,9 @@ export interface Prisma__userClient<T, Null = never, ExtArgs extends runtime.Typ
   agent_skills<T extends Prisma.user$agent_skillsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user$agent_skillsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AgentSkillPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   releases<T extends Prisma.user$releasesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user$releasesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReleasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   release_reads<T extends Prisma.user$release_readsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user$release_readsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReleaseReadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  chat_feedback<T extends Prisma.user$chat_feedbackArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user$chat_feedbackArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatFeedbackPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  chat_prompts<T extends Prisma.user$chat_promptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user$chat_promptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatPromptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  chat_shares<T extends Prisma.user$chat_sharesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user$chat_sharesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChatSharePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5902,6 +6760,78 @@ export type user$release_readsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.ReleaseReadScalarFieldEnum | Prisma.ReleaseReadScalarFieldEnum[]
+}
+
+/**
+ * user.chat_feedback
+ */
+export type user$chat_feedbackArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChatFeedback
+   */
+  select?: Prisma.ChatFeedbackSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChatFeedback
+   */
+  omit?: Prisma.ChatFeedbackOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChatFeedbackInclude<ExtArgs> | null
+  where?: Prisma.ChatFeedbackWhereInput
+  orderBy?: Prisma.ChatFeedbackOrderByWithRelationInput | Prisma.ChatFeedbackOrderByWithRelationInput[]
+  cursor?: Prisma.ChatFeedbackWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChatFeedbackScalarFieldEnum | Prisma.ChatFeedbackScalarFieldEnum[]
+}
+
+/**
+ * user.chat_prompts
+ */
+export type user$chat_promptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChatPrompt
+   */
+  select?: Prisma.ChatPromptSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChatPrompt
+   */
+  omit?: Prisma.ChatPromptOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChatPromptInclude<ExtArgs> | null
+  where?: Prisma.ChatPromptWhereInput
+  orderBy?: Prisma.ChatPromptOrderByWithRelationInput | Prisma.ChatPromptOrderByWithRelationInput[]
+  cursor?: Prisma.ChatPromptWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChatPromptScalarFieldEnum | Prisma.ChatPromptScalarFieldEnum[]
+}
+
+/**
+ * user.chat_shares
+ */
+export type user$chat_sharesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChatShare
+   */
+  select?: Prisma.ChatShareSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChatShare
+   */
+  omit?: Prisma.ChatShareOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChatShareInclude<ExtArgs> | null
+  where?: Prisma.ChatShareWhereInput
+  orderBy?: Prisma.ChatShareOrderByWithRelationInput | Prisma.ChatShareOrderByWithRelationInput[]
+  cursor?: Prisma.ChatShareWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChatShareScalarFieldEnum | Prisma.ChatShareScalarFieldEnum[]
 }
 
 /**
