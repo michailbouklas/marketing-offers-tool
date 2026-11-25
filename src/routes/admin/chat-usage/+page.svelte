@@ -5,6 +5,8 @@
   import * as Table from "$lib/components/ui/table/index.js";
   import { agentLabel } from "$lib/services/chat-usage";
   import ArrowLeftIcon from "@lucide/svelte/icons/arrow-left";
+  import ThumbsDownIcon from "@lucide/svelte/icons/thumbs-down";
+  import ThumbsUpIcon from "@lucide/svelte/icons/thumbs-up";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -12,6 +14,7 @@
   const overview = $derived(data.overview);
   const perAgent = $derived(overview.perAgent);
   const perUser = $derived(overview.perUser);
+  const feedback = $derived(data.feedback);
 
   const topUsersInWidget = 5;
   const widgetUsers = $derived(perUser.slice(0, topUsersInWidget));
@@ -220,6 +223,67 @@
                       <Badge variant="secondary">
                         {formatNumber(user.count)}
                       </Badge>
+                    </Table.Cell>
+                  </Table.Row>
+                {/each}
+              </Table.Body>
+            </Table.Root>
+          {/if}
+        </Card.Content>
+      </Card.Root>
+    </section>
+    <section>
+      <Card.Root class="border-border/70 bg-background/90 backdrop-blur">
+        <Card.Header>
+          <Card.Title class="text-xl tracking-[-0.02em]">Feedback</Card.Title>
+          <Card.Description>
+            Thumbs up and down that users gave on answers, newest first.
+          </Card.Description>
+        </Card.Header>
+        <Card.Content>
+          {#if feedback.length === 0}
+            <p class="text-muted-foreground text-sm">No feedback yet.</p>
+          {:else}
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.Head>Date</Table.Head>
+                  <Table.Head>User</Table.Head>
+                  <Table.Head>Agent</Table.Head>
+                  <Table.Head>Rating</Table.Head>
+                  <Table.Head>Reason</Table.Head>
+                  <Table.Head>Conversation</Table.Head>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {#each feedback as row (row.id)}
+                  <Table.Row>
+                    <Table.Cell class="text-muted-foreground whitespace-nowrap">
+                      {formatTimestamp(row.updatedAt)}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <a
+                        href={`/admin/chat-usage/${row.userId}`}
+                        class="font-medium underline-offset-4 hover:underline"
+                      >
+                        {row.userName}
+                      </a>
+                    </Table.Cell>
+                    <Table.Cell>{agentLabel(row.agentId)}</Table.Cell>
+                    <Table.Cell>
+                      {#if row.rating > 0}
+                        <ThumbsUpIcon class="text-primary size-4" />
+                        <span class="sr-only">Good</span>
+                      {:else}
+                        <ThumbsDownIcon class="text-destructive size-4" />
+                        <span class="sr-only">Bad</span>
+                      {/if}
+                    </Table.Cell>
+                    <Table.Cell class="max-w-md whitespace-pre-wrap">
+                      {row.reason ?? "—"}
+                    </Table.Cell>
+                    <Table.Cell class="text-muted-foreground font-mono text-xs">
+                      {row.sessionKey}
                     </Table.Cell>
                   </Table.Row>
                 {/each}

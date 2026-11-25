@@ -280,3 +280,62 @@ export async function getRecentChats(
   }
   return [...groups.values()];
 }
+
+/** Thumbs up (1) / down (-1) on one answer; rating again overwrites. */
+export async function saveChatFeedback(
+  userId: string,
+  feedback: {
+    agentId: string;
+    sessionKey: string;
+    messageId: string;
+    rating: 1 | -1;
+    reason?: string;
+  },
+) {
+  const { messageId, ...rest } = feedback;
+  const data = { ...rest, reason: rest.reason || null };
+
+  await prisma.chatFeedback.upsert({
+    where: { userId_messageId: { userId, messageId } },
+    create: { userId, messageId, ...data },
+    update: data,
+  });
+}
+
+export type ChatFeedbackRow = {
+  id: number;
+  userId: string;
+  userName: string;
+  agentId: string;
+  sessionKey: string;
+  rating: number;
+  reason: string | null;
+  updatedAt: string;
+};
+
+/** Newest answer ratings across all users, for the superUser page. */
+export async function getChatFeedback(limit = 200): Promise<ChatFeedbackRow[]> {
+  try {
+    const rows = await prisma.chatFeedback.findMany({
+      orderBy: { updatedAt: "desc" },
+      take: limit,
+      include: { user: { select: { name: true } } },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      userId: row.userId,
+      userName: row.user.name,
+      agentId: row.agentId,
+      sessionKey: row.sessionKey,
+      rating: row.rating,
+      reason: row.reason,
+      updatedAt: row.updatedAt.toISOString(),
+    }));
+  } catch (cause) {
+    // P2021 = table missing: the ChatFeedback migration is not applied yet.
+    // The rest of the page must still load.
+    if ((cause as { code?: string }).code === "P2021") return [];
+    throw cause;
+  }
+}

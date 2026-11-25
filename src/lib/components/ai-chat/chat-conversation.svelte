@@ -3,6 +3,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { Textarea } from "$lib/components/ui/textarea/index.js";
   import CopyMessageButton from "$lib/components/ai-chat/copy-message-button.svelte";
+  import MessageFeedback from "$lib/components/ai-chat/message-feedback.svelte";
   import MessageTimestamp from "$lib/components/ai-chat/message-timestamp.svelte";
   import StarterPrompts from "$lib/components/ai-chat/starter-prompts.svelte";
   import UserMessageActions from "$lib/components/ai-chat/user-message-actions.svelte";
@@ -33,6 +34,7 @@
   import FileSpreadsheetIcon from "@lucide/svelte/icons/file-spreadsheet";
   import SendHorizontalIcon from "@lucide/svelte/icons/send-horizontal";
   import SparklesIcon from "@lucide/svelte/icons/sparkles";
+  import SquareIcon from "@lucide/svelte/icons/square";
 
   interface Props {
     /** This tab's conversation; owned by the parent so it outlives tab switches. */
@@ -79,12 +81,13 @@
   $effect(() => {
     if (wasBusy && !busy) {
       onSettled();
-      if (chat.status === "ready") {
+      if (chat.status === "ready" && !stopped) {
         followUpTimer = setTimeout(loadFollowUps, 1000);
       }
     } else if (busy) {
       clearTimeout(followUpTimer);
       followUps = [];
+      stopped = false;
     }
     wasBusy = busy;
   });
@@ -128,16 +131,36 @@
     }
   }
 
+  // A stopped answer is incomplete, so it gets no follow-up suggestions.
+  let stopped = false;
+  function stop() {
+    stopped = true;
+    void chat.stop();
+  }
+
   let pendingFiles = $state<File[]>([]);
   let preparingFiles = $state(false);
 
   // Attachments go first, then the typed text (if any) — same as Claude.
-  function send(parts: (typeof chat.messages)[number]["parts"], text: string) {
+  // `truncateFrom` (edit/retry): the server drops that stored message and all
+  // later ones from the thread, matching the local cut.
+  function send(
+    parts: (typeof chat.messages)[number]["parts"],
+    text: string,
+    truncateFrom?: string,
+  ) {
     // agentId/sessionKey ride along per request (instead of on the transport)
     // so they are read at send time, keeping them reactive.
     void chat.sendMessage(
       { parts: [...parts, ...(text ? [{ type: "text" as const, text }] : [])] },
-      { body: { agentId, sessionKey, ...(context ? { context } : {}) } },
+      {
+        body: {
+          agentId,
+          sessionKey,
+          ...(context ? { context } : {}),
+          ...(truncateFrom ? { truncateFrom } : {}),
+        },
+      },
     );
   }
 
@@ -192,7 +215,7 @@
 
     cancelEditing();
     chat.messages = chat.messages.slice(0, messageIndex);
-    send(attachments, text);
+    send(attachments, text, message.id);
   }
 
   function startEditing(message: (typeof chat.messages)[number]) {
@@ -213,8 +236,9 @@
   // submits the new text, so the answer is regenerated for the edited prompt.
   function submitEdit(messageIndex: number) {
     const text = editDraft.trim();
+    const message = chat.messages[messageIndex];
     // The edited message keeps its attachments.
-    const attachments = attachmentPartsOf(chat.messages[messageIndex].parts);
+    const attachments = attachmentPartsOf(message.parts);
 
     if ((!text && attachments.length === 0) || busy) {
       return;
@@ -222,7 +246,7 @@
 
     chat.messages = chat.messages.slice(0, messageIndex);
     cancelEditing();
-    send(attachments, text);
+    send(attachments, text, message.id);
   }
 
   function handleEditKeydown(event: KeyboardEvent, messageIndex: number) {
@@ -410,6 +434,7 @@
           {#if answerMarkdown && !(messageIndex === chat.messages.length - 1 && busy)}
             <div class="flex items-center gap-1.5">
               <CopyMessageButton text={answerMarkdown} />
+              <MessageFeedback {agentId} {sessionKey} messageId={message.id} />
               <MessageTimestamp metadata={message.metadata} />
             </div>
           {/if}
@@ -464,16 +489,26 @@
         class="max-h-52 min-h-10 flex-1 resize-none overflow-y-auto"
         onkeydown={handleInputKeydown}
       />
-      <Button
-        type="submit"
-        size="icon"
-        aria-label="Send message"
-        disabled={busy ||
-          preparingFiles ||
-          (input.trim().length === 0 && pendingFiles.length === 0)}
-      >
-        <SendHorizontalIcon class="size-4" />
-      </Button>
+      {#if busy}
+        <Button
+          type="button"
+          size="icon"
+          aria-label="Stop answer"
+          onclick={stop}
+        >
+          <SquareIcon class="size-4 fill-current" />
+        </Button>
+      {:else}
+        <Button
+          type="submit"
+          size="icon"
+          aria-label="Send message"
+          disabled={preparingFiles ||
+            (input.trim().length === 0 && pendingFiles.length === 0)}
+        >
+          <SendHorizontalIcon class="size-4" />
+        </Button>
+      {/if}
     </AttachmentComposer>
   </form>
 </div>
