@@ -1,3 +1,4 @@
+import { generateChart } from "./generate-chart";
 import { generateExcel } from "./generate-excel";
 import { generateThreeJsReport } from "./generate-threejs-report";
 
@@ -10,4 +11,8 @@ import { generateThreeJsReport } from "./generate-threejs-report";
  * type (`tool-generateExcel`) — renaming a key breaks the matching branches
  * in chat-widget.svelte and admin/chat-conversation-dialog.svelte.
  */
-export const sharedTools = { generateExcel, generateThreeJsReport };
+export const sharedTools = {
+  generateExcel,
+  generateThreeJsReport,
+  generateChart,
+};

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import ChartPart from "$lib/components/ai-chat/chart-part.svelte";
+  import { CHART_TOOL_PART_TYPE } from "$lib/components/ai-chat/chart-tool";
   import {
     isSqlToolPart,
     toolErrorText,
@@ -11,18 +13,29 @@
   import DatabaseIcon from "@lucide/svelte/icons/database";
   import WrenchIcon from "@lucide/svelte/icons/wrench";
 
-  let { part }: { part: unknown } = $props();
+  let {
+    part,
+    sqlInFooter = false,
+  }: {
+    part: unknown;
+    /** The caller shows the SQL elsewhere (calculation-footer.svelte), so no inline expander. */
+    sqlInFooter?: boolean;
+  } = $props();
 
   let expanded = $state(false);
 
   const type = $derived((part as { type: string }).type);
-  const sql = $derived(isSqlToolPart(type) ? toolSql(part) : null);
+  const sql = $derived(
+    !sqlInFooter && isSqlToolPart(type) ? toolSql(part) : null,
+  );
   const errorText = $derived(toolErrorText(part));
   const pending = $derived(toolPending(part));
   const label = $derived(toolLabel(type, part));
 </script>
 
-{#if isSqlToolPart(type)}
+{#if type === CHART_TOOL_PART_TYPE}
+  <ChartPart {part} />
+{:else if isSqlToolPart(type)}
   {#if sql}
     <button
       type="button"
