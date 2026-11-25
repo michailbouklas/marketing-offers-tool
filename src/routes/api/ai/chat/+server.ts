@@ -3,12 +3,7 @@ import { handleChatStream } from "@mastra/ai-sdk";
 import { toAISdkMessages } from "@mastra/ai-sdk/ui";
 import { RequestContext } from "@mastra/core/request-context";
 import { createUIMessageStreamResponse } from "ai";
-import { hasAnyRole } from "$lib/auth/roles";
-import {
-  getAuthenticatedUserRole,
-  requireApiPermission,
-  requireAuthenticatedApiUser,
-} from "$lib/server/auth-guards";
+import { getAuthenticatedUserRole } from "$lib/server/auth-guards";
 import {
   buildBrandScopeRequestContext,
   type ScopedBrand,
@@ -20,6 +15,7 @@ import {
   resolveSalesSelectedOrders,
 } from "$lib/server/chat-page-context";
 import { validateUserMessage } from "$lib/components/ai-chat/attachments";
+import { authorizeAgent, beginRun } from "$lib/server/chat-thread";
 import { getMastra } from "$lib/server/mastra";
 import {
   attachmentPrefix,
@@ -63,6 +59,11 @@ const requestSchema = z.object({
   messages: z.array(z.record(z.string(), z.unknown())).min(1),
   /** Page state hint (only honoured for agents with `pageContext`). */
   context: z.record(z.string(), z.unknown()).optional(),
+  /**
+   * Edit/retry: id of the stored message the conversation is cut from. It and
+   * every later message are removed from the thread before answering.
+   */
+  truncateFrom: z.string().min(1).max(200).optional(),
 });
 
 /**
@@ -73,29 +74,6 @@ const requestSchema = z.object({
  */
 function threadIdFor(agentId: string, userId: string, sessionKey: string) {
   return `${agentId}:${userId}:${sessionKey}`;
-}
-
-async function authorizeAgent(event: RequestEvent, agentId: string) {
-  const agent = chatAgents[agentId];
-
-  if (!agent) {
-    error(400, `Unknown chat agent "${agentId}"`);
-  }
-
-  // A configured permission gates the agent; when omitted, any authenticated
-  // user may talk to it (mirrors the agent's page guard).
-  const caller = agent.permissions
-    ? await requireApiPermission(event, agent.permissions)
-    : requireAuthenticatedApiUser(event);
-
-  if (
-    agent.roles &&
-    !hasAnyRole(await getAuthenticatedUserRole(event), agent.roles)
-  ) {
-    error(403, "Forbidden");
-  }
-
-  return caller;
 }
 
 /**
@@ -253,6 +231,18 @@ export const POST: RequestHandler = async (event) => {
     ),
   };
 
+  const threadId = threadIdFor(agentId, user.id, sessionKey);
+  // shortcut: attachments of removed messages stay in the object store until
+  // the conversation is deleted (a retry re-sends the same files, so they
+  // cannot simply be dropped here); prune by reference if storage grows.
+  const run = await beginRun(
+    await getMastra().getAgentById(agentId).getMemory(),
+    threadId,
+    user.id,
+    newMessage.id,
+    body.data.truncateFrom,
+  );
+
   const stream = await handleChatStream({
     mastra: getMastra(),
     agentId,
@@ -267,11 +257,12 @@ export const POST: RequestHandler = async (event) => {
       messages: [message] as never,
       maxSteps: 8,
       requestContext,
-      memory: {
-        thread: threadIdFor(agentId, user.id, sessionKey),
-        resource: user.id,
-      },
+      memory: { thread: threadId, resource: user.id },
+      ...run,
     },
+  }).catch(async (cause) => {
+    await run.onError();
+    throw cause;
   });
 
   // SSE headers: X-Accel-Buffering tells nginx to never buffer this stream
