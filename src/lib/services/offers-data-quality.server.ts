@@ -178,6 +178,7 @@ export async function getGapFormData(
     brand: brand.toUpperCase(),
     item_category: itemContext?.item_category ?? gapRecord.item_category,
     detected_at: gapRecord.detected_at.toISOString(),
+    status: gapRecord.status,
     missing_fields: parseMissingFields(gapRecord.missing_fields),
     current_dim_offers: currentDimOffers,
     brand_target: brandTarget,

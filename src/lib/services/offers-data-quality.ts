@@ -56,6 +56,8 @@ export type GapFormLoadResponse = {
   brand: string;
   item_category: string;
   detected_at: string;
+  /** Only "open" gaps accept a submission. */
+  status: "open" | "submitted" | "resolved" | "dismissed";
   missing_fields: MissingOfferPricingField[];
   current_dim_offers: CurrentDimOffersValues;
   /** null when no Postgres brand matches the gap's brand alias. */

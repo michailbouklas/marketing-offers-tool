@@ -8,6 +8,7 @@
   import { zod4Client } from "sveltekit-superforms/adapters";
   import { superForm } from "sveltekit-superforms/client";
   import { untrack } from "svelte";
+  import { invalidateAll } from "$app/navigation";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
@@ -92,6 +93,11 @@
   const subcategoryDisabled = $derived(!$form.category || subcategoryLoading);
   const reviewSubmission = $derived(data.pendingSubmission);
   const isReviewMode = $derived(Boolean(reviewSubmission));
+  // The API only accepts submissions for open gaps, so anything else gets a
+  // closed notice instead of the form.
+  const closedStatus = $derived(
+    data.gap.status === "open" ? null : data.gap.status,
+  );
   const currentDimOfferRows = $derived.by(() => [
     {
       label: "Channel",
@@ -306,6 +312,12 @@
 
       serverError = errorMessage;
       toast.error(errorMessage);
+
+      // 409 = the gap changed under this tab; reload so the page shows its
+      // real state (closed notice or review mode) instead of a dead form.
+      if (response.status === 409) {
+        await invalidateAll();
+      }
       return;
     }
 
@@ -497,7 +509,7 @@
       </Card.Root>
     </section>
 
-    {#if missingCount > 0}
+    {#if missingCount > 0 && !closedStatus}
       <div
         class="border-destructive/20 bg-destructive/6 text-destructive flex items-start gap-3 rounded-2xl border px-4 py-4"
       >
@@ -516,7 +528,7 @@
       </div>
     {/if}
 
-    {#if brandTargetMissing && !isReviewMode && !submitted}
+    {#if brandTargetMissing && !isReviewMode && !submitted && !closedStatus}
       <div
         class="border-destructive/20 bg-destructive/6 text-destructive flex items-start gap-3 rounded-2xl border px-4 py-4"
       >
@@ -830,6 +842,46 @@
           </Card.Content>
         </Card.Root>
       </div>
+    {:else if closedStatus}
+      <Card.Root class="border-border/70 bg-background/90 shadow-sm">
+        <Card.Content
+          class="flex flex-col items-center gap-3 px-6 py-10 text-center"
+        >
+          <div class="space-y-1">
+            <p class="text-lg font-semibold tracking-[-0.02em]">
+              {#if closedStatus === "resolved"}
+                This gap is already resolved
+              {:else if closedStatus === "dismissed"}
+                This gap was removed from the queue
+              {:else}
+                A correction was already submitted
+              {/if}
+            </p>
+            <p class="text-muted-foreground text-sm">
+              {data.gap.trde_item} · {data.gap.item_name}
+            </p>
+          </div>
+          <p class="text-muted-foreground max-w-xl text-sm leading-6">
+            {#if closedStatus === "resolved"}
+              Its pricing values are in `dim_offers`, so there is nothing left
+              to submit.
+            {:else if closedStatus === "dismissed"}
+              Restore it from Flagged offers to submit a correction.
+            {:else}
+              This gap is marked as submitted but has no submission waiting for
+              approval, so it cannot take another one. Ask an admin to check it.
+            {/if}
+          </p>
+          <div class="flex flex-col gap-2 sm:flex-row">
+            {#if closedStatus === "dismissed"}
+              <Button variant="outline" href="/offers-data-quality/flagged"
+                >Flagged offers</Button
+              >
+            {/if}
+            <Button href="/offers-data-quality">Back to the queue</Button>
+          </div>
+        </Card.Content>
+      </Card.Root>
     {:else}
       <div class="grid gap-5">
         <Card.Root

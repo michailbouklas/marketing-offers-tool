@@ -312,6 +312,7 @@ describe("offers-data-quality helpers", () => {
       brand: "KFC",
       item_category: "Offers",
       detected_at: new Date().toISOString(),
+      status: "open",
       missing_fields: ["ideal_price", "fc_perc"],
       current_dim_offers: {
         channel: "Wolt Only",
@@ -350,6 +351,7 @@ describe("offers-data-quality helpers", () => {
       brand: "KFC",
       item_category: "Offers",
       detected_at: new Date().toISOString(),
+      status: "open",
       missing_fields: ["ideal_price", "fc_eur"],
       current_dim_offers: {
         channel: null,
@@ -792,6 +794,7 @@ describe("offers-data-quality orchestration", () => {
       item_name: "Fallback item",
       brand: "JMO",
       item_category: "Offers JMO",
+      status: "open",
       missing_fields: ["ideal_price", "fc_perc"],
       brand_target: { brand_id: 3, brand_name: "Jimmy's", ideal_fc_perc: 0.28 },
     });
