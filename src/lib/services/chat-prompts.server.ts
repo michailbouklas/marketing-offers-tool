@@ -1,11 +1,3 @@
-import { error, type RequestEvent } from "@sveltejs/kit";
-import { hasAnyRole } from "$lib/auth/roles";
-import {
-  getAuthenticatedUserRole,
-  requireApiPermission,
-  requireAuthenticatedApiUser,
-} from "$lib/server/auth-guards";
-import { chatAgents } from "$lib/server/mastra/chat-registry";
 import { prisma } from "$lib/server/prisma";
 
 export const CHAT_PROMPT_MAX_LENGTH = 500;
@@ -17,28 +9,6 @@ export interface ChatPromptItem {
   text: string;
   published: boolean;
   mine: boolean;
-}
-
-// shortcut: duplicates authorizeAgent in api/ai/chat/+server.ts, merge when that one is exported
-export async function authorizeChatAgent(event: RequestEvent, agentId: string) {
-  const agent = chatAgents[agentId];
-
-  if (!agent) {
-    error(400, `Unknown chat agent "${agentId}"`);
-  }
-
-  const caller = agent.permissions
-    ? await requireApiPermission(event, agent.permissions)
-    : requireAuthenticatedApiUser(event);
-
-  if (
-    agent.roles &&
-    !hasAnyRole(await getAuthenticatedUserRole(event), agent.roles)
-  ) {
-    error(403, "Forbidden");
-  }
-
-  return caller;
 }
 
 /** Team (published) prompts first, then the caller's own; oldest first. */

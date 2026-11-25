@@ -1,8 +1,8 @@
 import { error, json } from "@sveltejs/kit";
 import { hasAnyRole, superUserRole } from "$lib/auth/roles";
 import { getAuthenticatedUserRole } from "$lib/server/auth-guards";
+import { authorizeAgent } from "$lib/server/chat-thread";
 import {
-  authorizeChatAgent,
   CHAT_PROMPT_MAX_LENGTH,
   CHAT_PROMPTS_PER_USER_PER_AGENT,
   createChatPrompt,
@@ -47,7 +47,7 @@ async function isSuperUser(event: RequestEvent) {
 /** Starter prompts for one agent: the published ones plus the caller's own. */
 export const GET: RequestHandler = async (event) => {
   const input = parse(listSchema, query(event));
-  const { user } = await authorizeChatAgent(event, input.agentId);
+  const { user } = await authorizeAgent(event, input.agentId);
   const canPublish = await isSuperUser(event);
 
   try {
@@ -66,7 +66,7 @@ export const GET: RequestHandler = async (event) => {
 
 export const POST: RequestHandler = async (event) => {
   const input = parse(createSchema, await body(event));
-  const { user } = await authorizeChatAgent(event, input.agentId);
+  const { user } = await authorizeAgent(event, input.agentId);
 
   const prompt = await createChatPrompt(input.agentId, user.id, input.text);
   if (!prompt) {
@@ -82,7 +82,7 @@ export const POST: RequestHandler = async (event) => {
 /** Publish or unpublish: superUsers only, and only their own prompts. */
 export const PATCH: RequestHandler = async (event) => {
   const input = parse(publishSchema, await body(event));
-  const { user } = await authorizeChatAgent(event, input.agentId);
+  const { user } = await authorizeAgent(event, input.agentId);
 
   if (!(await isSuperUser(event))) {
     error(403, "Forbidden");
@@ -105,7 +105,7 @@ export const PATCH: RequestHandler = async (event) => {
 /** Own prompts; superUsers may also delete any published prompt. */
 export const DELETE: RequestHandler = async (event) => {
   const input = parse(deleteSchema, query(event));
-  const { user } = await authorizeChatAgent(event, input.agentId);
+  const { user } = await authorizeAgent(event, input.agentId);
 
   if (
     !(await deleteChatPrompt(
