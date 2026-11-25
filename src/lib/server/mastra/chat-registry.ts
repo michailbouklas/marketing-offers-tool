@@ -254,3 +254,21 @@ export const chatAgents: Record<string, ChatAgentConfig> = {
     pageContext: true,
   },
 };
+
+/**
+ * The page each assistant's chat is mounted on, for links that must land in an
+ * agent's chat (a shared conversation continued as the viewer's own copy).
+ * Only the agents whose conversations can be shared need an entry.
+ */
+export const chatAgentPagePaths: Record<string, string> = {
+  "invoices-agent": "/aggregator-offers/invoices",
+  "google-reviews-agent": "/google-reviews",
+  "competition-agent": "/competition",
+  "offers-data-quality-agent": "/offers-data-quality",
+  "sales-agent": "/sales/chat",
+  "forecasts-agent": "/forecasts",
+  "sales-offers-agent": "/sales/offers",
+  "consolidated-sales-agent": "/sales/consolidated-sales-report",
+  "sales-delivery-agent": "/sales/delivery",
+  "item-analysis-agent": "/sales/item-analysis",
+};

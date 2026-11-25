@@ -14,11 +14,14 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
+  import { UNSHAREABLE_AGENT_IDS } from "$lib/components/ai-chat/chat-share";
   import { groupSessions } from "$lib/components/ai-chat/session-groups";
+  import ShareDialog from "$lib/components/ai-chat/share-dialog.svelte";
   import EllipsisIcon from "@lucide/svelte/icons/ellipsis";
   import PencilIcon from "@lucide/svelte/icons/pencil";
   import PinIcon from "@lucide/svelte/icons/pin";
   import PinOffIcon from "@lucide/svelte/icons/pin-off";
+  import Share2Icon from "@lucide/svelte/icons/share-2";
   import Trash2Icon from "@lucide/svelte/icons/trash-2";
   import { toast } from "svelte-sonner";
 
@@ -55,6 +58,7 @@
   let renameTarget = $state<ChatSession | null>(null);
   let renameTitle = $state("");
   let saving = $state(false);
+  let shareTarget = $state<ChatSession | null>(null);
   // Renames and pins saved here, shown at once even when the parent does not
   // refetch (the chat widget passes no onChanged).
   let saved = $state<Record<string, Partial<ChatSession>>>({});
@@ -217,6 +221,12 @@
                 Pin
               {/if}
             </DropdownMenu.Item>
+            {#if !UNSHAREABLE_AGENT_IDS.includes(agentId)}
+              <DropdownMenu.Item onSelect={() => (shareTarget = session)}>
+                <Share2Icon class="size-3.5" />
+                Share
+              </DropdownMenu.Item>
+            {/if}
           </DropdownMenu.Content>
         </DropdownMenu.Root>
         <Button
@@ -232,6 +242,15 @@
       </div>
     {/each}
   {/each}
+{/if}
+
+{#if shareTarget}
+  <ShareDialog
+    {agentId}
+    sessionKey={shareTarget.key}
+    title={shareTarget.title}
+    onClose={() => (shareTarget = null)}
+  />
 {/if}
 
 <Dialog.Root
