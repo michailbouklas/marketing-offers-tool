@@ -4,6 +4,7 @@
   import { Textarea } from "$lib/components/ui/textarea/index.js";
   import CopyMessageButton from "$lib/components/ai-chat/copy-message-button.svelte";
   import MessageTimestamp from "$lib/components/ai-chat/message-timestamp.svelte";
+  import StarterPrompts from "$lib/components/ai-chat/starter-prompts.svelte";
   import UserMessageActions from "$lib/components/ai-chat/user-message-actions.svelte";
   import {
     EXCEL_TOOL_PART_TYPE,
@@ -273,6 +274,7 @@
         <SparklesIcon class="text-primary size-8" />
         <h1 class="text-foreground text-xl font-semibold">{title}</h1>
         <p class="max-w-md text-sm">{greeting}</p>
+        <StarterPrompts {agentId} onPick={(text) => send([], text)} />
       </div>
     {/if}
 
