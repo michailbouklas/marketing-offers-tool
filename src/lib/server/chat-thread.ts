@@ -8,6 +8,20 @@ import {
 } from "$lib/server/auth-guards";
 import { chatAgents } from "$lib/server/mastra/chat-registry";
 
+/**
+ * Memory thread ids are namespaced server-side per agent AND user, so a
+ * client-supplied session key can only ever address the caller's own
+ * conversations. "Clearing" the window is just switching to a fresh key —
+ * previous threads stay in storage and remain recallable.
+ */
+export function threadIdFor(
+  agentId: string,
+  userId: string,
+  sessionKey: string,
+) {
+  return `${agentId}:${userId}:${sessionKey}`;
+}
+
 /** Shared by every chat API route: is the caller allowed to use this agent? */
 export async function authorizeAgent(event: RequestEvent, agentId: string) {
   const agent = chatAgents[agentId];

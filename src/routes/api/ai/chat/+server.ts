@@ -1,4 +1,4 @@
-import { error, json } from "@sveltejs/kit";
+import { error, json, type RequestEvent } from "@sveltejs/kit";
 import { handleChatStream } from "@mastra/ai-sdk";
 import { toAISdkMessages } from "@mastra/ai-sdk/ui";
 import { RequestContext } from "@mastra/core/request-context";
@@ -15,7 +15,7 @@ import {
   resolveSalesSelectedOrders,
 } from "$lib/server/chat-page-context";
 import { validateUserMessage } from "$lib/components/ai-chat/attachments";
-import { authorizeAgent, beginRun } from "$lib/server/chat-thread";
+import { authorizeAgent, beginRun, threadIdFor } from "$lib/server/chat-thread";
 import { getMastra } from "$lib/server/mastra";
 import {
   attachmentPrefix,
@@ -43,7 +43,7 @@ import {
   queryOrderLines,
 } from "$lib/services/sales-explore.server";
 import { z } from "zod";
-import type { RequestEvent, RequestHandler } from "./$types";
+import type { RequestHandler } from "./$types";
 
 const sessionKeySchema = z.uuid();
 
@@ -65,16 +65,6 @@ const requestSchema = z.object({
    */
   truncateFrom: z.string().min(1).max(200).optional(),
 });
-
-/**
- * Memory thread ids are namespaced server-side per agent AND user, so a
- * client-supplied session key can only ever address the caller's own
- * conversations. "Clearing" the window is just switching to a fresh key —
- * previous threads stay in storage and remain recallable.
- */
-function threadIdFor(agentId: string, userId: string, sessionKey: string) {
-  return `${agentId}:${userId}:${sessionKey}`;
-}
 
 /**
  * Per-request context for the agent:
@@ -280,6 +270,7 @@ export type ChatSessionSummary = {
   key: string;
   title: string;
   updatedAt: string | null;
+  pinned: boolean;
 };
 
 /**
@@ -364,6 +355,7 @@ export const GET: RequestHandler = async (event) => {
       updatedAt: thread.updatedAt
         ? new Date(thread.updatedAt).toISOString()
         : null,
+      pinned: thread.metadata?.pinned === true,
     }))
     .sort((left, right) =>
       (right.updatedAt ?? "").localeCompare(left.updatedAt ?? ""),
