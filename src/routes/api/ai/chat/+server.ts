@@ -300,6 +300,8 @@ export const GET: RequestHandler = async (event) => {
       const recalled = await memory.recall({
         threadId: threadIdFor(agentId, user.id, sessionKey.data),
         resourceId: user.id,
+        // The whole thread; the default is only the newest 20 messages.
+        perPage: false,
       });
 
       const stored = recalled?.messages ?? [];
