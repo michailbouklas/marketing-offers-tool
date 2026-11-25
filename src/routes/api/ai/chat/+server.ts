@@ -1,4 +1,4 @@
-import { error, json } from "@sveltejs/kit";
+import { error, json, type RequestEvent } from "@sveltejs/kit";
 import { handleChatStream } from "@mastra/ai-sdk";
 import { toAISdkMessages } from "@mastra/ai-sdk/ui";
 import { RequestContext } from "@mastra/core/request-context";
@@ -47,7 +47,7 @@ import {
   queryOrderLines,
 } from "$lib/services/sales-explore.server";
 import { z } from "zod";
-import type { RequestEvent, RequestHandler } from "./$types";
+import type { RequestHandler } from "./$types";
 
 const sessionKeySchema = z.uuid();
 
@@ -97,6 +97,10 @@ async function authorizeAgent(event: RequestEvent, agentId: string) {
 
   return caller;
 }
+
+// Shared with sibling endpoints (./session). SvelteKit only allows extra
+// +server exports that start with an underscore.
+export { authorizeAgent as _authorizeAgent, threadIdFor as _threadIdFor };
 
 /**
  * Per-request context for the agent:
@@ -289,6 +293,7 @@ export type ChatSessionSummary = {
   key: string;
   title: string;
   updatedAt: string | null;
+  pinned: boolean;
 };
 
 /**
@@ -373,6 +378,7 @@ export const GET: RequestHandler = async (event) => {
       updatedAt: thread.updatedAt
         ? new Date(thread.updatedAt).toISOString()
         : null,
+      pinned: thread.metadata?.pinned === true,
     }))
     .sort((left, right) =>
       (right.updatedAt ?? "").localeCompare(left.updatedAt ?? ""),

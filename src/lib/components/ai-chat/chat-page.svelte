@@ -1,12 +1,16 @@
 <script lang="ts">
+  import { replaceState } from "$app/navigation";
+  import { page } from "$app/state";
   import { Chat } from "@ai-sdk/svelte";
   import { DefaultChatTransport } from "ai";
+  import { onMount, untrack } from "svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
   import ChatSearchDialog from "$lib/components/ai-chat/chat-search-dialog.svelte";
   import ChatConversation from "$lib/components/ai-chat/chat-conversation.svelte";
   import { nextActiveAfterClose } from "$lib/components/ai-chat/chat-tabs";
+  import { parseOpenKeys } from "$lib/components/ai-chat/session-groups";
   import SessionList, {
     type ChatSession,
   } from "$lib/components/ai-chat/session-list.svelte";
@@ -99,6 +103,28 @@
     }
   }
 
+  // Recalls a stored conversation into a tab that is not open yet. Null on
+  // failure; an unknown or foreign key comes back as a tab with no messages.
+  async function loadTab(key: string): Promise<ChatTab | null> {
+    try {
+      const response = await fetch(
+        `/api/ai/chat?agentId=${encodeURIComponent(agentId)}&session=${encodeURIComponent(key)}`,
+      );
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const tab = newTab(key);
+      tab.chat.messages = (await response.json()) as Chat["messages"];
+
+      return tab;
+    } catch {
+      // Best effort — the caller keeps its current tabs.
+      return null;
+    }
+  }
+
   // Opens a stored conversation: focuses its tab if already open, otherwise
   // recalls it into the current tab when that one is blank, else a new tab.
   async function openSession(key: string) {
@@ -109,18 +135,9 @@
       return;
     }
 
-    try {
-      const response = await fetch(
-        `/api/ai/chat?agentId=${encodeURIComponent(agentId)}&session=${encodeURIComponent(key)}`,
-      );
+    const tab = await loadTab(key);
 
-      if (!response.ok) {
-        return;
-      }
-
-      const tab = newTab(key);
-      tab.chat.messages = (await response.json()) as Chat["messages"];
-
+    if (tab) {
       // A second click may have opened it while the fetch was in flight.
       if (!tabs.some((open) => open.key === key)) {
         const current = tabs.find((open) => open.key === activeKey);
@@ -131,8 +148,6 @@
       }
 
       activeKey = key;
-    } catch {
-      // Best effort — keep the current tabs on failure.
     }
   }
 
@@ -195,6 +210,70 @@
   $effect(() => {
     void fetchSessions();
   });
+
+  // Open tabs survive a refresh: their keys are kept per agent for the life
+  // of the browser tab, and the focused one is in the URL as ?session=<key>.
+  const openTabsStorageKey = $derived(`ai-chat:open-tabs:${agentId}`);
+  let restored = $state(false);
+
+  onMount(async () => {
+    const urlKey = page.url.searchParams.get("session");
+    const keys = new Set(
+      parseOpenKeys(sessionStorage.getItem(openTabsStorageKey)),
+    );
+
+    if (urlKey) {
+      keys.add(urlKey);
+    }
+
+    // Unknown, foreign or deleted keys recall no messages and are dropped, so
+    // such a link ends in the blank chat this page starts with.
+    const recalled = (await Promise.all([...keys].map(loadTab))).filter(
+      (tab): tab is ChatTab => tab !== null && tab.chat.messages.length > 0,
+    );
+    const linked = recalled.find((tab) => tab.key === urlKey);
+
+    if (linked) {
+      // Drop the initial blank tab unless it was used while this was loading.
+      tabs = [...recalled, ...tabs.filter((tab) => !isBlank(tab))];
+      activeKey = linked.key;
+    } else {
+      tabs = [...recalled, ...tabs];
+    }
+
+    restored = true;
+  });
+
+  // Blank tabs are neither stored nor linked: a new conversation gets its key
+  // into the URL with its first message.
+  $effect(() => {
+    if (!restored) {
+      return;
+    }
+
+    const started = tabs.filter((tab) => !isBlank(tab)).map((tab) => tab.key);
+    sessionStorage.setItem(openTabsStorageKey, JSON.stringify(started));
+    const linked = started.includes(activeKey) ? activeKey : null;
+    // Re-run after a real navigation to this same page (e.g. its nav link).
+    void page.url;
+
+    untrack(() => {
+      const url = new URL(window.location.href);
+
+      if (url.searchParams.get("session") === linked) {
+        return;
+      }
+
+      if (linked) {
+        url.searchParams.set("session", linked);
+      } else {
+        url.searchParams.delete("session");
+      }
+
+      // Shallow: no navigation, no new history entry per tab switch.
+      replaceState(url, page.state);
+    });
+  });
 </script>
 
 {#snippet sessionList()}
@@ -206,6 +285,7 @@
     disabled={anyBusy}
     onSelect={openSession}
     onDeleted={handleDeleted}
+    onChanged={fetchSessions}
   />
 {/snippet}
 
