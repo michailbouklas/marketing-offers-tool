@@ -3,11 +3,10 @@ import { adminRoles, hasAnyRole } from "$lib/auth/roles";
 import { getAuthenticatedUserRole } from "$lib/server/auth-guards";
 import { clickhouse } from "$lib/server/clickhouse";
 import { prisma } from "$lib/server/prisma";
+import type { ImportLine } from "$lib/services/recipe-import";
 import {
+  buildRecipeRows,
   costRecipe,
-  type ComboComponent,
-  type ComboRange,
-  type RecipeForm,
   type SapItem,
 } from "$lib/services/recipes";
 import {
@@ -192,199 +191,136 @@ export async function listItemSales(
   );
 }
 
-/** Bound into every combo query; `to` is inclusive. */
-const COMBO_WHERE = `lower(brand) = {alias:String}
-  AND trde_date BETWEEN {from:Date} AND {to:Date}
-  AND trde_void_time = ''
-  AND trde_item != '-1'
-  AND (trde_date, trde_location, trde_division, trde_no) IN (
-    SELECT tran_date, tran_location, tran_division, tran_no FROM transactions
-    WHERE lower(brand) = {alias:String} AND tran_date BETWEEN {from:Date} AND {to:Date})`;
-
-export type ComboSummary = {
-  code: string;
-  /** Combos sold: the combo's own self-referencing head lines. */
-  sold: number;
-  /** Net of the combo and every line hanging off it. */
-  net: number;
-  componentItems: number;
-};
-
-/**
- * The brand's combos in the range. No master table marks combos, and
- * `trde_combo_item` alone does not either: standalone lines point at
- * themselves. A code is a combo when another item points at it as its own
- * line (`trde_combo_item = code`, `trde_item != code`, head line); items whose
- * only children are sub-line modifiers (a Whopper with "no pickles") are not.
- * Names and categories come from `dim_items` via `listMenuItems`.
- * Verified 2026-11-05: BK 122 combos in 90 days, all present in dim_items.
- */
-export async function listCombos(
-  alias: string,
-  range: ComboRange,
-): Promise<ComboSummary[]> {
-  const result = await clickhouse.query({
-    query: `
-      SELECT trde_combo_item AS combo_code,
-        toFloat64(sumIf(trde_qty, trde_item = trde_combo_item AND trde_sub_line = 0)) AS combos_sold,
-        toFloat64(sum(trde_net_value)) AS combo_net,
-        uniqExactIf(trde_item, trde_item != trde_combo_item) AS component_items
-      FROM transaction_details
-      WHERE ${COMBO_WHERE}
-      GROUP BY trde_combo_item
-      HAVING countIf(trde_item != trde_combo_item AND trde_sub_line = 0) > 0
-        AND combos_sold > 0
-      ORDER BY combos_sold DESC
-    `,
-    query_params: { alias: alias.toLowerCase(), ...range },
-    format: "JSONEachRow",
-  });
-  const rows = await result.json<{
-    combo_code: string;
-    combos_sold: number;
-    combo_net: number;
-    component_items: number | string;
-  }>();
-  return rows.map((row) => ({
-    code: row.combo_code,
-    sold: Number(row.combos_sold),
-    net: Number(row.combo_net),
-    componentItems: Number(row.component_items),
-  }));
-}
-
-/**
- * Average components of each combo (see `listCombos` for the rule), or of
- * one combo when `comboCode` is set. Components are every line pointing at
- * the combo, head lines and sub-lines alike: BK records meal drinks as
- * sub-lines of the fries. Paid extras added inside the combo are included,
- * so a cost built from this is an upper bound for the bare combo.
- * shortcut: combos not sold in the range are not recognised.
- */
-export async function listComboComponents(
-  alias: string,
-  range: ComboRange,
-  comboCode?: string,
-): Promise<Map<string, ComboComponent[]>> {
-  const combos = new Map(
-    (await listCombos(alias, range))
-      .filter((combo) => !comboCode || combo.code === comboCode)
-      .map((combo) => [combo.code, combo.sold]),
-  );
-  const result = new Map<string, ComboComponent[]>();
-  if (combos.size === 0) return result;
-
-  const rows = await (
-    await clickhouse.query({
-      query: `
-        SELECT trde_combo_item AS combo_code, trde_item AS component_code,
-          any(item_name) AS component_name,
-          toFloat64(sum(trde_qty)) AS component_qty,
-          toFloat64(sum(trde_net_value)) AS component_net
-        FROM transaction_details
-        WHERE ${COMBO_WHERE}
-          AND trde_combo_item IN {codes:Array(String)}
-          AND trde_item != trde_combo_item
-        GROUP BY trde_combo_item, trde_item
-      `,
-      query_params: {
-        alias: alias.toLowerCase(),
-        ...range,
-        codes: [...combos.keys()],
-      },
-      format: "JSONEachRow",
-    })
-  ).json<{
-    combo_code: string;
-    component_code: string;
-    component_name: string;
-    component_qty: number;
-    component_net: number;
-  }>();
-
-  for (const row of rows) {
-    const sold = combos.get(row.combo_code)!;
-    const components = result.get(row.combo_code) ?? [];
-    components.push({
-      item_code: row.component_code,
-      name: row.component_name,
-      perCombo: Number(row.component_qty) / sold,
-      qty: Number(row.component_qty),
-      net: Number(row.component_net),
-    });
-    result.set(row.combo_code, components);
-  }
-  for (const components of result.values()) {
-    components.sort((a, b) => b.perCombo - a.perCombo);
-  }
-  return result;
-}
-
 type LineKey = { database_id: string; item_number: string };
 
-/** Live cost of each brand recipe, keyed by item_code. */
-export async function listRecipeCosts(brandId: number) {
+/**
+ * Every brand recipe with its live cost, including imported ones that are not
+ * linked to a POS item (`item_code` null).
+ */
+export async function listRecipeItems(brandId: number) {
   const recipes = await prisma.recipe.findMany({
     where: { brandId },
     select: {
+      id: true,
       item_code: true,
+      import_name: true,
+      item_description: true,
       updated_at: true,
       lines: {
         select: { database_id: true, item_number: true, quantity: true },
       },
     },
+    orderBy: { item_description: "asc" },
   });
-  const sapItems = await getSapItemsByKey(recipes.flatMap((r) => r.lines));
-
-  return new Map(
-    recipes.map((recipe) => [
-      recipe.item_code,
-      {
-        lineCount: recipe.lines.length,
-        updated_at: recipe.updated_at,
-        ...costRecipe(
-          recipe.lines.map((line) => ({
-            quantity: Number(line.quantity),
-            unit_cost: sapItems.get(sapItemKey(line))?.item_cost ?? null,
-          })),
-        ),
-      },
-    ]),
+  // Lines the import could not resolve carry no database id: nothing to look up.
+  const sapItems = await getSapItemsByKey(
+    recipes.flatMap((r) => r.lines).filter((line) => line.database_id),
   );
+
+  return recipes.map((recipe) => ({
+    id: recipe.id,
+    item_code: recipe.item_code,
+    name: recipe.import_name ?? recipe.item_description,
+    lineCount: recipe.lines.length,
+    updated_at: recipe.updated_at,
+    ...costRecipe(
+      recipe.lines.map((line) => ({
+        quantity: Number(line.quantity),
+        unit_cost: sapItems.get(sapItemKey(line))?.item_cost ?? null,
+      })),
+    ),
+  }));
+}
+
+/**
+ * Every brand recipe joined to its POS item, plus the POS items that have no
+ * recipe yet: the rows of the `/admin/recipes` grid and of its Excel export.
+ */
+export async function listRecipeRows(brand: RecipeBrand) {
+  const [menu, recipes] = await Promise.all([
+    listMenuItems(brand.alias),
+    listRecipeItems(brand.id),
+  ]);
+  return buildRecipeRows(menu, recipes);
+}
+
+/** Live cost of each brand recipe linked to a POS item, keyed by item_code. */
+export async function listRecipeCosts(brandId: number) {
+  const costs = new Map<
+    string,
+    { lineCount: number; updated_at: Date; total: number; missing: number }
+  >();
+  for (const recipe of await listRecipeItems(brandId)) {
+    if (recipe.item_code === null) continue;
+    const { lineCount, updated_at, total, missing } = recipe;
+    costs.set(recipe.item_code, { lineCount, updated_at, total, missing });
+  }
+  return costs;
 }
 
 export type RecipeLineView = {
   database_id: string;
   item_number: string;
+  /** In the SAP purchasing UoM: the cost basis. */
   quantity: number;
-  /** Live SAP row; null when the item no longer exists in SAP. */
+  /** Workbook recipe-unit quantity; null on hand-built recipes. */
+  recipe_quantity: number | null;
+  /** Live SAP row; null when SAP does not (or no longer) know the item. */
   sap: SapItem | null;
   saved_description: string;
   saved_uom: string;
 };
 
-export async function getRecipe(brandId: number, itemCode: string) {
-  const recipe = await prisma.recipe.findUnique({
-    where: { brandId_item_code: { brandId, item_code: itemCode } },
-    include: { lines: { orderBy: { sort_order: "asc" } } },
-  });
+const withLines = { lines: { orderBy: { sort_order: "asc" } } } as const;
+
+async function recipeView(
+  recipe: Awaited<
+    ReturnType<typeof prisma.recipe.findFirst<{ include: typeof withLines }>>
+  >,
+) {
   if (!recipe) return null;
 
-  const sapItems = await getSapItemsByKey(recipe.lines);
+  const sapItems = await getSapItemsByKey(
+    recipe.lines.filter((line) => line.database_id),
+  );
   const lines: RecipeLineView[] = recipe.lines.map((line) => ({
     database_id: line.database_id,
     item_number: line.item_number,
     quantity: Number(line.quantity),
+    recipe_quantity:
+      line.recipe_quantity === null ? null : Number(line.recipe_quantity),
     sap: sapItems.get(sapItemKey(line)) ?? null,
     saved_description: line.item_description,
     saved_uom: line.uom,
   }));
 
   return {
+    id: recipe.id,
+    brandId: recipe.brandId,
+    item_code: recipe.item_code,
+    import_name: recipe.import_name,
+    /** Workbook name, else the POS description stored at the last save. */
+    name: recipe.import_name ?? recipe.item_description,
     updated_at: recipe.updated_at,
     updated_by: recipe.updated_by,
     lines,
   };
+}
+
+export async function getRecipe(brandId: number, itemCode: string) {
+  return recipeView(
+    await prisma.recipe.findUnique({
+      where: { brandId_item_code: { brandId, item_code: itemCode } },
+      include: withLines,
+    }),
+  );
+}
+
+/** By primary key; the caller checks `brandId` against the user's brands. */
+export async function getRecipeById(id: number) {
+  return recipeView(
+    await prisma.recipe.findUnique({ where: { id }, include: withLines }),
+  );
 }
 
 /**
@@ -398,12 +334,14 @@ export async function validateRecipeLines(
 ): Promise<{ errors: Record<number, string>; sapItems: Map<string, SapItem> }> {
   const [company, sapItems] = await Promise.all([
     resolveSapCompany(brand.sap_company_name),
-    getSapItemsByKey(lines),
+    getSapItemsByKey(lines.filter((line) => line.database_id)),
   ]);
   const errors: Record<number, string> = {};
   const seen = new Set<string>();
 
   lines.forEach((line, index) => {
+    // No SAP company: a kept workbook material, judged by `mergeStoredLines`.
+    if (!line.database_id) return;
     const key = sapItemKey(line);
     const item = sapItems.get(key);
     if (!item) {
@@ -420,34 +358,68 @@ export async function validateRecipeLines(
   return { errors, sapItems };
 }
 
+/**
+ * Updates recipe `recipeId` (or creates one when null) and replaces its lines;
+ * returns its id. Which stored recipe an import updates is decided by the
+ * caller (`matchStoredRecipe`).
+ */
 export async function saveRecipe(input: {
   brandId: number;
-  itemCode: string;
+  /** The stored recipe to update; null creates a new one. */
+  recipeId: number | null;
+  /** Null = imported recipe with no POS item (needs `importName`). */
+  itemCode: string | null;
+  importName?: string;
   /** Undefined when the item left the menu: keep the stored description. */
   itemDescription: string | undefined;
   userId: string;
-  lines: RecipeForm["lines"];
+  lines: ImportLine[];
   sapItems: Map<string, SapItem>;
 }) {
-  await prisma.$transaction(async (tx) => {
-    const recipe = await tx.recipe.upsert({
-      where: {
-        brandId_item_code: {
-          brandId: input.brandId,
-          item_code: input.itemCode,
+  const { brandId, itemCode, importName } = input;
+  return prisma.$transaction(async (tx) => {
+    const target = input.recipeId
+      ? await tx.recipe.findUnique({ where: { id: input.recipeId } })
+      : null;
+    const byCode = itemCode
+      ? await tx.recipe.findUnique({
+          where: { brandId_item_code: { brandId, item_code: itemCode } },
+        })
+      : null;
+    // Never unlink, and never take a POS code another recipe holds (unique
+    // per brand): this one then keeps whatever link it had.
+    const item_code =
+      byCode && byCode.id !== target?.id
+        ? (target?.item_code ?? null)
+        : (itemCode ?? target?.item_code ?? null);
+    // The workbook name is unique per brand: a duplicate holding it lets go
+    // (the import lists that duplicate for deletion).
+    if (importName) {
+      await tx.recipe.updateMany({
+        where: {
+          brandId,
+          import_name: importName,
+          ...(target && { id: { not: target.id } }),
         },
-      },
-      create: {
-        brandId: input.brandId,
-        item_code: input.itemCode,
-        item_description: input.itemDescription ?? "",
-        updated_by: input.userId,
-      },
-      update: {
-        item_description: input.itemDescription,
-        updated_by: input.userId,
-      },
-    });
+        data: { import_name: null },
+      });
+    }
+
+    const data = {
+      item_code,
+      import_name: importName,
+      item_description: input.itemDescription,
+      updated_by: input.userId,
+    };
+    const recipe = target
+      ? await tx.recipe.update({ where: { id: target.id }, data })
+      : await tx.recipe.create({
+          data: {
+            ...data,
+            brandId,
+            item_description: input.itemDescription ?? "",
+          },
+        });
 
     await tx.recipe_line.deleteMany({ where: { recipeId: recipe.id } });
     await tx.recipe_line.createMany({
@@ -458,12 +430,14 @@ export async function saveRecipe(input: {
           sort_order: index,
           database_id: line.database_id,
           item_number: line.item_number,
-          item_description: sap?.item_description ?? "",
-          uom: sap?.purchasing_uom ?? "",
+          item_description: sap?.item_description ?? line.description ?? "",
+          uom: sap?.purchasing_uom ?? line.uom ?? "",
           quantity: line.quantity,
+          recipe_quantity: line.recipe_quantity ?? null,
           unit_cost_snapshot: sap?.item_cost ?? null,
         };
       }),
     });
+    return recipe.id;
   });
 }

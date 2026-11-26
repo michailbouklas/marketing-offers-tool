@@ -4,6 +4,7 @@ import { sseResponse } from "$lib/server/sse";
 import {
   MAX_IMPORT_BYTES,
   MAX_IMPORT_ROWS,
+  STOCK_SUMMARY_SHEET,
   type ImportCell,
 } from "$lib/services/recipe-import";
 import {
@@ -15,7 +16,8 @@ import { requireRecipeBrand } from "$lib/services/recipes.server";
 import type { RequestHandler } from "./$types";
 
 /**
- * POST multipart `brand` (alias) + `file` (.xlsx). File-level problems answer
+ * POST multipart `brand` (alias) + `file` (the cost workbook, .xlsx); reads its
+ * stock-summary sheet (lenient, by recipe name). File-level problems answer
  * with a plain HTTP error; otherwise the response is an SSE stream of
  * `RecipeImportEvent`s: validating → invalid | progress… → done | error.
  */
@@ -42,7 +44,10 @@ export const POST: RequestHandler = async (event) => {
   try {
     sheet = await parseRecipeWorkbook(file);
   } catch {
-    error(400, "The file could not be read as an Excel workbook");
+    error(
+      400,
+      `The file could not be read, or it has no "${STOCK_SUMMARY_SHEET}" sheet`,
+    );
   }
   if (sheet.length - 1 > MAX_IMPORT_ROWS) {
     error(400, `The file has more than ${MAX_IMPORT_ROWS} rows`);
@@ -69,7 +74,7 @@ export const POST: RequestHandler = async (event) => {
 
     let imported = 0;
     try {
-      await runRecipeImport({
+      const cleanup = await runRecipeImport({
         brandId: brand.id,
         userId: user.id,
         recipes: validation.recipes,
@@ -79,13 +84,18 @@ export const POST: RequestHandler = async (event) => {
           send({ type: "progress", ...progress });
         },
       });
-      send({ type: "done", imported });
+      send({
+        type: "done",
+        imported,
+        report: validation.report,
+        cleanup,
+      });
     } catch (cause) {
       console.error("[recipes/import] import failed", cause);
       const failed = validation.recipes[imported];
       send({
         type: "error",
-        message: `Import stopped at ${failed?.itemCode ?? "?"} (${failed?.description ?? ""}). ${imported} recipes were saved before it.`,
+        message: `Import stopped at ${failed?.itemCode ?? failed?.importName ?? "?"} (${failed?.description ?? ""}). ${imported} recipes were saved before it.`,
         imported,
       });
     }

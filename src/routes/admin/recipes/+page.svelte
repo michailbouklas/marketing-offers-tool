@@ -1,80 +1,129 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import DownloadIcon from "@lucide/svelte/icons/download";
+  import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
   import LabourToggle from "$lib/components/recipes/labour-toggle.svelte";
   import RecipeImportDialog from "$lib/components/recipes/recipe-import-dialog.svelte";
-  import { Badge } from "$lib/components/ui/badge/index.js";
+  import RecipeItemDialog from "$lib/components/recipes/recipe-item-dialog.svelte";
+  import RecipeItemsGrid, {
+    type RecipeGridRow,
+  } from "$lib/components/recipes/recipe-items-grid.svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import * as Card from "$lib/components/ui/card/index.js";
-  import { Input } from "$lib/components/ui/input/index.js";
-  import * as NativeSelect from "$lib/components/ui/native-select/index.js";
-  import * as Table from "$lib/components/ui/table/index.js";
-  import { formatEur, primeCostPercent } from "$lib/services/recipes";
+  import { Switch } from "$lib/components/ui/switch/index.js";
+  import { primeCostPercent, recipeHref } from "$lib/services/recipes";
+  import { toast } from "svelte-sonner";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
 
-  let search = $state("");
-  let category = $state("");
-  let onlyWithRecipe = $state(false);
-  let onlyActive = $state(true);
-
-  const categories = $derived([
-    ...new Set(data.items.map((item) => item.category)),
-  ]);
-
-  let sortByFoodCost = $state(false);
   let importOpen = $state(false);
+  let detailOpen = $state(false);
+  let detail = $state<RecipeGridRow | null>(null);
+  let grid = $state<ReturnType<typeof RecipeItemsGrid>>();
+  let exporting = $state(false);
+  let visibleCount = $state(0);
 
-  // With labour on, FC % becomes prime cost % (food + labour) and so does the target.
+  // Only rows with a POS price can have a food cost %: half the POS menu is
+  // priced 0 (components, coupons, notes) and unlinked recipes have no POS item.
+  let pricedOnly = $state(true);
+  let activeOnly = $state(true);
+  // The grid is about stored recipes; POS items without one are opt-in (to
+  // check coverage or start a recipe from a POS item).
+  let showNoRecipe = $state(false);
+  const inScope = $derived(
+    showNoRecipe ? data.rows : data.rows.filter((row) => row.id !== null),
+  );
+  // With labour on, cost % is prime cost % (food + labour) and so is the target.
   let includeLabour = $state(false);
   const labourFraction = $derived(
     includeLabour ? (data.brand?.labour_perc ?? 0) : 0,
   );
-
-  const targetFoodCost = $derived(
+  const target = $derived(
     data.brand?.ideal_fc_perc == null
       ? null
       : (data.brand.ideal_fc_perc + labourFraction) * 100,
   );
 
-  // Only for complete recipes: a partial cost would understate food cost.
-  const withFoodCost = $derived(
-    data.items.map((item) => ({
-      ...item,
-      foodCost:
-        item.recipe && item.recipe.missing === 0
-          ? primeCostPercent(item.recipe.total, item.price, labourFraction)
-          : null,
-    })),
+  const rows = $derived.by((): RecipeGridRow[] =>
+    inScope
+      .filter(
+        (row) =>
+          (!pricedOnly || row.price !== null) && (!activeOnly || row.active),
+      )
+      .map((row) => {
+        // Only complete recipes: a partial cost would understate food cost.
+        const percent =
+          row.cost !== null && row.price !== null && row.missing === 0
+            ? primeCostPercent(row.cost, row.price, labourFraction)
+            : null;
+        return {
+          ...row,
+          cost_percent: percent,
+          over_target: percent !== null && target !== null && percent > target,
+        };
+      }),
   );
 
-  const visible = $derived.by(() => {
-    const term = search.trim().toLowerCase();
-    const rows = withFoodCost.filter(
-      (item) =>
-        (!category || item.category === category) &&
-        // A combo counts only when at least one component has a recipe.
-        (!onlyWithRecipe ||
-          (item.recipe &&
-            (item.recipe.source === "recipe" ||
-              item.recipe.missing < item.recipe.componentCount))) &&
-        (!onlyActive || item.active) &&
-        (!term ||
-          item.item_code.toLowerCase().includes(term) ||
-          item.description.toLowerCase().includes(term)),
-    );
-    return sortByFoodCost
-      ? rows.toSorted((a, b) => (b.foodCost ?? -1) - (a.foodCost ?? -1))
-      : rows;
-  });
-
+  const count = (status: string) =>
+    data.rows.filter((row) => row.status === status).length;
   const recipeCount = $derived(
-    data.items.filter((item) => item.recipe?.source === "recipe").length,
+    data.rows.filter((row) => row.id !== null).length,
+  );
+  const pricedWithoutRecipe = $derived(
+    data.rows.filter(
+      (row) => row.status === "No recipe" && row.price !== null && row.active,
+    ).length,
   );
 
-  function itemHref(itemCode: string) {
-    return `/admin/recipes/${encodeURIComponent(data.brand?.alias ?? "")}/${encodeURIComponent(itemCode)}`;
+  function open(row: RecipeGridRow) {
+    if (row.id === null) {
+      goto(recipeHref(data.brand?.alias ?? "", { itemCode: row.item_code }));
+      return;
+    }
+    detail = row;
+    detailOpen = true;
+  }
+
+  /** Excel of the grid's filtered + sorted rows; the server re-reads the values. */
+  async function exportExcel() {
+    const keys = grid?.visibleKeys() ?? [];
+    if (keys.length === 0) {
+      toast.error("No rows match the current filters.");
+      return;
+    }
+    exporting = true;
+    const toastId = toast.loading("Preparing the Excel export…");
+    try {
+      const response = await fetch("/admin/recipes/items/export", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ brand: data.brand?.alias, keys }),
+      });
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as {
+          message?: string;
+        } | null;
+        throw new Error(body?.message ?? `Export failed (${response.status})`);
+      }
+      const { downloadUrl } = (await response.json()) as {
+        downloadUrl: string;
+      };
+      window.location.assign(downloadUrl);
+      toast.success(`Excel export of ${keys.length} rows ready, downloading.`, {
+        id: toastId,
+      });
+    } catch (cause) {
+      toast.error(
+        cause instanceof Error
+          ? cause.message
+          : "The Excel export could not be generated.",
+        { id: toastId },
+      );
+    } finally {
+      exporting = false;
+    }
   }
 </script>
 
@@ -82,11 +131,14 @@
   <title>Recipes | Admin</title>
 </svelte:head>
 
-<main class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+<main
+  class="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8"
+>
   <div class="space-y-1">
     <h1 class="text-3xl font-semibold tracking-tight">Recipes</h1>
     <p class="text-muted-foreground text-sm">
-      Build each menu item's recipe from SAP materials to get its material cost.
+      The brand's recipes, imported from its cost workbook, with their SAP
+      material cost.
     </p>
   </div>
 
@@ -108,173 +160,102 @@
       {/each}
     </ButtonGroup.Root>
 
-    <Card.Root>
-      <Card.Header class="flex flex-row flex-wrap items-center gap-3">
-        <Card.Title class="mr-auto">
-          {data.brand?.name} menu
-          <span class="text-muted-foreground text-sm font-normal">
-            {visible.length} of {data.items.length} items · {recipeCount} with a recipe
-          </span>
-        </Card.Title>
-        <Input
-          class="w-64"
-          placeholder="Search code or description"
-          aria-label="Search menu items"
-          bind:value={search}
-        />
-        <NativeSelect.Root bind:value={category} aria-label="Category">
-          <NativeSelect.Option value="">All categories</NativeSelect.Option>
-          {#each categories as option (option)}
-            <NativeSelect.Option value={option}>
-              {option || "(none)"}
-            </NativeSelect.Option>
-          {/each}
-        </NativeSelect.Root>
-        <Button
-          variant={onlyWithRecipe ? "default" : "outline"}
-          onclick={() => (onlyWithRecipe = !onlyWithRecipe)}
-          aria-pressed={onlyWithRecipe}
-        >
-          With recipe
-        </Button>
-        <Button
-          variant={onlyActive ? "default" : "outline"}
-          onclick={() => (onlyActive = !onlyActive)}
-          aria-pressed={onlyActive}
-        >
-          Active only
-        </Button>
-        <Button
-          variant="outline"
-          href={`/admin/recipes/engineering?brand=${encodeURIComponent(data.brand?.alias ?? "")}`}
-        >
-          Menu engineering
-        </Button>
-        <Button
-          variant="outline"
-          href={`/admin/recipes/${encodeURIComponent(data.brand?.alias ?? "")}/combo-items`}
-        >
-          Combo items
-        </Button>
-        {#if data.brand}
-          <Button variant="outline" onclick={() => (importOpen = true)}>
-            Import
+    {#if data.brand}
+      <Card.Root class="min-w-0">
+        <Card.Header class="flex flex-row flex-wrap items-center gap-3">
+          <Card.Title class="mr-auto">
+            {data.brand.name}
+            <span class="text-muted-foreground text-sm font-normal">
+              {recipeCount} recipes · {count("Linked")} linked to a POS item ·
+              {recipeCount - count("Linked")} unlinked · {pricedWithoutRecipe} priced
+              POS items without a recipe
+            </span>
+          </Card.Title>
+          <Button
+            variant="outline"
+            href={`/admin/recipes/engineering?brand=${encodeURIComponent(data.brand.alias)}`}
+          >
+            Menu engineering
           </Button>
-          <RecipeImportDialog bind:open={importOpen} brand={data.brand} />
-          <LabourToggle
-            labourPerc={data.brand.labour_perc}
-            bind:checked={includeLabour}
-          />
-        {/if}
-      </Card.Header>
-      <Card.Content>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.Head>Item code</Table.Head>
-              <Table.Head>Description</Table.Head>
-              <Table.Head>Category</Table.Head>
-              <Table.Head class="text-right">Price</Table.Head>
-              <Table.Head>Recipe</Table.Head>
-              <Table.Head class="text-right">Material cost</Table.Head>
-              <Table.Head class="text-right">
-                <button
-                  type="button"
-                  class="hover:text-foreground inline-flex items-center gap-1"
-                  aria-pressed={sortByFoodCost}
-                  title="Sort by cost %, highest first"
-                  onclick={() => (sortByFoodCost = !sortByFoodCost)}
-                >
-                  {labourFraction ? "Prime %" : "FC %"}{sortByFoodCost
-                    ? " ↓"
-                    : ""}
-                </button>
-              </Table.Head>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {#each visible as item (item.item_code)}
-              <Table.Row
-                class="cursor-pointer"
-                onclick={() => goto(itemHref(item.item_code))}
-              >
-                <Table.Cell class="font-mono text-xs">
-                  <a
-                    href={itemHref(item.item_code)}
-                    class="hover:underline"
-                    onclick={(event) => event.stopPropagation()}
-                  >
-                    {item.item_code}
-                  </a>
-                </Table.Cell>
-                <Table.Cell>
-                  {item.description}
-                  {#if !item.active}
-                    <Badge variant="outline" class="ml-1">inactive</Badge>
-                  {/if}
-                </Table.Cell>
-                <Table.Cell class="text-muted-foreground">
-                  {item.category}{item.subcategory
-                    ? ` / ${item.subcategory}`
-                    : ""}
-                </Table.Cell>
-                <Table.Cell class="text-right tabular-nums">
-                  {formatEur(item.price, 2)}
-                </Table.Cell>
-                <Table.Cell>
-                  {#if item.recipe?.source === "combo"}
-                    <Badge
-                      variant="outline"
-                      title="Cost from the recipes of the components it is sold with"
-                    >
-                      Combo · {item.recipe.componentCount} components
-                    </Badge>
-                  {:else if item.recipe}
-                    <Badge variant="secondary">
-                      {item.recipe.lineCount} materials
-                    </Badge>
-                  {:else}
-                    <span class="text-muted-foreground text-xs">—</span>
-                  {/if}
-                </Table.Cell>
-                <Table.Cell class="text-right tabular-nums">
-                  {#if item.recipe}
-                    {formatEur(item.recipe.total)}
-                    {#if item.recipe.missing > 0}
-                      <Badge variant="destructive" class="ml-1">
-                        {item.recipe.missing}
-                        {item.recipe.source === "combo"
-                          ? "without recipe"
-                          : "no cost"}
-                      </Badge>
-                    {/if}
-                  {/if}
-                </Table.Cell>
-                <Table.Cell
-                  class={[
-                    "text-right tabular-nums",
-                    item.foodCost !== null &&
-                      targetFoodCost !== null &&
-                      item.foodCost > targetFoodCost &&
-                      "text-destructive font-medium",
-                  ]}
-                >
-                  {item.foodCost === null ? "" : `${item.foodCost.toFixed(1)}%`}
-                </Table.Cell>
-              </Table.Row>
+          <Button variant="outline" disabled={exporting} onclick={exportExcel}>
+            {#if exporting}
+              <LoaderCircleIcon class="size-4 animate-spin" />
+              Working…
             {:else}
-              <Table.Row>
-                <Table.Cell
-                  colspan={7}
-                  class="text-muted-foreground py-8 text-center"
-                >
-                  No menu items match.
-                </Table.Cell>
-              </Table.Row>
-            {/each}
-          </Table.Body>
-        </Table.Root>
-      </Card.Content>
-    </Card.Root>
+              <DownloadIcon class="size-4" />
+              Export to Excel
+            {/if}
+          </Button>
+          <Button onclick={() => (importOpen = true)}>Import workbook</Button>
+        </Card.Header>
+        <Card.Content class="space-y-3">
+          <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+            <div class="flex items-center gap-2">
+              <Switch id="priced-only" bind:checked={pricedOnly} />
+              <label for="priced-only">Priced only</label>
+              <span class="text-muted-foreground text-xs">
+                (hides POS items priced 0 and recipes not linked to a POS item)
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <Switch id="active-only" bind:checked={activeOnly} />
+              <label for="active-only">Active only</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <Switch id="show-no-recipe" bind:checked={showNoRecipe} />
+              <label for="show-no-recipe">Show POS items without a recipe</label
+              >
+            </div>
+            <LabourToggle
+              labourPerc={data.brand.labour_perc}
+              bind:checked={includeLabour}
+            />
+            <span class="text-muted-foreground text-xs">
+              Cost % = {includeLabour
+                ? "prime cost (food + labour)"
+                : "food cost"}
+              ÷ price ex VAT{target === null
+                ? ""
+                : `, red above the ${target.toFixed(1)}% target`}.
+            </span>
+          </div>
+          <p class="text-sm" role="status" aria-live="polite">
+            <span class="font-medium tabular-nums"
+              >{visibleCount.toLocaleString("en-IE")}</span
+            >
+            {visibleCount === 1 ? "item" : "items"}
+            {#if visibleCount !== inScope.length}
+              <span class="text-muted-foreground">
+                of {inScope.length.toLocaleString("en-IE")}
+              </span>
+            {/if}
+          </p>
+          {#if recipeCount === 0 && !showNoRecipe}
+            <p
+              class="text-muted-foreground rounded-md border border-dashed p-6 text-sm"
+            >
+              {data.brand.name} has no recipes yet. Import its cost workbook, or turn
+              on "Show POS items without a recipe" to build one from a POS item.
+            </p>
+          {/if}
+          <div class="h-[70vh] min-h-96 overflow-hidden rounded-xl border">
+            <RecipeItemsGrid
+              bind:this={grid}
+              bind:visibleCount
+              columnState={data.columnState}
+              {rows}
+              onOpen={open}
+            />
+          </div>
+        </Card.Content>
+      </Card.Root>
+
+      <RecipeImportDialog bind:open={importOpen} brand={data.brand} />
+      <RecipeItemDialog
+        bind:open={detailOpen}
+        item={detail}
+        brandAlias={data.brand.alias}
+      />
+    {/if}
   {/if}
 </main>

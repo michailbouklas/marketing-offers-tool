@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  RECIPE_IMPORT_COLUMNS,
-  validateImportRows,
+  parseStockSummary,
+  planImport,
   type ImportCell,
+  type ImportRecipe,
 } from "./recipe-import";
 import type { SapItem } from "./recipes";
 
@@ -30,73 +31,240 @@ const sapByNumber = new Map([
   ["30000", [sap("30000", "PCS")]],
   ["AB1", [sap("AB1", "KG"), sap("AB1", "KG", "OTHER")]],
 ]);
-const header: ImportCell[] = [...RECIPE_IMPORT_COLUMNS];
 
-const run = (...rows: ImportCell[][]) =>
-  validateImportRows([header, ...rows], menu, sapByNumber);
+describe("parseStockSummary", () => {
+  // Shuffled on purpose, with a column the import ignores: read by header name.
+  const stockHeader: ImportCell[] = [
+    "Stock Item",
+    "Recipe ID",
+    "Cost per 1 menu item (€)",
+    "QTY per 1 menu item (purchasing UoM)",
+    "QTY per 1 menu item (recipe unit)",
+    "Purchasing UoM",
+    "Stock Item Description",
+  ];
+  const posMenu = [
+    ...menu,
+    { item_code: "301", description: "Wings 9 pcs" },
+    { item_code: "302", description: "Wings 9 pcs" },
+  ];
+  const parse = (...rows: ImportCell[][]) =>
+    parseStockSummary([stockHeader, ...rows], posMenu, sapByNumber);
 
-describe("validateImportRows", () => {
-  it("groups rows by item code in row order", () => {
-    const result = run(
-      ["100", "margherita  large", "25107", "kg", 0.25],
-      [200, "Cola", 30000, "PCS", "1,5"],
-      ["100", "Margherita Large", "30000", "PCS", 2],
-      [null, null, null, null, null],
+  it("links by POS name, sums duplicates and keeps both quantities", () => {
+    const result = parse(
+      [25107, "margherita  LARGE", 9.99, 0.25, 250, "KG", "Sugar"],
+      [30000, "margherita  LARGE", 1, 2, 2, "PCS", "Box"],
+      [25107, "margherita  LARGE", 1, 0.5, 500, "KG", "Sugar"],
     );
     expect(result.errors).toEqual([]);
     expect(result.recipes).toEqual([
       {
         itemCode: "100",
+        importName: "margherita LARGE",
         description: "Margherita Large",
         lines: [
-          { database_id: "PHC_EUR", item_number: "25107", quantity: 0.25 },
-          { database_id: "PHC_EUR", item_number: "30000", quantity: 2 },
+          {
+            database_id: "PHC_EUR",
+            item_number: "25107",
+            quantity: 0.75,
+            recipe_quantity: 750,
+            description: "Sugar",
+            uom: "KG",
+          },
+          {
+            database_id: "PHC_EUR",
+            item_number: "30000",
+            quantity: 2,
+            recipe_quantity: 2,
+            description: "Box",
+            uom: "PCS",
+          },
         ],
       },
+    ]);
+    expect(result.warnings).toMatchObject([{ row: 4, column: "Stock Item" }]);
+  });
+
+  it("keeps unmatched and ambiguous names unlinked, skips case variants", () => {
+    const result = parse(
+      [25107, "Family Feast Large", 1, 1, 1, "KG", "Sugar"],
+      [25107, "Wings 9 pcs", 1, 1, 1, "KG", "Sugar"],
+      [25107, "Cola", 1, 1, 1, "KG", "Sugar"],
+      [30000, "COLA ", 1, 1, 1, "PCS", "Box"],
+      [30000, "Cola", 1, 2, 2, "PCS", "Box"],
+    );
+    expect(result.recipes.map((r) => [r.importName, r.itemCode])).toEqual([
+      ["Family Feast Large", null],
+      ["Wings 9 pcs", null],
+      ["Cola", "200"],
+    ]);
+    expect(result.recipes[2].lines.map((l) => l.quantity)).toEqual([1, 2]);
+    expect(result.report.map((c) => [c.row, c.status, c.reason])).toEqual([
+      [2, "Unlinked", "No POS item with this name"],
+      [3, "Unlinked", "Name is shared by 2 POS items"],
+      [4, "Linked", "Recipe ID equals the POS item name"],
+      [
+        5,
+        "Skipped",
+        'Same Recipe ID as "Cola" (row 4) apart from case or spacing; its rows were skipped',
+      ],
+    ]);
+  });
+
+  it("reports why a name has no POS item and what it resembles", () => {
+    const result = parse(
+      [25107, "Margherita - Large!", 1, 1, 1, "KG", "Sugar"],
+      [25107, "B&T: Cola", 1, 1, 1, "KG", "Sugar"],
+      [25107, "Cola Regular", 1, 1, 1, "KG", "Sugar"],
+      [25107, "Margherita Extra Large", 1, 1, 1, "KG", "Sugar"],
+      [25107, "Zzz", 1, 1, 1, "KG", "Sugar"],
+    );
+    expect(result.recipes.every((recipe) => recipe.itemCode === null)).toBe(
+      true,
+    );
+    expect(result.report.map((c) => [c.reason, c.posItem])).toEqual([
+      [
+        "Differs from a POS item name only in symbols or punctuation",
+        "Margherita Large (100)",
+      ],
+      ['Equals a POS item name without the "B&T:" prefix', "Cola (200)"],
+      ["Equals a POS item name without the size word", "Cola (200)"],
+      ["No POS item with this name", "Closest: Margherita Large (100)"],
+      ["No POS item with this name", ""],
+    ]);
+  });
+
+  it("skips rows without a positive quantity and keeps unknown SAP items", () => {
+    const result = parse(
+      [25107, "No Strips", 0, 0, 0, "KG", "Sugar"],
+      [123456, "Cola", 1, 1, 1, "PCE", "Black Bun"],
+      ["AB1", "Cola", 1, "0,5", null, "KG", "Two companies"],
+    );
+    expect(result.recipes).toEqual([
       {
         itemCode: "200",
+        importName: "Cola",
         description: "Cola",
         lines: [
-          { database_id: "PHC_EUR", item_number: "30000", quantity: 1.5 },
+          {
+            database_id: "",
+            item_number: "123456",
+            quantity: 1,
+            recipe_quantity: 1,
+            description: "Black Bun",
+            uom: "PCE",
+          },
+          {
+            database_id: "",
+            item_number: "AB1",
+            quantity: 0.5,
+            recipe_quantity: null,
+            description: "Two companies",
+            uom: "KG",
+          },
         ],
+      },
+    ]);
+    expect(result.warnings.map((w) => `${w.row}:${w.column}`)).toEqual([
+      "2:QTY per 1 menu item (purchasing UoM)",
+      "3:Stock Item",
+      "4:Stock Item",
+    ]);
+    expect(result.report).toMatchObject([
+      { name: "No Strips", status: "Skipped", materials: 0 },
+      { name: "Cola", status: "Linked", itemCode: "200", materials: 2 },
+    ]);
+    expect(result.report[1].notes.split("\n")).toEqual([
+      "row 3: SAP item 123456 not found in SAP; kept without cost",
+      "row 4: SAP item AB1 exists in several companies; kept without cost",
+    ]);
+  });
+
+  it("rejects a sheet without the columns or without rows", () => {
+    const missing = parseStockSummary(
+      [["Recipe ID", "Stock Item"]],
+      posMenu,
+      sapByNumber,
+    );
+    expect(missing.errors[0].message).toContain("Purchasing UoM");
+    expect(parse().errors[0].message).toBe("The sheet has no recipe rows");
+  });
+});
+
+describe("planImport", () => {
+  const imported = (
+    importName: string,
+    itemCode: string | null = null,
+  ): ImportRecipe => ({
+    itemCode,
+    importName,
+    description: importName,
+    lines: [],
+  });
+  const stored = (
+    id: number,
+    item_code: string | null,
+    import_name: string | null,
+    item_description = import_name ?? "",
+  ) => ({ id, item_code, import_name, item_description });
+
+  it("updates the same recipe on a re-import and creates new ones", () => {
+    const plan = planImport(
+      [imported("Fries", "A"), imported("Family Feast")],
+      [
+        stored(1, "A", "Fries"),
+        stored(2, null, "Old Deal"),
+        stored(3, "Z", null, "Hand made"),
+      ],
+    );
+    expect(plan.targets).toEqual([1, null]);
+    expect(plan.cleanup).toEqual([
+      {
+        id: 2,
+        name: "Old Deal",
+        itemCode: "",
+        reason: "Imported before, not in this workbook",
       },
     ]);
   });
 
-  it("collects every problem with its row and column", () => {
-    const result = run(
-      ["999", "Nope", "25107", "KG", 1],
-      ["100", "Pepperoni", "25107", "PCS", 0],
-      ["100", "Margherita Large", "404", "KG", "abc"],
-      ["100", "Margherita Large", "ab1", "KG", 1],
+  it("takes over a hand-built recipe of the same name and flags the duplicate", () => {
+    // The real case: hand-built and linked, plus an earlier unlinked import.
+    const plan = planImport(
+      [imported("Original Recipe 1 Pc")],
+      [
+        stored(5, "OR1", null, "Original Recipe 1 Pc"),
+        stored(402, null, "Original Recipe 1 Pc"),
+      ],
     );
-    expect(result.recipes).toEqual([]);
-    expect(result.errors.map((e) => `${e.row}:${e.column}`)).toEqual([
-      "2:Item code",
-      "3:Item name",
-      "3:Unit",
-      "3:Quantity",
-      "4:SAP item number",
-      "4:Quantity",
-      "5:SAP item number",
-    ]);
-    expect(result.errors[6].message).toContain("several companies");
-  });
-
-  it("rejects a duplicate SAP item in one recipe", () => {
-    const result = run(
-      ["100", "Margherita Large", "25107", "KG", 1],
-      ["100", "Margherita Large", "25107", "KG", 2],
-    );
-    expect(result.errors).toMatchObject([
-      { row: 3, column: "SAP item number" },
+    expect(plan.targets).toEqual([5]);
+    expect(plan.cleanup).toMatchObject([
+      {
+        id: 402,
+        reason: 'Duplicate of "Original Recipe 1 Pc" in this workbook',
+      },
     ]);
   });
 
-  it("rejects a wrong header and an empty file", () => {
-    expect(
-      validateImportRows([["Code", "Name"]], menu, sapByNumber).errors[0].row,
-    ).toBe(1);
-    expect(run().errors[0].message).toBe("The file has no recipe rows");
+  it("prefers the POS item holder and matches names case-insensitively", () => {
+    const plan = planImport(
+      [imported("Nuggets 14 Pcs", "N14")],
+      [
+        stored(91, "N14", "Nuggets 14 pcs"),
+        stored(259, null, "Nuggets 14 Pcs"),
+      ],
+    );
+    expect(plan.targets).toEqual([91]);
+    expect(plan.cleanup.map((row) => row.id)).toEqual([259]);
+  });
+
+  it("never gives one stored recipe to two imported ones", () => {
+    const plan = planImport(
+      [imported("Cola", "C"), imported("Cola Zero", "C0")],
+      [stored(7, "C", null, "Cola Zero")],
+    );
+    expect(plan.targets).toEqual([7, null]);
+    expect(plan.cleanup).toEqual([]);
   });
 });

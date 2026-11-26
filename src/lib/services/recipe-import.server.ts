@@ -1,11 +1,14 @@
 import { readSheet } from "read-excel-file/node";
 import {
-  importItemNumbers,
-  validateImportRows,
+  parseStockSummary,
+  planImport,
+  STOCK_SUMMARY_SHEET,
+  stockSummaryItemNumbers,
   type ImportCell,
   type ImportProgress,
   type ImportRecipe,
 } from "$lib/services/recipe-import";
+import { prisma } from "$lib/server/prisma";
 import type { SapItem } from "$lib/services/recipes";
 import {
   listMenuItems,
@@ -18,15 +21,20 @@ import {
   sapItemKey,
 } from "$lib/services/sap-items.server";
 
-/** First sheet as rows of raw cells; throws when the file is not a valid .xlsx. */
+/**
+ * The workbook's stock-summary sheet as rows of raw cells; throws when the
+ * file is not a valid .xlsx or has no sheet of that name.
+ */
 export async function parseRecipeWorkbook(file: File): Promise<ImportCell[][]> {
+  const buffer = Buffer.from(await file.arrayBuffer());
   // The library types date cells as `typeof Date`; at runtime they are Date instances.
-  return (await readSheet(
-    Buffer.from(await file.arrayBuffer()),
-  )) as ImportCell[][];
+  return (await readSheet(buffer, STOCK_SUMMARY_SHEET)) as ImportCell[][];
 }
 
-/** Checks every row against the brand menu (ClickHouse) and SAP (MSSQL). */
+/**
+ * Checks every row against the brand menu (ClickHouse) and SAP (MSSQL), and
+ * reports what happens to each recipe.
+ */
 export async function validateRecipeImport(
   brand: RecipeBrand,
   sheet: ImportCell[][],
@@ -36,13 +44,13 @@ export async function validateRecipeImport(
     resolveSapCompany(brand.sap_company_name),
   ]);
   const sapByNumber = await getSapItemsByNumber(
-    importItemNumbers(sheet),
+    stockSummaryItemNumbers(sheet),
     company,
   );
   const sapItems = new Map<string, SapItem>(
     [...sapByNumber.values()].flat().map((item) => [sapItemKey(item), item]),
   );
-  return { ...validateImportRows(sheet, menu, sapByNumber), sapItems };
+  return { ...parseStockSummary(sheet, menu, sapByNumber), sapItems };
 }
 
 /**
@@ -57,6 +65,16 @@ export async function runRecipeImport(input: {
   sapItems: Map<string, SapItem>;
   onProgress: (progress: ImportProgress) => void;
 }) {
+  const stored = await prisma.recipe.findMany({
+    where: { brandId: input.brandId },
+    select: {
+      id: true,
+      item_code: true,
+      import_name: true,
+      item_description: true,
+    },
+  });
+  const { targets, cleanup } = planImport(input.recipes, stored);
   const total = input.recipes.length;
   for (const [done, recipe] of input.recipes.entries()) {
     input.onProgress({
@@ -66,7 +84,9 @@ export async function runRecipeImport(input: {
     });
     await saveRecipe({
       brandId: input.brandId,
+      recipeId: targets[done],
       itemCode: recipe.itemCode,
+      importName: recipe.importName,
       itemDescription: recipe.description,
       userId: input.userId,
       lines: recipe.lines,
@@ -74,4 +94,5 @@ export async function runRecipeImport(input: {
     });
   }
   input.onProgress({ done: total, total, current: null });
+  return cleanup;
 }

@@ -6,7 +6,6 @@
   import PlusIcon from "@lucide/svelte/icons/plus";
   import SearchIcon from "@lucide/svelte/icons/search";
   import Trash2Icon from "@lucide/svelte/icons/trash-2";
-  import ComboComponentsTable from "$lib/components/recipes/combo-components-table.svelte";
   import EnergyToggle from "$lib/components/recipes/energy-toggle.svelte";
   import LabourToggle from "$lib/components/recipes/labour-toggle.svelte";
   import SapItemSearchDialog from "$lib/components/sap/sap-item-search-dialog.svelte";
@@ -49,6 +48,17 @@
       ),
     ),
   );
+  // Stored lines: description and unit of materials SAP does not know, and
+  // the workbook's recipe-unit quantity.
+  const stored = $derived(
+    new Map((data.recipe?.lines ?? []).map((line) => [key(line), line])),
+  );
+  const showRecipeQty = $derived(
+    (data.recipe?.lines ?? []).some((line) => line.recipe_quantity !== null),
+  );
+  const title = $derived(
+    data.menuItem?.description ?? data.recipe?.name ?? data.itemCode ?? "",
+  );
   let lookupErrors = $state<Record<number, string>>({});
   let dialogOpen = $state(false);
   let dialogRow = $state(0);
@@ -67,17 +77,13 @@
     },
   );
 
-  // A combo without its own recipe is costed from its components.
-  const usingCombo = $derived(data.combo !== null && $form.lines.length === 0);
   const cost = $derived(
-    usingCombo && data.combo
-      ? { total: data.combo.total, missing: data.combo.missing }
-      : costRecipe(
-          $form.lines.map((line) => ({
-            quantity: Number(line.quantity),
-            unit_cost: sapInfo[key(line)]?.item_cost ?? null,
-          })),
-        ),
+    costRecipe(
+      $form.lines.map((line) => ({
+        quantity: Number(line.quantity),
+        unit_cost: sapInfo[key(line)]?.item_cost ?? null,
+      })),
+    ),
   );
 
   // Prefilled from the brand's food-cost target; not saved.
@@ -158,7 +164,7 @@
     ),
   );
   const latestChange = $derived(
-    !usingCombo && cost.total > 0 && latestCost.missing === 0
+    cost.total > 0 && latestCost.missing === 0
       ? ((latestCost.total - cost.total) / cost.total) * 100
       : null,
   );
@@ -236,7 +242,10 @@
     else if (items.length > 1) openSearch(index);
     else {
       $form.lines[index].database_id = "";
-      lookupErrors[index] = `Item ${itemNumber} not found`;
+      // A material the import kept without a SAP match stays as it is.
+      if (!stored.has(`|${itemNumber}`)) {
+        lookupErrors[index] = `Item ${itemNumber} not found`;
+      }
     }
   }
 
@@ -248,33 +257,40 @@
 </script>
 
 <svelte:head>
-  <title>{data.menuItem?.description ?? data.itemCode} | Recipes</title>
+  <title>{title} | Recipes</title>
 </svelte:head>
 
-<main class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+<main
+  class="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8"
+>
   <div class="flex flex-wrap items-start gap-4">
     <Button
       variant="ghost"
       size="icon"
-      href={`/admin/recipes?brand=${encodeURIComponent(data.brand.alias)}`}
-      aria-label="Back to menu"
+      href={`/admin/recipes${data.itemCode ? "" : "/items"}?brand=${encodeURIComponent(data.brand.alias)}`}
+      aria-label={data.itemCode ? "Back to menu" : "Back to recipe items"}
     >
       <ArrowLeftIcon />
     </Button>
     <div class="mr-auto space-y-1">
       <p class="text-muted-foreground text-sm">
-        {data.brand.name} · <span class="font-mono">{data.itemCode}</span>
+        {data.brand.name} ·
+        {#if !data.itemCode}
+          <Badge variant="outline">not linked to a POS item</Badge>
+        {:else}
+          <span class="font-mono">{data.itemCode}</span>
+        {/if}
         {#if data.menuItem}
           · {data.menuItem.category}
           {#if !data.menuItem.active}
             · <Badge variant="outline">inactive</Badge>
           {/if}
-        {:else}
+        {:else if data.itemCode}
           · <Badge variant="destructive">not on the menu</Badge>
         {/if}
       </p>
       <h1 class="text-3xl font-semibold tracking-tight">
-        {data.menuItem?.description ?? data.itemCode}
+        {title}
       </h1>
     </div>
     <div class="text-right">
@@ -282,14 +298,8 @@
       <p class="text-3xl font-semibold tabular-nums">{formatEur(cost.total)}</p>
       {#if cost.missing > 0}
         <p class="text-destructive text-xs">
-          Incomplete: {cost.missing}
-          {usingCombo
-            ? "component(s) without a recipe"
-            : "line(s) without a SAP cost"}
+          Incomplete: {cost.missing} line(s) without a SAP cost
         </p>
-      {/if}
-      {#if usingCombo}
-        <p class="text-muted-foreground text-xs">From combo components</p>
       {/if}
       {#if data.menuItem}
         <p class="text-muted-foreground text-xs">
@@ -299,31 +309,15 @@
     </div>
   </div>
 
-  {#if data.combo}
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>Combo components</Card.Title>
-        <Card.Description>
-          Sold as a combo in the last {data.comboWindowDays} days (<a
-            class="underline"
-            href={`/admin/recipes/${encodeURIComponent(data.brand.alias)}/combo-items/${encodeURIComponent(data.itemCode)}`}
-            >combo view</a
-          >). Cost = each component's recipe × how many of it come with one
-          combo on average, so drink and side choices are weighted by what
-          guests pick. Adding materials below overrides this. Give ice or free
-          sauces an empty recipe to count them as €0.
-        </Card.Description>
-      </Card.Header>
-      <Card.Content>
-        <ComboComponentsTable
-          brandAlias={data.brand.alias}
-          components={data.combo.components}
-        />
-      </Card.Content>
-    </Card.Root>
-  {/if}
-
-  <form method="POST" action="?/save" use:enhance>
+  <!-- `?/save` replaces the query string, so the builder of a POS item (`new?item=`)
+       must name its item again. -->
+  <form
+    method="POST"
+    action={data.recipe
+      ? "?/save"
+      : `?/save&item=${encodeURIComponent(data.itemCode ?? "")}`}
+    use:enhance
+  >
     <Card.Root>
       <Card.Header class="flex flex-row items-center gap-3">
         <Card.Title class="mr-auto">Recipe materials</Card.Title>
@@ -338,9 +332,12 @@
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              <Table.Head class="w-56">Item number</Table.Head>
+              <Table.Head class="w-56 min-w-44">Item number</Table.Head>
               <Table.Head>Description</Table.Head>
-              <Table.Head class="w-36">Quantity</Table.Head>
+              {#if showRecipeQty}
+                <Table.Head class="text-right">Recipe qty</Table.Head>
+              {/if}
+              <Table.Head class="w-36">Purchasing qty</Table.Head>
               <Table.Head>Unit</Table.Head>
               <Table.Head class="text-right">Unit cost</Table.Head>
               <Table.Head class="text-right">Line cost</Table.Head>
@@ -353,6 +350,7 @@
           <Table.Body>
             {#each $form.lines as line, index (index)}
               {@const info = line.database_id ? sapInfo[key(line)] : undefined}
+              {@const kept = stored.get(key(line))}
               {@const rowError =
                 lookupErrors[index] ??
                 $errors.lines?.[index]?.item_number?.[0] ??
@@ -393,12 +391,22 @@
                     {#if info.inactive}
                       <Badge variant="destructive">inactive</Badge>
                     {/if}
+                  {:else if kept}
+                    {kept.saved_description}
+                    <Badge variant="destructive">not in SAP</Badge>
                   {:else if line.database_id}
                     <span class="text-destructive text-sm">
                       No longer in SAP
                     </span>
                   {/if}
                 </Table.Cell>
+                {#if showRecipeQty}
+                  <Table.Cell class="text-right align-top tabular-nums">
+                    {kept?.recipe_quantity?.toLocaleString("en-IE", {
+                      maximumFractionDigits: 4,
+                    }) ?? ""}
+                  </Table.Cell>
+                {/if}
                 <Table.Cell class="align-top">
                   <Input
                     type="number"
@@ -417,7 +425,7 @@
                   {/if}
                 </Table.Cell>
                 <Table.Cell class="align-top">
-                  {info?.purchasing_uom ?? ""}
+                  {info?.purchasing_uom ?? kept?.saved_uom ?? ""}
                   {#if info && info.stock_uom && info.stock_uom !== info.purchasing_uom}
                     <p
                       class="text-xs text-amber-600"
@@ -474,7 +482,7 @@
             {:else}
               <Table.Row>
                 <Table.Cell
-                  colspan={8}
+                  colspan={showRecipeQty ? 9 : 8}
                   class="text-muted-foreground py-8 text-center"
                 >
                   No materials yet. Click Add to start the recipe.
@@ -485,7 +493,10 @@
           {#if $form.lines.length > 0}
             <Table.Footer>
               <Table.Row>
-                <Table.Cell colspan={5} class="text-right font-medium">
+                <Table.Cell
+                  colspan={showRecipeQty ? 6 : 5}
+                  class="text-right font-medium"
+                >
                   Total
                 </Table.Cell>
                 <Table.Cell class="text-right font-semibold tabular-nums">
@@ -496,6 +507,14 @@
             </Table.Footer>
           {/if}
         </Table.Root>
+        {#if data.recipe?.import_name}
+          <p class="text-muted-foreground mt-3 text-xs">
+            Imported from the cost workbook as "{data.recipe.import_name}". Cost
+            = purchasing quantity × current SAP cost; the recipe quantity is the
+            workbook's own unit, for reference. The next import of the workbook
+            replaces these lines.
+          </p>
+        {/if}
         {#if data.recipe?.updated_at}
           <p class="text-muted-foreground mt-3 text-xs">
             Last saved {new Date(data.recipe.updated_at).toLocaleString()}

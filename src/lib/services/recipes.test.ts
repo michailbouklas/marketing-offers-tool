@@ -9,9 +9,9 @@ import {
   labourCost,
   primeCostPercent,
   recipeFormSchema,
-  comboRange,
-  costCombo,
-  withComboCosts,
+  buildRecipeRows,
+  mergeStoredLines,
+  recipeHref,
 } from "./recipes";
 
 describe("foodCostPercent", () => {
@@ -145,78 +145,148 @@ describe("recipeFormSchema", () => {
   });
 });
 
-describe("combo costs", () => {
-  const costs = new Map([
-    ["BURGER", { total: 1.2, missing: 0 }],
-    ["FRIES", { total: 0.4, missing: 0 }],
-    ["COLA", { total: 0.3, missing: 0 }],
-    ["JUICE", { total: 0.5, missing: 0 }],
-    ["SAUCE", { total: 0.1, missing: 1 }],
-  ]);
-  const meal = [
-    { item_code: "BURGER", name: "Burger", perCombo: 1, qty: 0, net: 0 },
-    { item_code: "FRIES", name: "Fries", perCombo: 1, qty: 0, net: 0 },
-    // 70% pick cola, 30% juice: the drink cost is weighted by choice.
-    { item_code: "COLA", name: "Cola", perCombo: 0.7, qty: 0, net: 0 },
-    { item_code: "JUICE", name: "Juice", perCombo: 0.3, qty: 0, net: 0 },
-  ];
-
-  it("weights each component by its average quantity per combo", () => {
-    expect(costCombo(meal, costs)).toEqual({
-      total: 1.2 + 0.4 + 0.21 + 0.15,
-      missing: 0,
-      missingCodes: [],
-    });
-  });
-
-  it("flags components without a complete recipe", () => {
-    const result = costCombo(
-      [
-        ...meal,
-        { item_code: "SAUCE", name: "", perCombo: 1, qty: 0, net: 0 },
-        { item_code: "ICE", name: "", perCombo: 1, qty: 0, net: 0 },
-      ],
-      costs,
+describe("recipeHref", () => {
+  it("points at the recipe id, or at the builder of a POS item", () => {
+    expect(recipeHref("kfc", { id: 12 })).toBe("/admin/recipes/kfc/12");
+    expect(recipeHref("b k", { itemCode: "A/1 &2" })).toBe(
+      "/admin/recipes/b%20k/new?item=A%2F1%20%262",
     );
-    expect(result.missing).toBe(2);
-    expect(result.missingCodes).toEqual(["SAUCE", "ICE"]);
-  });
-
-  it("keeps an item's own recipe over the combo cost", () => {
-    const merged = withComboCosts(
-      new Map([...costs, ["MEAL1", { total: 9, missing: 0 }]]),
-      new Map([
-        ["MEAL1", meal],
-        ["MEAL2", meal],
-      ]),
-    );
-    expect(merged.get("MEAL1")).toMatchObject({ total: 9, source: "recipe" });
-    expect(merged.get("MEAL2")).toMatchObject({
-      total: 1.96,
-      missing: 0,
-      source: "combo",
-      componentCount: 4,
-    });
-    expect(merged.get("FRIES")?.source).toBe("recipe");
   });
 });
 
-describe("comboRange", () => {
-  const now = new Date("2026-11-05T10:00:00Z");
+describe("mergeStoredLines", () => {
+  const stored = [
+    {
+      database_id: "PHC_EUR",
+      item_number: "25107",
+      quantity: 0.25,
+      recipe_quantity: 250,
+      saved_description: "Sugar",
+      saved_uom: "KG",
+    },
+    {
+      database_id: "",
+      item_number: "123456",
+      quantity: 1,
+      recipe_quantity: 1,
+      saved_description: "Black Bun",
+      saved_uom: "PCE",
+    },
+  ];
 
-  it("defaults to the last 90 days", () => {
-    expect(comboRange(new URLSearchParams(), now)).toEqual({
-      from: "2026-08-07",
-      to: "2026-11-05",
-    });
+  it("keeps what the form does not edit", () => {
+    const result = mergeStoredLines(
+      [
+        { database_id: "PHC_EUR", item_number: "25107", quantity: 0.25 },
+        { database_id: "", item_number: "123456", quantity: 1 },
+      ],
+      stored,
+    );
+    expect(result.errors).toEqual({});
+    expect(result.lines).toEqual([
+      {
+        database_id: "PHC_EUR",
+        item_number: "25107",
+        quantity: 0.25,
+        recipe_quantity: 250,
+        description: "Sugar",
+        uom: "KG",
+      },
+      {
+        database_id: "",
+        item_number: "123456",
+        quantity: 1,
+        recipe_quantity: 1,
+        description: "Black Bun",
+        uom: "PCE",
+      },
+    ]);
   });
 
-  it("uses a valid URL range and swaps reversed ends", () => {
+  it("clears the recipe quantity of a line whose quantity changed", () => {
+    const { lines } = mergeStoredLines(
+      [{ database_id: "PHC_EUR", item_number: "25107", quantity: 0.3 }],
+      stored,
+    );
+    expect(lines[0]).toMatchObject({ recipe_quantity: null, uom: "KG" });
+  });
+
+  it("rejects a new line without a SAP company, accepts a new SAP line", () => {
+    const result = mergeStoredLines(
+      [
+        { database_id: "", item_number: "999", quantity: 1 },
+        { database_id: "PHC_EUR", item_number: "30000", quantity: 2 },
+      ],
+      stored,
+    );
+    expect(result.errors).toEqual({ 0: "Item 999 not found in SAP" });
+    expect(result.lines[1]).toMatchObject({
+      recipe_quantity: null,
+      description: undefined,
+    });
+  });
+});
+
+describe("buildRecipeRows", () => {
+  const menu = [
+    {
+      item_code: "A",
+      description: "Fries",
+      category: "Sides",
+      price: 2,
+      active: true,
+    },
+    {
+      item_code: "B",
+      description: "Wings",
+      category: "Chicken",
+      price: 0,
+      active: true,
+    },
+    {
+      item_code: "C",
+      description: "Wings",
+      category: "Chicken",
+      price: 5,
+      active: false,
+    },
+    {
+      item_code: "D",
+      description: "Cola",
+      category: "Drinks",
+      price: 1.5,
+      active: true,
+    },
+  ];
+  const at = new Date("2026-11-26T10:00:00Z");
+  const recipe = (id: number, item_code: string | null, name: string) => ({
+    id,
+    item_code,
+    name,
+    lineCount: 2,
+    total: 0.5,
+    missing: 0,
+    updated_at: at,
+  });
+
+  it("gives one row per recipe and per POS item without one", () => {
+    const rows = buildRecipeRows(menu, [
+      recipe(1, "A", "Fries"),
+      recipe(2, "B", "Wings 0 price"),
+      recipe(3, null, "Wings"),
+      recipe(4, null, "Family Feast"),
+    ]);
     expect(
-      comboRange(new URLSearchParams("from=2026-10-31&to=2026-10-01"), now),
-    ).toEqual({ from: "2026-10-01", to: "2026-10-31" });
-    expect(
-      comboRange(new URLSearchParams("from=nope&to=2026-10-01"), now),
-    ).toMatchObject({ to: "2026-11-05" });
+      rows.map((row) => [row.key, row.status, row.price, row.no_pos_price]),
+    ).toEqual([
+      ["r1", "Linked", 2, false],
+      ["r2", "Linked", null, true],
+      ["r3", "Ambiguous", null, false],
+      ["r4", "Unlinked", null, false],
+      ["pC", "No recipe", 5, false],
+      ["pD", "No recipe", 1.5, false],
+    ]);
+    expect(rows[4]).toMatchObject({ id: null, cost: null, active: false });
+    expect(rows[0]).toMatchObject({ updated: "2026-11-26", active: true });
   });
 });
