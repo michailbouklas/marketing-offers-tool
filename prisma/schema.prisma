@@ -120,7 +120,10 @@ model brand_company {
 model recipe {
   id               Int           @id @default(autoincrement())
   brandId          Int
-  item_code        String        @db.VarChar(100)
+  /// Null = imported from a workbook and not linked to a POS item yet.
+  item_code        String?       @db.VarChar(100)
+  /// `Recipe ID` of the imported workbook row; null on hand-built recipes.
+  import_name      String?       @db.Text
   item_description String        @default("") @db.Text
   updated_by       String?
   created_at       DateTime      @default(now()) @db.Timestamp(3)
@@ -129,6 +132,7 @@ model recipe {
   lines            recipe_line[]
 
   @@unique([brandId, item_code])
+  @@unique([brandId, import_name])
 }
 
 model recipe_line {
@@ -139,7 +143,11 @@ model recipe_line {
   item_number        String   @db.VarChar(50)
   item_description   String   @default("") @db.Text
   uom                String   @default("") @db.VarChar(100)
-  quantity           Decimal  @db.Decimal(18, 6)
+  /// In the SAP purchasing UoM: the cost basis (quantity × SAP item_cost).
+  /// 12 decimals: one bag out of a case of thousands is far below 0.000001.
+  quantity           Decimal  @db.Decimal(24, 12)
+  /// Workbook "recipe unit" quantity (grams, pieces…); display only.
+  recipe_quantity    Decimal? @db.Decimal(18, 6)
   unit_cost_snapshot Decimal? @db.Decimal(19, 6)
   recipe             recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 

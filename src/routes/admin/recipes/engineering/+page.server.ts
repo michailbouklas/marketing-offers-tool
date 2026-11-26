@@ -1,8 +1,7 @@
 import { error } from "@sveltejs/kit";
 import { requirePermission } from "$lib/server/auth-guards";
-import { comboRange, exVatPrice, withComboCosts } from "$lib/services/recipes";
+import { exVatPrice } from "$lib/services/recipes";
 import {
-  listComboComponents,
   listItemSales,
   listMenuItems,
   listRecipeBrands,
@@ -25,12 +24,10 @@ export const load: PageServerLoad = async (event) => {
   const daysParam = Number(event.url.searchParams.get("days") ?? 90);
   const days = PERIODS.find((period) => period === daysParam) ?? 90;
 
-  const [allMenu, recipeCosts, combos] = await Promise.all([
+  const [allMenu, costs] = await Promise.all([
     listMenuItems(brand.alias),
     listRecipeCosts(brand.id),
-    listComboComponents(brand.alias, comboRange(new URLSearchParams())),
   ]);
-  const costs = withComboCosts(recipeCosts, combos);
   // Engineering covers what is on sale now; inactive items would all be Dogs.
   const menu = allMenu.filter((item) => item.active);
 

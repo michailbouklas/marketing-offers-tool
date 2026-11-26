@@ -31,6 +31,7 @@ export type Recipe_lineAvgAggregateOutputType = {
   recipeId: number | null
   sort_order: number | null
   quantity: runtime.Decimal | null
+  recipe_quantity: runtime.Decimal | null
   unit_cost_snapshot: runtime.Decimal | null
 }
 
@@ -39,6 +40,7 @@ export type Recipe_lineSumAggregateOutputType = {
   recipeId: number | null
   sort_order: number | null
   quantity: runtime.Decimal | null
+  recipe_quantity: runtime.Decimal | null
   unit_cost_snapshot: runtime.Decimal | null
 }
 
@@ -51,6 +53,7 @@ export type Recipe_lineMinAggregateOutputType = {
   item_description: string | null
   uom: string | null
   quantity: runtime.Decimal | null
+  recipe_quantity: runtime.Decimal | null
   unit_cost_snapshot: runtime.Decimal | null
 }
 
@@ -63,6 +66,7 @@ export type Recipe_lineMaxAggregateOutputType = {
   item_description: string | null
   uom: string | null
   quantity: runtime.Decimal | null
+  recipe_quantity: runtime.Decimal | null
   unit_cost_snapshot: runtime.Decimal | null
 }
 
@@ -75,6 +79,7 @@ export type Recipe_lineCountAggregateOutputType = {
   item_description: number
   uom: number
   quantity: number
+  recipe_quantity: number
   unit_cost_snapshot: number
   _all: number
 }
@@ -85,6 +90,7 @@ export type Recipe_lineAvgAggregateInputType = {
   recipeId?: true
   sort_order?: true
   quantity?: true
+  recipe_quantity?: true
   unit_cost_snapshot?: true
 }
 
@@ -93,6 +99,7 @@ export type Recipe_lineSumAggregateInputType = {
   recipeId?: true
   sort_order?: true
   quantity?: true
+  recipe_quantity?: true
   unit_cost_snapshot?: true
 }
 
@@ -105,6 +112,7 @@ export type Recipe_lineMinAggregateInputType = {
   item_description?: true
   uom?: true
   quantity?: true
+  recipe_quantity?: true
   unit_cost_snapshot?: true
 }
 
@@ -117,6 +125,7 @@ export type Recipe_lineMaxAggregateInputType = {
   item_description?: true
   uom?: true
   quantity?: true
+  recipe_quantity?: true
   unit_cost_snapshot?: true
 }
 
@@ -129,6 +138,7 @@ export type Recipe_lineCountAggregateInputType = {
   item_description?: true
   uom?: true
   quantity?: true
+  recipe_quantity?: true
   unit_cost_snapshot?: true
   _all?: true
 }
@@ -228,6 +238,7 @@ export type Recipe_lineGroupByOutputType = {
   item_description: string
   uom: string
   quantity: runtime.Decimal
+  recipe_quantity: runtime.Decimal | null
   unit_cost_snapshot: runtime.Decimal | null
   _count: Recipe_lineCountAggregateOutputType | null
   _avg: Recipe_lineAvgAggregateOutputType | null
@@ -263,6 +274,7 @@ export type recipe_lineWhereInput = {
   item_description?: Prisma.StringFilter<"recipe_line"> | string
   uom?: Prisma.StringFilter<"recipe_line"> | string
   quantity?: Prisma.DecimalFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: Prisma.DecimalNullableFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: Prisma.DecimalNullableFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   recipe?: Prisma.XOR<Prisma.RecipeScalarRelationFilter, Prisma.recipeWhereInput>
 }
@@ -276,6 +288,7 @@ export type recipe_lineOrderByWithRelationInput = {
   item_description?: Prisma.SortOrder
   uom?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  recipe_quantity?: Prisma.SortOrderInput | Prisma.SortOrder
   unit_cost_snapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   recipe?: Prisma.recipeOrderByWithRelationInput
 }
@@ -292,6 +305,7 @@ export type recipe_lineWhereUniqueInput = Prisma.AtLeast<{
   item_description?: Prisma.StringFilter<"recipe_line"> | string
   uom?: Prisma.StringFilter<"recipe_line"> | string
   quantity?: Prisma.DecimalFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: Prisma.DecimalNullableFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: Prisma.DecimalNullableFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   recipe?: Prisma.XOR<Prisma.RecipeScalarRelationFilter, Prisma.recipeWhereInput>
 }, "id">
@@ -305,6 +319,7 @@ export type recipe_lineOrderByWithAggregationInput = {
   item_description?: Prisma.SortOrder
   uom?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  recipe_quantity?: Prisma.SortOrderInput | Prisma.SortOrder
   unit_cost_snapshot?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.recipe_lineCountOrderByAggregateInput
   _avg?: Prisma.recipe_lineAvgOrderByAggregateInput
@@ -325,6 +340,7 @@ export type recipe_lineScalarWhereWithAggregatesInput = {
   item_description?: Prisma.StringWithAggregatesFilter<"recipe_line"> | string
   uom?: Prisma.StringWithAggregatesFilter<"recipe_line"> | string
   quantity?: Prisma.DecimalWithAggregatesFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: Prisma.DecimalNullableWithAggregatesFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: Prisma.DecimalNullableWithAggregatesFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -335,6 +351,7 @@ export type recipe_lineCreateInput = {
   item_description?: string
   uom?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   recipe: Prisma.recipeCreateNestedOneWithoutLinesInput
 }
@@ -348,6 +365,7 @@ export type recipe_lineUncheckedCreateInput = {
   item_description?: string
   uom?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -358,6 +376,7 @@ export type recipe_lineUpdateInput = {
   item_description?: Prisma.StringFieldUpdateOperationsInput | string
   uom?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   recipe?: Prisma.recipeUpdateOneRequiredWithoutLinesNestedInput
 }
@@ -371,6 +390,7 @@ export type recipe_lineUncheckedUpdateInput = {
   item_description?: Prisma.StringFieldUpdateOperationsInput | string
   uom?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -383,6 +403,7 @@ export type recipe_lineCreateManyInput = {
   item_description?: string
   uom?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -393,6 +414,7 @@ export type recipe_lineUpdateManyMutationInput = {
   item_description?: Prisma.StringFieldUpdateOperationsInput | string
   uom?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -405,6 +427,7 @@ export type recipe_lineUncheckedUpdateManyInput = {
   item_description?: Prisma.StringFieldUpdateOperationsInput | string
   uom?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -427,6 +450,7 @@ export type recipe_lineCountOrderByAggregateInput = {
   item_description?: Prisma.SortOrder
   uom?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  recipe_quantity?: Prisma.SortOrder
   unit_cost_snapshot?: Prisma.SortOrder
 }
 
@@ -435,6 +459,7 @@ export type recipe_lineAvgOrderByAggregateInput = {
   recipeId?: Prisma.SortOrder
   sort_order?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  recipe_quantity?: Prisma.SortOrder
   unit_cost_snapshot?: Prisma.SortOrder
 }
 
@@ -447,6 +472,7 @@ export type recipe_lineMaxOrderByAggregateInput = {
   item_description?: Prisma.SortOrder
   uom?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  recipe_quantity?: Prisma.SortOrder
   unit_cost_snapshot?: Prisma.SortOrder
 }
 
@@ -459,6 +485,7 @@ export type recipe_lineMinOrderByAggregateInput = {
   item_description?: Prisma.SortOrder
   uom?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  recipe_quantity?: Prisma.SortOrder
   unit_cost_snapshot?: Prisma.SortOrder
 }
 
@@ -467,6 +494,7 @@ export type recipe_lineSumOrderByAggregateInput = {
   recipeId?: Prisma.SortOrder
   sort_order?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  recipe_quantity?: Prisma.SortOrder
   unit_cost_snapshot?: Prisma.SortOrder
 }
 
@@ -527,6 +555,7 @@ export type recipe_lineCreateWithoutRecipeInput = {
   item_description?: string
   uom?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -538,6 +567,7 @@ export type recipe_lineUncheckedCreateWithoutRecipeInput = {
   item_description?: string
   uom?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -579,6 +609,7 @@ export type recipe_lineScalarWhereInput = {
   item_description?: Prisma.StringFilter<"recipe_line"> | string
   uom?: Prisma.StringFilter<"recipe_line"> | string
   quantity?: Prisma.DecimalFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: Prisma.DecimalNullableFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: Prisma.DecimalNullableFilter<"recipe_line"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -590,6 +621,7 @@ export type recipe_lineCreateManyRecipeInput = {
   item_description?: string
   uom?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -600,6 +632,7 @@ export type recipe_lineUpdateWithoutRecipeInput = {
   item_description?: Prisma.StringFieldUpdateOperationsInput | string
   uom?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -611,6 +644,7 @@ export type recipe_lineUncheckedUpdateWithoutRecipeInput = {
   item_description?: Prisma.StringFieldUpdateOperationsInput | string
   uom?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -622,6 +656,7 @@ export type recipe_lineUncheckedUpdateManyWithoutRecipeInput = {
   item_description?: Prisma.StringFieldUpdateOperationsInput | string
   uom?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  recipe_quantity?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   unit_cost_snapshot?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
 }
 
@@ -636,6 +671,7 @@ export type recipe_lineSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   item_description?: boolean
   uom?: boolean
   quantity?: boolean
+  recipe_quantity?: boolean
   unit_cost_snapshot?: boolean
   recipe?: boolean | Prisma.recipeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["recipe_line"]>
@@ -649,6 +685,7 @@ export type recipe_lineSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   item_description?: boolean
   uom?: boolean
   quantity?: boolean
+  recipe_quantity?: boolean
   unit_cost_snapshot?: boolean
   recipe?: boolean | Prisma.recipeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["recipe_line"]>
@@ -662,6 +699,7 @@ export type recipe_lineSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   item_description?: boolean
   uom?: boolean
   quantity?: boolean
+  recipe_quantity?: boolean
   unit_cost_snapshot?: boolean
   recipe?: boolean | Prisma.recipeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["recipe_line"]>
@@ -675,10 +713,11 @@ export type recipe_lineSelectScalar = {
   item_description?: boolean
   uom?: boolean
   quantity?: boolean
+  recipe_quantity?: boolean
   unit_cost_snapshot?: boolean
 }
 
-export type recipe_lineOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "recipeId" | "sort_order" | "database_id" | "item_number" | "item_description" | "uom" | "quantity" | "unit_cost_snapshot", ExtArgs["result"]["recipe_line"]>
+export type recipe_lineOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "recipeId" | "sort_order" | "database_id" | "item_number" | "item_description" | "uom" | "quantity" | "recipe_quantity" | "unit_cost_snapshot", ExtArgs["result"]["recipe_line"]>
 export type recipe_lineInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   recipe?: boolean | Prisma.recipeDefaultArgs<ExtArgs>
 }
@@ -702,7 +741,15 @@ export type $recipe_linePayload<ExtArgs extends runtime.Types.Extensions.Interna
     item_number: string
     item_description: string
     uom: string
+    /**
+     * In the SAP purchasing UoM: the cost basis (quantity × SAP item_cost).
+     * 12 decimals: one bag out of a case of thousands is far below 0.000001.
+     */
     quantity: runtime.Decimal
+    /**
+     * Workbook "recipe unit" quantity (grams, pieces…); display only.
+     */
+    recipe_quantity: runtime.Decimal | null
     unit_cost_snapshot: runtime.Decimal | null
   }, ExtArgs["result"]["recipe_line"]>
   composites: {}
@@ -1136,6 +1183,7 @@ export interface recipe_lineFieldRefs {
   readonly item_description: Prisma.FieldRef<"recipe_line", 'String'>
   readonly uom: Prisma.FieldRef<"recipe_line", 'String'>
   readonly quantity: Prisma.FieldRef<"recipe_line", 'Decimal'>
+  readonly recipe_quantity: Prisma.FieldRef<"recipe_line", 'Decimal'>
   readonly unit_cost_snapshot: Prisma.FieldRef<"recipe_line", 'Decimal'>
 }
     

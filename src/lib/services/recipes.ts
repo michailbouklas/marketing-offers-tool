@@ -3,7 +3,8 @@ import {
   calculateIdealPrice,
   VAT_FACTOR,
 } from "$lib/services/offers-data-quality";
-import { parseOfferDateRange } from "$lib/services/sales-offers";
+// Value import; recipe-import imports only types from here, so no cycle.
+import { normalize } from "$lib/services/recipe-import";
 
 /** Shelf (VAT-inclusive) price → ex-VAT net. Only VAT, never the 1.07 buffer. */
 export function exVatPrice(shelfPrice: number) {
@@ -169,7 +170,8 @@ export const sapItemSearchSchema = z.object({
 export type SapItemSearch = z.infer<typeof sapItemSearchSchema>;
 
 export const recipeLineSchema = z.object({
-  database_id: z.string().trim().min(1).max(7),
+  // Empty = a material the workbook import kept although SAP does not know it.
+  database_id: z.string().trim().max(7),
   item_number: z.string().trim().min(1, "Item number is required").max(50),
   quantity: z.number().positive("Quantity must be greater than 0"),
 });
@@ -179,6 +181,59 @@ export const recipeFormSchema = z.object({
 });
 
 export type RecipeForm = z.infer<typeof recipeFormSchema>;
+
+/** Recipe page of a stored recipe, or the builder of a POS item (`new?item=`). */
+export function recipeHref(
+  brandAlias: string,
+  target: { id: number } | { itemCode: string },
+) {
+  const base = `/admin/recipes/${encodeURIComponent(brandAlias)}`;
+  return "id" in target
+    ? `${base}/${target.id}`
+    : `${base}/new?item=${encodeURIComponent(target.itemCode)}`;
+}
+
+/** What a stored line carries beyond the form's three fields. */
+export type StoredLine = RecipeForm["lines"][number] & {
+  recipe_quantity: number | null;
+  saved_description: string;
+  saved_uom: string;
+};
+
+/**
+ * Lines of the recipe form joined to the stored recipe, so a save keeps what
+ * the form does not edit. A stored line keeps its description and unit, and
+ * its recipe-unit quantity while the purchasing quantity is unchanged (after a
+ * change the old figure would be wrong). A line without a SAP company is only
+ * accepted when the stored recipe already holds it: a mistyped number must
+ * not be saved as a material without cost.
+ */
+export function mergeStoredLines(
+  formLines: RecipeForm["lines"],
+  storedLines: StoredLine[],
+) {
+  const key = (line: { database_id: string; item_number: string }) =>
+    `${line.database_id}|${line.item_number}`;
+  const stored = new Map(storedLines.map((line) => [key(line), line]));
+  const errors: Record<number, string> = {};
+
+  const lines = formLines.map((line, index) => {
+    const match = stored.get(key(line));
+    if (!line.database_id && !match) {
+      errors[index] = `Item ${line.item_number} not found in SAP`;
+    }
+    return {
+      ...line,
+      recipe_quantity:
+        match && match.quantity === line.quantity
+          ? match.recipe_quantity
+          : null,
+      description: match?.saved_description,
+      uom: match?.saved_uom,
+    };
+  });
+  return { lines, errors };
+}
 
 export type CostedLine = { quantity: number; unit_cost: number | null };
 
@@ -202,110 +257,139 @@ export function costRecipe(lines: CostedLine[]) {
   return { total: Math.round(total * 1e6) / 1e6, missing };
 }
 
-/** Default sales window for recognising combos and averaging components. */
-export const COMBO_WINDOW_DAYS = 90;
+/** user.meta preference key for the `/admin/recipes` grid's column layout. */
+export const RECIPES_COLUMNS_PREFERENCE = "recipes.columns";
 
-export type ComboRange = { from: string; to: string };
+/** Column ids of the `/admin/recipes` grid (= row fields they show). */
+export const RECIPE_GRID_COLUMN_IDS = [
+  "name",
+  "status",
+  "item_code",
+  "pos_name",
+  "category",
+  "materials",
+  "missing",
+  "cost",
+  "price",
+  "cost_percent",
+  "updated",
+] as const;
 
-/** `from`/`to` from the URL (both valid ISO days), else the last 90 days. */
-export function comboRange(
-  params: URLSearchParams,
-  now = new Date(),
-): ComboRange {
-  const parsed = parseOfferDateRange(params);
-  if (parsed) return parsed;
-  const day = (offset: number) =>
-    new Date(now.getTime() - offset * 86_400_000).toISOString().slice(0, 10);
-  return { from: day(COMBO_WINDOW_DAYS), to: day(0) };
-}
+/** Saved gp-grid column layout (order, width, pin, hidden) per column. */
+export const recipeColumnStateSchema = z
+  .array(
+    z.object({
+      columnId: z.enum(RECIPE_GRID_COLUMN_IDS),
+      width: z.number().int().min(40).max(1_000).nullable().optional(),
+      order: z.number().int().min(0).max(100),
+      pinned: z.enum(["start", "end"]).nullable(),
+      hidden: z.boolean().optional(),
+    }),
+  )
+  .max(30);
+export type RecipeColumnState = z.infer<typeof recipeColumnStateSchema>;
 
-/** A component of a POS combo, from sales: average quantity per combo sold. */
-export type ComboComponent = {
-  item_code: string;
+/** One row of the `/admin/recipes` grid: a stored recipe or a POS item without one. */
+export type RecipeRow = {
+  /** Grid / export key: `r<recipe id>` or `p<POS item code>`. */
+  key: string;
+  /** Recipe id; null for a POS item without a recipe. */
+  id: number | null;
   name: string;
-  perCombo: number;
-  /** Units that went out with the combo in the range. */
-  qty: number;
-  /** Net charged on these lines (paid extras or a split of the combo price). */
-  net: number;
+  item_code: string;
+  pos_name: string;
+  category: string;
+  status: "Linked" | "Unlinked" | "Ambiguous" | "No recipe";
+  /** POS item active; recipes without a POS item count as active. */
+  active: boolean;
+  materials: number;
+  missing: number;
+  /** Null for a POS item without a recipe. */
+  cost: number | null;
+  /** POS shelf price; null without a POS item or when POS prices it 0. */
+  price: number | null;
+  /** Has a POS item, priced 0 there: food cost % cannot be worked out. */
+  no_pos_price: boolean;
+  updated: string;
 };
 
-type ItemCost = { total: number; missing: number };
-
 /**
- * Expected material cost of one combo: Σ component cost × average quantity
- * per combo. A component without a complete recipe is missing, so the total
- * is flagged incomplete like a recipe line without a SAP cost.
+ * Joins stored recipes to the POS menu. Every recipe gives a row (linked or
+ * not); every POS item no recipe is linked to gives a "No recipe" row. A POS
+ * price of 0 means "not priced", not free.
  */
-export function costCombo(
-  components: ComboComponent[],
-  costs: Map<string, ItemCost>,
-) {
-  let total = 0;
-  const missingCodes: string[] = [];
-  for (const component of components) {
-    const cost = costs.get(component.item_code);
-    if (!cost || cost.missing > 0) {
-      missingCodes.push(component.item_code);
-      continue;
-    }
-    total += cost.total * component.perCombo;
+export function buildRecipeRows(
+  menu: {
+    item_code: string;
+    description: string;
+    category: string;
+    price: number;
+    active: boolean;
+  }[],
+  recipes: {
+    id: number;
+    item_code: string | null;
+    name: string;
+    lineCount: number;
+    total: number;
+    missing: number;
+    updated_at: Date;
+  }[],
+): RecipeRow[] {
+  const menuByCode = new Map(menu.map((item) => [item.item_code, item]));
+  const posItemsByName = new Map<string, number>();
+  for (const item of menu) {
+    const key = normalize(item.description);
+    posItemsByName.set(key, (posItemsByName.get(key) ?? 0) + 1);
   }
-  return {
-    total: Math.round(total * 1e6) / 1e6,
-    missing: missingCodes.length,
-    missingCodes,
-  };
-}
+  const pricing = (pos: (typeof menu)[number] | null | undefined) => ({
+    price: pos && pos.price > 0 ? pos.price : null,
+    no_pos_price: !!pos && !(pos.price > 0),
+  });
 
-/** `costCombo` plus each component's own recipe cost, for display. */
-export function costComboDetail(
-  components: ComboComponent[],
-  costs: Map<string, ItemCost>,
-) {
-  return {
-    ...costCombo(components, costs),
-    components: components.map((component) => {
-      const cost = costs.get(component.item_code);
-      const unitCost = cost && cost.missing === 0 ? cost.total : null;
-      return {
-        ...component,
-        hasRecipe: Boolean(cost),
-        unitCost,
-        lineCost: unitCost === null ? null : unitCost * component.perCombo,
-      };
-    }),
-  };
-}
+  const rows: RecipeRow[] = recipes.map((recipe) => {
+    const pos = recipe.item_code ? menuByCode.get(recipe.item_code) : null;
+    return {
+      key: `r${recipe.id}`,
+      id: recipe.id,
+      name: recipe.name,
+      item_code: recipe.item_code ?? "",
+      pos_name: pos?.description ?? "",
+      category: pos?.category ?? "",
+      status: recipe.item_code
+        ? "Linked"
+        : (posItemsByName.get(normalize(recipe.name)) ?? 0) > 1
+          ? "Ambiguous"
+          : "Unlinked",
+      active: pos ? pos.active : true,
+      materials: recipe.lineCount,
+      missing: recipe.missing,
+      cost: recipe.total,
+      ...pricing(pos),
+      updated: recipe.updated_at.toISOString().slice(0, 10),
+    };
+  });
 
-export type ComboDetail = ReturnType<typeof costComboDetail>;
-
-/**
- * Adds a cost for every combo without its own recipe, derived from its
- * components' recipes. An item's own recipe always wins.
- */
-export function withComboCosts<T extends ItemCost>(
-  costs: Map<string, T>,
-  combos: Map<string, ComboComponent[]>,
-) {
-  const merged = new Map<
-    string,
-    | (T & { source: "recipe" })
-    | (ItemCost & { source: "combo"; componentCount: number })
-  >();
-  for (const [code, cost] of costs)
-    merged.set(code, { ...cost, source: "recipe" });
-  for (const [code, components] of combos) {
-    if (merged.has(code)) continue;
-    const { total, missing } = costCombo(components, costs);
-    merged.set(code, {
-      total,
-      missing,
-      source: "combo",
-      componentCount: components.length,
+  const linked = new Set(recipes.map((recipe) => recipe.item_code));
+  for (const item of menu) {
+    if (linked.has(item.item_code)) continue;
+    rows.push({
+      key: `p${item.item_code}`,
+      id: null,
+      name: item.description,
+      item_code: item.item_code,
+      pos_name: item.description,
+      category: item.category,
+      status: "No recipe",
+      active: item.active,
+      materials: 0,
+      missing: 0,
+      cost: null,
+      ...pricing(item),
+      updated: "",
     });
   }
-  return merged;
+  return rows;
 }
 
 export function formatEur(value: number, maximumFractionDigits = 4) {

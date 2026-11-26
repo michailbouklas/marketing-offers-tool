@@ -5,8 +5,12 @@
   import { Progress } from "$lib/components/ui/progress/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
   import { readSse } from "$lib/sse-client";
+  import { csvField } from "$lib/services/management-accounts";
   import {
     MAX_IMPORT_BYTES,
+    STOCK_SUMMARY_SHEET,
+    type ImportCase,
+    type ImportCleanup,
     type ImportError,
     type ImportProgress,
     type RecipeImportEvent,
@@ -32,7 +36,82 @@
   let errors = $state<ImportError[]>([]);
   let progress = $state<ImportProgress>({ done: 0, total: 0, current: null });
   let message = $state("");
-  let downloading = $state(false);
+
+  // Stock-summary imports: what happened to every Recipe ID of the sheet.
+  let report = $state<ImportCase[]>([]);
+  // Stored recipes the import found duplicated or no longer in the workbook.
+  let cleanup = $state<ImportCleanup[]>([]);
+  let cleaning = $state(false);
+
+  async function deleteCleanup() {
+    cleaning = true;
+    try {
+      const response = await fetch("/admin/recipes/import/cleanup", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          brand: brand.alias,
+          ids: cleanup.map((row) => row.id),
+        }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const { deleted } = (await response.json()) as { deleted: number };
+      toast.success(`Deleted ${deleted} recipe${deleted === 1 ? "" : "s"}.`);
+      cleanup = [];
+      await invalidateAll();
+    } catch {
+      toast.error("The recipes could not be deleted. Try again.");
+    } finally {
+      cleaning = false;
+    }
+  }
+  let onlyAttention = $state(true);
+
+  /** Recipe counts per status and reason, biggest first. */
+  const reasons = $derived(
+    [...Map.groupBy(report, (row) => `${row.status}: ${row.reason}`).entries()]
+      .map(([label, rows]) => ({ label, count: rows.length }))
+      .toSorted((a, b) => b.count - a.count),
+  );
+  // "Attention" = anything but a clean link: unlinked, skipped or with remarks.
+  const shown = $derived(
+    onlyAttention
+      ? report.filter((row) => row.status !== "Linked" || row.notes)
+      : report,
+  );
+
+  function downloadReport() {
+    const rows = [
+      [
+        "Recipe ID",
+        "First row",
+        "Status",
+        "Reason",
+        "POS code",
+        "POS item / look-alikes",
+        "Materials",
+        "Row remarks",
+      ],
+      ...report.map((row) => [
+        row.name,
+        row.row,
+        row.status,
+        row.reason,
+        row.itemCode,
+        row.posItem,
+        row.materials,
+        row.notes,
+      ]),
+    ];
+    // BOM so Excel reads the UTF-8 (€, Greek) correctly.
+    const csv =
+      "﻿" + rows.map((row) => row.map(csvField).join(",")).join("\r\n");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    link.download = `recipe-import-${brand.alias}-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
 
   const running = $derived(phase === "validating" || phase === "importing");
   const percent = $derived(
@@ -46,12 +125,16 @@
       return;
     }
     if (next.size > MAX_IMPORT_BYTES) {
-      toast.error("The file is larger than 5 MB");
+      toast.error(
+        `The file is larger than ${MAX_IMPORT_BYTES / 1024 / 1024} MB`,
+      );
       return;
     }
     file = next;
     phase = "idle";
     errors = [];
+    report = [];
+    cleanup = [];
     message = "";
   }
 
@@ -59,24 +142,6 @@
     event.preventDefault();
     dragging = false;
     if (!running) pick(event.dataTransfer?.files[0]);
-  }
-
-  async function downloadTemplate() {
-    downloading = true;
-    try {
-      const response = await fetch(
-        `/admin/recipes/import/template?brand=${encodeURIComponent(brand.alias)}`,
-      );
-      if (!response.ok) throw new Error();
-      const { downloadUrl } = (await response.json()) as {
-        downloadUrl: string;
-      };
-      window.location.assign(downloadUrl);
-    } catch {
-      toast.error("The template could not be generated. Try again.");
-    } finally {
-      downloading = false;
-    }
   }
 
   function apply(event: RecipeImportEvent) {
@@ -95,6 +160,8 @@
       case "done":
         phase = "done";
         message = `Imported ${event.imported} recipes.`;
+        report = event.report;
+        cleanup = event.cleanup;
         break;
       case "error":
         phase = "error";
@@ -107,6 +174,8 @@
     if (!file) return;
     phase = "validating";
     errors = [];
+    report = [];
+    cleanup = [];
     message = "";
     progress = { done: 0, total: 0, current: null };
 
@@ -146,19 +215,22 @@
       file = null;
       phase = "idle";
       errors = [];
+      report = [];
+      cleanup = [];
       message = "";
     }
   });
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="sm:max-w-3xl">
+  <Dialog.Content class="sm:max-w-6xl">
     <Dialog.Header>
       <Dialog.Title>Import recipes · {brand.name}</Dialog.Title>
       <Dialog.Description>
-        One row per ingredient. Rows with the same item code form one recipe and
-        replace that item's current recipe. Items not in the file are left
-        unchanged.
+        Reads the "{STOCK_SUMMARY_SHEET}" sheet of the cost workbook. Rows with
+        the same Recipe ID form one recipe and replace it; recipes not in the
+        file are left unchanged. A Recipe ID equal to one POS item name is
+        linked to it. Cost always comes from SAP, not from the file.
       </Dialog.Description>
     </Dialog.Header>
 
@@ -225,17 +297,22 @@
         {/if}
       </div>
     {:else if phase === "invalid"}
+      <p class="text-destructive text-sm font-medium" role="alert">
+        {errors.length} problem{errors.length === 1 ? "" : "s"} found. Nothing was
+        imported. Fix the file and start again.
+      </p>
+    {:else if phase === "error"}
+      <p class="text-destructive text-sm" role="alert">{message}</p>
+    {/if}
+
+    {#if errors.length > 0}
       <div class="space-y-2">
-        <p class="text-destructive text-sm font-medium" role="alert">
-          {errors.length} problem{errors.length === 1 ? "" : "s"} found. Nothing was
-          imported. Fix the file and start again.
-        </p>
         <div class="max-h-72 overflow-y-auto rounded-md border">
           <Table.Root>
             <Table.Header>
               <Table.Row>
                 <Table.Head>Row</Table.Head>
-                <Table.Head>Item code</Table.Head>
+                <Table.Head>Item</Table.Head>
                 <Table.Head>Column</Table.Head>
                 <Table.Head>Problem</Table.Head>
               </Table.Row>
@@ -257,19 +334,128 @@
           </Table.Root>
         </div>
       </div>
-    {:else if phase === "error"}
-      <p class="text-destructive text-sm" role="alert">{message}</p>
+    {/if}
+
+    {#if phase === "done" && report.length > 0}
+      <div class="space-y-2">
+        <ul class="text-sm">
+          {#each reasons as reason (reason.label)}
+            <li>
+              <span class="font-medium tabular-nums">{reason.count}</span>
+              {reason.label}
+            </li>
+          {/each}
+        </ul>
+        <div class="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            aria-pressed={onlyAttention}
+            onclick={() => (onlyAttention = !onlyAttention)}
+          >
+            {onlyAttention ? "Show all recipes" : "Show only those to check"}
+          </Button>
+          <Button variant="outline" size="sm" onclick={downloadReport}>
+            Download report (CSV)
+          </Button>
+          <span class="text-muted-foreground text-xs">
+            {shown.length} of {report.length} recipes shown. The report is gone once
+            this window closes; download it to keep it.
+          </span>
+        </div>
+        <div class="max-h-80 overflow-y-auto rounded-md border">
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.Head>Recipe ID</Table.Head>
+                <Table.Head>Status</Table.Head>
+                <Table.Head>Reason</Table.Head>
+                <Table.Head>POS item / look-alikes</Table.Head>
+                <Table.Head class="text-right">Materials</Table.Head>
+                <Table.Head>Row remarks</Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {#each shown as row (row.name)}
+                <Table.Row>
+                  <Table.Cell class="whitespace-normal">{row.name}</Table.Cell>
+                  <Table.Cell>{row.status}</Table.Cell>
+                  <Table.Cell class="whitespace-normal">{row.reason}</Table.Cell
+                  >
+                  <Table.Cell class="whitespace-normal">
+                    {#if row.itemCode}
+                      <span class="font-mono text-xs">{row.itemCode}</span>
+                    {/if}
+                    {row.posItem}
+                  </Table.Cell>
+                  <Table.Cell class="text-right tabular-nums">
+                    {row.materials}
+                  </Table.Cell>
+                  <Table.Cell class="text-xs whitespace-pre-line">
+                    {row.notes}
+                  </Table.Cell>
+                </Table.Row>
+              {/each}
+            </Table.Body>
+          </Table.Root>
+        </div>
+      </div>
+    {/if}
+
+    {#if phase === "done" && cleanup.length > 0}
+      <div class="space-y-2 rounded-md border border-amber-500/40 p-3">
+        <p class="text-sm font-medium">
+          {cleanup.length} stored recipe{cleanup.length === 1 ? "" : "s"} to review
+        </p>
+        <p class="text-muted-foreground text-xs">
+          Duplicates of a recipe in this workbook, or recipes imported before
+          that this workbook no longer has. Nothing was deleted.
+        </p>
+        <div class="max-h-48 overflow-y-auto rounded-md border">
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.Head>Recipe</Table.Head>
+                <Table.Head>POS code</Table.Head>
+                <Table.Head>Why</Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {#each cleanup as row (row.id)}
+                <Table.Row>
+                  <Table.Cell class="whitespace-normal">{row.name}</Table.Cell>
+                  <Table.Cell class="font-mono text-xs"
+                    >{row.itemCode}</Table.Cell
+                  >
+                  <Table.Cell class="whitespace-normal">{row.reason}</Table.Cell
+                  >
+                </Table.Row>
+              {/each}
+            </Table.Body>
+          </Table.Root>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled={cleaning}
+            onclick={deleteCleanup}
+          >
+            {cleaning ? "Deleting…" : `Delete ${cleanup.length}`}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={cleaning}
+            onclick={() => (cleanup = [])}
+          >
+            Keep them
+          </Button>
+        </div>
+      </div>
     {/if}
 
     <Dialog.Footer class="gap-2">
-      <Button
-        variant="outline"
-        class="sm:mr-auto"
-        disabled={downloading}
-        onclick={downloadTemplate}
-      >
-        {downloading ? "Preparing…" : "Download template"}
-      </Button>
       <Button disabled={!file || running} onclick={startImport}>
         {running ? "Importing…" : "Start import"}
       </Button>

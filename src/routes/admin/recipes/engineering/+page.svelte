@@ -13,6 +13,7 @@
     menuEngineering,
     primeCostPercent,
     type MenuClass,
+    recipeHref,
   } from "$lib/services/recipes";
   import type { PageData } from "./$types";
 
@@ -123,7 +124,7 @@
     `/admin/recipes/engineering?brand=${encodeURIComponent(params.brand ?? data.brand.alias)}&days=${params.days ?? data.days}`;
 
   const itemHref = (itemCode: string) =>
-    `/admin/recipes/${encodeURIComponent(data.brand.alias)}/${encodeURIComponent(itemCode)}`;
+    recipeHref(data.brand.alias, { itemCode });
 </script>
 
 <svelte:head>

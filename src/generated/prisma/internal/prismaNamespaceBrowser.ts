@@ -229,6 +229,7 @@ export const RecipeScalarFieldEnum = {
   id: 'id',
   brandId: 'brandId',
   item_code: 'item_code',
+  import_name: 'import_name',
   item_description: 'item_description',
   updated_by: 'updated_by',
   created_at: 'created_at',
@@ -247,6 +248,7 @@ export const Recipe_lineScalarFieldEnum = {
   item_description: 'item_description',
   uom: 'uom',
   quantity: 'quantity',
+  recipe_quantity: 'recipe_quantity',
   unit_cost_snapshot: 'unit_cost_snapshot'
 } as const
 
