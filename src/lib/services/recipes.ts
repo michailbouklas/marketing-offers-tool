@@ -108,6 +108,26 @@ export type MenuClass =
  * least 70% of the average units per item; profitability is high when its
  * contribution margin (CM) is at least the sales-weighted average CM.
  */
+/**
+ * Which active POS items menu engineering rates: only what guests actually
+ * choose between, i.e. items with a POS price that sold in the period. Items
+ * priced 0 (components, sauces, notes, coupons) and unsold items would pull
+ * the popularity bar down and mark too much as popular.
+ */
+export function menuEngineeringScope<
+  T extends { item_code: string; price: number },
+>(menu: T[], sales: Map<string, { units: number }>) {
+  const rated: T[] = [];
+  const unsold: T[] = [];
+  let zeroPrice = 0;
+  for (const item of menu) {
+    if (!(item.price > 0)) zeroPrice += 1;
+    else if ((sales.get(item.item_code)?.units ?? 0) > 0) rated.push(item);
+    else unsold.push(item);
+  }
+  return { rated, unsold, zeroPrice };
+}
+
 export function menuEngineering(items: { units: number; cm: number | null }[]) {
   const totalUnits = items.reduce((sum, item) => sum + item.units, 0);
   if (items.length === 0 || totalUnits <= 0) {

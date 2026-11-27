@@ -1,6 +1,6 @@
 import { error } from "@sveltejs/kit";
 import { requirePermission } from "$lib/server/auth-guards";
-import { exVatPrice } from "$lib/services/recipes";
+import { exVatPrice, menuEngineeringScope } from "$lib/services/recipes";
 import {
   listItemSales,
   listMenuItems,
@@ -36,13 +36,13 @@ export const load: PageServerLoad = async (event) => {
     menu.map((item) => item.item_code),
     days,
   );
+  const { rated, unsold, zeroPrice } = menuEngineeringScope(menu, sales);
 
-  // Every item is rated on popularity; only a complete recipe and a price give
-  // a margin (a partial cost would overstate CM and skew the average).
-  const items = menu.map((item) => {
+  // Every rated item gets a popularity class; only a complete recipe gives a
+  // margin (a partial cost would overstate CM and skew the average).
+  const items = rated.map((item) => {
     const recipe = costs.get(item.item_code);
-    const cost =
-      recipe && recipe.missing === 0 && item.price > 0 ? recipe.total : null;
+    const cost = recipe && recipe.missing === 0 ? recipe.total : null;
     const sold = sales.get(item.item_code);
     return {
       item_code: item.item_code,
@@ -64,13 +64,20 @@ export const load: PageServerLoad = async (event) => {
     days,
     periods: PERIODS,
     items,
-    // Items rated on sales only (no margin), by reason.
+    // Rated items without a margin (popularity only), by reason.
     unrated: {
-      noRecipe: menu.filter((item) => !costs.has(item.item_code)).length,
-      incomplete: menu.filter((item) => {
-        const recipe = costs.get(item.item_code);
-        return recipe && (recipe.missing > 0 || item.price <= 0);
-      }).length,
+      noRecipe: rated.filter((item) => !costs.has(item.item_code)).length,
+      incomplete: rated.filter(
+        (item) => (costs.get(item.item_code)?.missing ?? 0) > 0,
+      ).length,
     },
+    // Active items left out of the rating.
+    excluded: { zeroPrice, unsold: unsold.length },
+    unsold: unsold.map((item) => ({
+      item_code: item.item_code,
+      description: item.description,
+      category: item.category,
+      price: item.price,
+    })),
   };
 };
