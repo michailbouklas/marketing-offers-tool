@@ -9,7 +9,9 @@
     threeJsReportErrorText,
     threeJsReportOutput,
   } from "$lib/components/ai-chat/threejs-report-tool";
+  import { typedTextOf } from "$lib/components/ai-chat/attachments";
   import { renderMarkdown } from "$lib/components/ai-chat/markdown";
+  import MessageAttachments from "$lib/components/ai-chat/message-attachments.svelte";
   import ToolPart from "$lib/components/ai-chat/tool-part.svelte";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
@@ -46,6 +48,10 @@
   const conversationCache = new SvelteMap<string, ChatConversationMessage[]>();
 
   const title = $derived(thread?.title ?? untitledConversation);
+
+  // The owner-only attachment route can't read another user's files.
+  const adminAttachmentUrl = (ref: string) =>
+    `/api/admin/chat-usage/attachment?${new URLSearchParams({ threadId: thread?.id ?? "", ref })}`;
 
   async function loadConversation(threadId: string) {
     const cached = conversationCache.get(threadId);
@@ -129,15 +135,22 @@
         <div class="space-y-3">
           {#each messages as message, messageIndex (message.id ?? messageIndex)}
             {#if message.role === "user"}
-              <div class="flex justify-end">
-                <div
-                  class="bg-primary text-primary-foreground max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap"
-                >
-                  {#each message.parts as part, partIndex (partIndex)}
-                    {#if part.type === "text"}{part.text}{/if}
-                  {/each}
+              {@const userText = typedTextOf(message.parts)}
+              <MessageAttachments
+                parts={message.parts}
+                {agentId}
+                sessionKey=""
+                attachmentUrl={adminAttachmentUrl}
+              />
+              {#if userText}
+                <div class="flex justify-end">
+                  <div
+                    class="bg-primary text-primary-foreground max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap"
+                  >
+                    {userText}
+                  </div>
                 </div>
-              </div>
+              {/if}
             {:else if message.role === "assistant"}
               <div class="space-y-1">
                 {#each message.parts as part, partIndex (partIndex)}

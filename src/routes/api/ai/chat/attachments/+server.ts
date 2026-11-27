@@ -2,6 +2,7 @@ import { error } from "@sveltejs/kit";
 import { requireAuthenticatedApiUser } from "$lib/server/auth-guards";
 import {
   attachmentPrefix,
+  attachmentResponse,
   readAttachment,
 } from "$lib/server/mastra/processors/chat-attachments";
 import { z } from "zod";
@@ -38,16 +39,5 @@ export const GET: RequestHandler = async (event) => {
     error(404, "Attachment not found");
   }
 
-  return new Response(new Uint8Array(file.bytes), {
-    headers: {
-      "content-type": file.contentType,
-      "content-length": String(file.bytes.length),
-      // Images render inline (thumbnails); everything else downloads.
-      "content-disposition": file.contentType.startsWith("image/")
-        ? "inline"
-        : "attachment",
-      "cache-control": "private, max-age=3600",
-      "x-content-type-options": "nosniff",
-    },
-  });
+  return attachmentResponse(file);
 };

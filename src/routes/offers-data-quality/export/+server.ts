@@ -4,15 +4,22 @@ import { generateExcelFile } from "$lib/server/mastra/tools/generate-excel";
 import { listBrandsForUser } from "$lib/services/brands.server";
 import { getOpenGapList } from "$lib/services/offers-data-quality.server";
 import {
+  listCachedOfferSales,
+  listPendingFcEur,
+} from "$lib/services/offers-data-quality-postgres.server";
+import {
+  chargedPrice,
   gapListSortDirections,
   gapListSortFields,
   getSelectedBrandAliases,
+  offerSalesKey,
   parseGapQueueFilters,
 } from "$lib/services/offers-data-quality";
+import { normalizeBrandAlias } from "$lib/services/offers-data-quality-snapshot";
 import { z } from "zod";
 import type { RequestHandler } from "./$types";
 
-// generateExcelFile caps a sheet at 5,000 rows; its 20k-cell cap (~2,850 rows at 7 columns) bites first and is reported to the user.
+// generateExcelFile caps a sheet at 5,000 rows; its 20k-cell cap (~1,650 rows at 12 columns) bites first and is reported to the user.
 const EXPORT_PAGE_SIZE = 5_000;
 
 const searchParamsSchema = z.object({
@@ -55,6 +62,13 @@ export const GET: RequestHandler = async (event) => {
     itemCode,
     ...parseGapQueueFilters(params),
   });
+  // Sales are lifetime from the nightly /sales/offers cache; FC EUR exists only once a gap is submitted.
+  const [sales, fcEur] = await Promise.all([
+    listCachedOfferSales(brandAliases.map(normalizeBrandAlias)),
+    listPendingFcEur(items.map((gap) => gap.dq_id)),
+  ]);
+  const money = (value: number | null | undefined) =>
+    value == null ? null : Math.round(value * 100) / 100;
 
   const result = await generateExcelFile({
     filename: `open-pricing-gaps-${new Date().toISOString().slice(0, 10)}`,
@@ -64,21 +78,34 @@ export const GET: RequestHandler = async (event) => {
         columns: [
           "Item code",
           "Item",
+          "Food cost € (submitted)",
+          "Avg selling price (POS, incl. VAT)",
+          "Quantity sold (lifetime)",
+          "Sales count (orders, lifetime)",
+          "Net sales € (ex VAT, lifetime)",
           "Brand",
           "Transaction category",
           "Missing fields",
           "Status",
           "Detected",
         ],
-        rows: items.map((gap) => [
-          gap.trde_item,
-          gap.item_name,
-          gap.brand,
-          gap.item_category,
-          gap.missing_fields.join(", "),
-          gap.status,
-          gap.detected_at.slice(0, 10),
-        ]),
+        rows: items.map((gap) => {
+          const sold = sales.get(offerSalesKey(gap.brand, gap.trde_item));
+          return [
+            gap.trde_item,
+            gap.item_name,
+            money(fcEur.get(gap.dq_id)),
+            sold ? money(chargedPrice(sold)) : null,
+            sold?.units ?? null,
+            sold?.orders ?? null,
+            money(sold?.offerNet),
+            gap.brand,
+            gap.item_category,
+            gap.missing_fields.join(", "),
+            gap.status,
+            gap.detected_at.slice(0, 10),
+          ];
+        }),
       },
     ],
   });

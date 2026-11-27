@@ -109,6 +109,25 @@ export async function readAttachment(
     : null;
 }
 
+/** HTTP response serving a stored attachment (owner and admin routes). */
+export function attachmentResponse(file: {
+  bytes: Buffer;
+  contentType: string;
+}) {
+  return new Response(new Uint8Array(file.bytes), {
+    headers: {
+      "content-type": file.contentType,
+      "content-length": String(file.bytes.length),
+      // Images render inline (thumbnails); everything else downloads.
+      "content-disposition": file.contentType.startsWith("image/")
+        ? "inline"
+        : "attachment",
+      "cache-control": "private, max-age=3600",
+      "x-content-type-options": "nosniff",
+    },
+  });
+}
+
 /** Deletes every stored attachment of a conversation. */
 export async function removeAttachments(
   prefix: string,

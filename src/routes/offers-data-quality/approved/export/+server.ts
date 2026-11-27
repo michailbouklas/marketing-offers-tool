@@ -5,8 +5,11 @@ import { exportCsvAsXlsx } from "$lib/server/csv-to-xlsx.server";
 import {
   approvedOfferCsvLine,
   approvedOffersCsvHeader,
+  offerSalesKey,
 } from "$lib/services/offers-data-quality";
 import { forEachApprovedOfferChunk } from "$lib/services/offers-data-quality.server";
+import { listCachedOfferSales } from "$lib/services/offers-data-quality-postgres.server";
+import { normalizeBrandAlias } from "$lib/services/offers-data-quality-snapshot";
 import type { RequestHandler } from "./$types";
 import { readApprovedOffersQuery } from "../filters.server";
 
@@ -24,6 +27,10 @@ export const POST: RequestHandler = async (event) => {
 
   try {
     let rows = 0;
+    // Lifetime POS sales per offer from the nightly /sales/offers cache.
+    const sales = await listCachedOfferSales(
+      selectedBrandAliases.map(normalizeBrandAlias),
+    );
     const result = await exportCsvAsXlsx(
       `approved-offers-${new Date().toISOString().slice(0, 10)}`,
       async (csvPath) => {
@@ -34,7 +41,14 @@ export const POST: RequestHandler = async (event) => {
           (offers) =>
             appendFile(
               csvPath,
-              `${offers.map(approvedOfferCsvLine).join("\n")}\n`,
+              `${offers
+                .map((offer) =>
+                  approvedOfferCsvLine(
+                    offer,
+                    sales.get(offerSalesKey(offer.brand, offer.trde_item)),
+                  ),
+                )
+                .join("\n")}\n`,
               "utf8",
             ),
         );

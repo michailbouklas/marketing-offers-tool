@@ -107,7 +107,7 @@ describe("offers-data-quality helpers", () => {
   });
 
   it("writes an approved offer as one safe CSV line", () => {
-    const line = helpers.approvedOfferCsvLine({
+    const offer = {
       id: 1,
       trde_item: "ITM-1",
       item_name: 'Bucket, "XL"',
@@ -126,13 +126,29 @@ describe("offers-data-quality helpers", () => {
       submitted_at: "2026-03-01T22:30:00.000Z",
       approved_by_name: null,
       approved_at: "2026-03-02T08:00:00.000Z",
-    });
+    };
+    const line = helpers.approvedOfferCsvLine(offer);
 
     expect(line).toBe(
-      'ITM-1,"Bucket, ""XL""",KFC,Wolt Only,ONEPLUSX,Sub,,,12.00,9.50,31.25,, =SUM(A1),Ann,2026-03-01,,2026-03-02',
+      'ITM-1,"Bucket, ""XL""",KFC,Wolt Only,ONEPLUSX,Sub,,,12.00,9.50,31.25,,,,,,, =SUM(A1),Ann,2026-03-01,,2026-03-02',
     );
     expect(line.split(",").length - 1).toBe(
       helpers.approvedOffersCsvHeader.split(",").length,
+    );
+
+    // 4 units for 40.00 net = 10.50 incl. VAT; food cost 4 x 2.50.
+    const sold = {
+      units: 4,
+      orders: 3,
+      offerNet: 40,
+      daysOnSale: 2,
+      lastSale: "2026-03-05",
+    };
+    expect(
+      helpers.approvedOfferCsvLine({ ...offer, fc_eur: "2.50" }, sold),
+    ).toContain(",31.25,10.00,10.50,4,3,40.00,,");
+    expect(helpers.approvedOfferCsvLine(offer, sold)).toContain(
+      ",31.25,,10.50,4,3,40.00,,",
     );
   });
 
@@ -225,7 +241,7 @@ describe("offers-data-quality helpers", () => {
       approved_by: "bob",
       approved_at: new Date("2026-11-01T10:00:00Z"),
     };
-    const sold = { daysOnSale: 10, lastSale: "2026-11-20" };
+    const sold = { daysOnSale: 10, lastSale: "2026-11-20", orders: 100 };
     const check = helpers.summarizeOfferSales(
       [
         // Charged 10.00 net = 10.50 gross: matches. 100 x 4 / 1000 = 40% FC.
@@ -256,6 +272,16 @@ describe("offers-data-quality helpers", () => {
     expect(check[0].eurAboveTarget).toBeCloseTo(100, 5);
   });
 
+  it("prices an offer at what the POS charged per unit, incl. VAT", () => {
+    const sold = { orders: 3, daysOnSale: 1, lastSale: "2026-11-20" };
+    expect(
+      helpers.chargedPrice({ ...sold, units: 4, offerNet: 40 }),
+    ).toBeCloseTo(10.5, 5);
+    expect(
+      helpers.chargedPrice({ ...sold, units: 0, offerNet: 40 }),
+    ).toBeNull();
+  });
+
   it("ranks unpriced offers that sell now and counts the ones that no longer sell", () => {
     const gap = (dq_id: number, trde_item: string) => ({
       dq_id,
@@ -265,6 +291,7 @@ describe("offers-data-quality helpers", () => {
     });
     const sale = (lastSale: string, offerNet: number) => ({
       units: 1,
+      orders: 1,
       offerNet,
       daysOnSale: 10,
       lastSale,

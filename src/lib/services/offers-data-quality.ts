@@ -724,6 +724,12 @@ export const approvedOffersCsvHeader = [
   "Ideal price",
   "Selling price",
   "FC %",
+  "Food cost € (sold units)",
+  // No commas: this header row is joined unquoted.
+  "Avg selling price (POS incl. VAT)",
+  "Quantity sold (lifetime)",
+  "Sales count (lifetime orders)",
+  "Net sales € ex VAT (lifetime)",
   "Marketing spend",
   "Notes",
   "Submitted by",
@@ -732,8 +738,15 @@ export const approvedOffersCsvHeader = [
   "Approved on",
 ].join(",");
 
-/** One CSV line per approved offer, columns as in approvedOffersCsvHeader. Dates are ISO days. */
-export function approvedOfferCsvLine(offer: ApprovedOffer): string {
+/**
+ * One CSV line per approved offer, columns as in approvedOffersCsvHeader.
+ * Dates are ISO days; `sold` is the offer's lifetime POS sales, if any.
+ */
+export function approvedOfferCsvLine(
+  offer: ApprovedOffer,
+  sold?: OfferSales,
+): string {
+  const money = (value: number | null | undefined) => value?.toFixed(2) ?? "";
   return [
     offer.trde_item,
     offer.item_name,
@@ -746,6 +759,13 @@ export function approvedOfferCsvLine(offer: ApprovedOffer): string {
     offer.ideal_price,
     offer.selling_price,
     offer.fc_perc,
+    money(
+      sold && offer.fc_eur !== null ? sold.units * Number(offer.fc_eur) : null,
+    ),
+    money(sold ? chargedPrice(sold) : null),
+    sold?.units ?? "",
+    sold?.orders ?? "",
+    money(sold?.offerNet),
     offer.mktg_spend ?? "",
     offer.notes ?? "",
     offer.submitted_by_name,
@@ -952,6 +972,8 @@ export function summarizeApprovedOffers(
 /** Lifetime POS sales of one offer code, from the /sales/offers cache. */
 export type OfferSales = {
   units: number;
+  /** Orders that contained the offer. */
+  orders: number;
   /** Net EUR of every line of the offer. */
   offerNet: number;
   daysOnSale: number;
@@ -962,6 +984,11 @@ export type OfferSales = {
 /** Key of an offer in a sales map: brand alias + item code. */
 export function offerSalesKey(brand: string, code: string): string {
   return `${brand.trim().toLowerCase()}|${code}`;
+}
+
+/** Average price the POS charged per unit, EUR incl. VAT; null without units. */
+export function chargedPrice(sold: OfferSales): number | null {
+  return sold.units > 0 ? (sold.offerNet / sold.units) * VAT_FACTOR : null;
 }
 
 /** A charged price further than this from the approved price (fraction) is a mismatch. */
@@ -1023,7 +1050,7 @@ export function summarizeOfferSales(
         if (row.selling_price <= 0) continue;
         result.sold += 1;
 
-        const charged = (sold.offerNet / sold.units) * VAT_FACTOR;
+        const charged = chargedPrice(sold) ?? 0;
         if (
           Math.abs(charged / row.selling_price - 1) > PRICE_MISMATCH_TOLERANCE
         ) {

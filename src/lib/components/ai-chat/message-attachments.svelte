@@ -8,9 +8,17 @@
     /** Locate stored attachments (reference markers) of this conversation. */
     agentId: string;
     sessionKey: string;
+    /** Overrides the owner-only download URL (admin conversation viewer). */
+    attachmentUrl?: (ref: string) => string;
   }
 
-  let { parts, agentId, sessionKey }: Props = $props();
+  let {
+    parts,
+    agentId,
+    sessionKey,
+    attachmentUrl = (ref) =>
+      `/api/ai/chat/attachments?${new URLSearchParams({ agentId, session: sessionKey, ref })}`,
+  }: Props = $props();
 
   type Attachment =
     | { kind: "image"; url: string; name: string }
@@ -31,9 +39,7 @@
         part.type === "text" ? parseAttachmentText(String(part.text)) : null;
       if (!marker) return [];
       // Reloaded from history: the bytes live in the object store.
-      const url = marker.ref
-        ? `/api/ai/chat/attachments?${new URLSearchParams({ agentId, session: sessionKey, ref: marker.ref })}`
-        : undefined;
+      const url = marker.ref ? attachmentUrl(marker.ref) : undefined;
       if (url && marker.type.startsWith("image/")) {
         return [{ kind: "image", url, name: marker.name }];
       }

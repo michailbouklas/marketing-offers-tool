@@ -500,6 +500,17 @@ export async function listApprovedStagingForAnalytics(
   });
 }
 
+/** FC EUR of the pending submission per gap, for gaps that have one. */
+export async function listPendingFcEur(
+  dqIds: number[],
+): Promise<Map<number, number>> {
+  const pending = await prisma.dim_offers_staging.findMany({
+    where: { dq_id: { in: dqIds }, status: "pending", fc_eur: { not: null } },
+    select: { dq_id: true, fc_eur: true },
+  });
+  return new Map(pending.map((row) => [row.dq_id, Number(row.fc_eur)]));
+}
+
 /**
  * Lifetime POS sales per offer for these brand aliases, keyed by
  * offerSalesKey, from the cache /sales/offers rebuilds nightly.
