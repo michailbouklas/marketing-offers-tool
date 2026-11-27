@@ -173,6 +173,12 @@
           </Card.Title>
           <Button
             variant="outline"
+            href={`/admin/recipes/menu?brand=${encodeURIComponent(data.brand.alias)}`}
+          >
+            Menu
+          </Button>
+          <Button
+            variant="outline"
             href={`/admin/recipes/engineering?brand=${encodeURIComponent(data.brand.alias)}`}
           >
             Menu engineering

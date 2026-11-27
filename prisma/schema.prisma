@@ -83,6 +83,7 @@ model brand {
   brand_entities              brand_entity[]
   google_analytics_properties brand_google_analytics_property[]
   recipes                     recipe[]
+  menu_items                  menu_item[]
   companies                   brand_company[]
 }
 
@@ -130,9 +131,59 @@ model recipe {
   updated_at       DateTime      @updatedAt @db.Timestamp(3)
   brand            brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
   lines            recipe_line[]
+  menu_lines       menu_item_line[]
 
   @@unique([brandId, item_code])
   @@unique([brandId, import_name])
+}
+
+// --- Menu (/admin/recipes/menu) ----------------------------------------------
+// A menu item is a priced bundle of brand recipes (1 recipe = a single item,
+// several = a combo). The brand's menu is its active menu items; LTOs are
+// disabled off-season and re-activated, not deleted.
+model menu_item {
+  id         Int              @id @default(autoincrement())
+  brandId    Int
+  name       String           @db.VarChar(200)
+  category   String           @default("") @db.VarChar(100)
+  /// Limited-time offer (seasonal, may come back every year).
+  lto        Boolean          @default(false)
+  meal       Boolean          @default(false)
+  /// Meal size (in, small, normal, large, XL); null unless `meal`.
+  size       String?          @db.VarChar(10)
+  active     Boolean          @default(true)
+  /// Shelf price, VAT included; null = not priced yet.
+  price      Decimal?         @db.Decimal(10, 2)
+  updated_by String?
+  created_at DateTime         @default(now()) @db.Timestamp(3)
+  updated_at DateTime         @updatedAt @db.Timestamp(3)
+  brand      brand            @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  lines      menu_item_line[]
+
+  @@unique([brandId, name])
+}
+
+/// A recipe line (`recipeId`) or a raw SAP material line (`item_number`).
+model menu_item_line {
+  id          Int       @id @default(autoincrement())
+  menuItemId  Int
+  sort_order  Int
+  /// Null once the recipe is deleted: the line stays and the cost is incomplete.
+  recipeId    Int?
+  /// SAP material (dbo.sapbw_items databaseId + item_number); null on recipe lines.
+  database_id String?   @db.VarChar(7)
+  item_number String?   @db.VarChar(50)
+  /// Recipe name or material description at save, shown when it is gone.
+  name        String    @db.Text
+  /// Material purchasing UoM (the quantity's unit); empty on recipe lines.
+  uom         String    @default("") @db.VarChar(100)
+  /// Recipe portions, or material in its purchasing UoM (12 decimals, as recipe_line).
+  quantity    Decimal   @db.Decimal(24, 12)
+  menu_item   menu_item @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  recipe      recipe?   @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+
+  @@index([menuItemId])
+  @@index([recipeId])
 }
 
 model recipe_line {

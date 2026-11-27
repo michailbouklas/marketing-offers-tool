@@ -86,6 +86,12 @@ export async function searchSapItems(
   const request = pool.request().input("limit", sql.Int, SEARCH_LIMIT);
   const where: string[] = [];
 
+  if (filters.q) {
+    request.input("q", sql.NVarChar(100), filters.q);
+    where.push(
+      "(item_number LIKE @q + '%' OR item_description LIKE '%' + @q + '%')",
+    );
+  }
   if (filters.item_number) {
     request.input("item_number", sql.NVarChar(50), filters.item_number);
     where.push(

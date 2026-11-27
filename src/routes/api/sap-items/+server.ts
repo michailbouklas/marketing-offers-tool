@@ -9,7 +9,7 @@ import {
 import type { RequestHandler } from "./$types";
 
 /**
- * GET /api/sap-items?brand=<alias>&item_number=&item_description=&companyname=&item_group=&item_sub_category=&exact=1
+ * GET /api/sap-items?brand=<alias>&q=&item_number=&item_description=&companyname=&item_group=&item_sub_category=&exact=1
  *
  * Material search for the recipe builder. When the brand maps to a company
  * held in the warehouse the search is pinned to it (a client cannot widen it);
@@ -25,6 +25,7 @@ export const GET: RequestHandler = async (event) => {
   if (!brand) error(404, "Brand not found");
 
   const parsed = sapItemSearchSchema.safeParse({
+    q: params.get("q") || undefined,
     item_number: params.get("item_number") || undefined,
     item_description: params.get("item_description") || undefined,
     companyname: params.get("companyname") || undefined,
@@ -34,11 +35,15 @@ export const GET: RequestHandler = async (event) => {
   });
   if (!parsed.success) error(400, "Invalid search");
 
-  const lockedCompany = await resolveSapCompany(brand.sap_company_name);
-  const items = await searchSapItems({
-    ...parsed.data,
-    companyname: lockedCompany ?? parsed.data.companyname,
-  });
-
-  return json({ items });
+  try {
+    const lockedCompany = await resolveSapCompany(brand.sap_company_name);
+    const items = await searchSapItems({
+      ...parsed.data,
+      companyname: lockedCompany ?? parsed.data.companyname,
+    });
+    return json({ items });
+  } catch (cause) {
+    console.error("[sap-items] SAP search failed", cause);
+    error(502, "The SAP database did not answer, try again");
+  }
 };

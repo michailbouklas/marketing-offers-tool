@@ -391,6 +391,8 @@ export const ModelName = {
   Company: 'Company',
   brand_company: 'brand_company',
   recipe: 'recipe',
+  menu_item: 'menu_item',
+  menu_item_line: 'menu_item_line',
   recipe_line: 'recipe_line',
   user_brand: 'user_brand',
   brand_google_analytics_property: 'brand_google_analytics_property',
@@ -463,7 +465,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "company" | "brand_company" | "recipe" | "recipe_line" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "page_view" | "page_view_daily" | "user_visit_daily" | "page_view_rollup_state" | "agentSkill" | "release" | "releaseRead" | "sales_offer_value_cache" | "chatFeedback" | "chatPrompt" | "chatShare" | "ai_chat_threads" | "ai_chat_messages"
+    modelProps: "api_WOLT_header" | "api_WOLT_lines" | "error_log" | "brand" | "company" | "brand_company" | "recipe" | "menu_item" | "menu_item_line" | "recipe_line" | "user_brand" | "brand_google_analytics_property" | "google_analytics_report_cache" | "google_analytics_refresh_job" | "regex_patterns_by_category" | "store_names" | "wolt_regex_patters" | "user" | "session" | "account" | "verification" | "userToken" | "categories" | "channels" | "dq_missing_offers_pricing" | "dq_gap_queue_snapshot" | "dq_gap_queue_refresh" | "dim_offers_staging" | "dim_offers_audit" | "subcategories" | "urls_to_scrape" | "aggregator_offers" | "generatedImage" | "generationFailureLog" | "brandAsset" | "referenceImage" | "imageGeneratorPreset" | "imageGeneratorTemplate" | "imageGeneratorTemplateBrand" | "generatedCopy" | "copyGenerationFailureLog" | "api_BOLT_header" | "api_BOLT_lines" | "bolt_regex_patters" | "competition_user_restaurant_pref" | "competition_dashboard_widget" | "google_reviews_user_business_pref" | "google_reviews_dashboard_widget" | "user_monitor" | "notification_cursor" | "brand_entity" | "forecast_validation_run" | "forecast_validation_point" | "page_view" | "page_view_daily" | "user_visit_daily" | "page_view_rollup_state" | "agentSkill" | "release" | "releaseRead" | "sales_offer_value_cache" | "chatFeedback" | "chatPrompt" | "chatShare" | "ai_chat_threads" | "ai_chat_messages"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -982,6 +984,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.recipeCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.RecipeCountAggregateOutputType> | number
+        }
+      }
+    }
+    menu_item: {
+      payload: Prisma.$menu_itemPayload<ExtArgs>
+      fields: Prisma.menu_itemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.menu_itemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_itemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.menu_itemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_itemPayload>
+        }
+        findFirst: {
+          args: Prisma.menu_itemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_itemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.menu_itemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_itemPayload>
+        }
+        findMany: {
+          args: Prisma.menu_itemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_itemPayload>[]
+        }
+        create: {
+          args: Prisma.menu_itemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_itemPayload>
+        }
+        createMany: {
+          args: Prisma.menu_itemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.menu_itemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_itemPayload>[]
+        }
+        delete: {
+          args: Prisma.menu_itemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_itemPayload>
+        }
+        update: {
+          args: Prisma.menu_itemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_itemPayload>
+        }
+        deleteMany: {
+          args: Prisma.menu_itemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.menu_itemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.menu_itemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_itemPayload>[]
+        }
+        upsert: {
+          args: Prisma.menu_itemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_itemPayload>
+        }
+        aggregate: {
+          args: Prisma.Menu_itemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMenu_item>
+        }
+        groupBy: {
+          args: Prisma.menu_itemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Menu_itemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.menu_itemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Menu_itemCountAggregateOutputType> | number
+        }
+      }
+    }
+    menu_item_line: {
+      payload: Prisma.$menu_item_linePayload<ExtArgs>
+      fields: Prisma.menu_item_lineFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.menu_item_lineFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_item_linePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.menu_item_lineFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_item_linePayload>
+        }
+        findFirst: {
+          args: Prisma.menu_item_lineFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_item_linePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.menu_item_lineFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_item_linePayload>
+        }
+        findMany: {
+          args: Prisma.menu_item_lineFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_item_linePayload>[]
+        }
+        create: {
+          args: Prisma.menu_item_lineCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_item_linePayload>
+        }
+        createMany: {
+          args: Prisma.menu_item_lineCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.menu_item_lineCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_item_linePayload>[]
+        }
+        delete: {
+          args: Prisma.menu_item_lineDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_item_linePayload>
+        }
+        update: {
+          args: Prisma.menu_item_lineUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_item_linePayload>
+        }
+        deleteMany: {
+          args: Prisma.menu_item_lineDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.menu_item_lineUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.menu_item_lineUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_item_linePayload>[]
+        }
+        upsert: {
+          args: Prisma.menu_item_lineUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$menu_item_linePayload>
+        }
+        aggregate: {
+          args: Prisma.Menu_item_lineAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMenu_item_line>
+        }
+        groupBy: {
+          args: Prisma.menu_item_lineGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Menu_item_lineGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.menu_item_lineCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Menu_item_lineCountAggregateOutputType> | number
         }
       }
     }
@@ -5276,6 +5426,39 @@ export const RecipeScalarFieldEnum = {
 export type RecipeScalarFieldEnum = (typeof RecipeScalarFieldEnum)[keyof typeof RecipeScalarFieldEnum]
 
 
+export const Menu_itemScalarFieldEnum = {
+  id: 'id',
+  brandId: 'brandId',
+  name: 'name',
+  category: 'category',
+  lto: 'lto',
+  meal: 'meal',
+  size: 'size',
+  active: 'active',
+  price: 'price',
+  updated_by: 'updated_by',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type Menu_itemScalarFieldEnum = (typeof Menu_itemScalarFieldEnum)[keyof typeof Menu_itemScalarFieldEnum]
+
+
+export const Menu_item_lineScalarFieldEnum = {
+  id: 'id',
+  menuItemId: 'menuItemId',
+  sort_order: 'sort_order',
+  recipeId: 'recipeId',
+  database_id: 'database_id',
+  item_number: 'item_number',
+  name: 'name',
+  uom: 'uom',
+  quantity: 'quantity'
+} as const
+
+export type Menu_item_lineScalarFieldEnum = (typeof Menu_item_lineScalarFieldEnum)[keyof typeof Menu_item_lineScalarFieldEnum]
+
+
 export const Recipe_lineScalarFieldEnum = {
   id: 'id',
   recipeId: 'recipeId',
@@ -6627,6 +6810,8 @@ export type GlobalOmitConfig = {
   company?: Prisma.CompanyOmit
   brand_company?: Prisma.brand_companyOmit
   recipe?: Prisma.recipeOmit
+  menu_item?: Prisma.menu_itemOmit
+  menu_item_line?: Prisma.menu_item_lineOmit
   recipe_line?: Prisma.recipe_lineOmit
   user_brand?: Prisma.user_brandOmit
   brand_google_analytics_property?: Prisma.brand_google_analytics_propertyOmit

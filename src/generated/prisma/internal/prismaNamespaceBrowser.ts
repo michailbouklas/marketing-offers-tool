@@ -58,6 +58,8 @@ export const ModelName = {
   Company: 'Company',
   brand_company: 'brand_company',
   recipe: 'recipe',
+  menu_item: 'menu_item',
+  menu_item_line: 'menu_item_line',
   recipe_line: 'recipe_line',
   user_brand: 'user_brand',
   brand_google_analytics_property: 'brand_google_analytics_property',
@@ -237,6 +239,39 @@ export const RecipeScalarFieldEnum = {
 } as const
 
 export type RecipeScalarFieldEnum = (typeof RecipeScalarFieldEnum)[keyof typeof RecipeScalarFieldEnum]
+
+
+export const Menu_itemScalarFieldEnum = {
+  id: 'id',
+  brandId: 'brandId',
+  name: 'name',
+  category: 'category',
+  lto: 'lto',
+  meal: 'meal',
+  size: 'size',
+  active: 'active',
+  price: 'price',
+  updated_by: 'updated_by',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type Menu_itemScalarFieldEnum = (typeof Menu_itemScalarFieldEnum)[keyof typeof Menu_itemScalarFieldEnum]
+
+
+export const Menu_item_lineScalarFieldEnum = {
+  id: 'id',
+  menuItemId: 'menuItemId',
+  sort_order: 'sort_order',
+  recipeId: 'recipeId',
+  database_id: 'database_id',
+  item_number: 'item_number',
+  name: 'name',
+  uom: 'uom',
+  quantity: 'quantity'
+} as const
+
+export type Menu_item_lineScalarFieldEnum = (typeof Menu_item_lineScalarFieldEnum)[keyof typeof Menu_item_lineScalarFieldEnum]
 
 
 export const Recipe_lineScalarFieldEnum = {
