@@ -3,6 +3,7 @@ import {
   costRecipe,
   foodCostPercent,
   menuEngineering,
+  menuEngineeringScope,
   roundUpToPricePoint,
   idealPriceForMargin,
   marginOfPrice,
@@ -288,5 +289,44 @@ describe("buildRecipeRows", () => {
     ]);
     expect(rows[4]).toMatchObject({ id: null, cost: null, active: false });
     expect(rows[0]).toMatchObject({ updated: "2026-11-26", active: true });
+  });
+});
+
+describe("menuEngineeringScope", () => {
+  const menu = [
+    { item_code: "A", price: 5 },
+    { item_code: "B", price: 3 },
+    { item_code: "C", price: 0 },
+    { item_code: "D", price: 4 },
+  ];
+  const sales = new Map([
+    ["A", { units: 300 }],
+    ["B", { units: 100 }],
+    ["C", { units: 5_000 }],
+  ]);
+
+  it("rates priced items that sold; counts zero price, lists unsold", () => {
+    const scope = menuEngineeringScope(menu, sales);
+    expect(scope.rated.map((item) => item.item_code)).toEqual(["A", "B"]);
+    expect(scope.unsold.map((item) => item.item_code)).toEqual(["D"]);
+    expect(scope.zeroPrice).toBe(1);
+  });
+
+  it("keeps zero-price and unsold items from moving the popularity bar", () => {
+    const units = (code: string) => sales.get(code)?.units ?? 0;
+    const all = menuEngineering(
+      menu.map((i) => ({ units: units(i.item_code), cm: 1 })),
+    );
+    const scoped = menuEngineering(
+      menuEngineeringScope(menu, sales).rated.map((i) => ({
+        units: units(i.item_code),
+        cm: 1,
+      })),
+    );
+    // All items: 0.7 × 5,400 / 4 = 945, so A and B look unpopular next to C.
+    expect(all.popularityThreshold).toBeCloseTo(945, 6);
+    // Rated only: 0.7 × 400 / 2 = 140; A is popular, B is not (equal margins, so both count as profitable).
+    expect(scoped.popularityThreshold).toBeCloseTo(140, 6);
+    expect(scoped.classes).toEqual(["star", "puzzle"]);
   });
 });

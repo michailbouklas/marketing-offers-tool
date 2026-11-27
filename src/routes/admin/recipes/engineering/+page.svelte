@@ -72,8 +72,12 @@
   ];
 
   const categories = $derived([
-    ...new Set(data.items.map((item) => item.category)),
+    ...new Set([...data.items, ...data.unsold].map((item) => item.category)),
   ]);
+  const unsold = $derived(
+    data.unsold.filter((item) => !category || item.category === category),
+  );
+  let showUnsold = $state(false);
 
   // With labour on, CM is after labour (ex-VAT price × brand labour %) and
   // FC % becomes prime cost %, so classes can shift toward cheaper items.
@@ -131,7 +135,9 @@
   <title>Menu engineering | Recipes</title>
 </svelte:head>
 
-<main class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+<main
+  class="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8"
+>
   <div class="flex items-start gap-4">
     <Button
       variant="ghost"
@@ -145,9 +151,10 @@
       <h1 class="text-3xl font-semibold tracking-tight">Menu engineering</h1>
       <p class="text-muted-foreground text-sm">
         Kasavana–Smith matrix: popularity (units sold) against contribution
-        margin (price ex VAT − material cost). An item is popular when it sells
-        at least 70% of the average units per item, and profitable when its
-        margin is at least the sales-weighted average.
+        margin (price ex VAT − material cost), for the active items with a POS
+        price that sold in the period. An item is popular when it sells at least
+        70% of the average units per item, and profitable when its margin is at
+        least the sales-weighted average.
       </p>
     </div>
   </div>
@@ -209,10 +216,12 @@
         </span>
       </Card.Title>
       <Card.Description>
-        All active items. Rated on popularity only (no margin, left out of the
-        average): {data.unrated.noRecipe} without a recipe,
-        {data.unrated.incomplete} with missing costs or no price. Units are items
-        ordered as menu items in the last {data.days} days (POS head lines).
+        Active items with a POS price that sold in the last {data.days} days. Left
+        out: {data.excluded.zeroPrice} priced 0 in POS (components, sauces, notes)
+        and {data.excluded.unsold} with no sales (listed below). Rated on popularity
+        only (no margin, left out of the average):
+        {data.unrated.noRecipe} without a recipe, {data.unrated.incomplete} with missing
+        costs. Units are items ordered as menu items (POS head lines).
       </Card.Description>
       <Card.Action>
         <LabourToggle
@@ -296,7 +305,7 @@
                 colspan={10}
                 class="text-muted-foreground py-8 text-center"
               >
-                No active menu items for this brand.
+                No priced item sold in this period.
               </Table.Cell>
             </Table.Row>
           {/each}
@@ -304,4 +313,63 @@
       </Table.Root>
     </Card.Content>
   </Card.Root>
+  {#if unsold.length > 0}
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>
+          Priced items with no sales in the last {data.days} days
+          <span class="text-muted-foreground text-sm font-normal">
+            {unsold.length}
+          </span>
+        </Card.Title>
+        <Card.Description>
+          Active in POS with a price, but nobody ordered them, so they are left
+          out of the matrix. Candidates to remove from the POS menu.
+        </Card.Description>
+        <Card.Action>
+          <Button
+            variant="outline"
+            size="sm"
+            aria-expanded={showUnsold}
+            onclick={() => (showUnsold = !showUnsold)}
+          >
+            {showUnsold ? "Hide" : "Show"}
+          </Button>
+        </Card.Action>
+      </Card.Header>
+      {#if showUnsold}
+        <Card.Content>
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.Head>Item</Table.Head>
+                <Table.Head>Category</Table.Head>
+                <Table.Head class="text-right">Price</Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {#each unsold as row (row.item_code)}
+                <Table.Row>
+                  <Table.Cell>
+                    <a href={itemHref(row.item_code)} class="hover:underline">
+                      {row.description}
+                    </a>
+                    <div class="text-muted-foreground font-mono text-xs">
+                      {row.item_code}
+                    </div>
+                  </Table.Cell>
+                  <Table.Cell class="text-muted-foreground">
+                    {row.category}
+                  </Table.Cell>
+                  <Table.Cell class="text-right tabular-nums">
+                    {formatEur(row.price, 2)}
+                  </Table.Cell>
+                </Table.Row>
+              {/each}
+            </Table.Body>
+          </Table.Root>
+        </Card.Content>
+      {/if}
+    </Card.Root>
+  {/if}
 </main>
