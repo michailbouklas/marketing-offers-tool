@@ -77,6 +77,16 @@ export type brand_company = Prisma.brand_companyModel
  */
 export type recipe = Prisma.recipeModel
 /**
+ * Model menu_item
+ * 
+ */
+export type menu_item = Prisma.menu_itemModel
+/**
+ * Model menu_item_line
+ * A recipe line (`recipeId`) or a raw SAP material line (`item_number`).
+ */
+export type menu_item_line = Prisma.menu_item_lineModel
+/**
  * Model recipe_line
  * 
  */

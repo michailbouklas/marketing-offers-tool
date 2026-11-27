@@ -179,6 +179,8 @@ export type SapItem = {
 };
 
 export const sapItemSearchSchema = z.object({
+  /** Free text: item number prefix OR description substring. */
+  q: z.string().trim().max(100).optional(),
   item_number: z.string().trim().max(50).optional(),
   item_description: z.string().trim().max(200).optional(),
   companyname: z.string().trim().max(37).optional(),
