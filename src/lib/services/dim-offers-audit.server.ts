@@ -18,16 +18,19 @@ type CreateDimOffersAuditRecordInput = {
   stagingId?: number | null;
   dqId?: number | null;
   beforeValues?: DimOfferAuditSnapshot | null;
-  afterValues: DimOfferAuditSnapshot;
+  /** Null when the row was deleted. */
+  afterValues: DimOfferAuditSnapshot | null;
 };
 
 function listChangedFields(
   beforeValues: DimOfferAuditSnapshot | null | undefined,
-  afterValues: DimOfferAuditSnapshot,
+  afterValues: DimOfferAuditSnapshot | null,
 ) {
-  const keys = Object.keys(afterValues) as (keyof DimOfferAuditSnapshot)[];
+  const keys = Object.keys(
+    afterValues ?? beforeValues ?? {},
+  ) as (keyof DimOfferAuditSnapshot)[];
 
-  return keys.filter((key) => beforeValues?.[key] !== afterValues[key]);
+  return keys.filter((key) => beforeValues?.[key] !== afterValues?.[key]);
 }
 
 export async function createDimOffersAuditRecord({
@@ -49,7 +52,7 @@ export async function createDimOffersAuditRecord({
       staging_id: stagingId ?? null,
       dq_id: dqId ?? null,
       before_values: beforeValues ?? Prisma.DbNull,
-      after_values: afterValues,
+      after_values: afterValues ?? Prisma.JsonNull,
       changed_fields: listChangedFields(beforeValues, afterValues),
     },
   });

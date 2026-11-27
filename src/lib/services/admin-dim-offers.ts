@@ -50,8 +50,8 @@ export type AdminDimOffersPage = {
 export type AdminDimOfferAuditEntry = {
   id: number;
   item_code: string;
-  action: "insert" | "update";
-  source: "gap_approval";
+  action: "insert" | "update" | "delete";
+  source: "gap_approval" | "revert";
   changed_by: string;
   changed_by_name: string | null;
   changed_by_email: string | null;

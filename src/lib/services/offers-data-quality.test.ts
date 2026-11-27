@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 vi.mock("./offers-data-quality-clickhouse.server", () => ({
   getCurrentDimOfferValues: vi.fn(),
   getDimOfferAuditSnapshot: vi.fn(),
+  deleteDimOffer: vi.fn(),
   getDimOffersByItemCodes: vi.fn(async () => new Map()),
   getOfferEligibleItemCodes: vi.fn(),
   getTransactionItemContext: vi.fn(),
@@ -74,6 +75,7 @@ const serviceDeps = {
   getOfferEligibleItemCodes: clickhouseDeps.getOfferEligibleItemCodes as Mock,
   getTransactionItemContext: clickhouseDeps.getTransactionItemContext as Mock,
   insertDimOffer: clickhouseDeps.insertDimOffer as Mock,
+  deleteDimOffer: clickhouseDeps.deleteDimOffer as Mock,
   getDimOffersByItemCodes: clickhouseDeps.getDimOffersByItemCodes as Mock,
   getTransactionItemContexts: clickhouseDeps.getTransactionItemContexts as Mock,
   updateDimOffer: clickhouseDeps.updateDimOffer as Mock,
@@ -782,6 +784,55 @@ describe("offers-data-quality orchestration", () => {
       "rejected",
     );
     expect(serviceDeps.updateGapRecordStatus).toHaveBeenCalledWith(14, "open");
+  });
+
+  it("reverts an approval: deletes the dim_offers row, audits it and reopens the gap", async () => {
+    const snapshot = { item_code: "DIS25", ideal_price: "20.06" };
+    serviceDeps.getStagingRecordById.mockResolvedValue({
+      id: 7,
+      dq_id: 21,
+      item_code: "DIS25",
+      status: "approved",
+    });
+    serviceDeps.getDimOfferAuditSnapshot.mockResolvedValue(snapshot);
+
+    await orchestration.revertApprovedSubmission(7, "admin-1");
+
+    expect(serviceDeps.deleteDimOffer).toHaveBeenCalledWith("DIS25");
+    expect(serviceDeps.createDimOffersAuditRecord).toHaveBeenCalledWith({
+      itemCode: "DIS25",
+      action: "delete",
+      source: "revert",
+      changedBy: "admin-1",
+      stagingId: 7,
+      dqId: 21,
+      beforeValues: snapshot,
+      afterValues: null,
+    });
+    expect(serviceDeps.updateDimOffersStagingStatus).toHaveBeenCalledWith(
+      7,
+      "rejected",
+    );
+    expect(serviceDeps.updateGapRecordStatus).toHaveBeenCalledWith(21, "open");
+    // ClickHouse first: a failed delete must leave Postgres untouched.
+    expect(serviceDeps.deleteDimOffer.mock.invocationCallOrder[0]).toBeLessThan(
+      serviceDeps.updateGapRecordStatus.mock.invocationCallOrder[0],
+    );
+  });
+
+  it("refuses to revert a submission that is not approved", async () => {
+    serviceDeps.getStagingRecordById.mockResolvedValue({
+      id: 7,
+      dq_id: 21,
+      item_code: "DIS25",
+      status: "rejected",
+    });
+
+    await expect(
+      orchestration.revertApprovedSubmission(7, "admin-1"),
+    ).rejects.toThrow("Submission is not approved");
+    expect(serviceDeps.deleteDimOffer).not.toHaveBeenCalled();
+    expect(serviceDeps.updateGapRecordStatus).not.toHaveBeenCalled();
   });
 
   it("falls back to the stored gap record when transaction context is missing", async () => {

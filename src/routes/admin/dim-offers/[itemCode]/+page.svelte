@@ -298,7 +298,9 @@
                   <Badge
                     variant={audit.action === "insert"
                       ? "default"
-                      : "secondary"}
+                      : audit.action === "delete"
+                        ? "destructive"
+                        : "secondary"}
                   >
                     {audit.action}
                   </Badge>

@@ -606,10 +606,13 @@ enum DqSnapshotRefreshStatus {
 enum DimOffersAuditAction {
   insert
   update
+  delete
 }
 
 enum DimOffersAuditSource {
   gap_approval
+  /// An approval undone: the dim_offers row deleted and the gap reopened.
+  revert
 }
 
 model aggregator_offers {

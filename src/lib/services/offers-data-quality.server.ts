@@ -13,6 +13,7 @@ import {
   getStoreCities,
   getTransactionItemContext,
   getTransactionItemContexts,
+  deleteDimOffer,
   insertDimOffer,
   updateDimOffer,
 } from "$lib/services/offers-data-quality-clickhouse.server";
@@ -805,6 +806,47 @@ export async function rejectGapSubmission(stagingId: number) {
     throw new Error("Submission is not pending approval");
   }
 
+  await updateDimOffersStagingStatus(stagingRecord.id, "rejected");
+  await updateGapRecordStatus(stagingRecord.dq_id, "open");
+
+  return stagingRecord;
+}
+
+/**
+ * Undoes an approval that inserted a wrong dim_offers row: deletes the row,
+ * audits the delete, marks the submission rejected and reopens the gap. The
+ * row must go, or the nightly rebuild would resolve the reopened gap again.
+ * ClickHouse goes first so a failure there leaves Postgres untouched.
+ */
+export async function revertApprovedSubmission(
+  stagingId: number,
+  revertedBy: string,
+) {
+  const stagingRecord = await getStagingRecordById(stagingId);
+
+  if (!stagingRecord) {
+    return null;
+  }
+
+  if (stagingRecord.status !== "approved") {
+    throw new Error("Submission is not approved");
+  }
+
+  const currentDimOffer = await getDimOfferAuditSnapshot(
+    stagingRecord.item_code,
+  );
+
+  await deleteDimOffer(stagingRecord.item_code);
+  await createDimOffersAuditRecord({
+    itemCode: stagingRecord.item_code,
+    action: "delete",
+    source: "revert",
+    changedBy: revertedBy,
+    stagingId: stagingRecord.id,
+    dqId: stagingRecord.dq_id,
+    beforeValues: currentDimOffer,
+    afterValues: null,
+  });
   await updateDimOffersStagingStatus(stagingRecord.id, "rejected");
   await updateGapRecordStatus(stagingRecord.dq_id, "open");
 

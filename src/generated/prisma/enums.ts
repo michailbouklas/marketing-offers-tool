@@ -59,14 +59,16 @@ export type DqSnapshotRefreshStatus = (typeof DqSnapshotRefreshStatus)[keyof typ
 
 export const DimOffersAuditAction = {
   insert: 'insert',
-  update: 'update'
+  update: 'update',
+  delete: 'delete'
 } as const
 
 export type DimOffersAuditAction = (typeof DimOffersAuditAction)[keyof typeof DimOffersAuditAction]
 
 
 export const DimOffersAuditSource = {
-  gap_approval: 'gap_approval'
+  gap_approval: 'gap_approval',
+  revert: 'revert'
 } as const
 
 export type DimOffersAuditSource = (typeof DimOffersAuditSource)[keyof typeof DimOffersAuditSource]

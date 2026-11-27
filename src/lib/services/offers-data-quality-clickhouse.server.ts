@@ -683,6 +683,18 @@ export async function insertDimOffer(data: UpsertDimOfferInput) {
   });
 }
 
+/** Removes an item's dim_offers row; waits for the mutation so a gap reopened next is not re-resolved. */
+export async function deleteDimOffer(itemCode: string) {
+  return clickhouse.command({
+    query: `
+      ALTER TABLE dim_offers
+      DELETE WHERE item_code = {item_code:String}
+      SETTINGS mutations_sync = 1
+    `,
+    query_params: { item_code: itemCode },
+  });
+}
+
 export async function updateDimOffer(data: UpsertDimOfferInput) {
   const marketingSpendValue = data.mktg_spend ?? "";
   const foodCostEurValue = data.fc_eur ?? "";
